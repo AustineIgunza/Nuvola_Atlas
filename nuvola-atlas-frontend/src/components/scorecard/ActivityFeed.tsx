@@ -1,0 +1,45 @@
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/api";
+import { formatRelative } from "@/lib/format";
+
+const KIND_COLORS: Record<string, string> = {
+  road: "#4a9eff",
+  grid: "#b888ff",
+  esia: "#34c97a",
+  density: "#ffb340",
+};
+
+interface Props {
+  zoneId: string;
+}
+
+export default function ActivityFeed({ zoneId }: Props) {
+  const { data: activities } = useQuery({
+    queryKey: ["activity", zoneId],
+    queryFn: () => api.getZoneActivity(zoneId),
+  });
+
+  if (!activities || activities.length === 0) return null;
+
+  return (
+    <div className="space-y-2.5">
+      <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.08em]">
+        Recent Activity
+      </div>
+      {activities.slice(0, 6).map((a) => (
+        <div key={a.id} className="flex items-start gap-2.5">
+          <div
+            className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
+            style={{ background: KIND_COLORS[a.kind] ?? "#4a9eff" }}
+          />
+          <div className="min-w-0">
+            <p className="text-[12px] text-ink-2 leading-[1.5]">{a.text}</p>
+            <p className="text-[11px] text-ink-4">
+              {a.source} · {formatRelative(a.createdAt)}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}

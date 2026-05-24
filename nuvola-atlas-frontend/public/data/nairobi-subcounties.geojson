@@ -1,0 +1,141 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "id": "westlands", "name": "Westlands" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[36.78, -1.245], [36.83, -1.245], [36.83, -1.29], [36.78, -1.29], [36.78, -1.245]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "dagoretti-north", "name": "Dagoretti North" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[36.73, -1.255], [36.78, -1.255], [36.78, -1.295], [36.73, -1.295], [36.73, -1.255]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "dagoretti-south", "name": "Dagoretti South" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[36.72, -1.295], [36.77, -1.295], [36.77, -1.335], [36.72, -1.335], [36.72, -1.295]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "langata", "name": "Langata" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[36.70, -1.335], [36.78, -1.335], [36.78, -1.395], [36.70, -1.395], [36.70, -1.335]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "kibra", "name": "Kibra" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[36.77, -1.30], [36.81, -1.30], [36.81, -1.33], [36.77, -1.33], [36.77, -1.30]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "roysambu", "name": "Roysambu" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[36.85, -1.20], [36.90, -1.20], [36.90, -1.245], [36.85, -1.245], [36.85, -1.20]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "kasarani", "name": "Kasarani" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[36.87, -1.21], [36.93, -1.21], [36.93, -1.26], [36.87, -1.26], [36.87, -1.21]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "ruaraka", "name": "Ruaraka" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[36.86, -1.24], [36.90, -1.24], [36.90, -1.27], [36.86, -1.27], [36.86, -1.24]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "embakasi-south", "name": "Embakasi South" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[36.88, -1.31], [36.94, -1.31], [36.94, -1.36], [36.88, -1.36], [36.88, -1.31]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "embakasi-north", "name": "Embakasi North" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[36.88, -1.26], [36.93, -1.26], [36.93, -1.31], [36.88, -1.31], [36.88, -1.26]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "embakasi-central", "name": "Embakasi Central" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[36.86, -1.29], [36.91, -1.29], [36.91, -1.33], [36.86, -1.33], [36.86, -1.29]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "embakasi-east", "name": "Embakasi East" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[36.90, -1.27], [36.96, -1.27], [36.96, -1.32], [36.90, -1.32], [36.90, -1.27]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "embakasi-west", "name": "Embakasi West" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[36.84, -1.30], [36.89, -1.30], [36.89, -1.34], [36.84, -1.34], [36.84, -1.30]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "makadara", "name": "Makadara" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[36.84, -1.28], [36.88, -1.28], [36.88, -1.31], [36.84, -1.31], [36.84, -1.28]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "kamukunji", "name": "Kamukunji" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[36.83, -1.27], [36.86, -1.27], [36.86, -1.30], [36.83, -1.30], [36.83, -1.27]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "starehe", "name": "Starehe" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[36.81, -1.27], [36.84, -1.27], [36.84, -1.30], [36.81, -1.30], [36.81, -1.27]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "mathare", "name": "Mathare" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[36.84, -1.245], [36.87, -1.245], [36.87, -1.27], [36.84, -1.27], [36.84, -1.245]]]
+      }
+    }
+  ]
+}
