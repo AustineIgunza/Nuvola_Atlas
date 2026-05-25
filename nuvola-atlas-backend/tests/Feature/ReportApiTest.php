@@ -33,7 +33,7 @@ class ReportApiTest extends TestCase
             'title' => 'New Test Report',
         ]);
 
-        $response->assertOk()->assertJsonPath('title', 'New Test Report');
+        $response->assertCreated()->assertJsonPath('title', 'New Test Report');
         $this->assertDatabaseHas('reports', ['title' => 'New Test Report']);
     }
 
