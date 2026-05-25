@@ -10,7 +10,7 @@ import { api } from "@/api";
 
 const VIEW_MODES = ["Map", "Satellite", "Terrain"] as const;
 const VIEW_STYLES: Record<string, string> = {
-  Map: "mapbox://styles/mapbox/dark-v11",
+  Map: "mapbox://styles/mapbox/light-v11",
   Satellite: "mapbox://styles/mapbox/satellite-streets-v12",
   Terrain: "mapbox://styles/mapbox/outdoors-v12",
 };

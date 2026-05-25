@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { api } from "@/api";
 import { useUIStore } from "@/stores/ui";
-import { springSettle } from "@/lib/motion";
 import AppShell from "@/components/chrome/AppShell";
 import AtlasMap from "@/components/map/AtlasMap";
 import ScorecardPanel from "@/components/scorecard/ScorecardPanel";
@@ -18,9 +17,12 @@ export default function AtlasPage() {
 
   return (
     <AppShell>
-      <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden relative">
-        {/* Map area */}
-        <div className="flex-1 relative min-w-0">
+      <div
+        className="flex overflow-hidden relative"
+        style={{ height: "calc(100vh - 3.5rem)" }}
+      >
+        {/* Map area — explicit dimensions */}
+        <div className="flex-1 relative min-w-0" style={{ minHeight: 0 }}>
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
               <motion.div
@@ -30,18 +32,13 @@ export default function AtlasPage() {
               />
             </div>
           ) : zones ? (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6 }}
-              className="w-full h-full"
-            >
+            <div style={{ position: "absolute", inset: 0 }}>
               <AtlasMap zones={zones} />
-            </motion.div>
+            </div>
           ) : null}
         </div>
 
-        {/* Scorecard - no overlap, sits beside map on desktop */}
+        {/* Scorecard */}
         <ScorecardPanel zone={selectedZone} />
       </div>
     </AppShell>

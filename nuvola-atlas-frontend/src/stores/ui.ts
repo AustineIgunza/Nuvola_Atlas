@@ -38,7 +38,7 @@ export const useUIStore = create<UIState>((set) => ({
   searchOpen: false,
   methodOpen: false,
   sidebarCollapsed: false,
-  mapStyle: "mapbox://styles/mapbox/dark-v11",
+  mapStyle: "mapbox://styles/mapbox/light-v11",
 
   setSelectedZone: (id) =>
     set({ selectedZoneId: id, panelOpen: id !== null }),
