@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_DB: nuvola_atlas_test
+          POSTGRES_USER: nuvola
+          POSTGRES_PASSWORD: nuvola_secret
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd="pg_isready -U nuvola"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    defaults:
+      run:
+        working-directory: nuvola-atlas-backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: pdo_pgsql, pgsql, bcmath
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Create PostGIS extension
+        run: |
+          PGPASSWORD=nuvola_secret psql -h 127.0.0.1 -p 5434 -U nuvola -d nuvola_atlas_test -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+
+      - name: Run migrations
+        env:
+          DB_PORT: 5434
+          DB_DATABASE: nuvola_atlas_test
+        run: php artisan migrate --force
+
+      - name: Run tests
+        env:
+          DB_PORT: 5434
+          DB_DATABASE: nuvola_atlas_test
+        run: php artisan test
+
+      - name: Check code style
+        run: vendor/bin/pint --test
+
+      - name: Static analysis
+        run: vendor/bin/phpstan analyse
+
+  frontend:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: nuvola-atlas-frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: nuvola-atlas-frontend/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        run: pnpm run typecheck
+
+      - name: Run tests
+        run: pnpm run test
+
+      - name: Build
+        run: pnpm run build

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Events\ZoneScoreUpdated;
 use App\Models\Zone;
+use App\Services\ScoreCalculator;
 use Illuminate\Console\Command;
 
 class RecalculateScores extends Command
@@ -14,43 +14,36 @@ class RecalculateScores extends Command
                             {--zone= : Recalculate for a specific zone ID}
                             {--broadcast : Fire broadcast events after recalculation}';
 
-    protected $description = 'Recalculate zone vitality scores from pillar values';
+    protected $description = 'Recalculate zone vitality scores using methodology-weighted pillars';
 
-    public function handle(): int
+    public function handle(ScoreCalculator $calculator): int
     {
         $zoneId = $this->option('zone');
-        $broadcast = $this->option('broadcast');
-
-        $query = Zone::query();
+        $broadcast = (bool) $this->option('broadcast');
 
         if ($zoneId) {
-            $query->where('id', $zoneId);
-        }
+            $zone = Zone::find($zoneId);
 
-        $zones = $query->get();
+            if (! $zone) {
+                $this->error("Zone '{$zoneId}' not found.");
 
-        if ($zones->isEmpty()) {
-            $this->error('No zones found.');
-
-            return self::FAILURE;
-        }
-
-        $updated = 0;
-
-        foreach ($zones as $zone) {
-            $score = (int) round(
-                ($zone->pillar_social + $zone->pillar_safety + $zone->pillar_density + $zone->pillar_infra) / 4
-            );
-
-            $zone->update(['score' => $score]);
-            $updated++;
-
-            if ($broadcast) {
-                ZoneScoreUpdated::dispatch($zone);
+                return self::FAILURE;
             }
+
+            $calculator->recalculate($zone, $broadcast);
+            $this->info("Recalculated score for {$zone->name}: {$zone->score}");
+
+            return self::SUCCESS;
         }
 
-        $this->info("Recalculated scores for {$updated} zone(s).");
+        $count = $calculator->recalculateAll($broadcast);
+        $this->info("Recalculated scores for {$count} zone(s).");
+
+        $weights = $calculator->getWeights();
+        $this->table(
+            ['Pillar', 'Weight'],
+            collect($weights)->map(fn ($w, $k) => [$k, round($w * 100, 1).'%'])->values()->toArray()
+        );
 
         return self::SUCCESS;
     }

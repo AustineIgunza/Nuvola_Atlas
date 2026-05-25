@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -8,12 +9,20 @@ import { useUIStore } from "@/stores/ui";
 import { api } from "@/api";
 
 const VIEW_MODES = ["Map", "Satellite", "Terrain"] as const;
+const VIEW_STYLES: Record<string, string> = {
+  Map: "mapbox://styles/mapbox/dark-v11",
+  Satellite: "mapbox://styles/mapbox/satellite-streets-v12",
+  Terrain: "mapbox://styles/mapbox/outdoors-v12",
+};
 
 export default function TopBar() {
   const location = useLocation();
   const navigate = useNavigate();
   const openSearch = useUIStore((s) => s.openSearch);
   const isAtlas = location.pathname === "/atlas";
+  const [activeMode, setActiveMode] = useState<string>("Map");
+  const setMapStyle = useUIStore((s) => s.setMapStyle);
+  const [showSettings, setShowSettings] = useState(false);
 
   const { data: alerts } = useQuery({
     queryKey: ["alerts"],
@@ -35,14 +44,18 @@ export default function TopBar() {
               <motion.button
                 key={mode}
                 whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setActiveMode(mode);
+                  setMapStyle(VIEW_STYLES[mode]);
+                }}
                 className={cn(
                   "relative px-3 h-7 rounded-chip text-[12px] font-medium transition-colors",
-                  mode === "Map"
+                  mode === activeMode
                     ? "text-ink-1"
                     : "text-ink-4 hover:text-ink-3",
                 )}
               >
-                {mode === "Map" && (
+                {mode === activeMode && (
                   <motion.div
                     layoutId="view-mode"
                     className="absolute inset-0 bg-[rgba(255,255,255,0.1)] rounded-chip"
@@ -104,15 +117,41 @@ export default function TopBar() {
         </motion.button>
 
         {/* Settings */}
-        <motion.button
-          whileHover={{ scale: 1.05, rotate: 30 }}
-          whileTap={{ scale: 0.92 }}
-          transition={springSettle}
-          className="w-9 h-9 flex items-center justify-center rounded-control text-ink-3 hover:text-ink-2 hover:bg-[rgba(255,255,255,0.05)] transition-colors"
-          aria-label="Settings"
-        >
-          <Settings size={16} />
-        </motion.button>
+        <div className="relative">
+          <motion.button
+            onClick={() => setShowSettings(!showSettings)}
+            whileHover={{ scale: 1.05, rotate: 30 }}
+            whileTap={{ scale: 0.92 }}
+            transition={springSettle}
+            className="w-9 h-9 flex items-center justify-center rounded-control text-ink-3 hover:text-ink-2 hover:bg-[rgba(255,255,255,0.05)] transition-colors"
+            aria-label="Settings"
+          >
+            <Settings size={16} />
+          </motion.button>
+          <AnimatePresence>
+            {showSettings && (
+              <motion.div
+                initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                transition={{ duration: 0.15 }}
+                className="absolute right-0 top-11 w-56 glass-strong rounded-card border border-border p-3 shadow-modal z-50"
+              >
+                <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.1em] mb-2">Settings</div>
+                <div className="text-[12px] text-ink-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span>Reduced motion</span>
+                    <input type="checkbox" className="accent-accent" onChange={() => document.documentElement.classList.toggle("reduce-motion")} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Auto-refresh</span>
+                    <input type="checkbox" defaultChecked className="accent-accent" />
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </motion.header>
   );

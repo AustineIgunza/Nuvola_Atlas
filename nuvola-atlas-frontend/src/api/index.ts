@@ -25,14 +25,52 @@ function delay(min = 250, max = 600): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }
 
+function authHeaders(): Record<string, string> {
+  const token = localStorage.getItem("nuvola_token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+async function handleResponse<T>(res: Response): Promise<T> {
+  if (res.status === 401) {
+    localStorage.removeItem("nuvola_authed");
+    localStorage.removeItem("nuvola_token");
+    window.location.href = "/sign-in";
+    throw new Error("Session expired. Please sign in again.");
+  }
+  if (res.status === 422) {
+    try {
+      const body = await res.json();
+      const firstError = Object.values(body.errors ?? {})[0];
+      throw new Error(Array.isArray(firstError) ? firstError[0] : body.message ?? "Validation failed");
+    } catch (e) {
+      if (e instanceof Error && e.message !== "Validation failed") throw e;
+      throw new Error("Validation failed");
+    }
+  }
+  if (!res.ok) {
+    try {
+      const body = await res.json();
+      throw new Error(body.message ?? `Request failed (${res.status})`);
+    } catch (e) {
+      if (e instanceof Error && e.message !== `Request failed (${res.status})`) throw e;
+      throw new Error(`Request failed (${res.status})`);
+    }
+  }
+  return res.json();
+}
+
 async function mockOr<T>(mockFn: () => T, path: string): Promise<T> {
   if (USE_MOCK) {
     await delay();
     return mockFn();
   }
-  const res = await fetch(`${BASE}${path}`);
-  if (!res.ok) throw new Error(`API ${res.status}`);
-  return res.json();
+  const res = await fetch(`${BASE}${path}`, { headers: authHeaders() });
+  const json = await handleResponse<Record<string, unknown>>(res);
+  // Unwrap Laravel paginated responses
+  if (json && typeof json === "object" && "data" in json && "meta" in json) {
+    return json.data as T;
+  }
+  return json as T;
 }
 
 export const api = {
@@ -71,8 +109,8 @@ export const api = {
       ALERTS.forEach((a) => (a.read = true));
       return { ok: true as const };
     }
-    const res = await fetch(`${BASE}/alerts/mark-all-read`, { method: "POST" });
-    return res.json();
+    const res = await fetch(`${BASE}/alerts/mark-all-read`, { method: "POST", headers: authHeaders() });
+    return handleResponse<{ ok: true }>(res);
   },
 
   getReports: () => mockOr<Report[]>(() => REPORTS, "/reports"),
@@ -95,10 +133,10 @@ export const api = {
     }
     const res = await fetch(`${BASE}/reports`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(data),
     });
-    return res.json() as Promise<Report>;
+    return handleResponse<Report>(res);
   },
 
   getHistory: () => mockOr<HistoryPoint[]>(() => HISTORY, "/history"),
@@ -108,6 +146,23 @@ export const api = {
       () => ({ pillars: METHODOLOGY }),
       "/vitality/methodology",
     ),
+
+  register: async (name: string, email: string, password: string, password_confirmation: string) => {
+    if (USE_MOCK) {
+      await delay();
+      return {
+        token: "mock-token",
+        expires_at: new Date(Date.now() + 480 * 60000).toISOString(),
+        user: { id: 1, name, email, role: "viewer" as const },
+      };
+    }
+    const res = await fetch(`${BASE}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password, password_confirmation }),
+    });
+    return handleResponse<{ token: string; expires_at: string; user: { id: number; name: string; email: string; role: string } }>(res);
+  },
 
   signIn: async (_email: string, _password: string) => {
     if (USE_MOCK) {
@@ -122,6 +177,6 @@ export const api = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: _email, password: _password }),
     });
-    return res.json();
+    return handleResponse<{ token: string; user: { name: string; email: string } }>(res);
   },
 };

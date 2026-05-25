@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Navigate } from "react-router-dom";
+import { useNavigate, Navigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuthStore } from "@/stores/auth";
 import { api } from "@/api";
@@ -38,7 +38,7 @@ export default function SignInPage() {
     setError("");
     try {
       const res = await api.signIn(email, password);
-      signIn(res.user);
+      signIn(res.user, res.token);
       navigate("/atlas", { replace: true });
     } catch {
       setError("Sign-in failed");
@@ -138,8 +138,18 @@ export default function SignInPage() {
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
+          transition={{ delay: 0.45 }}
+          className="text-[12px] text-ink-3 mt-5 text-center"
+        >
+          No account?{" "}
+          <Link to="/sign-up" className="text-accent hover:underline font-medium">Create one</Link>
+        </motion.p>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="text-[11px] text-ink-4 mt-6 text-center"
+          className="text-[11px] text-ink-4 mt-4 text-center"
         >
           Strathmore University · Student-led Innovation
         </motion.p>

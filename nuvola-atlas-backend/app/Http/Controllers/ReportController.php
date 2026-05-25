@@ -5,13 +5,24 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreReportRequest;
 use App\Http\Resources\ReportResource;
 use App\Models\Report;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class ReportController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return ReportResource::collection(Report::latest('date')->get());
+        $query = Report::latest('date');
+
+        if ($request->has('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        if ($request->has('zone_id')) {
+            $query->where('zone_id', $request->input('zone_id'));
+        }
+
+        return ReportResource::collection($query->paginate(15));
     }
 
     public function store(StoreReportRequest $request)

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\Report;
+use App\Models\User;
 use Tests\TestCase;
 
 class ReportApiTest extends TestCase
@@ -29,7 +30,9 @@ class ReportApiTest extends TestCase
 
     public function test_can_create_report(): void
     {
-        $response = $this->postJson('/api/reports', [
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->postJson('/api/reports', [
             'title' => 'New Test Report',
         ]);
 
@@ -39,7 +42,9 @@ class ReportApiTest extends TestCase
 
     public function test_create_report_validation_fails(): void
     {
-        $response = $this->postJson('/api/reports', []);
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->postJson('/api/reports', []);
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['title']);

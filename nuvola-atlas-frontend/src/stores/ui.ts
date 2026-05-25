@@ -14,6 +14,7 @@ interface UIState {
   searchOpen: boolean;
   methodOpen: boolean;
   sidebarCollapsed: boolean;
+  mapStyle: string;
 
   setSelectedZone: (id: string | null) => void;
   togglePanel: () => void;
@@ -26,6 +27,7 @@ interface UIState {
   openMethod: () => void;
   closeMethod: () => void;
   toggleSidebar: () => void;
+  setMapStyle: (style: string) => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -36,6 +38,7 @@ export const useUIStore = create<UIState>((set) => ({
   searchOpen: false,
   methodOpen: false,
   sidebarCollapsed: false,
+  mapStyle: "mapbox://styles/mapbox/dark-v11",
 
   setSelectedZone: (id) =>
     set({ selectedZoneId: id, panelOpen: id !== null }),
@@ -52,4 +55,5 @@ export const useUIStore = create<UIState>((set) => ({
   openMethod: () => set({ methodOpen: true }),
   closeMethod: () => set({ methodOpen: false }),
   toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
+  setMapStyle: (style) => set({ mapStyle: style }),
 }));

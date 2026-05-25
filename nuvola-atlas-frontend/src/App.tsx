@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useAuthStore } from "@/stores/auth";
 import SignInPage from "@/pages/SignInPage";
 
+const SignUpPage = lazy(() => import("@/pages/SignUpPage"));
 const AtlasPage = lazy(() => import("@/pages/AtlasPage"));
 const VitalityPage = lazy(() => import("@/pages/VitalityPage"));
 const InfraPage = lazy(() => import("@/pages/InfraPage"));
@@ -36,6 +37,7 @@ export default function App() {
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route path="/sign-in" element={<SignInPage />} />
+          <Route path="/sign-up" element={<SignUpPage />} />
           <Route path="/atlas" element={<RequireAuth><AtlasPage /></RequireAuth>} />
           <Route path="/vitality" element={<RequireAuth><VitalityPage /></RequireAuth>} />
           <Route path="/infrastructure/:projectId?" element={<RequireAuth><InfraPage /></RequireAuth>} />

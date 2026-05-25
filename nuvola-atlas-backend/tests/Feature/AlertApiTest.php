@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\Alert;
+use App\Models\User;
 use Tests\TestCase;
 
 class AlertApiTest extends TestCase
@@ -28,6 +29,8 @@ class AlertApiTest extends TestCase
 
     public function test_can_mark_all_read(): void
     {
+        $user = User::factory()->create();
+
         Alert::create([
             'id' => 'a1',
             'severity' => 'medium',
@@ -38,7 +41,7 @@ class AlertApiTest extends TestCase
             'read' => false,
         ]);
 
-        $response = $this->postJson('/api/alerts/mark-all-read');
+        $response = $this->actingAs($user)->postJson('/api/alerts/mark-all-read');
 
         $response->assertOk()->assertJsonPath('ok', true);
         $this->assertDatabaseHas('alerts', ['id' => 'a1', 'read' => true]);

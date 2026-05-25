@@ -6,7 +6,7 @@ namespace App\Events;
 
 use App\Http\Resources\ZoneLayerResource;
 use App\Models\ZoneLayer;
-use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -20,7 +20,7 @@ class ZoneLayerUpdated implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new Channel('zones.'.$this->layer->zone_id),
+            new PrivateChannel('zones.'.$this->layer->zone_id),
         ];
     }
 

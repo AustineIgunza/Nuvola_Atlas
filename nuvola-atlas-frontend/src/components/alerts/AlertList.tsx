@@ -24,7 +24,7 @@ export default function AlertList() {
   const [filter, setFilter] = useState<AlertSeverity | "all">("all");
   const queryClient = useQueryClient();
 
-  const { data: alerts } = useQuery({ queryKey: ["alerts"], queryFn: api.getAlerts });
+  const { data: alerts, isLoading, isError } = useQuery({ queryKey: ["alerts"], queryFn: api.getAlerts });
   const { data: zones } = useQuery({ queryKey: ["zones"], queryFn: api.getZones });
 
   const markAll = useMutation({
@@ -41,6 +41,23 @@ export default function AlertList() {
 
   const filtered = alerts?.filter((a) => filter === "all" || a.severity === filter) ?? [];
   function zoneName(id: string | null) { return id ? (zones?.find((z) => z.id === id)?.name ?? id) : "System"; }
+
+  if (isLoading) {
+    return (
+      <div className="glass-strong rounded-card p-8 flex items-center justify-center">
+        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="glass-strong rounded-card p-8 text-center">
+        <p className="text-danger text-[13px] mb-2">Failed to load alerts</p>
+        <button onClick={() => queryClient.invalidateQueries({ queryKey: ["alerts"] })} className="text-accent text-[12px] hover:underline">Retry</button>
+      </div>
+    );
+  }
 
   return (
     <motion.div

@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronUp } from "lucide-react";
 import { useUIStore } from "@/stores/ui";
@@ -18,7 +19,39 @@ export default function ScorecardPanel({ zone }: Props) {
   const panelOpen = useUIStore((s) => s.panelOpen);
   const closePanel = useUIStore((s) => s.closePanel);
   const openPanel = useUIStore((s) => s.openPanel);
+  const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(false);
+  const [exporting, setExporting] = useState(false);
+
+  const handleOpenReport = useCallback(() => {
+    if (zone) navigate(`/reports?zone=${zone.id}`);
+  }, [zone, navigate]);
+
+  const handleExportPdf = useCallback(() => {
+    if (!zone || exporting) return;
+    setExporting(true);
+    const content = [
+      `NUVOLA ATLAS — Zone Report`,
+      `Zone: ${zone.name}`,
+      `Vitality Score: ${zone.score}/100`,
+      ``,
+      `Pillar Scores:`,
+      `  Social Wellbeing: ${zone.pillars.social}`,
+      `  Safety & Security: ${zone.pillars.safety}`,
+      `  Density & Scaling: ${zone.pillars.density}`,
+      `  Infrastructure & Environmental: ${zone.pillars.infra}`,
+      ``,
+      `Generated: ${new Date().toLocaleString()}`,
+    ].join("\n");
+    const blob = new Blob([content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${zone.id}-vitality-report.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setExporting(false);
+  }, [zone, exporting]);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 768px)");
@@ -151,6 +184,7 @@ export default function ScorecardPanel({ zone }: Props) {
                 className="flex gap-2"
               >
                 <motion.button
+                  onClick={handleOpenReport}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
                   className="flex-1 h-10 rounded-control bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all"
@@ -158,11 +192,12 @@ export default function ScorecardPanel({ zone }: Props) {
                   Open full report
                 </motion.button>
                 <motion.button
+                  onClick={handleExportPdf}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
                   className="flex-1 h-10 rounded-control bg-[rgba(255,255,255,0.06)] border border-border text-ink-2 text-[13px] font-medium hover:bg-[rgba(255,255,255,0.1)] transition-colors"
                 >
-                  Export PDF
+                  {exporting ? "Exporting..." : "Export PDF"}
                 </motion.button>
               </motion.div>
             </div>

@@ -6,7 +6,7 @@ namespace App\Events;
 
 use App\Http\Resources\AlertResource;
 use App\Models\Alert;
-use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -20,7 +20,7 @@ class NewAlertCreated implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new Channel('alerts'),
+            new PrivateChannel('alerts'),
         ];
     }
 

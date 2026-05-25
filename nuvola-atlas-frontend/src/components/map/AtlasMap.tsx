@@ -32,9 +32,12 @@ export default function AtlasMap({ zones }: Props) {
   const selectedZoneId = useUIStore((s) => s.selectedZoneId);
   const setSelectedZone = useUIStore((s) => s.setSelectedZone);
   const activeLayers = useUIStore((s) => s.activeLayers);
+  const mapStyle = useUIStore((s) => s.mapStyle);
+  const toggleLayer = useUIStore((s) => s.toggleLayer);
+  const [showLayerMenu, setShowLayerMenu] = useState(false);
 
   const token = import.meta.env.VITE_MAPBOX_TOKEN;
-  const style = import.meta.env.VITE_MAPBOX_STYLE || "mapbox://styles/mapbox/dark-v11";
+  const style = mapStyle || import.meta.env.VITE_MAPBOX_STYLE || "mapbox://styles/mapbox/dark-v11";
 
   useEffect(() => {
     if (!token) { setNoToken(true); return; }
@@ -129,6 +132,12 @@ export default function AtlasMap({ zones }: Props) {
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !loaded) return;
+    map.setStyle(style);
+  }, [mapStyle]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !loaded) return;
     try {
       map.setLayoutProperty("roads-base", "visibility", activeLayers.roads ? "visible" : "none");
       map.setLayoutProperty("roads-top", "visibility", activeLayers.roads ? "visible" : "none");
@@ -191,8 +200,34 @@ export default function AtlasMap({ zones }: Props) {
         transition={{ delay: 0.3, ...springSettle }}
         className="absolute bottom-28 sm:bottom-24 right-3 sm:right-4 z-10"
       >
-        <MapControls onZoomIn={handleZoomIn} onZoomOut={handleZoomOut} onLocate={handleLocate} onLayers={() => {}} />
+        <MapControls onZoomIn={handleZoomIn} onZoomOut={handleZoomOut} onLocate={handleLocate} onLayers={() => setShowLayerMenu((v) => !v)} />
       </motion.div>
+
+      {/* Layer picker */}
+      <AnimatePresence>
+        {showLayerMenu && (
+          <motion.div
+            initial={{ opacity: 0, x: 20, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: 20, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
+            className="absolute bottom-28 sm:bottom-24 right-14 sm:right-16 z-20 glass-strong rounded-card border border-border p-3 shadow-modal w-48"
+          >
+            <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.1em] mb-2">Layers</div>
+            {([["roads", "Road Progress"], ["energy", "Smart Grid"], ["density", "Density"]] as const).map(([key, label]) => (
+              <label key={key} className="flex items-center gap-2 py-1.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={activeLayers[key]}
+                  onChange={() => toggleLayer(key)}
+                  className="accent-accent"
+                />
+                <span className="text-[12px] text-ink-2">{label}</span>
+              </label>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Legend - bottom left, not overlapping scrubber */}
       <motion.div

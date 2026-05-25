@@ -50,4 +50,9 @@ class Zone extends Model
     {
         return $this->hasMany(ZoneLayer::class);
     }
+
+    public function touchLastSync(): void
+    {
+        $this->update(['last_sync_min' => 0]);
+    }
 }

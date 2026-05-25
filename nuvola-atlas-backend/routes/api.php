@@ -26,9 +26,19 @@ Route::middleware('throttle:api')->group(function () {
     Route::get('history', [HistoryController::class, 'index']);
     Route::get('vitality/methodology', [VitalityController::class, 'methodology']);
 
-    Route::post('auth/sign-in', [AuthController::class, 'signIn']);
+    // Auth (rate-limited to 5/min)
+    Route::middleware('throttle:auth')->group(function () {
+        Route::post('auth/sign-in', [AuthController::class, 'signIn']);
+        Route::post('auth/register', [AuthController::class, 'register']);
+        Route::post('auth/forgot-password', [AuthController::class, 'forgotPassword']);
+        Route::post('auth/reset-password', [AuthController::class, 'resetPassword']);
+    });
 
-    // TODO: Gate behind auth:sanctum once frontend sends Bearer token
-    Route::post('alerts/mark-all-read', [AlertController::class, 'markAllRead']);
-    Route::post('reports', [ReportController::class, 'store']);
+    // Authenticated endpoints
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('auth/me', [AuthController::class, 'me']);
+        Route::post('auth/sign-out', [AuthController::class, 'signOut']);
+        Route::post('alerts/mark-all-read', [AlertController::class, 'markAllRead']);
+        Route::post('reports', [ReportController::class, 'store']);
+    });
 });

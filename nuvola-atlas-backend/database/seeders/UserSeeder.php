@@ -13,6 +13,7 @@ class UserSeeder extends Seeder
             'name' => 'Austine Igunza',
             'email' => 'austine@nuvola.dev',
             'password' => bcrypt('password'),
+            'role' => 'admin',
         ]);
     }
 }

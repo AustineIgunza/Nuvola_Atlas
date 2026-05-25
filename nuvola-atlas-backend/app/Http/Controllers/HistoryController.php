@@ -9,6 +9,6 @@ class HistoryController extends Controller
 {
     public function index()
     {
-        return HistoryResource::collection(VitalityHistory::orderBy('id')->get());
+        return HistoryResource::collection(VitalityHistory::orderBy('id')->paginate(20));
     }
 }
