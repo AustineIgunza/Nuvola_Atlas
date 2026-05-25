@@ -8,9 +8,25 @@
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",
+        "@types/geojson": "^7946.0.16",
+        "@types/mapbox-gl": "^3.4.1",
+        "@types/react": "^19.2.15",
+        "@types/react-dom": "^19.2.3",
+        "@vitejs/plugin-react": "^6.0.2",
         "concurrently": "^9.0.1",
         "laravel-vite-plugin": "^3.1",
         "tailwindcss": "^4.0.0",
+        "typescript": "^6.0.3",
         "vite": "^8.0.0"
+    },
+    "dependencies": {
+        "@inertiajs/react": "^3.2.0",
+        "axios": "^1.16.1",
+        "framer-motion": "^12.40.0",
+        "laravel-echo": "^2.3.4",
+        "mapbox-gl": "^3.24.0",
+        "pusher-js": "^8.5.0",
+        "react": "^19.2.6",
+        "react-dom": "^19.2.6"
     }
 }

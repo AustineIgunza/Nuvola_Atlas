@@ -1,7 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/{any?}', function () {
+    return Inertia::render('Atlas');
+})->where('any', '.*');
