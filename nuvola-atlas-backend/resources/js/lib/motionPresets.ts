@@ -1,33 +1,33 @@
 import type { Transition } from 'framer-motion';
 
-/** Reproduces cubic-bezier(0.22, 1, 0.36, 1) — fast overshoot-free settle */
+/** Apple iOS-style spring — smooth, no overshoot */
 export const settleSpring: Transition = {
     type: 'spring',
-    stiffness: 380,
-    damping: 30,
+    stiffness: 200,
+    damping: 26,
     mass: 1,
 };
 
-/** Score ring fill animation (1.1s feel, no bounce) */
+/** Score ring fill — gentle 1s feel, no bounce */
 export const ringTransition: Transition = {
     type: 'spring',
-    stiffness: 300,
-    damping: 35,
+    stiffness: 180,
+    damping: 30,
     mass: 1.2,
 };
 
-/** Staggered pillar bar transition */
+/** Staggered pillar bar — Apple cascade timing */
 export const pillarTransition = (index: number): Transition => ({
     type: 'spring',
-    stiffness: 350,
-    damping: 32,
-    delay: 0.12 + index * 0.11,
+    stiffness: 200,
+    damping: 26,
+    delay: 0.15 + index * 0.1,
 });
 
-/** Panel slide-in */
+/** Panel slide-in — smooth and weighty */
 export const panelTransition: Transition = {
     type: 'spring',
-    stiffness: 400,
-    damping: 34,
-    mass: 0.9,
+    stiffness: 220,
+    damping: 28,
+    mass: 1,
 };

@@ -9,18 +9,135 @@
 @theme {
     --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
 
-    /* Brand palette */
-    --color-surface: #FAFAF7;
-    --color-ink: #1A1A18;
+    /* ── Brand palette (light mode defaults) ── */
+    --color-surface: #F6F1D1;
+    --color-surface-raised: #FDFBEE;
+    --color-card: #FDFCF4;
+    --color-ink: #0B2027;
+    --color-ink-1: #0B2027;
+    --color-ink-2: #1E3A42;
+    --color-ink-3: #40798C;
+    --color-ink-4: #70A9A1;
+    --color-muted: #CFD7C7;
+    --color-accent: #40798C;
+    --color-teal: #70A9A1;
+    --color-cerulean: #40798C;
+    --color-cornsilk: #F6F1D1;
+    --color-ash: #CFD7C7;
+
+    /* Score colors (universal across themes) */
     --color-score-green: #1B9C6B;
     --color-score-amber: #C9A227;
     --color-score-red: #C7603F;
-    --color-road: #2C6FB0;
+    --color-road: #40798C;
+    --color-danger: #C7603F;
+    --color-success: #1B9C6B;
+    --color-border: rgba(11, 32, 39, 0.10);
 
-    /* Card */
-    --radius-card: 26px;
-    --shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 18px 50px rgba(0,0,0,0.06);
-
-    /* Pill */
+    /* Radii */
+    --radius-card: 22px;
+    --radius-control: 12px;
+    --radius-chip: 8px;
+    --radius-modal: 20px;
+    --radius-login: 24px;
     --radius-pill: 999px;
+
+    /* Shadows */
+    --shadow-card: 0 1px 2px rgba(11, 32, 39, 0.04), 0 12px 40px rgba(11, 32, 39, 0.06);
+    --shadow-chrome: 0 1px 3px rgba(11, 32, 39, 0.06), 0 6px 20px rgba(11, 32, 39, 0.04);
+    --shadow-modal: 0 4px 50px rgba(11, 32, 39, 0.14), 0 1px 2px rgba(11, 32, 39, 0.06);
+}
+
+/* ── Dark mode overrides ─────────────────────────────────── */
+.dark {
+    --color-surface: #0B2027;
+    --color-surface-raised: #0F2B33;
+    --color-card: #122E37;
+    --color-ink: #F6F1D1;
+    --color-ink-1: #F6F1D1;
+    --color-ink-2: #CFD7C7;
+    --color-ink-3: #70A9A1;
+    --color-ink-4: #40798C;
+    --color-muted: #162A32;
+    --color-accent: #70A9A1;
+    --color-border: rgba(246, 241, 209, 0.08);
+
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.12), 0 12px 40px rgba(0, 0, 0, 0.20);
+    --shadow-chrome: 0 1px 3px rgba(0, 0, 0, 0.15), 0 6px 20px rgba(0, 0, 0, 0.12);
+    --shadow-modal: 0 4px 50px rgba(0, 0, 0, 0.30), 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+/* ── Glass surfaces ──────────────────────────────────────── */
+.glass-strong {
+    background: rgba(253, 252, 244, 0.92);
+    backdrop-filter: blur(24px) saturate(1.2);
+    -webkit-backdrop-filter: blur(24px) saturate(1.2);
+    border: 1px solid var(--color-border);
+}
+.dark .glass-strong {
+    background: rgba(18, 46, 55, 0.92);
+}
+.glass {
+    background: rgba(253, 252, 244, 0.6);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+.dark .glass {
+    background: rgba(18, 46, 55, 0.6);
+}
+
+/* ── Toggle switches (Apple-style) ───────────────────────── */
+.toggle-track {
+    position: relative;
+    width: 34px;
+    height: 20px;
+    border-radius: 999px;
+    transition: background 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+    flex-shrink: 0;
+}
+.toggle-track .toggle-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+    transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.toggle-track[data-on="true"] .toggle-thumb {
+    transform: translateX(14px);
+}
+
+/* ── Button press (Apple haptic feel) ────────────────────── */
+.btn-press {
+    transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.2s;
+}
+.btn-press:active {
+    transform: scale(0.96);
+    opacity: 0.85;
+}
+
+/* ── Pulse glow ──────────────────────────────────────────── */
+@keyframes pulse-glow {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+.pulse-glow { animation: pulse-glow 2.5s ease-in-out infinite; }
+
+/* ── Mapbox popup override ───────────────────────────────── */
+.atlas-popup .mapboxgl-popup-content {
+    border-radius: 14px;
+    padding: 12px 16px;
+    box-shadow: 0 4px 24px rgba(11, 32, 39, 0.14);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    color: var(--color-ink);
+}
+
+/* ── Smooth theme transition ─────────────────────────────── */
+html {
+    transition: background-color 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+                color 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }

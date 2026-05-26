@@ -22,7 +22,7 @@ export function ScorecardPanel({ zone, onClose }: ScorecardPanelProps) {
                     {zone && (
                         <motion.div
                             key={zone.id}
-                            className="bg-white rounded-card shadow-card p-7"
+                            className="bg-card rounded-card shadow-card p-7"
                             initial={reduced ? false : { opacity: 0, y: 14 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
@@ -39,20 +39,20 @@ export function ScorecardPanel({ zone, onClose }: ScorecardPanelProps) {
                 {zone && (
                     <>
                         <motion.div
-                            className="lg:hidden fixed inset-0 z-40 bg-black/20"
+                            className="lg:hidden fixed inset-0 z-40 bg-ink/20"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={onClose}
                         />
                         <motion.div
-                            className="lg:hidden fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-[26px] shadow-[0_-4px_30px_rgba(0,0,0,0.12)] p-6 pb-8 max-h-[85vh] overflow-y-auto"
+                            className="lg:hidden fixed inset-x-0 bottom-0 z-50 bg-card rounded-t-[26px] shadow-[0_-4px_30px_rgba(0,0,0,0.12)] p-6 pb-8 max-h-[85vh] overflow-y-auto"
                             initial={{ y: '100%' }}
                             animate={{ y: 0 }}
                             exit={{ y: '100%' }}
                             transition={panelTransition}
                         >
-                            <div className="w-10 h-1 rounded-full bg-black/10 mx-auto mb-4" />
+                            <div className="w-10 h-1 rounded-full bg-ink/10 mx-auto mb-4" />
                             <ScorecardContent zone={zone} onClose={onClose} />
                         </motion.div>
                     </>
@@ -86,7 +86,7 @@ function ScorecardContent({ zone, onClose }: { zone: Zone; onClose: () => void }
                 </div>
                 <button
                     onClick={onClose}
-                    className="text-ink/30 hover:text-ink/60 transition-colors text-xl leading-none p-1 hover:bg-black/5 rounded-lg"
+                    className="text-ink/30 hover:text-ink/60 transition-colors text-xl leading-none p-1 hover:bg-ink/5 rounded-lg"
                     aria-label="Close"
                 >
                     &times;
@@ -105,7 +105,7 @@ function ScorecardContent({ zone, onClose }: { zone: Zone; onClose: () => void }
             </div>
 
             {/* Pillars */}
-            <div className="border-t border-black/7 pt-5">
+            <div className="border-t border-ink/7 pt-5">
                 <div className="text-[10px] tracking-[0.14em] uppercase text-ink/38 mb-4">
                     Pillar Breakdown
                 </div>

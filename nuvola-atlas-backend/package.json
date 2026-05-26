@@ -21,12 +21,18 @@
     },
     "dependencies": {
         "@inertiajs/react": "^3.2.0",
+        "@tanstack/react-query": "^5.100.14",
         "axios": "^1.16.1",
+        "clsx": "^2.1.1",
+        "date-fns": "^4.3.0",
         "framer-motion": "^12.40.0",
         "laravel-echo": "^2.3.4",
+        "lucide-react": "^1.16.0",
         "mapbox-gl": "^3.24.0",
         "pusher-js": "^8.5.0",
         "react": "^19.2.6",
-        "react-dom": "^19.2.6"
+        "react-dom": "^19.2.6",
+        "tailwind-merge": "^3.6.0",
+        "zustand": "^5.0.13"
     }
 }

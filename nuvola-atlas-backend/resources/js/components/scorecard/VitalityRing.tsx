@@ -35,7 +35,7 @@ export function VitalityRing({ score }: VitalityRingProps) {
             <svg width="200" height="200" viewBox="0 0 200 200">
                 <circle
                     cx="100" cy="100" r={R}
-                    fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="14"
+                    fill="none" className="stroke-ink/6" strokeWidth="14"
                 />
                 <motion.circle
                     cx="100" cy="100" r={R}

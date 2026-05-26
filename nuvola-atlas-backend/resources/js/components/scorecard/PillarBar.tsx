@@ -37,7 +37,7 @@ export function PillarBar({ label, value, index, icon, delta }: PillarBarProps) 
                     </span>
                 </span>
             </div>
-            <div className="h-1.5 rounded-pill bg-black/5 overflow-hidden">
+            <div className="h-1.5 rounded-pill bg-ink/5 overflow-hidden">
                 <motion.div
                     className={`h-full rounded-pill ${barColor}`}
                     initial={{ width: 0 }}

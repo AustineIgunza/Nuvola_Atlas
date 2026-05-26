@@ -164,7 +164,7 @@ export const PILLAR_META = [
 ];
 
 export const LAYER_META = [
-    { key: 'roadProgress' as const, label: 'Road Progress', color: '#2C6FB0' },
+    { key: 'roadProgress' as const, label: 'Road Progress', color: '#40798C' },
     { key: 'smartGrid' as const, label: 'Smart Grid Status', color: '#C9A227' },
     { key: 'density' as const, label: 'Density', color: '#C7603F' },
 ];
