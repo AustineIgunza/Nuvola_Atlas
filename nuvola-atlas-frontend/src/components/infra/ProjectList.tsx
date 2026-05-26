@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/cn";
 import { api } from "@/api";
-import { springSettle, staggerContainer, staggerItemScale } from "@/lib/motion";
+import { springSettle } from "@/lib/motion";
 import ProjectCard from "./ProjectCard";
 import type { InfraType } from "@/types";
 
@@ -55,21 +55,15 @@ export default function ProjectList({ selectedId, onSelect }: Props) {
         ))}
       </div>
 
-      <motion.div
-        variants={staggerContainer}
-        initial="hidden"
-        animate="visible"
-        key={typeFilter}
-        className="space-y-2.5"
-      >
-        <AnimatePresence mode="popLayout">
+      <div className="space-y-2.5">
+        <AnimatePresence mode="sync">
           {filtered.map((p) => (
             <motion.div
               key={p.id}
-              variants={staggerItemScale}
-              transition={springSettle}
-              layout
-              exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
             >
               <ProjectCard
                 project={p}
@@ -80,7 +74,7 @@ export default function ProjectList({ selectedId, onSelect }: Props) {
             </motion.div>
           ))}
         </AnimatePresence>
-      </motion.div>
+      </div>
     </div>
   );
 }

@@ -108,6 +108,7 @@ export default function AtlasMap({ zones }: Props) {
   const setSelectedZone = useUIStore((s) => s.setSelectedZone);
   const activeLayers = useUIStore((s) => s.activeLayers);
   const toggleLayer = useUIStore((s) => s.toggleLayer);
+  const mapStyle = useUIStore((s) => s.mapStyle);
 
   if (!TOKEN) return <MapFallback zones={zones} />;
 
@@ -284,6 +285,38 @@ export default function AtlasMap({ zones }: Props) {
       mapRef.current = null;
     };
   }, []);
+
+  /* ── Switch map style (Satellite / Terrain / Map) ─────────── */
+  useEffect(() => {
+    const m = mapRef.current;
+    if (!m || !loaded) return;
+    if (m.getStyle().sprite?.toString().includes(mapStyle)) return;
+    m.setStyle(mapStyle);
+    m.once("style.load", () => {
+      // Re-add data sources and layers after style swap
+      if (!m.getSource("roads")) {
+        m.addSource("roads", {
+          type: "geojson",
+          data: { type: "FeatureCollection", features: generateRoadFeatures(zones) },
+        });
+        m.addSource("grid", {
+          type: "geojson",
+          data: { type: "FeatureCollection", features: generateGridFeatures(zones) },
+        });
+        m.addSource("density", {
+          type: "geojson",
+          data: { type: "FeatureCollection", features: generateDensityFeatures(zones) },
+        });
+
+        m.addLayer({ id: "roads-line", type: "line", source: "roads", paint: { "line-color": "#2C6FB0", "line-width": 3, "line-dasharray": [2, 2], "line-opacity": activeLayers.roads ? 0.85 : 0 } });
+        m.addLayer({ id: "roads-glow", type: "line", source: "roads", paint: { "line-color": "#2C6FB0", "line-width": 8, "line-blur": 6, "line-opacity": activeLayers.roads ? 0.25 : 0 } }, "roads-line");
+        m.addLayer({ id: "grid-outer", type: "circle", source: "grid", paint: { "circle-radius": 12, "circle-color": "transparent", "circle-stroke-width": 2, "circle-stroke-color": ["case", ["==", ["get", "status"], "active"], "#C9A227", "#999"], "circle-stroke-opacity": activeLayers.energy ? 0.9 : 0 } });
+        m.addLayer({ id: "grid-inner", type: "circle", source: "grid", paint: { "circle-radius": 5, "circle-color": ["case", ["==", ["get", "status"], "active"], "#C9A227", "#999"], "circle-opacity": activeLayers.energy ? 0.9 : 0 } });
+        m.addLayer({ id: "density-heat", type: "heatmap", source: "density", paint: { "heatmap-weight": ["get", "weight"], "heatmap-intensity": 1.2, "heatmap-radius": 35, "heatmap-opacity": activeLayers.density ? 0.65 : 0, "heatmap-color": ["interpolate", ["linear"], ["heatmap-density"], 0, "rgba(199,96,63,0)", 0.3, "rgba(199,96,63,0.25)", 0.6, "rgba(199,96,63,0.5)", 1, "rgba(199,96,63,0.85)"] } });
+        m.addLayer({ id: "density-circles", type: "circle", source: "density", minzoom: 13, paint: { "circle-radius": ["interpolate", ["linear"], ["zoom"], 13, 4, 16, 8], "circle-color": "#C7603F", "circle-opacity": activeLayers.density ? 0.5 : 0, "circle-stroke-width": 1, "circle-stroke-color": "#C7603F", "circle-stroke-opacity": activeLayers.density ? 0.3 : 0 } });
+      }
+    });
+  }, [mapStyle, loaded]);
 
   /* ── Fly to selected zone + highlight pill ────────────────── */
   useEffect(() => {
