@@ -25,6 +25,9 @@ Thumbs.db
 .phpunit.cache/
 .php-cs-fixer.cache
 
+# Vercel
+.vercel
+
 # Logs
 *.log
 storage/logs/

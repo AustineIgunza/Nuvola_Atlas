@@ -68,7 +68,7 @@ export default function AlertList() {
     >
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-        <div className="flex items-center gap-1.5 relative">
+        <div className="flex items-center gap-1.5 flex-wrap relative">
           {FILTERS.map((f) => (
             <motion.button
               key={f.value}

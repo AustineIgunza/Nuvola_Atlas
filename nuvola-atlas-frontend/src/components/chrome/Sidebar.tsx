@@ -143,6 +143,46 @@ export default function Sidebar() {
           })}
         </motion.div>
 
+        {/* View mode toggles on atlas (mobile only) */}
+        <AnimatePresence>
+          {isAtlas && isMobile && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={springSettle}
+              className="mt-4 pt-4 border-t border-border overflow-hidden"
+            >
+              <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.08em] px-3 mb-2">
+                Map View
+              </div>
+              <div className="flex gap-1.5 px-3">
+                {(["Map", "Satellite", "Terrain"] as const).map((mode) => {
+                  const styles: Record<string, string> = {
+                    Map: "mapbox://styles/mapbox/light-v11",
+                    Satellite: "mapbox://styles/mapbox/satellite-streets-v12",
+                    Terrain: "mapbox://styles/mapbox/outdoors-v12",
+                  };
+                  return (
+                    <button
+                      key={mode}
+                      onClick={() => { useUIStore.getState().setMapStyle(styles[mode]); setMobileOpen(false); }}
+                      className={cn(
+                        "flex-1 h-8 rounded-chip text-[11px] font-medium transition-colors",
+                        useUIStore.getState().mapStyle === styles[mode]
+                          ? "bg-accent text-white"
+                          : "text-ink-3 hover:text-ink-2 bg-[rgba(255,255,255,0.04)]",
+                      )}
+                    >
+                      {mode}
+                    </button>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Layer toggles on atlas */}
         <AnimatePresence>
           {isAtlas && (!collapsed || isMobile) && (

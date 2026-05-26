@@ -377,7 +377,7 @@ export default function AtlasMap({ zones }: Props) {
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, ...springSettle }}
-        className="absolute top-3 left-3 z-10 flex gap-2 flex-wrap"
+        className="absolute top-3 left-3 z-10 flex gap-1.5 sm:gap-2 flex-wrap max-w-[calc(100%-6rem)]"
       >
         {LAYER_META.map((l) => {
           const on = activeLayers[l.key];
@@ -386,9 +386,9 @@ export default function AtlasMap({ zones }: Props) {
               key={l.key}
               onClick={() => toggleLayer(l.key)}
               className={`
-                border-none cursor-pointer px-4 py-2 rounded-full
-                text-[12px] font-medium tracking-[-0.01em]
-                transition-all duration-[450ms] flex items-center gap-2
+                border-none cursor-pointer px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-full
+                text-[11px] sm:text-[12px] font-medium tracking-[-0.01em]
+                transition-all duration-[450ms] flex items-center gap-1.5 sm:gap-2
                 ${on
                   ? "bg-[#1A1A18] text-white shadow-[0_4px_14px_rgba(0,0,0,0.18)]"
                   : "bg-white/90 text-black/60 shadow-[0_1px_4px_rgba(0,0,0,0.08)] hover:bg-white"
@@ -396,10 +396,11 @@ export default function AtlasMap({ zones }: Props) {
               `}
             >
               <span
-                className="w-2.5 h-2.5 rounded-full transition-opacity"
+                className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full transition-opacity shrink-0"
                 style={{ backgroundColor: l.color, opacity: on ? 1 : 0.5 }}
               />
-              {l.label}
+              <span className="hidden sm:inline">{l.label}</span>
+              <span className="sm:hidden">{l.label.split(" ")[0]}</span>
             </button>
           );
         })}
@@ -410,7 +411,7 @@ export default function AtlasMap({ zones }: Props) {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4, ...springSettle }}
-        className="absolute bottom-4 left-4 z-10 bg-white/90 backdrop-blur-sm rounded-[14px] px-4 py-3 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_18px_50px_rgba(0,0,0,0.06)] text-[11px] space-y-1.5"
+        className="absolute bottom-8 sm:bottom-4 left-2 sm:left-4 z-10 bg-white/90 backdrop-blur-sm rounded-[14px] px-3 py-2 sm:px-4 sm:py-3 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_18px_50px_rgba(0,0,0,0.06)] text-[10px] sm:text-[11px] space-y-1"
       >
         <div className="font-semibold text-[12px] text-[#1A1A18]/70 mb-2">Vitality Score</div>
         <div className="flex items-center gap-2">

@@ -32,7 +32,7 @@ export default function ProjectList({ selectedId, onSelect }: Props) {
   return (
     <div className="glass-strong rounded-card p-4 h-full overflow-y-auto">
       {/* Filter pills */}
-      <div className="flex gap-1.5 mb-4 relative">
+      <div className="flex gap-1.5 mb-4 flex-wrap relative">
         {FILTERS.map((f) => (
           <motion.button
             key={f.value}

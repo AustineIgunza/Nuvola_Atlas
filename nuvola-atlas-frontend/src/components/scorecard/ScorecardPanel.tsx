@@ -181,7 +181,7 @@ export default function ScorecardPanel({ zone }: Props) {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="flex gap-2"
+                className="flex flex-col sm:flex-row gap-2"
               >
                 <motion.button
                   onClick={handleOpenReport}
