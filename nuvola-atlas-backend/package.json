@@ -4,7 +4,9 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "build:spa": "vite build --config vite.config.spa.js",
+        "dev": "vite",
+        "dev:spa": "vite --config vite.config.spa.js"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",

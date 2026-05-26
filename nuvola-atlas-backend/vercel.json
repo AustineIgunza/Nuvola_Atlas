@@ -1,0 +1,9 @@
+{
+  "buildCommand": "npm run build:spa",
+  "outputDirectory": "dist",
+  "installCommand": "npm ci",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
