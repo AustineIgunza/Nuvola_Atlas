@@ -3,8 +3,10 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vite build",
+        "build": "vite build --config vite.config.spa.js",
+        "build:laravel": "vite build",
         "build:spa": "vite build --config vite.config.spa.js",
+        "start": "serve dist -s -l tcp://0.0.0.0:${PORT:-3000}",
         "dev": "vite",
         "dev:spa": "vite --config vite.config.spa.js"
     },
@@ -34,6 +36,7 @@
         "pusher-js": "^8.5.0",
         "react": "^19.2.6",
         "react-dom": "^19.2.6",
+        "serve": "^14.2.6",
         "tailwind-merge": "^3.6.0",
         "zustand": "^5.0.13"
     }
