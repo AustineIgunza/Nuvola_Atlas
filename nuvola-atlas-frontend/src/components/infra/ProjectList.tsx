@@ -46,7 +46,7 @@ export default function ProjectList({ selectedId, onSelect }: Props) {
             {typeFilter === f.value && (
               <motion.div
                 layoutId="infra-filter"
-                className="absolute inset-0 bg-accent rounded-chip"
+                className="absolute inset-0 bg-accent rounded-chip glow-accent"
                 transition={springSettle}
               />
             )}

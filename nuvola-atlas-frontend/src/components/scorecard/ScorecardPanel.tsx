@@ -187,7 +187,7 @@ export default function ScorecardPanel({ zone }: Props) {
                   onClick={handleOpenReport}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
-                  className="flex-1 h-10 rounded-control bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all"
+                  className="flex-1 h-10 rounded-control bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all btn-glow"
                 >
                   Open full report
                 </motion.button>

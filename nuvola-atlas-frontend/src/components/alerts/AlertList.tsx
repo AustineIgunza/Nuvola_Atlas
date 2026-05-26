@@ -80,7 +80,7 @@ export default function AlertList() {
               )}
             >
               {filter === f.value && (
-                <motion.div layoutId="alert-filter" className="absolute inset-0 bg-accent rounded-chip" transition={springSettle} />
+                <motion.div layoutId="alert-filter" className="absolute inset-0 bg-accent rounded-chip glow-accent" transition={springSettle} />
               )}
               <span className="relative z-10">{f.label}</span>
             </motion.button>
@@ -121,7 +121,7 @@ export default function AlertList() {
               {/* Severity rail */}
               <motion.div
                 className="w-[3px] rounded-full shrink-0 self-stretch"
-                style={{ background: SEVERITY_COLORS[a.severity] }}
+                style={{ background: SEVERITY_COLORS[a.severity], boxShadow: `0 0 8px ${SEVERITY_COLORS[a.severity]}55` }}
                 initial={{ scaleY: 0 }}
                 animate={{ scaleY: 1 }}
                 transition={{ delay: 0.1, ...springSettle }}

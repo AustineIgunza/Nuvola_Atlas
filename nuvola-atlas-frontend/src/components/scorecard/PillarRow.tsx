@@ -50,7 +50,7 @@ export default function PillarRow({ pillarKey, score, delta, index }: Props) {
       >
         <div
           className="w-6 h-6 rounded flex items-center justify-center text-[11px] font-bold text-white shrink-0"
-          style={{ background: color }}
+          style={{ background: color, boxShadow: `0 0 8px ${color}44` }}
         >
           {glyph}
         </div>
@@ -79,7 +79,7 @@ export default function PillarRow({ pillarKey, score, delta, index }: Props) {
         <div className="h-[3px] rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
           <motion.div
             className="h-full rounded-full"
-            style={{ background: color }}
+            style={{ background: color, boxShadow: `0 0 6px ${color}55` }}
             initial={{ width: 0 }}
             animate={{ width: `${score}%` }}
             transition={{

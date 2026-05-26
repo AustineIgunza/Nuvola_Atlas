@@ -1,6 +1,6 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { useAuthStore } from "@/stores/auth";
 import SignInPage from "@/pages/SignInPage";
 
@@ -34,18 +34,16 @@ export default function App() {
 
   return (
     <Suspense fallback={<LoadingFallback />}>
-      <AnimatePresence mode="wait">
-        <Routes location={location} key={location.pathname}>
-          <Route path="/sign-in" element={<SignInPage />} />
-          <Route path="/sign-up" element={<SignUpPage />} />
-          <Route path="/atlas" element={<RequireAuth><AtlasPage /></RequireAuth>} />
-          <Route path="/vitality" element={<RequireAuth><VitalityPage /></RequireAuth>} />
-          <Route path="/infrastructure/:projectId?" element={<RequireAuth><InfraPage /></RequireAuth>} />
-          <Route path="/reports" element={<RequireAuth><ReportsPage /></RequireAuth>} />
-          <Route path="/alerts" element={<RequireAuth><AlertsPage /></RequireAuth>} />
-          <Route path="*" element={<Navigate to="/atlas" replace />} />
-        </Routes>
-      </AnimatePresence>
+      <Routes location={location} key={location.pathname}>
+        <Route path="/sign-in" element={<SignInPage />} />
+        <Route path="/sign-up" element={<SignUpPage />} />
+        <Route path="/atlas" element={<RequireAuth><AtlasPage /></RequireAuth>} />
+        <Route path="/vitality" element={<RequireAuth><VitalityPage /></RequireAuth>} />
+        <Route path="/infrastructure/:projectId?" element={<RequireAuth><InfraPage /></RequireAuth>} />
+        <Route path="/reports" element={<RequireAuth><ReportsPage /></RequireAuth>} />
+        <Route path="/alerts" element={<RequireAuth><AlertsPage /></RequireAuth>} />
+        <Route path="*" element={<Navigate to="/atlas" replace />} />
+      </Routes>
     </Suspense>
   );
 }

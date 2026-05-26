@@ -58,7 +58,7 @@ export default function ReportsTable() {
                 )}
               >
                 {filter === f.value && (
-                  <motion.div layoutId="report-filter" className="absolute inset-0 bg-accent rounded-chip" transition={springSettle} />
+                  <motion.div layoutId="report-filter" className="absolute inset-0 bg-accent rounded-chip glow-accent" transition={springSettle} />
                 )}
                 <span className="relative z-10">{f.label}</span>
               </motion.button>
@@ -68,7 +68,7 @@ export default function ReportsTable() {
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => setModalOpen(true)}
-            className="flex items-center gap-1.5 h-9 px-4 rounded-control bg-accent text-white text-[12px] font-medium hover:brightness-110 transition-all self-start"
+            className="flex items-center gap-1.5 h-9 px-4 rounded-control bg-accent text-white text-[12px] font-medium hover:brightness-110 transition-all self-start btn-glow"
           >
             <Plus size={14} />
             New report

@@ -72,7 +72,7 @@ export default function Sidebar() {
       {/* Brand */}
       <div className="flex items-center gap-3 px-4 h-14 border-b border-border shrink-0">
         <motion.div
-          className="w-7 h-7 rounded-lg shrink-0 flex items-center justify-center"
+          className="w-7 h-7 rounded-lg shrink-0 flex items-center justify-center glow-accent"
           style={{ background: "conic-gradient(from 135deg, #4a9eff, #b888ff, #4a9eff)" }}
           whileHover={{ rotate: 90 }}
           transition={springSettle}
@@ -130,7 +130,7 @@ export default function Sidebar() {
                 {active && (
                   <motion.div
                     layoutId="nav-active"
-                    className="absolute inset-0 bg-[rgba(74,158,255,0.1)] rounded-control"
+                    className="absolute inset-0 bg-[rgba(74,158,255,0.1)] rounded-control nav-glow"
                     transition={springSettle}
                   />
                 )}
@@ -262,7 +262,7 @@ export default function Sidebar() {
                   >
                     <motion.div
                       className="w-2 h-2 rounded-full shrink-0"
-                      style={{ background: scoreColor(z.score) }}
+                      style={{ background: scoreColor(z.score), boxShadow: `0 0 6px ${scoreColor(z.score)}66` }}
                       animate={selectedZoneId === z.id ? { scale: [1, 1.3, 1] } : {}}
                       transition={{ duration: 0.4 }}
                     />

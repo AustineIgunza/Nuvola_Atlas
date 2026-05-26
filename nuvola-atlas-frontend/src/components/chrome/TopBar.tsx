@@ -58,7 +58,7 @@ export default function TopBar() {
                 {mode === activeMode && (
                   <motion.div
                     layoutId="view-mode"
-                    className="absolute inset-0 bg-[rgba(255,255,255,0.1)] rounded-chip"
+                    className="absolute inset-0 bg-[rgba(255,255,255,0.1)] rounded-chip glow-accent"
                     transition={springSettle}
                   />
                 )}
@@ -75,7 +75,7 @@ export default function TopBar() {
           transition={{ delay: 0.2, ...springSettle }}
           className="flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-[rgba(52,201,122,0.1)]"
         >
-          <div className="w-1.5 h-1.5 rounded-full bg-success pulse-glow" style={{ color: "#34c97a" }} />
+          <div className="w-1.5 h-1.5 rounded-full bg-success pulse-glow glow-success" style={{ color: "#34c97a" }} />
           <span className="text-[11px] font-medium text-success">Live</span>
         </motion.div>
       </div>
@@ -108,7 +108,7 @@ export default function TopBar() {
                 animate={{ scale: 1 }}
                 exit={{ scale: 0 }}
                 transition={springSettle}
-                className="absolute top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-danger text-white text-[9px] font-bold flex items-center justify-center"
+                className="absolute top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-danger text-white text-[9px] font-bold flex items-center justify-center glow-danger"
               >
                 {unread}
               </motion.span>

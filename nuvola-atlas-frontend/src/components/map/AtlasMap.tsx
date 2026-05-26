@@ -244,7 +244,7 @@ export default function AtlasMap({ zones }: Props) {
           font-size: 11px;
           font-weight: 600;
           cursor: pointer;
-          box-shadow: 0 2px 10px ${color}44, 0 0 0 2px white;
+          box-shadow: 0 2px 10px ${color}44, 0 0 16px ${color}33, 0 0 0 2px white;
           transition: transform 0.3s cubic-bezier(0.22,1,0.36,1), box-shadow 0.3s ease;
           white-space: nowrap;
           letter-spacing: -0.01em;
@@ -259,14 +259,14 @@ export default function AtlasMap({ zones }: Props) {
         const pill = el.querySelector(".zone-pill") as HTMLElement;
         if (pill) {
           pill.style.transform = "scale(1.15)";
-          pill.style.boxShadow = `0 4px 16px ${color}66, 0 0 0 3px white`;
+          pill.style.boxShadow = `0 4px 16px ${color}66, 0 0 20px ${color}44, 0 0 0 3px white`;
         }
       });
       el.addEventListener("mouseleave", () => {
         const pill = el.querySelector(".zone-pill") as HTMLElement;
         if (pill) {
           pill.style.transform = "scale(1)";
-          pill.style.boxShadow = `0 2px 10px ${color}44, 0 0 0 2px white`;
+          pill.style.boxShadow = `0 2px 10px ${color}44, 0 0 16px ${color}33, 0 0 0 2px white`;
         }
       });
       el.addEventListener("click", () => setSelectedZone(zone.id));
@@ -338,8 +338,8 @@ export default function AtlasMap({ zones }: Props) {
       const color = scoreColor(zones[i].score);
       pill.style.transform = isSelected ? "scale(1.2)" : "scale(1)";
       pill.style.boxShadow = isSelected
-        ? `0 4px 20px ${color}88, 0 0 0 3px white`
-        : `0 2px 10px ${color}44, 0 0 0 2px white`;
+        ? `0 4px 20px ${color}88, 0 0 24px ${color}55, 0 0 0 3px white`
+        : `0 2px 10px ${color}44, 0 0 16px ${color}33, 0 0 0 2px white`;
     });
   }, [selectedZoneId, loaded, zones]);
 
