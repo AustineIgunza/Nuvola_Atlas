@@ -53,9 +53,18 @@ export interface AlertItem {
   zoneId: string | null;
   createdAt: string;
   read: boolean;
+  affectedInfra: string[];
+  recommendedActions: string[];
+  impactLevel: "critical" | "major" | "moderate" | "minor";
+  relatedProjectIds: string[];
 }
 
 export type ReportStatus = "published" | "review" | "draft";
+
+export interface ReportSection {
+  heading: string;
+  content: string;
+}
 
 export interface Report {
   id: string;
@@ -66,6 +75,13 @@ export interface Report {
   author: string;
   sizeBytes: number;
   format: "PDF";
+  sections: ReportSection[];
+  tags: string[];
+  type: "vitality" | "infrastructure" | "density" | "safety" | "environmental";
+  priority: "critical" | "high" | "medium" | "low";
+  dateRange?: { from: string; to: string };
+  pillarFocus?: PillarKey[];
+  executiveSummary: string;
 }
 
 export interface HistoryPoint {

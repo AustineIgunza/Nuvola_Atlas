@@ -3,15 +3,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/cn";
 import { api } from "@/api";
-import { formatRelative } from "@/lib/format";
-import { springSettle, staggerContainer, staggerItemScale } from "@/lib/motion";
+import { springSettle, staggerContainer } from "@/lib/motion";
+import AlertCard from "./AlertCard";
 import type { AlertSeverity } from "@/types";
-
-const SEVERITY_COLORS: Record<AlertSeverity, string> = {
-  high: "#ff5d5d",
-  medium: "#ffb340",
-  low: "rgba(255,255,255,0.2)",
-};
 
 const FILTERS: { label: string; value: AlertSeverity | "all" }[] = [
   { label: "All", value: "all" },
@@ -22,10 +16,12 @@ const FILTERS: { label: string; value: AlertSeverity | "all" }[] = [
 
 export default function AlertList() {
   const [filter, setFilter] = useState<AlertSeverity | "all">("all");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const { data: alerts, isLoading, isError } = useQuery({ queryKey: ["alerts"], queryFn: api.getAlerts });
   const { data: zones } = useQuery({ queryKey: ["zones"], queryFn: api.getZones });
+  const { data: projects } = useQuery({ queryKey: ["projects"], queryFn: api.getProjects });
 
   const markAll = useMutation({
     mutationFn: api.markAllRead,
@@ -40,7 +36,8 @@ export default function AlertList() {
   });
 
   const filtered = alerts?.filter((a) => filter === "all" || a.severity === filter) ?? [];
-  function zoneName(id: string | null) { return id ? (zones?.find((z) => z.id === id)?.name ?? id) : "System"; }
+  function zoneName(id: string | null) { return id ? (zones?.find((z) => z.id === id)?.name ?? id) : "System-wide"; }
+  function projectName(id: string) { return projects?.find((p) => p.id === id)?.name ?? id; }
 
   if (isLoading) {
     return (
@@ -66,7 +63,6 @@ export default function AlertList() {
       transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
       className="glass-strong rounded-card p-4 sm:p-6"
     >
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
         <div className="flex items-center gap-1.5 flex-wrap relative">
           {FILTERS.map((f) => (
@@ -96,7 +92,6 @@ export default function AlertList() {
         </motion.button>
       </div>
 
-      {/* Alert cards */}
       <motion.div
         variants={staggerContainer}
         initial="hidden"
@@ -106,60 +101,14 @@ export default function AlertList() {
       >
         <AnimatePresence mode="popLayout">
           {filtered.map((a) => (
-            <motion.div
+            <AlertCard
               key={a.id}
-              variants={staggerItemScale}
-              transition={springSettle}
-              layout
-              exit={{ opacity: 0, scale: 0.95, x: -20, transition: { duration: 0.2 } }}
-              whileHover={{ y: -1, boxShadow: "0 6px 20px rgba(0,0,0,0.2)" }}
-              className={cn(
-                "relative flex gap-3.5 p-4 sm:p-5 rounded-card border border-border transition-opacity",
-                a.read && "opacity-55",
-              )}
-            >
-              {/* Severity rail */}
-              <motion.div
-                className="w-[3px] rounded-full shrink-0 self-stretch"
-                style={{ background: SEVERITY_COLORS[a.severity], boxShadow: `0 0 8px ${SEVERITY_COLORS[a.severity]}55` }}
-                initial={{ scaleY: 0 }}
-                animate={{ scaleY: 1 }}
-                transition={{ delay: 0.1, ...springSettle }}
-              />
-
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-1.5 gap-2">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="px-2 py-0.5 rounded text-[9px] font-bold uppercase text-white"
-                      style={{ background: SEVERITY_COLORS[a.severity] }}
-                    >
-                      {a.severity}
-                    </span>
-                    <span className="text-[11px] text-ink-4">{zoneName(a.zoneId)}</span>
-                  </div>
-                  <span className="text-[11px] text-ink-4 tabular-nums shrink-0">{formatRelative(a.createdAt)}</span>
-                </div>
-
-                <h3 className="text-[14px] font-semibold text-ink-1 mb-1.5">{a.title}</h3>
-                <p className="text-[12.5px] text-ink-2 leading-[1.6]">{a.body}</p>
-              </div>
-
-              {/* Unread dot */}
-              <AnimatePresence>
-                {!a.read && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    exit={{ scale: 0 }}
-                    transition={springSettle}
-                    className="absolute top-3 right-3"
-                  >
-                    <div className="w-2.5 h-2.5 rounded-full bg-accent" style={{ boxShadow: "0 0 10px rgba(74,158,255,0.5)" }} />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
+              alert={a}
+              expanded={expandedId === a.id}
+              onToggle={() => setExpandedId(expandedId === a.id ? null : a.id)}
+              zoneName={zoneName(a.zoneId)}
+              projectName={projectName}
+            />
           ))}
         </AnimatePresence>
       </motion.div>

@@ -1,64 +1,80 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { useUIStore } from "./ui";
+import { useAtlasStore } from "./atlas";
+import { useChromeStore } from "./chrome";
 
-describe("useUIStore", () => {
+describe("atlas store", () => {
   beforeEach(() => {
-    useUIStore.setState({
+    useAtlasStore.setState({
       selectedZoneId: null,
-      panelOpen: false,
       activeLayers: { roads: false, energy: false, density: false },
       scrubMonthIdx: 11,
+      mapStyle: "mapbox://styles/mapbox/light-v11",
+    });
+    useChromeStore.setState({
+      panelOpen: false,
       searchOpen: false,
       methodOpen: false,
       sidebarCollapsed: false,
     });
   });
 
-  it("selects a zone and opens panel", () => {
-    useUIStore.getState().setSelectedZone("westlands");
-    const s = useUIStore.getState();
-    expect(s.selectedZoneId).toBe("westlands");
-    expect(s.panelOpen).toBe(true);
+  it("selects a zone and opens panel", async () => {
+    useAtlasStore.getState().setSelectedZone("westlands");
+    expect(useAtlasStore.getState().selectedZoneId).toBe("westlands");
+    await new Promise((r) => setTimeout(r, 10));
+    expect(useChromeStore.getState().panelOpen).toBe(true);
   });
 
-  it("deselects zone when null passed", () => {
-    useUIStore.getState().setSelectedZone("westlands");
-    useUIStore.getState().setSelectedZone(null);
-    const s = useUIStore.getState();
-    expect(s.selectedZoneId).toBe(null);
-    expect(s.panelOpen).toBe(false);
+  it("deselects zone when null passed", async () => {
+    useAtlasStore.getState().setSelectedZone("westlands");
+    await new Promise((r) => setTimeout(r, 10));
+    useAtlasStore.getState().setSelectedZone(null);
+    expect(useAtlasStore.getState().selectedZoneId).toBe(null);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(useChromeStore.getState().panelOpen).toBe(false);
   });
 
   it("toggles layers independently", () => {
-    useUIStore.getState().toggleLayer("roads");
-    expect(useUIStore.getState().activeLayers.roads).toBe(true);
-    expect(useUIStore.getState().activeLayers.energy).toBe(false);
+    useAtlasStore.getState().toggleLayer("roads");
+    expect(useAtlasStore.getState().activeLayers.roads).toBe(true);
+    expect(useAtlasStore.getState().activeLayers.energy).toBe(false);
 
-    useUIStore.getState().toggleLayer("roads");
-    expect(useUIStore.getState().activeLayers.roads).toBe(false);
-  });
-
-  it("toggles panel", () => {
-    useUIStore.getState().togglePanel();
-    expect(useUIStore.getState().panelOpen).toBe(true);
-    useUIStore.getState().togglePanel();
-    expect(useUIStore.getState().panelOpen).toBe(false);
+    useAtlasStore.getState().toggleLayer("roads");
+    expect(useAtlasStore.getState().activeLayers.roads).toBe(false);
   });
 
   it("sets scrub month", () => {
-    useUIStore.getState().setScrubMonth(5);
-    expect(useUIStore.getState().scrubMonthIdx).toBe(5);
+    useAtlasStore.getState().setScrubMonth(5);
+    expect(useAtlasStore.getState().scrubMonthIdx).toBe(5);
+  });
+});
+
+describe("chrome store", () => {
+  beforeEach(() => {
+    useChromeStore.setState({
+      panelOpen: false,
+      searchOpen: false,
+      methodOpen: false,
+      sidebarCollapsed: false,
+    });
+  });
+
+  it("toggles panel", () => {
+    useChromeStore.getState().togglePanel();
+    expect(useChromeStore.getState().panelOpen).toBe(true);
+    useChromeStore.getState().togglePanel();
+    expect(useChromeStore.getState().panelOpen).toBe(false);
   });
 
   it("opens and closes search", () => {
-    useUIStore.getState().openSearch();
-    expect(useUIStore.getState().searchOpen).toBe(true);
-    useUIStore.getState().closeSearch();
-    expect(useUIStore.getState().searchOpen).toBe(false);
+    useChromeStore.getState().openSearch();
+    expect(useChromeStore.getState().searchOpen).toBe(true);
+    useChromeStore.getState().closeSearch();
+    expect(useChromeStore.getState().searchOpen).toBe(false);
   });
 
   it("toggles sidebar", () => {
-    useUIStore.getState().toggleSidebar();
-    expect(useUIStore.getState().sidebarCollapsed).toBe(true);
+    useChromeStore.getState().toggleSidebar();
+    expect(useChromeStore.getState().sidebarCollapsed).toBe(true);
   });
 });

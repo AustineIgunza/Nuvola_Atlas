@@ -1,19 +1,15 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { FileText, Plus } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { api } from "@/api";
 import { formatDate, formatBytes } from "@/lib/format";
 import { springSettle, staggerContainer, staggerItem } from "@/lib/motion";
+import { STATUS_STYLES } from "./reports.constants";
+import ReportDetailModal from "./ReportDetailModal";
 import NewReportModal from "./NewReportModal";
-import type { ReportStatus } from "@/types";
-
-const STATUS_STYLES: Record<ReportStatus, { bg: string; text: string }> = {
-  published: { bg: "rgba(52,201,122,0.12)", text: "#34c97a" },
-  review: { bg: "rgba(255,179,64,0.12)", text: "#ffb340" },
-  draft: { bg: "rgba(255,255,255,0.06)", text: "#8a91a0" },
-};
+import type { Report, ReportStatus } from "@/types";
 
 const FILTERS: { label: string; value: ReportStatus | "all" }[] = [
   { label: "All", value: "all" },
@@ -25,11 +21,19 @@ const FILTERS: { label: string; value: ReportStatus | "all" }[] = [
 export default function ReportsTable() {
   const [filter, setFilter] = useState<ReportStatus | "all">("all");
   const [modalOpen, setModalOpen] = useState(false);
+  const [detailReport, setDetailReport] = useState<Report | null>(null);
 
-  const { data: reports } = useQuery({ queryKey: ["reports"], queryFn: api.getReports });
-  const { data: zones } = useQuery({ queryKey: ["zones"], queryFn: api.getZones });
+  const { data: reports } = useQuery({
+    queryKey: ["reports"],
+    queryFn: api.getReports,
+  });
+  const { data: zones } = useQuery({
+    queryKey: ["zones"],
+    queryFn: api.getZones,
+  });
 
-  const filtered = reports?.filter((r) => filter === "all" || r.status === filter) ?? [];
+  const filtered =
+    reports?.filter((r) => filter === "all" || r.status === filter) ?? [];
 
   function zoneName(id: string | null) {
     if (!id) return "All zones";
@@ -54,11 +58,17 @@ export default function ReportsTable() {
                 whileTap={{ scale: 0.93 }}
                 className={cn(
                   "relative px-3.5 h-8 rounded-chip text-[11px] font-medium transition-colors",
-                  filter === f.value ? "text-white" : "text-ink-3 hover:text-ink-2",
+                  filter === f.value
+                    ? "text-white"
+                    : "text-ink-3 hover:text-ink-2",
                 )}
               >
                 {filter === f.value && (
-                  <motion.div layoutId="report-filter" className="absolute inset-0 bg-accent rounded-chip glow-accent" transition={springSettle} />
+                  <motion.div
+                    layoutId="report-filter"
+                    className="absolute inset-0 bg-accent rounded-chip glow-accent"
+                    transition={springSettle}
+                  />
                 )}
                 <span className="relative z-10">{f.label}</span>
               </motion.button>
@@ -88,7 +98,12 @@ export default function ReportsTable() {
                 <th className="text-right py-2.5 px-2 text-ink-4 font-medium hidden lg:table-cell">Size</th>
               </tr>
             </thead>
-            <motion.tbody variants={staggerContainer} initial="hidden" animate="visible" key={filter}>
+            <motion.tbody
+              variants={staggerContainer}
+              initial="hidden"
+              animate="visible"
+              key={filter}
+            >
               {filtered.map((r) => {
                 const style = STATUS_STYLES[r.status];
                 return (
@@ -97,20 +112,26 @@ export default function ReportsTable() {
                     variants={staggerItem}
                     transition={springSettle}
                     whileHover={{ backgroundColor: "rgba(255,255,255,0.03)" }}
-                    className="border-b border-border/40 transition-colors"
+                    onClick={() => setDetailReport(r)}
+                    className="border-b border-border/40 transition-colors cursor-pointer"
                   >
                     <td className="py-3 px-2">
                       <div className="flex items-center gap-2">
                         <FileText size={14} className="text-ink-4 shrink-0" />
                         <span className="text-ink-1 font-medium text-[13px]">{r.title}</span>
-                        <span className="px-1 py-0.5 rounded text-[9px] font-bold text-ink-4 bg-[rgba(255,255,255,0.06)] uppercase shrink-0">{r.format}</span>
+                        <span className="px-1 py-0.5 rounded text-[9px] font-bold text-ink-4 bg-[rgba(255,255,255,0.06)] uppercase shrink-0">
+                          {r.format}
+                        </span>
                       </div>
                     </td>
                     <td className="py-3 px-2 text-ink-3 hidden sm:table-cell">{zoneName(r.zoneId)}</td>
                     <td className="py-3 px-2 text-ink-3 hidden md:table-cell">{r.author}</td>
                     <td className="py-3 px-2">
                       <motion.span
-                        className="px-2.5 py-1 rounded-full text-[10px] font-semibold capitalize inline-block"
+                        className={cn(
+                          "px-2.5 py-1 rounded-full text-[10px] font-semibold capitalize inline-block",
+                          style.glow,
+                        )}
                         style={{ background: style.bg, color: style.text }}
                         whileHover={{ scale: 1.05 }}
                       >
@@ -126,6 +147,16 @@ export default function ReportsTable() {
           </table>
         </div>
       </motion.div>
+
+      <AnimatePresence>
+        {detailReport && (
+          <ReportDetailModal
+            report={detailReport}
+            zoneName={zoneName(detailReport.zoneId)}
+            onClose={() => setDetailReport(null)}
+          />
+        )}
+      </AnimatePresence>
 
       <NewReportModal open={modalOpen} onClose={() => setModalOpen(false)} />
     </>

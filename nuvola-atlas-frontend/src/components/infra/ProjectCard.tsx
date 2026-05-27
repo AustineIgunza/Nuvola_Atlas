@@ -31,14 +31,14 @@ export default function ProjectCard({ project, selected, zoneName, onClick }: Pr
       <div className="flex items-center gap-2 mb-2.5">
         <span
           className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase text-white"
-          style={{ background: TYPE_COLORS[project.type] }}
+          style={{ background: TYPE_COLORS[project.type], boxShadow: `0 0 10px ${TYPE_COLORS[project.type]}44, 0 0 4px ${TYPE_COLORS[project.type]}22` }}
         >
           {project.type}
         </span>
         <motion.div
           className="w-2 h-2 rounded-full"
-          style={{ background: STATUS_COLORS[project.status] }}
-          animate={project.status === "active" ? { scale: [1, 1.3, 1] } : {}}
+          style={{ background: STATUS_COLORS[project.status], boxShadow: `0 0 8px ${STATUS_COLORS[project.status]}66` }}
+          animate={project.status === "active" ? { scale: [1, 1.3, 1], boxShadow: [`0 0 8px ${STATUS_COLORS[project.status]}66`, `0 0 14px ${STATUS_COLORS[project.status]}88`, `0 0 8px ${STATUS_COLORS[project.status]}66`] } : {}}
           transition={{ repeat: Infinity, duration: 2 }}
         />
         <span className="text-[10px] text-ink-4 capitalize">{project.status}</span>
@@ -50,7 +50,7 @@ export default function ProjectCard({ project, selected, zoneName, onClick }: Pr
       <div className="h-1.5 rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden mb-1.5">
         <motion.div
           className="h-full rounded-full"
-          style={{ background: TYPE_COLORS[project.type] }}
+          style={{ background: TYPE_COLORS[project.type], boxShadow: `0 0 8px ${TYPE_COLORS[project.type]}55, 0 1px 3px ${TYPE_COLORS[project.type]}33` }}
           initial={{ width: 0 }}
           animate={{ width: `${project.progress}%` }}
           transition={{ duration: 0.8, ease: [0.32, 0.72, 0, 1] }}

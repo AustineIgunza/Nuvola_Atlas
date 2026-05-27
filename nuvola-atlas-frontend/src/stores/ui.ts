@@ -1,59 +1,20 @@
-import { create } from "zustand";
+import { useAtlasStore } from "./atlas";
+import { useChromeStore } from "./chrome";
 
-interface LayerState {
-  roads: boolean;
-  energy: boolean;
-  density: boolean;
+export { useAtlasStore } from "./atlas";
+export { useChromeStore } from "./chrome";
+
+export function useUIStore<T>(selector: (state: ReturnType<typeof getCombined>) => T): T {
+  const atlas = useAtlasStore((s) => s);
+  const chrome = useChromeStore((s) => s);
+  return selector({ ...atlas, ...chrome });
 }
 
-interface UIState {
-  selectedZoneId: string | null;
-  panelOpen: boolean;
-  activeLayers: LayerState;
-  scrubMonthIdx: number;
-  searchOpen: boolean;
-  methodOpen: boolean;
-  sidebarCollapsed: boolean;
-  mapStyle: string;
-
-  setSelectedZone: (id: string | null) => void;
-  togglePanel: () => void;
-  openPanel: () => void;
-  closePanel: () => void;
-  toggleLayer: (key: keyof LayerState) => void;
-  setScrubMonth: (idx: number) => void;
-  openSearch: () => void;
-  closeSearch: () => void;
-  openMethod: () => void;
-  closeMethod: () => void;
-  toggleSidebar: () => void;
-  setMapStyle: (style: string) => void;
+function getCombined() {
+  return {
+    ...useAtlasStore.getState(),
+    ...useChromeStore.getState(),
+  };
 }
 
-export const useUIStore = create<UIState>((set) => ({
-  selectedZoneId: null,
-  panelOpen: false,
-  activeLayers: { roads: false, energy: false, density: false },
-  scrubMonthIdx: 11,
-  searchOpen: false,
-  methodOpen: false,
-  sidebarCollapsed: false,
-  mapStyle: "mapbox://styles/mapbox/light-v11",
-
-  setSelectedZone: (id) =>
-    set({ selectedZoneId: id, panelOpen: id !== null }),
-  togglePanel: () => set((s) => ({ panelOpen: !s.panelOpen })),
-  openPanel: () => set({ panelOpen: true }),
-  closePanel: () => set({ panelOpen: false }),
-  toggleLayer: (key) =>
-    set((s) => ({
-      activeLayers: { ...s.activeLayers, [key]: !s.activeLayers[key] },
-    })),
-  setScrubMonth: (idx) => set({ scrubMonthIdx: idx }),
-  openSearch: () => set({ searchOpen: true }),
-  closeSearch: () => set({ searchOpen: false }),
-  openMethod: () => set({ methodOpen: true }),
-  closeMethod: () => set({ methodOpen: false }),
-  toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
-  setMapStyle: (style) => set({ mapStyle: style }),
-}));
+useUIStore.getState = getCombined;

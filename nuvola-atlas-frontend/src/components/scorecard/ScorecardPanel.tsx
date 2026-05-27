@@ -7,6 +7,7 @@ import { springSettle, panelSlideRight, panelSlideUp } from "@/lib/motion";
 import Ring from "./Ring";
 import PillarRow from "./PillarRow";
 import ActivityFeed from "./ActivityFeed";
+import ZoneRanking from "./ZoneRanking";
 import type { Zone, PillarKey } from "@/types";
 
 const PILLAR_KEYS: PillarKey[] = ["social", "safety", "density", "infra"];
@@ -144,6 +145,7 @@ export default function ScorecardPanel({ zone }: Props) {
                   style={{
                     background: totalDelta >= 0 ? "rgba(52,201,122,0.12)" : "rgba(255,93,93,0.12)",
                     color: totalDelta >= 0 ? "#34c97a" : "#ff5d5d",
+                    boxShadow: totalDelta >= 0 ? "0 0 10px rgba(52,201,122,0.25)" : "0 0 10px rgba(255,93,93,0.25)",
                   }}
                 >
                   {totalDelta >= 0 ? "\u25B2" : "\u25BC"} {Math.abs(totalDelta)} pts this quarter
@@ -164,6 +166,46 @@ export default function ScorecardPanel({ zone }: Props) {
                 {PILLAR_KEYS.map((key, i) => (
                   <PillarRow key={key} pillarKey={key} score={zone.pillars[key]} delta={zone.deltas[key]} index={i} />
                 ))}
+              </motion.div>
+
+              {/* Zone ranking */}
+              <ZoneRanking currentZone={zone} />
+
+              {/* Data freshness */}
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="mb-6 rounded-card bg-[rgba(255,255,255,0.02)] border border-border p-4"
+              >
+                <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.08em] mb-3">
+                  Data Sources
+                </div>
+                <div className="space-y-2">
+                  {[
+                    { source: "KNBS Population", fresh: true, age: "2 days" },
+                    { source: "KURA Road Status", fresh: true, age: "4 hours" },
+                    { source: "KPLC Energy Feed", fresh: zone.lastSyncMin < 15, age: `${zone.lastSyncMin} min` },
+                    { source: "NPS Safety Data", fresh: true, age: "1 week" },
+                    { source: "NEMA ESIA Portal", fresh: true, age: "3 days" },
+                  ].map((d) => (
+                    <div key={d.source} className="flex items-center justify-between text-[11px]">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-1.5 h-1.5 rounded-full"
+                          style={{
+                            background: d.fresh ? "#34c97a" : "#ff5d5d",
+                            boxShadow: d.fresh ? "0 0 6px rgba(52,201,122,0.5)" : "0 0 6px rgba(255,93,93,0.5)",
+                          }}
+                        />
+                        <span className="text-ink-3">{d.source}</span>
+                      </div>
+                      <span className={d.fresh ? "text-ink-4" : "text-danger font-medium"}>
+                        {d.age}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </motion.div>
 
               {/* Activity */}
@@ -238,3 +280,4 @@ export default function ScorecardPanel({ zone }: Props) {
     </>
   );
 }
+

@@ -227,6 +227,31 @@
     box-shadow: 0 0 20px rgba(74, 158, 255, 0.06), inset 0 0 30px rgba(74, 158, 255, 0.03);
   }
 
+  /* Pillar color glows */
+  .glow-social {
+    box-shadow: 0 0 12px rgba(74, 158, 255, 0.35), 0 0 4px rgba(74, 158, 255, 0.15);
+  }
+  .glow-safety {
+    box-shadow: 0 0 12px rgba(255, 93, 93, 0.35), 0 0 4px rgba(255, 93, 93, 0.15);
+  }
+  .glow-density {
+    box-shadow: 0 0 12px rgba(184, 136, 255, 0.35), 0 0 4px rgba(184, 136, 255, 0.15);
+  }
+  .glow-infra {
+    box-shadow: 0 0 12px rgba(52, 201, 122, 0.35), 0 0 4px rgba(52, 201, 122, 0.15);
+  }
+
+  /* Infra type glows */
+  .glow-road {
+    box-shadow: 0 0 10px rgba(74, 158, 255, 0.4), 0 0 4px rgba(74, 158, 255, 0.2);
+  }
+  .glow-energy {
+    box-shadow: 0 0 10px rgba(255, 179, 64, 0.4), 0 0 4px rgba(255, 179, 64, 0.2);
+  }
+  .glow-grid {
+    box-shadow: 0 0 10px rgba(184, 136, 255, 0.4), 0 0 4px rgba(184, 136, 255, 0.2);
+  }
+
   /* Toggle glow when on */
   .toggle-track[data-on="true"] {
     box-shadow: 0 0 10px rgba(74, 158, 255, 0.4), 0 0 3px rgba(74, 158, 255, 0.2);
