@@ -79,7 +79,7 @@ export default function ScorecardPanel({ zone }: Props) {
             transition={springSettle}
             className={
               isMobile
-                ? "fixed inset-x-0 bottom-0 z-40 glass-strong border-t border-border rounded-t-modal max-h-[85vh] overflow-y-auto"
+                ? "fixed inset-x-0 bottom-0 z-40 glass-strong border-t border-border rounded-t-modal max-h-[70vh] overflow-y-auto pb-safe"
                 : "w-[420px] xl:w-[440px] shrink-0 glass-strong border-l border-border overflow-y-auto h-full"
             }
           >
@@ -90,7 +90,7 @@ export default function ScorecardPanel({ zone }: Props) {
               </div>
             )}
 
-            <div className="p-5">
+            <div className="p-3 sm:p-5">
               {/* Header */}
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
@@ -258,7 +258,7 @@ export default function ScorecardPanel({ zone }: Props) {
             onClick={openPanel}
             className={
               isMobile
-                ? "fixed bottom-4 left-1/2 -translate-x-1/2 z-30 glass-strong rounded-full px-5 py-2.5 border border-border hover:bg-[rgba(255,255,255,0.06)] transition-colors shadow-chrome btn-press flex items-center gap-2"
+                ? "fixed bottom-6 left-1/2 -translate-x-1/2 z-30 glass-strong rounded-full px-5 py-3 border border-border hover:bg-[rgba(255,255,255,0.06)] transition-colors shadow-chrome btn-press flex items-center gap-2 pb-safe"
                 : "fixed right-0 top-1/2 -translate-y-1/2 z-30 glass-strong rounded-l-control px-2.5 py-5 border border-r-0 border-border hover:bg-[rgba(255,255,255,0.06)] transition-colors btn-press"
             }
           >

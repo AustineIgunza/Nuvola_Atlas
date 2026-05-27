@@ -37,9 +37,9 @@ export default function TopBar() {
       transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
       className="h-14 flex items-center justify-between px-4 sm:px-5 border-b border-border shrink-0"
     >
-      <div className="flex items-center gap-3 ml-10 md:ml-0">
+      <div className="flex items-center gap-2 sm:gap-3 ml-10 md:ml-0">
         {isAtlas && (
-          <div className="hidden sm:flex items-center gap-0.5 p-0.5 rounded-control bg-[rgba(255,255,255,0.04)]">
+          <div className="flex items-center gap-0.5 p-0.5 rounded-control bg-[rgba(255,255,255,0.04)]">
             {VIEW_MODES.map((mode) => (
               <motion.button
                 key={mode}
@@ -49,7 +49,7 @@ export default function TopBar() {
                   setMapStyle(VIEW_STYLES[mode]);
                 }}
                 className={cn(
-                  "relative px-3 h-7 rounded-chip text-[12px] font-medium transition-colors",
+                  "relative px-2 sm:px-3 h-7 rounded-chip text-[11px] sm:text-[12px] font-medium transition-colors",
                   mode === activeMode
                     ? "text-ink-1"
                     : "text-ink-4 hover:text-ink-3",
@@ -68,12 +68,15 @@ export default function TopBar() {
           </div>
         )}
 
-        {/* Live feed chip */}
+        {/* Live feed chip — hidden on small mobile when atlas view toggles are shown */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, ...springSettle }}
-          className="flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-[rgba(52,201,122,0.1)]"
+          className={cn(
+            "items-center gap-1.5 px-2.5 h-6 rounded-full bg-[rgba(52,201,122,0.1)]",
+            isAtlas ? "hidden sm:flex" : "flex",
+          )}
         >
           <div className="w-1.5 h-1.5 rounded-full bg-success pulse-glow glow-success" style={{ color: "#34c97a" }} />
           <span className="text-[11px] font-medium text-success">Live</span>

@@ -28,7 +28,7 @@ export default function InfraPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.35 }}
-        className="flex flex-col lg:flex-row h-[calc(100vh-3.5rem)] p-4 sm:p-5 gap-4"
+        className="flex flex-col lg:flex-row h-[calc(100dvh-3.5rem)] p-3 sm:p-5 gap-3 sm:gap-4"
       >
         <div className="w-full lg:w-[340px] shrink-0 overflow-y-auto lg:h-full">
           <ProjectList selectedId={selectedId} onSelect={handleSelect} />

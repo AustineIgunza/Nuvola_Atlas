@@ -31,12 +31,12 @@ export default function AtlasMap({ zones }: Props) {
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
       <div ref={containerRef} style={{ position: "absolute", inset: 0 }} />
 
-      {/* Layer toggles */}
+      {/* Layer toggles — offset left on mobile to clear the hamburger button */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, ...springSettle }}
-        className="absolute top-3 left-3 z-10 flex gap-1.5 sm:gap-2 flex-wrap max-w-[calc(100%-6rem)]"
+        className="absolute top-3 left-14 md:left-3 z-10 flex gap-1.5 sm:gap-2 flex-wrap max-w-[calc(100%-5rem)] md:max-w-[calc(100%-6rem)]"
       >
         {LAYER_META.map((l) => {
           const on = activeLayers[l.key];
@@ -45,9 +45,10 @@ export default function AtlasMap({ zones }: Props) {
               key={l.key}
               onClick={() => toggleLayer(l.key)}
               className={`
-                border-none cursor-pointer px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-full
-                text-[11px] sm:text-[12px] font-medium tracking-[-0.01em]
-                transition-all duration-[450ms] flex items-center gap-1.5 sm:gap-2
+                border-none cursor-pointer px-2 py-1.5 sm:px-4 sm:py-2 rounded-full
+                text-[10px] sm:text-[12px] font-medium tracking-[-0.01em]
+                transition-all duration-[450ms] flex items-center gap-1 sm:gap-2
+                min-h-[36px] sm:min-h-0
                 ${on
                   ? "bg-[#1A1A18] text-white shadow-[0_4px_14px_rgba(0,0,0,0.18)]"
                   : "bg-white/90 text-black/60 shadow-[0_1px_4px_rgba(0,0,0,0.08)] hover:bg-white"
@@ -59,18 +60,18 @@ export default function AtlasMap({ zones }: Props) {
                 style={{ backgroundColor: l.color, opacity: on ? 1 : 0.5 }}
               />
               <span className="hidden sm:inline">{l.label}</span>
-              <span className="sm:hidden">{l.label.split(" ")[0]}</span>
+              <span className="sm:hidden text-[10px]">{l.label.split(" ")[0]}</span>
             </button>
           );
         })}
       </motion.div>
 
-      {/* Legend */}
+      {/* Legend — pushed up on mobile to clear the scorecard pull-up tab */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4, ...springSettle }}
-        className="absolute bottom-8 sm:bottom-4 left-2 sm:left-4 z-10 bg-white/90 backdrop-blur-sm rounded-[14px] px-3 py-2 sm:px-4 sm:py-3 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_18px_50px_rgba(0,0,0,0.06)] text-[10px] sm:text-[11px] space-y-1"
+        className="absolute bottom-16 sm:bottom-4 left-2 sm:left-4 z-10 bg-white/90 backdrop-blur-sm rounded-[14px] px-2.5 py-1.5 sm:px-4 sm:py-3 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_18px_50px_rgba(0,0,0,0.06)] text-[10px] sm:text-[11px] space-y-1"
       >
         <div className="font-semibold text-[12px] text-[#1A1A18]/70 mb-2">Vitality Score</div>
         <div className="flex items-center gap-2">

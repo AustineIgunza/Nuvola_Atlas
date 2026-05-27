@@ -22,6 +22,7 @@
     background: #0a0d12;
     color: #f4f6fa;
     min-height: 100vh;
+    min-height: 100dvh;
     overflow-x: hidden;
   }
 
@@ -274,5 +275,14 @@
   @keyframes borderGlow {
     0%, 100% { border-color: rgba(74, 158, 255, 0.08); }
     50% { border-color: rgba(74, 158, 255, 0.2); }
+  }
+
+  /* Safe-area padding for notched devices */
+  .pb-safe {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
+
+  .pt-safe {
+    padding-top: max(0.75rem, env(safe-area-inset-top));
   }
 }
