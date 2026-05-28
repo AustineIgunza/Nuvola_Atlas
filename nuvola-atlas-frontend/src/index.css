@@ -7,6 +7,18 @@
     box-sizing: border-box;
   }
 
+  :root {
+    /* Height reserved at the bottom of the viewport for the mobile tab bar.
+       Zero on desktop, ~56px + iOS safe-area inset on mobile. */
+    --mobile-nav-h: 0px;
+  }
+
+  @media (max-width: 767px) {
+    :root {
+      --mobile-nav-h: calc(3.5rem + env(safe-area-inset-bottom));
+    }
+  }
+
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;

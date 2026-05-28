@@ -284,7 +284,7 @@ export default function ScorecardPanel({ zone }: Props) {
             onClick={openPanel}
             className={
               isMobile
-                ? "fixed bottom-6 left-1/2 -translate-x-1/2 z-30 glass-strong rounded-full px-5 py-3 border border-border hover:bg-[rgba(255,255,255,0.06)] transition-colors shadow-chrome btn-press flex items-center gap-2 pb-safe"
+                ? "fixed left-1/2 -translate-x-1/2 z-40 glass-strong rounded-full px-5 py-3 border border-border hover:bg-[rgba(255,255,255,0.06)] transition-colors shadow-chrome btn-press flex items-center gap-2 bottom-[calc(var(--mobile-nav-h)+0.75rem)]"
                 : "fixed right-0 top-1/2 -translate-y-1/2 z-30 glass-strong rounded-l-control px-2.5 py-5 border border-r-0 border-border hover:bg-[rgba(255,255,255,0.06)] transition-colors btn-press"
             }
           >
