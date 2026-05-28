@@ -43,7 +43,7 @@ export default function SignUpPage() {
         initial={{ opacity: 0, y: 20, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
-        className="glass-strong rounded-login w-full max-w-[420px] p-8 shadow-modal"
+        className="glass-strong rounded-login w-full max-w-[420px] p-6 sm:p-8 shadow-modal"
       >
         <motion.div
           initial={{ opacity: 0, x: -10 }}

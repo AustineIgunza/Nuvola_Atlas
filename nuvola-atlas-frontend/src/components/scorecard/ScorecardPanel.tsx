@@ -21,7 +21,9 @@ export default function ScorecardPanel({ zone }: Props) {
   const closePanel = useUIStore((s) => s.closePanel);
   const openPanel = useUIStore((s) => s.openPanel);
   const navigate = useNavigate();
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches,
+  );
   const [exporting, setExporting] = useState(false);
 
   const handleOpenReport = useCallback(() => {

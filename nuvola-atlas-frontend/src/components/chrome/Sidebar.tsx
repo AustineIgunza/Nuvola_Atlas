@@ -36,7 +36,9 @@ export default function Sidebar() {
 
   // Mobile drawer state
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches,
+  );
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 768px)");

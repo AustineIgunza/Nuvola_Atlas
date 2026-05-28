@@ -24,6 +24,11 @@
     -moz-osx-font-smoothing: grayscale;
     font-feature-settings: "ss01", "cv11";
     scroll-behavior: smooth;
+    /* Stop iOS Safari from auto-resizing text on orientation change, which
+       can leave the layout looking zoomed on iPhone. */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    overflow-x: hidden;
   }
 
   body {
@@ -36,6 +41,7 @@
     min-height: 100vh;
     min-height: 100dvh;
     overflow-x: hidden;
+    width: 100%;
   }
 
   h1, h2, h3, h4, h5, h6 {

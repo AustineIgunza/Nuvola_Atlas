@@ -14,7 +14,9 @@ export default function InfraPage() {
   const navigate = useNavigate();
   const [localSelected, setLocalSelected] = useState<string | null>(projectId ?? null);
   const selectedId = localSelected;
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches,
+  );
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 1023px)");
@@ -43,7 +45,7 @@ export default function InfraPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.35 }}
-        className="h-[calc(100dvh-3.5rem)] p-3 sm:p-5"
+        className="h-[calc(100dvh-3.5rem-var(--mobile-nav-h))] p-3 sm:p-5"
       >
         <div className="w-full h-full lg:max-w-[480px] mx-auto lg:mx-0">
           <ProjectList selectedId={selectedId} onSelect={handleSelect} />
