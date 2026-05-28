@@ -76,6 +76,16 @@
       transition-duration: 0.01ms !important;
     }
   }
+
+  /* iOS Safari auto-zooms when focusing inputs under 16px. Force every
+     form control to 16px on touch devices so the page stops zooming in. */
+  @media (pointer: coarse) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    select,
+    textarea {
+      font-size: 16px;
+    }
+  }
 }
 
 @layer components {
