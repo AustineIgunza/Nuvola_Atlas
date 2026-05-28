@@ -90,6 +90,12 @@ export function addSourcesAndLayers(
     id: "roads-glow", type: "line", source: "roads",
     paint: { "line-color": "#2C6FB0", "line-width": 8, "line-blur": 6, "line-opacity": active.roads ? 0.25 : 0 },
   }, "roads-line");
+  // Invisible thicker hit-target so touch on mobile is reliable. Opacity 0 but
+  // still receives click/tap events. Width tuned to a finger-tip.
+  m.addLayer({
+    id: "roads-touch", type: "line", source: "roads",
+    paint: { "line-color": "#000", "line-width": 22, "line-opacity": 0 },
+  });
 
   m.addLayer({
     id: "grid-outer", type: "circle", source: "grid",
@@ -106,6 +112,11 @@ export function addSourcesAndLayers(
       "circle-color": ["case", ["==", ["get", "status"], "active"], "#C9A227", "#999"],
       "circle-opacity": active.energy ? 0.9 : 0,
     },
+  });
+  // Larger invisible hit-target above the visible grid circles for tap accuracy.
+  m.addLayer({
+    id: "grid-touch", type: "circle", source: "grid",
+    paint: { "circle-radius": 22, "circle-color": "#000", "circle-opacity": 0 },
   });
 
   m.addLayer({

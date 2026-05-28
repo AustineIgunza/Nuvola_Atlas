@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Bell, Settings, Layers, Check } from "lucide-react";
+import { Search, Bell, Settings, Layers, Check, Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { springSettle } from "@/lib/motion";
 import { useUIStore } from "@/stores/ui";
+import { useThemeStore } from "@/stores/theme";
 import { api } from "@/api";
 
 const VIEW_MODES = ["Map", "Satellite", "Terrain"] as const;
@@ -15,17 +16,30 @@ const VIEW_STYLES: Record<ViewMode, string> = {
   Satellite: "mapbox://styles/mapbox/satellite-streets-v12",
   Terrain: "mapbox://styles/mapbox/outdoors-v12",
 };
+const STYLE_TO_MODE = Object.entries(VIEW_STYLES).reduce<Record<string, ViewMode>>(
+  (acc, [mode, style]) => {
+    acc[style] = mode as ViewMode;
+    return acc;
+  },
+  {},
+);
 
 export default function TopBar() {
   const location = useLocation();
   const navigate = useNavigate();
   const openSearch = useUIStore((s) => s.openSearch);
   const isAtlas = location.pathname === "/atlas";
-  const [activeMode, setActiveMode] = useState<ViewMode>("Map");
+  const mapStyle = useUIStore((s) => s.mapStyle);
   const setMapStyle = useUIStore((s) => s.setMapStyle);
+  // Derive the active mode from the persistent map style so the indicator is
+  // always in sync (e.g., after a route change that remounts TopBar).
+  const activeMode: ViewMode = STYLE_TO_MODE[mapStyle] ?? "Map";
   const [showSettings, setShowSettings] = useState(false);
   const [viewMenuOpen, setViewMenuOpen] = useState(false);
   const viewMenuRef = useRef<HTMLDivElement>(null);
+  const settingsRef = useRef<HTMLDivElement>(null);
+  const theme = useThemeStore((s) => s.theme);
+  const setTheme = useThemeStore((s) => s.setTheme);
 
   // Close mobile view menu on outside click
   useEffect(() => {
@@ -39,8 +53,19 @@ export default function TopBar() {
     return () => document.removeEventListener("mousedown", onClick);
   }, [viewMenuOpen]);
 
+  // Close settings dropdown on outside click
+  useEffect(() => {
+    if (!showSettings) return;
+    function onClick(e: MouseEvent) {
+      if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) {
+        setShowSettings(false);
+      }
+    }
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, [showSettings]);
+
   function selectViewMode(mode: ViewMode) {
-    setActiveMode(mode);
     setMapStyle(VIEW_STYLES[mode]);
     setViewMenuOpen(false);
   }
@@ -182,7 +207,7 @@ export default function TopBar() {
         </motion.button>
 
         {/* Settings */}
-        <div className="relative">
+        <div className="relative" ref={settingsRef}>
           <motion.button
             onClick={() => setShowSettings(!showSettings)}
             whileHover={{ scale: 1.05, rotate: 30 }}
@@ -190,6 +215,7 @@ export default function TopBar() {
             transition={springSettle}
             className="w-9 h-9 flex items-center justify-center rounded-control text-ink-3 hover:text-ink-2 hover:bg-[rgba(255,255,255,0.05)] transition-colors"
             aria-label="Settings"
+            aria-expanded={showSettings}
           >
             <Settings size={16} />
           </motion.button>
@@ -200,18 +226,53 @@ export default function TopBar() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -8, scale: 0.95 }}
                 transition={{ duration: 0.15 }}
-                className="absolute right-0 top-11 w-56 glass-strong rounded-card border border-border p-3 shadow-modal z-50"
+                className="absolute right-0 top-11 w-64 glass-strong rounded-card border border-border p-3 shadow-modal z-50"
               >
-                <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.1em] mb-2">Settings</div>
+                <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.1em] mb-2">Appearance</div>
+
+                {/* Theme segmented control */}
+                <div className="flex items-center gap-1 p-0.5 rounded-control bg-[rgba(255,255,255,0.04)] mb-3">
+                  {(["light", "dark"] as const).map((mode) => (
+                    <button
+                      key={mode}
+                      onClick={() => setTheme(mode)}
+                      className={cn(
+                        "relative flex-1 flex items-center justify-center gap-1.5 h-8 rounded-chip text-[12px] font-medium transition-colors",
+                        theme === mode
+                          ? "text-ink-1"
+                          : "text-ink-4 hover:text-ink-3",
+                      )}
+                      aria-pressed={theme === mode}
+                    >
+                      {theme === mode && (
+                        <motion.div
+                          layoutId="theme-mode"
+                          className="absolute inset-0 bg-[rgba(255,255,255,0.10)] rounded-chip glow-accent"
+                          transition={springSettle}
+                        />
+                      )}
+                      <span className="relative z-10 flex items-center gap-1.5">
+                        {mode === "light" ? <Sun size={13} /> : <Moon size={13} />}
+                        {mode === "light" ? "Light" : "Dark"}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.1em] mb-2">Preferences</div>
                 <div className="text-[12px] text-ink-3 space-y-2">
-                  <div className="flex items-center justify-between">
+                  <label className="flex items-center justify-between cursor-pointer">
                     <span>Reduced motion</span>
-                    <input type="checkbox" className="accent-accent" onChange={() => document.documentElement.classList.toggle("reduce-motion")} />
-                  </div>
-                  <div className="flex items-center justify-between">
+                    <input
+                      type="checkbox"
+                      className="accent-accent"
+                      onChange={() => document.documentElement.classList.toggle("reduce-motion")}
+                    />
+                  </label>
+                  <label className="flex items-center justify-between cursor-pointer">
                     <span>Auto-refresh</span>
                     <input type="checkbox" defaultChecked className="accent-accent" />
-                  </div>
+                  </label>
                 </div>
               </motion.div>
             )}

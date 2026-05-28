@@ -26,10 +26,10 @@ export default function ProjectDetail({ project }: Props) {
   return (
     <motion.div
       key={project.id}
-      initial={{ opacity: 0, x: 16 }}
-      animate={{ opacity: 1, x: 0 }}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={springSettle}
-      className="glass-strong rounded-card p-5 sm:p-6 h-full overflow-y-auto"
+      className="p-5 sm:p-6"
     >
       <motion.div
         initial={{ opacity: 0, y: 6 }}

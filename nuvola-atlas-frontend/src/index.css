@@ -286,3 +286,72 @@
     padding-top: max(0.75rem, env(safe-area-inset-top));
   }
 }
+
+/* ── Light theme overrides ────────────────────────────────────────────────
+   data-theme="light" on <html> repaints the dark UI as a light variant.
+   Selectors use the html[data-theme=...] specificity so they win against
+   single-class Tailwind utilities without needing !important.            */
+html[data-theme="light"] body {
+  background: #eef2f7;
+  color: #14181f;
+}
+
+html[data-theme="light"] #root::before {
+  background:
+    radial-gradient(ellipse 60% 50% at 85% 15%, rgba(74, 158, 255, 0.10) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 60% at 15% 85%, rgba(184, 136, 255, 0.08) 0%, transparent 70%);
+}
+
+html[data-theme="light"] .glass {
+  background: rgba(255, 255, 255, 0.78);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .glass-strong {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(0, 0, 0, 0.10);
+}
+
+html[data-theme="light"] .glass-glow {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(74, 158, 255, 0.22);
+  box-shadow: 0 0 20px rgba(74, 158, 255, 0.06), inset 0 0 30px rgba(74, 158, 255, 0.03);
+}
+
+html[data-theme="light"] .bg-atlas-base { background-color: #eef2f7; }
+html[data-theme="light"] .text-ink-1 { color: #14181f; }
+html[data-theme="light"] .text-ink-2 { color: #3c4655; }
+html[data-theme="light"] .text-ink-3 { color: #6c7585; }
+html[data-theme="light"] .text-ink-4 { color: #98a1b1; }
+html[data-theme="light"] .border-border { border-color: rgba(0, 0, 0, 0.08); }
+
+/* Surface fills that are written inline as rgba(255,255,255, x) — flip to dark
+   ink overlays so they remain visible on a white card */
+html[data-theme="light"] .bg-\[rgba\(255\,255\,255\,0\.02\)\] { background-color: rgba(0, 0, 0, 0.03); }
+html[data-theme="light"] .bg-\[rgba\(255\,255\,255\,0\.04\)\] { background-color: rgba(0, 0, 0, 0.04); }
+html[data-theme="light"] .bg-\[rgba\(255\,255\,255\,0\.05\)\] { background-color: rgba(0, 0, 0, 0.05); }
+html[data-theme="light"] .bg-\[rgba\(255\,255\,255\,0\.06\)\] { background-color: rgba(0, 0, 0, 0.06); }
+html[data-theme="light"] .bg-\[rgba\(255\,255\,255\,0\.08\)\] { background-color: rgba(0, 0, 0, 0.08); }
+html[data-theme="light"] .bg-\[rgba\(255\,255\,255\,0\.10\)\] { background-color: rgba(0, 0, 0, 0.10); }
+html[data-theme="light"] .hover\:bg-\[rgba\(255\,255\,255\,0\.06\)\]:hover { background-color: rgba(0, 0, 0, 0.06); }
+html[data-theme="light"] .hover\:bg-\[rgba\(255\,255\,255\,0\.05\)\]:hover { background-color: rgba(0, 0, 0, 0.05); }
+html[data-theme="light"] .hover\:bg-\[rgba\(255\,255\,255\,0\.1\)\]:hover { background-color: rgba(0, 0, 0, 0.10); }
+html[data-theme="light"] .hover\:bg-\[rgba\(255\,255\,255\,0\.04\)\]:hover { background-color: rgba(0, 0, 0, 0.04); }
+html[data-theme="light"] .bg-\[rgba\(74\,158\,255\,0\.1\)\] { background-color: rgba(74, 158, 255, 0.10); }
+html[data-theme="light"] .bg-\[rgba\(74\,158\,255\,0\.08\)\] { background-color: rgba(74, 158, 255, 0.08); }
+
+/* Sidebar/topbar selected nav backdrop stays accent-tinted in light mode */
+html[data-theme="light"] .nav-glow {
+  box-shadow: 0 0 16px rgba(74, 158, 255, 0.18), inset 0 0 12px rgba(74, 158, 255, 0.06);
+}
+
+/* Scrollbar tweak for light */
+html[data-theme="light"] ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.12); }
+html[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.22); }
+
+/* Mapbox popup readability: works on both themes because background is white,
+   but in dark mode the close button needs to flip */
+html[data-theme="dark"] .atlas-popup .mapboxgl-popup-content {
+  background: rgba(255, 255, 255, 0.96);
+  color: #14181f;
+}
