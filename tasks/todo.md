@@ -210,7 +210,154 @@ Owner: Ken + Joy, ongoing.
 
 ---
 
-## 9. Risks (mapped to proposal Section 5.3)
+## 9. OUTSTANDING — platform engineering, ops, and security
+
+Owners: Khillon (Laravel + Postgres + auth), Devyan (FastAPI ingestion, infra strategy, CI/CD), me (frontend deploy + client telemetry), Ken (compliance and budget sign-off). Everything in this section is **pre-pilot blocking** unless explicitly marked otherwise.
+
+### 9.1 APIs and backend logic
+- [ ] Write the public API spec as OpenAPI 3.1 (`docs/api/openapi.yaml`). Single source of truth for the frontend, Khillon's controllers, and any future partner integration. Generate Postman / Insomnia collections from it.
+- [ ] Version the API under `/api/v1/`. Reserve `/api/v2/` for breaking changes. Never delete a v1 endpoint without a 90-day deprecation header.
+- [ ] Standardize the error response shape (RFC 7807 `application/problem+json`: `type`, `title`, `status`, `detail`, `instance`). Frontend already expects `{ message, errors }`; align both sides on RFC 7807 before partners depend on it.
+- [ ] Pagination: cursor-based for `/api/alerts` and `/api/activity` (these grow without bound), page-based for `/api/zones`, `/api/projects`, `/api/reports` (small, bounded sets).
+- [ ] Validate every write with Laravel `FormRequest` classes; never trust client-supplied IDs.
+- [ ] Resource layer (Laravel API Resources) so internal Eloquent models can change without breaking the wire shape.
+- [ ] Idempotency keys (`Idempotency-Key` header) on all `POST`s once partner programmatic access is enabled.
+- [ ] Background jobs (Laravel Queue + Horizon) for: report generation, scheduled ingestion, bulk PDF export, broadcast fan-out.
+- [ ] Document the Laravel ↔ FastAPI contract separately — these are internal endpoints, never exposed publicly. Auth via a shared signed secret in the request header, rotated quarterly.
+- [ ] Reverb broadcast payloads documented in the OpenAPI spec under an `x-async` extension (or AsyncAPI side-doc) so the frontend doesn't have to grep the Laravel source to know what shape arrives.
+
+### 9.2 Database and storage
+- [ ] Final PostGIS schema review with Khillon before any partner data is ingested. Tables we know we need: `zones`, `pillar_scores`, `pillar_metric_history`, `infra_projects`, `project_milestones`, `alerts`, `reports`, `activity`, `users`, `personal_access_tokens` (Sanctum), `ingestion_runs`, `audit_log`.
+- [ ] GIST spatial indexes on every geometry column. Without these, `ST_Intersects` queries fall back to a sequential scan.
+- [ ] Add `created_at`, `updated_at`, `last_verified_at`, `verification_source` columns on data tables so freshness is queryable.
+- [ ] Materialized views for the county-wide rollups the Vitality page uses; refresh nightly via cron.
+- [ ] Migrations are the **only** way to change schema — no manual `psql` edits in production. Migrations are committed to VCS and applied via CI.
+- [ ] PgBouncer (transaction pooling) in front of Postgres. Laravel + FastAPI both connect through it. Saves dozens of idle connections per request.
+- [ ] Object storage for report PDFs, partner attachments, screen recordings: pick **Cloudflare R2** (cheapest egress) or **Vercel Blob** (zero-config with the frontend host). Decision before the first partner pilot.
+- [ ] Pillar metric history retention: keep raw monthly readings forever (it's tiny), keep computed scores forever, throw away raw HTTP responses from ingestion after 30 days.
+
+### 9.3 Auth and permissions
+- [ ] Laravel Sanctum for SPA bearer tokens (already chosen, already wired). Confirm token TTL matches frontend assumption of 8h.
+- [ ] Email verification on sign-up — required before any non-read action.
+- [ ] Password reset flow with rate-limited token email.
+- [ ] Roles: `viewer` (public read), `partner` (read + zone-scoped write), `editor` (internal team write), `admin` (everything + user management). Use Laravel's `Gate` + a `spatie/laravel-permission`-style package.
+- [ ] Separate **API key** auth path for programmatic partners (independent of user bearer tokens, longer TTL, revokable in admin UI).
+- [ ] 2FA (TOTP) required for `admin` accounts before launch. Use Laravel Fortify's TwoFactorAuthenticatable.
+- [ ] OAuth (Google / Microsoft) for partner orgs that require SSO — Phase 2, not blocking the pilot.
+- [ ] Per-zone data access control for sensitive layers (e.g., raw NPS crime data only for partners that signed a data-use letter). Enforced at the controller + DB-policy level, not just in the UI.
+
+### 9.4 Hosting and deployment
+- [ ] Frontend: Vercel (already live). Production = `main`, previews = every PR.
+- [ ] Backend (Laravel + Reverb): pick one and stick with it.
+  - **Recommended**: Laravel Forge + a single DigitalOcean droplet (~USD 12/month) for the pilot year; well-documented, easy handover. Move to Forge + multi-node only if partner traffic justifies it.
+  - Alternative: Laravel Vapor (AWS Lambda) — pay-per-request, scales to zero, but harder for a student team to debug.
+  - Alternative: a single VPS we manage by hand — cheapest but fragile.
+- [ ] FastAPI ingestion service: Fly.io (free for small workloads) or Railway. Separate from Laravel so an ingestion outage doesn't take the API down.
+- [ ] Managed Postgres + PostGIS: **Supabase** (PostGIS extension supported, free tier covers pilot) or **Neon** (branching is great for previews). Decision before month 3.
+- [ ] DNS via Cloudflare — free, with built-in DDoS and analytics. Even before launch.
+- [ ] TLS: Let's Encrypt via Forge (auto-renew) on the backend; Vercel handles frontend TLS automatically.
+- [ ] Three environments: `production`, `staging`, `local`. **Never** demo to a partner from `local` or from `production` mid-deploy.
+- [ ] Secrets in each platform's secret manager (Vercel env vars, Forge env, Fly secrets). Nothing sensitive committed to the repo — `.env.example` only.
+
+### 9.5 Cloud and compute
+- [ ] Laravel Horizon for queue workers, autoscaling at the worker level inside the backend host.
+- [ ] Cron scheduling: Laravel scheduler for backend jobs; FastAPI uses APScheduler or a host-level cron, depending on host.
+- [ ] Mapbox usage tracking: tag every request with the deployment env so we can attribute cost. Alert at 60 % of the monthly cap.
+- [ ] Distance Matrix API (paid, Pillar 3): wrap in a daily budget guard — kill the job if it would push us over the cap.
+- [ ] Compute sizing starts at the smallest viable tier on every service; document in `docs/infra/sizing.md` so future-us can scale by replacing one config block.
+
+### 9.6 CI/CD and version control
+- [ ] GitHub as canonical (already). Enforce branch protection on `main`: at least one approving review, status checks must pass, no force push.
+- [ ] Conventional Commits enforced via a commit-msg hook + a GitHub Action that checks PR titles.
+- [ ] Pre-commit hooks (Husky or lefthook): `prettier --write`, `tsc --noEmit`, `vitest --run --changed`, `php-cs-fixer`, `phpstan` (where relevant).
+- [ ] GitHub Actions pipelines:
+  - **Frontend** (this directory): `typecheck` + `vitest run` + `build` on every PR; Vercel produces a preview deployment automatically.
+  - **Backend** (`nuvola-atlas-backend/`): `composer install --no-dev --optimize-autoloader`, `php artisan test`, `php artisan migrate --pretend`, `php artisan config:cache` smoke check.
+  - **Ingestion** (`nuvola-atlas-ingestion/` when split out): `ruff`, `mypy`, `pytest`.
+- [ ] Dependabot enabled for both `composer.json` and `package.json`. Weekly auto-PRs.
+- [ ] SemVer tags on backend releases (`v0.1.0` etc) so we can correlate a deployed bug with a code state.
+- [ ] **Rollback playbook**: every deploy must be reversible in under 5 minutes. Vercel rollback is one click; Forge keeps the previous release directory and can `php artisan deploy:rollback`. Document the exact button to press in `docs/ops/rollback.md`.
+
+### 9.7 Security and RLS
+- [ ] HSTS header (`max-age=31536000; includeSubDomains; preload`) on every response from both frontend and backend.
+- [ ] Content Security Policy hardened: only `'self'` + `*.mapbox.com` + the backend host. No inline scripts. No `unsafe-eval`.
+- [ ] AES-256 at rest for the database (managed Postgres providers handle this transparently — verify the toggle is on). TLS 1.3 in transit.
+- [ ] Secret rotation policy: every 90 days for service-to-service shared secrets; immediately on any team-member departure.
+- [ ] Dependency scanning: GitHub Dependabot + `npm audit --omit=dev` in CI. Block CI on `high` or `critical` advisories.
+- [ ] SQL: **only** Eloquent / parameterized PDO. Forbid raw `DB::raw()` in code review unless wrapped in a justified comment.
+- [ ] XSS: React escapes by default + CSP. The only place we render `dangerouslySetInnerHTML` today is the Mapbox popup HTML strings in `useMapPopups.ts` — keep that block tightly scoped and never interpolate user-supplied content into it.
+- [ ] CSRF: Sanctum handles it for the SPA. API-key clients are stateless and don't need CSRF.
+- [ ] **PostgreSQL Row-Level Security (RLS)** on partner-scoped tables (e.g., `partner_dataset_overlays`). Each partner can only read / write rows where `partner_id = current_setting('app.current_partner_id')`. Laravel sets the session variable per-request from the authenticated token.
+- [ ] Audit log on every write: `audit_log(actor_id, action, resource_type, resource_id, before, after, ip, ua, created_at)`. Append-only.
+- [ ] Pentest before public launch — engage Strathmore Information Security Club or pay for a small external assessment (budget line in Section 7 of the proposal).
+- [ ] Responsible-disclosure email (`security@<entity-domain>`) + a short SECURITY.md at the repo root.
+
+### 9.8 Rate limiting
+- [ ] Per-IP throttle on `/sign-in`, `/sign-up`, `/forgot-password`: 10 attempts / 10 minutes / IP (Laravel `RateLimiter::for`).
+- [ ] Per-user-token throttle on read APIs: 600 req/min, burst 100.
+- [ ] Per-API-key throttle on partner programmatic access: configurable per partner via the admin panel; default 60 req/min.
+- [ ] Cloudflare's free Bot-Fight Mode in front of the backend; auto-blocks the noisy stuff before it hits Laravel.
+- [ ] Webhook write paths (when we add them) must be HMAC-signed AND rate-limited.
+- [ ] Frontend: TanStack Query already deduplicates in-flight requests and respects `staleTime: 60_000`. No further client-side limiting needed pre-pilot.
+
+### 9.9 Caching and CDN
+- [ ] Vercel CDN handles the static frontend automatically. Confirm `Cache-Control: public, max-age=31536000, immutable` on hashed assets.
+- [ ] Backend HTTP caching: `ETag` + `Cache-Control: private, max-age=300` on `/api/zones` (rarely changes), `/api/projects` (slow-moving). Skip caching on `/api/alerts` and `/api/activity` (real-time).
+- [ ] Redis (managed via Upstash free tier OR a Forge-managed instance) for:
+  - Laravel cache driver (replaces `file` driver in prod).
+  - Session driver.
+  - Queue backend (Horizon needs it).
+  - Rate-limit counters.
+  - Reverb pub/sub once we scale to >1 backend node.
+- [ ] Mapbox tile cache: handled by Mapbox's CDN automatically; verify cache headers show up in browser DevTools so the user isn't downloading tiles repeatedly.
+- [ ] TanStack Query (frontend): keep `staleTime: 60_000` for now; bump to 5 min for `/api/zones` once we confirm backend update frequency matches.
+
+### 9.10 Load balancing and scaling
+- [ ] Frontend: Vercel handles it.
+- [ ] Backend pilot phase: single Forge-managed node. Document the upgrade path:
+  1. Single node (pilot).
+  2. Two nodes behind a Forge load balancer + shared Redis + shared object storage (one signed-in partner with active usage).
+  3. Multi-region (when we cross 2+ counties with concurrent usage).
+- [ ] Backend must be **stateless** from day one — no session writes to the local filesystem, no `storage/app` writes that aren't replicated. Otherwise step 2 breaks.
+- [ ] Database scaling: start single-instance. Add a read replica on Neon/Supabase the moment a partner's dashboard starts visibly lagging. Migrations always run against primary.
+- [ ] Reverb scaling: Reverb supports multi-node via Redis pub/sub. Untested at our scale — load-test with Artillery before any public launch.
+- [ ] Auto-scaling rules (Forge / Fly): scale up at CPU > 70 % sustained 5 min; scale down at CPU < 30 % sustained 15 min. Cap at 3 nodes during pilot to control cost.
+
+### 9.11 Error tracking and logs
+- [ ] **Sentry** for frontend + backend + FastAPI. Free tier covers the pilot. Capture user context (without PII) so we can correlate an error to a partner session.
+- [ ] Upload source maps for every production frontend build (Sentry Vite plugin in `vite.config.ts`).
+- [ ] Frontend: hook `ErrorBoundary.componentDidCatch` into Sentry so client-side errors don't just `console.error` and disappear.
+- [ ] Backend: Laravel's exception handler reports to Sentry; structured JSON logs to stdout for log aggregation.
+- [ ] FastAPI: `structlog` + Sentry's ASGI integration.
+- [ ] Centralized log aggregation: **BetterStack** (Logtail) free tier for the pilot. One dashboard for the three services.
+- [ ] Frontend network telemetry: ship a tiny `/api/client-telemetry` endpoint that records timing + 4xx/5xx rates from real partner sessions (opt-in for partners).
+- [ ] Alert thresholds (Sentry + BetterStack):
+  - Any `error.level=fatal` → immediate Slack ping.
+  - 5xx error rate > 1 % sustained 5 min → ping.
+  - Ingestion job failure → ping.
+  - Mapbox tile load failure rate > 5 % → ping (signals quota or outage).
+- [ ] Lightweight in-app "Report a problem" widget (mailto for the pilot, real ticketing later).
+
+### 9.12 Availability and recovery
+- [ ] Uptime target: **99 %** for the pilot (≈ 7 h / month allowed downtime). 99.9 % only once we have a paid partner with an SLA.
+- [ ] Public status page: BetterStack free status page tied to synthetic checks against `/api/health` and the Atlas page.
+- [ ] **Backups**:
+  - Managed Postgres provider's automated daily backups (Supabase / Neon both do this).
+  - Verified weekly: pull the latest backup into a scratch DB and run a smoke query.
+  - Off-site copy: weekly `pg_dump` shipped to Cloudflare R2 in a separate region.
+  - Object storage (reports, screen recordings): R2 versioning + lifecycle rule for 30-day undelete.
+- [ ] Backup-restore drill every quarter. Time it. Document in `docs/ops/restore-drill.md`.
+- [ ] **RTO** (Recovery Time Objective): 4 hours for the API in a full-host loss.
+- [ ] **RPO** (Recovery Point Objective): ≤ 1 hour for the database (point-in-time recovery), ≤ 24 hours for object storage.
+- [ ] Health checks: `GET /api/health` (DB ping + Redis ping + cache write) and `GET /api/health/ingestion` (latest successful ingestion < 6h ago). Hooked into status page and CI smoke tests.
+- [ ] Single-point-of-failure audit: list every external dependency (Mapbox, KNBS, KPLC scraper targets, Sentry, GitHub). For each, what happens if it's down for 24 hours? Document the degradation strategy.
+- [ ] Incident response runbook (`docs/ops/incident-response.md`): who pages who, what the first 15 minutes look like, when to update the status page.
+- [ ] Light on-call rotation among the five of us (we're not a 24/7 operation, but during partner working hours someone is reachable).
+- [ ] Postmortem template (`docs/ops/postmortem-template.md`) for any incident lasting > 30 min. Blameless.
+
+---
+
+## 10. Risks (mapped to proposal Section 5.3)
 
 - Government data sources incomplete → mitigated by 4.2 / 4.4 multi-source triangulation; surface gaps in the Data Sources panel.
 - Pilot partner slow to commit → start 5.1 outreach now; don't wait.
@@ -220,7 +367,7 @@ Owner: Ken + Joy, ongoing.
 
 ---
 
-## 10. "Pilot-ready" definition (the bar we hit in 6 months)
+## 11. "Pilot-ready" definition (the bar we hit in 6 months)
 
 A partner can:
 1. Sign in.
