@@ -1,9 +1,9 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Map, BarChart3, HardHat, FileText, Bell, LogOut,
-  ChevronLeft, ChevronRight, Info, Menu, X,
+  ChevronRight, Info, Menu, X,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { springSettle, staggerContainer, staggerItem, panelSlideLeft } from "@/lib/motion";
@@ -58,7 +58,7 @@ export default function Sidebar() {
 
   function handleZoneClick(id: string) {
     setSelectedZone(id);
-    if (location.pathname !== "/atlas") navigate("/atlas");
+    if (location.pathname !== "/atlas") navigate(`/atlas?zone=${id}`);
     setMobileOpen(false);
   }
 
@@ -71,30 +71,37 @@ export default function Sidebar() {
     <>
       {/* Brand */}
       <div className="flex items-center gap-3 px-4 h-14 border-b border-border shrink-0">
-        <motion.div
-          className="w-7 h-7 rounded-lg shrink-0 flex items-center justify-center glow-accent"
-          style={{ background: "conic-gradient(from 135deg, #4a9eff, #b888ff, #4a9eff)" }}
-          whileHover={{ rotate: 90 }}
-          transition={springSettle}
+        <Link
+          to="/atlas"
+          onClick={() => { setSelectedZone(null); setMobileOpen(false); }}
+          className="flex items-center gap-3 min-w-0 flex-1 rounded-control -mx-1 px-1 py-1 hover:bg-[rgba(255,255,255,0.04)] transition-colors btn-press"
+          aria-label="Nuvola Atlas — go to map"
         >
-          <div className="w-[18px] h-[18px] rounded-md bg-atlas-base flex items-center justify-center">
-            <div className="w-[5px] h-[5px] rounded-full bg-white" />
-          </div>
-        </motion.div>
-        {(!collapsed || isMobile) && (
-          <motion.span
-            initial={{ opacity: 0, x: -8 }}
-            animate={{ opacity: 1, x: 0 }}
+          <motion.div
+            className="w-7 h-7 rounded-lg shrink-0 flex items-center justify-center glow-accent"
+            style={{ background: "conic-gradient(from 135deg, #4a9eff, #b888ff, #4a9eff)" }}
+            whileHover={{ rotate: 90 }}
             transition={springSettle}
-            className="text-[15px] font-semibold tracking-[-0.02em] text-ink-1"
           >
-            Nuvola Atlas
-          </motion.span>
-        )}
+            <div className="w-[18px] h-[18px] rounded-md bg-atlas-base flex items-center justify-center">
+              <div className="w-[5px] h-[5px] rounded-full bg-white" />
+            </div>
+          </motion.div>
+          {(!collapsed || isMobile) && (
+            <motion.span
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={springSettle}
+              className="text-[15px] font-semibold tracking-[-0.02em] text-ink-1 truncate"
+            >
+              Nuvola Atlas
+            </motion.span>
+          )}
+        </Link>
         {isMobile && (
           <button
             onClick={() => setMobileOpen(false)}
-            className="ml-auto w-8 h-8 flex items-center justify-center rounded-control text-ink-3 hover:text-ink-2 btn-press"
+            className="w-8 h-8 flex items-center justify-center rounded-control text-ink-3 hover:text-ink-2 btn-press shrink-0"
             aria-label="Close menu"
           >
             <X size={18} />

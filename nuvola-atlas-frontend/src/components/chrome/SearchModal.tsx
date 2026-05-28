@@ -37,7 +37,7 @@ export default function SearchModal() {
 
   const handleSelect = useCallback((item: (typeof allItems)[0]) => {
     closeSearch();
-    if (item.type === "zone") { setSelectedZone(item.id); navigate("/atlas"); }
+    if (item.type === "zone") { setSelectedZone(item.id); navigate(`/atlas?zone=${item.id}`); }
     else navigate(`/infrastructure/${item.id}`);
   }, [closeSearch, setSelectedZone, navigate]);
 

@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { api } from "@/api";
@@ -13,7 +15,22 @@ export default function AtlasPage() {
   });
 
   const selectedZoneId = useUIStore((s) => s.selectedZoneId);
+  const setSelectedZone = useUIStore((s) => s.setSelectedZone);
+  const closePanel = useUIStore((s) => s.closePanel);
   const selectedZone = zones?.find((z) => z.id === selectedZoneId);
+  const [searchParams] = useSearchParams();
+
+  // On initial mount, honor ?zone= deeplink only; otherwise start unselected.
+  useEffect(() => {
+    const zoneParam = searchParams.get("zone");
+    if (zoneParam) {
+      setSelectedZone(zoneParam);
+    } else {
+      setSelectedZone(null);
+      closePanel();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <AppShell>

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronUp } from "lucide-react";
 import { useUIStore } from "@/stores/ui";
-import { springSettle, panelSlideRight, panelSlideUp } from "@/lib/motion";
+import { springSettle, panelSlideRight, modalBackdrop, modalContent } from "@/lib/motion";
 import Ring from "./Ring";
 import PillarRow from "./PillarRow";
 import ActivityFeed from "./ActivityFeed";
@@ -66,31 +66,8 @@ export default function ScorecardPanel({ zone }: Props) {
     ? Math.round((zone.deltas.social + zone.deltas.safety + zone.deltas.density + zone.deltas.infra) / 4)
     : 0;
 
-  return (
-    <>
-      <AnimatePresence mode="wait">
-        {panelOpen && zone && (
-          <motion.aside
-            key={zone.id}
-            variants={isMobile ? panelSlideUp : panelSlideRight}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            transition={springSettle}
-            className={
-              isMobile
-                ? "fixed inset-x-0 bottom-0 z-40 glass-strong border-t border-border rounded-t-modal max-h-[70vh] overflow-y-auto pb-safe"
-                : "w-[420px] xl:w-[440px] shrink-0 glass-strong border-l border-border overflow-y-auto h-full"
-            }
-          >
-            {/* Drag handle on mobile */}
-            {isMobile && (
-              <div className="flex justify-center pt-2 pb-1">
-                <div className="w-8 h-1 rounded-full bg-[rgba(255,255,255,0.2)]" />
-              </div>
-            )}
-
-            <div className="p-3 sm:p-5">
+  const body = zone ? (
+    <div className="p-3 sm:p-5">
               {/* Header */}
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
@@ -243,11 +220,60 @@ export default function ScorecardPanel({ zone }: Props) {
                 </motion.button>
               </motion.div>
             </div>
-          </motion.aside>
+  ) : null;
+
+  return (
+    <>
+      <AnimatePresence mode="wait">
+        {panelOpen && zone && (
+          isMobile ? (
+            // Mobile: centered modal popup with backdrop
+            <motion.div
+              key="mobile-modal"
+              className="fixed inset-0 z-40 flex items-center justify-center p-3 pb-safe"
+            >
+              <motion.div
+                variants={modalBackdrop}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                transition={{ duration: 0.2 }}
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                onClick={closePanel}
+              />
+              <motion.div
+                key={zone.id}
+                variants={modalContent}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                transition={springSettle}
+                className="relative w-full max-w-[420px] max-h-[85vh] glass-strong border border-border rounded-modal overflow-y-auto shadow-modal"
+                role="dialog"
+                aria-modal="true"
+                aria-label={`${zone.name} scorecard`}
+              >
+                {body}
+              </motion.div>
+            </motion.div>
+          ) : (
+            // Desktop: persistent side panel
+            <motion.aside
+              key={zone.id}
+              variants={panelSlideRight}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              transition={springSettle}
+              className="w-[420px] xl:w-[440px] shrink-0 glass-strong border-l border-border overflow-y-auto h-full"
+            >
+              {body}
+            </motion.aside>
+          )
         )}
       </AnimatePresence>
 
-      {/* Handle when panel is closed but zone is selected */}
+      {/* Re-open chip — when panel is dismissed but a zone is still selected */}
       <AnimatePresence>
         {!panelOpen && zone && (
           <motion.button

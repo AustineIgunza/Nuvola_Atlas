@@ -33,7 +33,7 @@ export default function Leaderboard() {
 
   function handleRowClick(id: string) {
     setSelectedZone(id);
-    navigate("/atlas");
+    navigate(`/atlas?zone=${id}`);
   }
 
   function exportCSV() {

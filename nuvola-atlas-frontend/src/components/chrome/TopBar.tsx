@@ -1,15 +1,16 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Bell, Settings } from "lucide-react";
+import { Search, Bell, Settings, Layers, Check } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { springSettle } from "@/lib/motion";
 import { useUIStore } from "@/stores/ui";
 import { api } from "@/api";
 
 const VIEW_MODES = ["Map", "Satellite", "Terrain"] as const;
-const VIEW_STYLES: Record<string, string> = {
+type ViewMode = (typeof VIEW_MODES)[number];
+const VIEW_STYLES: Record<ViewMode, string> = {
   Map: "mapbox://styles/mapbox/light-v11",
   Satellite: "mapbox://styles/mapbox/satellite-streets-v12",
   Terrain: "mapbox://styles/mapbox/outdoors-v12",
@@ -20,9 +21,29 @@ export default function TopBar() {
   const navigate = useNavigate();
   const openSearch = useUIStore((s) => s.openSearch);
   const isAtlas = location.pathname === "/atlas";
-  const [activeMode, setActiveMode] = useState<string>("Map");
+  const [activeMode, setActiveMode] = useState<ViewMode>("Map");
   const setMapStyle = useUIStore((s) => s.setMapStyle);
   const [showSettings, setShowSettings] = useState(false);
+  const [viewMenuOpen, setViewMenuOpen] = useState(false);
+  const viewMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close mobile view menu on outside click
+  useEffect(() => {
+    if (!viewMenuOpen) return;
+    function onClick(e: MouseEvent) {
+      if (viewMenuRef.current && !viewMenuRef.current.contains(e.target as Node)) {
+        setViewMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, [viewMenuOpen]);
+
+  function selectViewMode(mode: ViewMode) {
+    setActiveMode(mode);
+    setMapStyle(VIEW_STYLES[mode]);
+    setViewMenuOpen(false);
+  }
 
   const { data: alerts } = useQuery({
     queryKey: ["alerts"],
@@ -37,44 +58,85 @@ export default function TopBar() {
       transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
       className="h-14 flex items-center justify-between px-4 sm:px-5 border-b border-border shrink-0"
     >
-      <div className="flex items-center gap-2 sm:gap-3 ml-10 md:ml-0">
+      <div className="flex items-center gap-2 sm:gap-3 ml-12 md:ml-0 min-w-0">
         {isAtlas && (
-          <div className="flex items-center gap-0.5 p-0.5 rounded-control bg-[rgba(255,255,255,0.04)]">
-            {VIEW_MODES.map((mode) => (
+          <>
+            {/* Desktop / sm+: full segmented control */}
+            <div className="hidden sm:flex items-center gap-0.5 p-0.5 rounded-control bg-[rgba(255,255,255,0.04)]">
+              {VIEW_MODES.map((mode) => (
+                <motion.button
+                  key={mode}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => selectViewMode(mode)}
+                  className={cn(
+                    "relative px-3 h-7 rounded-chip text-[12px] font-medium transition-colors",
+                    mode === activeMode
+                      ? "text-ink-1"
+                      : "text-ink-4 hover:text-ink-3",
+                  )}
+                >
+                  {mode === activeMode && (
+                    <motion.div
+                      layoutId="view-mode"
+                      className="absolute inset-0 bg-[rgba(255,255,255,0.1)] rounded-chip glow-accent"
+                      transition={springSettle}
+                    />
+                  )}
+                  <span className="relative z-10">{mode}</span>
+                </motion.button>
+              ))}
+            </div>
+
+            {/* Mobile: compact popover trigger — always reachable in portrait */}
+            <div className="sm:hidden relative" ref={viewMenuRef}>
               <motion.button
-                key={mode}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  setActiveMode(mode);
-                  setMapStyle(VIEW_STYLES[mode]);
-                }}
-                className={cn(
-                  "relative px-2 sm:px-3 h-7 rounded-chip text-[11px] sm:text-[12px] font-medium transition-colors",
-                  mode === activeMode
-                    ? "text-ink-1"
-                    : "text-ink-4 hover:text-ink-3",
-                )}
+                onClick={() => setViewMenuOpen((v) => !v)}
+                className="flex items-center gap-1.5 px-2.5 h-8 rounded-control bg-[rgba(255,255,255,0.05)] text-ink-2 text-[12px] font-medium border border-border btn-press"
+                aria-label="Change map view"
+                aria-expanded={viewMenuOpen}
               >
-                {mode === activeMode && (
-                  <motion.div
-                    layoutId="view-mode"
-                    className="absolute inset-0 bg-[rgba(255,255,255,0.1)] rounded-chip glow-accent"
-                    transition={springSettle}
-                  />
-                )}
-                <span className="relative z-10">{mode}</span>
+                <Layers size={13} className="text-ink-3" />
+                <span>{activeMode}</span>
               </motion.button>
-            ))}
-          </div>
+              <AnimatePresence>
+                {viewMenuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute left-0 top-10 w-44 glass-strong rounded-card border border-border p-1 shadow-modal z-50"
+                  >
+                    {VIEW_MODES.map((mode) => (
+                      <button
+                        key={mode}
+                        onClick={() => selectViewMode(mode)}
+                        className={cn(
+                          "w-full flex items-center justify-between h-9 px-3 rounded-chip text-[13px] font-medium transition-colors",
+                          mode === activeMode
+                            ? "text-ink-1 bg-[rgba(74,158,255,0.08)]"
+                            : "text-ink-3 hover:text-ink-2 hover:bg-[rgba(255,255,255,0.05)]",
+                        )}
+                      >
+                        <span>{mode}</span>
+                        {mode === activeMode && <Check size={13} className="text-accent" />}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </>
         )}
 
-        {/* Live feed chip — hidden on small mobile when atlas view toggles are shown */}
+        {/* Live feed chip — hide on mobile atlas to free space */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, ...springSettle }}
           className={cn(
-            "items-center gap-1.5 px-2.5 h-6 rounded-full bg-[rgba(52,201,122,0.1)]",
+            "items-center gap-1.5 px-2.5 h-6 rounded-full bg-[rgba(52,201,122,0.1)] shrink-0",
             isAtlas ? "hidden sm:flex" : "flex",
           )}
         >
