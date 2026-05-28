@@ -1,9 +1,14 @@
 import { useState } from "react";
-import { useNavigate, Navigate, Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { useNavigate, Navigate, Link, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/stores/auth";
 import { api } from "@/api";
 import { springSettle } from "@/lib/motion";
+
+type SignInLocationState = {
+  justRegistered?: boolean;
+  email?: string;
+};
 
 function BrandMark() {
   return (
@@ -24,10 +29,13 @@ export default function SignInPage() {
   const user = useAuthStore((s) => s.user);
   const signIn = useAuthStore((s) => s.signIn);
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const location = useLocation();
+  const navState = (location.state ?? null) as SignInLocationState | null;
+  const [email, setEmail] = useState(navState?.email ?? "");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [justRegistered, setJustRegistered] = useState(Boolean(navState?.justRegistered));
 
   if (user) return <Navigate to="/atlas" replace />;
 
@@ -36,6 +44,7 @@ export default function SignInPage() {
     if (!email || !password) { setError("Enter email and password"); return; }
     setLoading(true);
     setError("");
+    setJustRegistered(false);
     try {
       const res = await api.signIn(email, password);
       signIn(res.user, res.token);
@@ -81,6 +90,23 @@ export default function SignInPage() {
         >
           Spatial Intelligence Network for African Industrial Development
         </motion.p>
+
+        <AnimatePresence>
+          {justRegistered && (
+            <motion.div
+              key="signup-success"
+              initial={{ opacity: 0, y: -6, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: "auto" }}
+              exit={{ opacity: 0, y: -6, height: 0 }}
+              transition={springSettle}
+              role="status"
+              className="mb-5 rounded-control border border-success/30 bg-success/10 px-4 py-3 text-[12px] text-ink-1"
+            >
+              <span className="font-medium text-success">Account created.</span>{" "}
+              <span className="text-ink-2">Sign in to continue.</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>

@@ -7,7 +7,6 @@ import { springSettle } from "@/lib/motion";
 
 export default function SignUpPage() {
   const user = useAuthStore((s) => s.user);
-  const signIn = useAuthStore((s) => s.signIn);
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -26,9 +25,11 @@ export default function SignUpPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await api.register(name, email, password, confirm);
-      signIn(res.user, res.token);
-      navigate("/atlas", { replace: true });
+      await api.register(name, email, password, confirm);
+      navigate("/sign-in", {
+        replace: true,
+        state: { justRegistered: true, email },
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
     } finally {
