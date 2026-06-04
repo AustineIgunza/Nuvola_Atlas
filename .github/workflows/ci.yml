@@ -46,7 +46,7 @@ jobs:
         working-directory: nuvola-atlas-backend
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup PHP 8.3
         uses: shivammathur/setup-php@v2
@@ -125,7 +125,7 @@ jobs:
         working-directory: nuvola-atlas-frontend
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: actions/setup-node@v4
         with:
