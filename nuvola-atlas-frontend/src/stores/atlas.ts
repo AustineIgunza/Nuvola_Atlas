@@ -1,4 +1,7 @@
 import { create } from "zustand";
+import { useChromeStore } from "./chrome";
+import { useThemeStore } from "./theme";
+import { defaultStyleForTheme } from "@/components/map/atlas-map.constants";
 
 interface LayerState {
   roads: boolean;
@@ -18,28 +21,17 @@ interface AtlasState {
   setMapStyle: (style: string) => void;
 }
 
-type ChromeModule = typeof import("./chrome");
-let _chromeStore: ChromeModule["useChromeStore"] | null = null;
-async function getChromeStore() {
-  if (!_chromeStore) {
-    const mod = await import("./chrome");
-    _chromeStore = mod.useChromeStore;
-  }
-  return _chromeStore;
-}
-
 export const useAtlasStore = create<AtlasState>((set) => ({
   selectedZoneId: null,
   activeLayers: { roads: false, energy: false, density: false },
   scrubMonthIdx: 11,
-  mapStyle: "mapbox://styles/mapbox/light-v11",
+  mapStyle: defaultStyleForTheme(useThemeStore.getState().theme),
 
   setSelectedZone: (id) => {
     set({ selectedZoneId: id });
-    getChromeStore().then((chrome) => {
-      if (id !== null) chrome.getState().openPanel();
-      else chrome.getState().closePanel();
-    });
+    const chrome = useChromeStore.getState();
+    if (id !== null) chrome.openPanel();
+    else chrome.closePanel();
   },
   toggleLayer: (key) =>
     set((s) => ({

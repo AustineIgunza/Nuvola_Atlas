@@ -64,6 +64,15 @@ export default function ScorecardPanel({ zone }: Props) {
     return () => mq.removeEventListener("change", handler);
   }, []);
 
+  useEffect(() => {
+    if (!panelOpen) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") closePanel();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [panelOpen, closePanel]);
+
   const totalDelta = zone
     ? Math.round((zone.deltas.social + zone.deltas.safety + zone.deltas.density + zone.deltas.infra) / 4)
     : 0;

@@ -1,8 +1,24 @@
 import { create } from "zustand";
 
-interface AuthUser {
+export type AuthRole = "viewer" | "partner" | "editor" | "admin";
+
+export interface AuthUser {
   name: string;
   email: string;
+  role?: AuthRole;
+  email_verified?: boolean;
+}
+
+const ROLE_RANK: Record<AuthRole, number> = {
+  viewer: 1,
+  partner: 2,
+  editor: 3,
+  admin: 4,
+};
+
+export function hasRoleAtLeast(user: AuthUser | null, required: AuthRole): boolean {
+  if (!user?.role) return false;
+  return ROLE_RANK[user.role] >= ROLE_RANK[required];
 }
 
 interface AuthState {

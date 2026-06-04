@@ -1,12 +1,14 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { api } from "@/api";
 import { useUIStore } from "@/stores/ui";
 import AppShell from "@/components/chrome/AppShell";
-import AtlasMap from "@/components/map/AtlasMap";
 import ScorecardPanel from "@/components/scorecard/ScorecardPanel";
+
+// mapbox-gl is ~1.8 MB; defer it so the Atlas shell paints first.
+const AtlasMap = lazy(() => import("@/components/map/AtlasMap"));
 
 export default function AtlasPage() {
   const { data: zones, isLoading } = useQuery({
@@ -50,7 +52,19 @@ export default function AtlasPage() {
             </div>
           ) : zones ? (
             <div style={{ position: "absolute", inset: 0 }}>
-              <AtlasMap zones={zones} />
+              <Suspense
+                fallback={
+                  <div className="flex items-center justify-center h-full">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full"
+                    />
+                  </div>
+                }
+              >
+                <AtlasMap zones={zones} />
+              </Suspense>
             </div>
           ) : null}
         </div>

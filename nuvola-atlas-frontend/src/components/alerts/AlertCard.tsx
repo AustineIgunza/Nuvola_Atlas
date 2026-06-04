@@ -1,5 +1,5 @@
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, AlertTriangle, Shield, ExternalLink } from "lucide-react";
+import { motion } from "framer-motion";
+import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { formatRelative } from "@/lib/format";
 import { springSettle, staggerItemScale } from "@/lib/motion";
@@ -8,13 +8,12 @@ import type { AlertItem } from "@/types";
 
 interface Props {
   alert: AlertItem;
-  expanded: boolean;
-  onToggle: () => void;
+  selected: boolean;
+  onSelect: () => void;
   zoneName: string;
-  projectName: (id: string) => string;
 }
 
-export default function AlertCard({ alert: a, expanded, onToggle, zoneName, projectName }: Props) {
+export default function AlertCard({ alert: a, selected, onSelect, zoneName }: Props) {
   const impact = IMPACT_STYLES[a.impactLevel] ?? IMPACT_STYLES.moderate;
   const sevColor = SEVERITY_COLORS[a.severity];
 
@@ -25,12 +24,16 @@ export default function AlertCard({ alert: a, expanded, onToggle, zoneName, proj
       layout
       exit={{ opacity: 0, scale: 0.95, x: -20, transition: { duration: 0.2 } }}
       className={cn(
-        "relative rounded-card border border-border transition-opacity overflow-hidden",
-        a.read && "opacity-55",
+        "relative rounded-card border transition-all overflow-hidden",
+        selected
+          ? "border-accent/40 bg-[rgba(74,158,255,0.04)]"
+          : "border-border",
+        a.read && !selected && "opacity-55",
       )}
     >
       <button
-        onClick={onToggle}
+        onClick={onSelect}
+        aria-label={`Open ${a.title}`}
         className="w-full flex gap-3.5 p-4 sm:p-5 text-left hover:bg-[rgba(255,255,255,0.02)] transition-colors"
       >
         <motion.div
@@ -68,16 +71,10 @@ export default function AlertCard({ alert: a, expanded, onToggle, zoneName, proj
           </div>
 
           <h3 className="text-[14px] font-semibold text-ink-1 mb-1.5">{a.title}</h3>
-          <p className="text-[12.5px] text-ink-2 leading-[1.6]">{a.body}</p>
+          <p className="text-[12.5px] text-ink-2 leading-[1.6] line-clamp-2">{a.body}</p>
         </div>
 
-        <ChevronDown
-          size={16}
-          className={cn(
-            "text-ink-4 shrink-0 mt-1 transition-transform",
-            expanded && "rotate-180",
-          )}
-        />
+        <ChevronRight size={16} className="text-ink-4 shrink-0 mt-1" />
 
         {!a.read && (
           <div className="absolute top-3 right-3">
@@ -85,93 +82,6 @@ export default function AlertCard({ alert: a, expanded, onToggle, zoneName, proj
           </div>
         )}
       </button>
-
-      <AnimatePresence>
-        {expanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="overflow-hidden"
-          >
-            <div className="px-5 pb-5 space-y-4 border-t border-border/30 pt-4 ml-[15px]">
-              {a.affectedInfra.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.05 }}
-                >
-                  <h4 className="text-[11px] font-semibold text-ink-3 uppercase tracking-[0.06em] mb-2 flex items-center gap-1.5">
-                    <AlertTriangle size={12} className="text-ink-4" />
-                    Affected Infrastructure
-                  </h4>
-                  <div className="flex flex-wrap gap-1.5">
-                    {a.affectedInfra.map((infra, i) => (
-                      <span
-                        key={i}
-                        className="px-2.5 py-1 rounded-full text-[10px] font-medium bg-[rgba(255,255,255,0.05)] text-ink-2 border border-border/40"
-                      >
-                        {infra}
-                      </span>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-
-              {a.recommendedActions.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                >
-                  <h4 className="text-[11px] font-semibold text-ink-3 uppercase tracking-[0.06em] mb-2 flex items-center gap-1.5">
-                    <Shield size={12} className="text-ink-4" />
-                    Recommended Actions
-                  </h4>
-                  <div className="space-y-1.5">
-                    {a.recommendedActions.map((action, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, x: -6 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.12 + i * 0.03 }}
-                        className="flex items-start gap-2 text-[12px] text-ink-2"
-                      >
-                        <span className="text-accent mt-0.5 shrink-0 text-[10px]">●</span>
-                        <span className="leading-[1.5]">{action}</span>
-                      </motion.div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-
-              {a.relatedProjectIds.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15 }}
-                >
-                  <h4 className="text-[11px] font-semibold text-ink-3 uppercase tracking-[0.06em] mb-2 flex items-center gap-1.5">
-                    <ExternalLink size={12} className="text-ink-4" />
-                    Related Projects
-                  </h4>
-                  <div className="flex flex-wrap gap-1.5">
-                    {a.relatedProjectIds.map((pid) => (
-                      <span
-                        key={pid}
-                        className="px-2.5 py-1 rounded-full text-[10px] font-medium bg-accent/10 text-accent"
-                      >
-                        {projectName(pid)}
-                      </span>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </motion.div>
   );
 }

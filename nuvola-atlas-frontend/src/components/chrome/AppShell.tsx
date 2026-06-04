@@ -2,6 +2,7 @@ import Sidebar from "./Sidebar";
 import TopBar from "./TopBar";
 import SearchModal from "./SearchModal";
 import MobileTabBar from "./MobileTabBar";
+import ProjectQuickView from "./ProjectQuickView";
 import MethodologyModal from "@/components/modals/MethodologyModal";
 
 interface Props {
@@ -19,6 +20,7 @@ export default function AppShell({ children }: Props) {
       <MobileTabBar />
       <SearchModal />
       <MethodologyModal />
+      <ProjectQuickView />
     </div>
   );
 }

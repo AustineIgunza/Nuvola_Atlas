@@ -21,6 +21,9 @@ export function useMapMarkers(
     zones.forEach((zone) => {
       const el = document.createElement("div");
       el.className = "zone-marker";
+      el.setAttribute("role", "button");
+      el.setAttribute("aria-label", `Open scorecard for ${zone.name}`);
+      el.tabIndex = 0;
       const color = markerScoreColor(zone.score);
       el.innerHTML = `
         <div class="zone-pill" style="
@@ -31,7 +34,7 @@ export function useMapMarkers(
           font-size: 11px;
           font-weight: 600;
           cursor: pointer;
-          box-shadow: 0 2px 10px ${color}44, 0 0 16px ${color}33, 0 0 0 2px white;
+          box-shadow: 0 2px 10px ${color}44, 0 0 16px ${color}33, 0 0 0 2px var(--zone-marker-ring);
           transition: transform 0.3s cubic-bezier(0.22,1,0.36,1), box-shadow 0.3s ease;
           white-space: nowrap;
           letter-spacing: -0.01em;
@@ -46,17 +49,23 @@ export function useMapMarkers(
         const pill = el.querySelector(".zone-pill") as HTMLElement;
         if (pill) {
           pill.style.transform = "scale(1.15)";
-          pill.style.boxShadow = `0 4px 16px ${color}66, 0 0 20px ${color}44, 0 0 0 3px white`;
+          pill.style.boxShadow = `0 4px 16px ${color}66, 0 0 20px ${color}44, 0 0 0 3px var(--zone-marker-ring)`;
         }
       });
       el.addEventListener("mouseleave", () => {
         const pill = el.querySelector(".zone-pill") as HTMLElement;
         if (pill) {
           pill.style.transform = "scale(1)";
-          pill.style.boxShadow = `0 2px 10px ${color}44, 0 0 16px ${color}33, 0 0 0 2px white`;
+          pill.style.boxShadow = `0 2px 10px ${color}44, 0 0 16px ${color}33, 0 0 0 2px var(--zone-marker-ring)`;
         }
       });
       el.addEventListener("click", () => setSelectedZone(zone.id));
+      el.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          setSelectedZone(zone.id);
+        }
+      });
 
       const marker = new mapboxgl.Marker({ element: el, anchor: "center" })
         .setLngLat(zone.centroid)
@@ -90,8 +99,8 @@ export function useMapMarkers(
       const color = markerScoreColor(zones[i].score);
       pill.style.transform = isSelected ? "scale(1.2)" : "scale(1)";
       pill.style.boxShadow = isSelected
-        ? `0 4px 20px ${color}88, 0 0 24px ${color}55, 0 0 0 3px white`
-        : `0 2px 10px ${color}44, 0 0 16px ${color}33, 0 0 0 2px white`;
+        ? `0 4px 20px ${color}88, 0 0 24px ${color}55, 0 0 0 3px var(--zone-marker-ring)`
+        : `0 2px 10px ${color}44, 0 0 16px ${color}33, 0 0 0 2px var(--zone-marker-ring)`;
     });
   }, [mapRef, loaded, selectedZoneId, zones]);
 }

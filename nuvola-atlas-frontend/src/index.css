@@ -11,6 +11,14 @@
     /* Height reserved at the bottom of the viewport for the mobile tab bar.
        Zero on desktop, ~56px + iOS safe-area inset on mobile. */
     --mobile-nav-h: 0px;
+    /* Zone marker outer ring — white reads on the dark basemap, but blends
+       into the light basemap, so the light theme below swaps it for a
+       semi-opaque dark stroke. */
+    --zone-marker-ring: #ffffff;
+  }
+
+  html[data-theme="light"] {
+    --zone-marker-ring: rgba(20, 24, 31, 0.55);
   }
 
   @media (max-width: 767px) {
@@ -382,4 +390,24 @@ html[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: rgba(0, 0
 html[data-theme="dark"] .atlas-popup .mapboxgl-popup-content {
   background: rgba(255, 255, 255, 0.96);
   color: #14181f;
+}
+
+/* ── Float-over-map UI ────────────────────────────────────────────────────
+   Layer pills and legend card sit on top of the basemap, not the app
+   surface, so they don't follow data-theme automatically. In dark mode the
+   default white pill / white card reads as bright contrast against the
+   dark basemap. In light mode the basemap is also light, so they need a
+   defined outline / stronger shadow to stop blending. */
+html[data-theme="light"] .layer-pill--off {
+  border: 1px solid rgba(20, 24, 31, 0.18);
+  box-shadow: 0 1px 4px rgba(20, 24, 31, 0.12);
+}
+html[data-theme="light"] .layer-pill--on {
+  box-shadow: 0 4px 14px rgba(20, 24, 31, 0.28);
+}
+html[data-theme="light"] .atlas-legend {
+  border: 1px solid rgba(20, 24, 31, 0.12);
+  box-shadow:
+    0 1px 2px rgba(20, 24, 31, 0.08),
+    0 18px 50px rgba(20, 24, 31, 0.12);
 }

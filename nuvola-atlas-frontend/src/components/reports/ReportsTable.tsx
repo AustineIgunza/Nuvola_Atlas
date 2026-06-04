@@ -1,15 +1,22 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { FileText, Plus } from "lucide-react";
+import { FileText, Plus, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { api } from "@/api";
 import { formatDate, formatBytes } from "@/lib/format";
-import { springSettle, staggerContainer, staggerItem } from "@/lib/motion";
+import {
+  springSettle,
+  staggerContainer,
+  staggerItem,
+  panelSlideRight,
+  modalBackdrop,
+  modalContent,
+} from "@/lib/motion";
 import { STATUS_STYLES } from "./reports.constants";
-import ReportDetailModal from "./ReportDetailModal";
+import ReportDetail from "./ReportDetail";
 import NewReportModal from "./NewReportModal";
-import type { Report, ReportStatus } from "@/types";
+import type { ReportStatus } from "@/types";
 
 const FILTERS: { label: string; value: ReportStatus | "all" }[] = [
   { label: "All", value: "all" },
@@ -21,7 +28,27 @@ const FILTERS: { label: string; value: ReportStatus | "all" }[] = [
 export default function ReportsTable() {
   const [filter, setFilter] = useState<ReportStatus | "all">("all");
   const [modalOpen, setModalOpen] = useState(false);
-  const [detailReport, setDetailReport] = useState<Report | null>(null);
+  const [detailId, setDetailId] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches,
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1023px)");
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
+  useEffect(() => {
+    if (!detailId) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setDetailId(null);
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [detailId]);
 
   const { data: reports } = useQuery({
     queryKey: ["reports"],
@@ -31,6 +58,8 @@ export default function ReportsTable() {
     queryKey: ["zones"],
     queryFn: api.getZones,
   });
+
+  const detailReport = reports?.find((r) => r.id === detailId);
 
   const filtered =
     reports?.filter((r) => filter === "all" || r.status === filter) ?? [];
@@ -112,7 +141,7 @@ export default function ReportsTable() {
                     variants={staggerItem}
                     transition={springSettle}
                     whileHover={{ backgroundColor: "rgba(255,255,255,0.03)" }}
-                    onClick={() => setDetailReport(r)}
+                    onClick={() => setDetailId(r.id)}
                     className="border-b border-border/40 transition-colors cursor-pointer"
                   >
                     <td className="py-3 px-2">
@@ -148,13 +177,94 @@ export default function ReportsTable() {
         </div>
       </motion.div>
 
+      {/* DESKTOP: slide-in side panel */}
       <AnimatePresence>
-        {detailReport && (
-          <ReportDetailModal
-            report={detailReport}
-            zoneName={zoneName(detailReport.zoneId)}
-            onClose={() => setDetailReport(null)}
-          />
+        {!isMobile && detailReport && (
+          <motion.div
+            key="report-side-panel"
+            className="fixed inset-y-0 right-0 z-30 flex"
+            initial={{ pointerEvents: "none" }}
+            animate={{ pointerEvents: "auto" }}
+            exit={{ pointerEvents: "none" }}
+          >
+            <motion.aside
+              key={detailReport.id}
+              variants={panelSlideRight}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              transition={springSettle}
+              className="w-[440px] xl:w-[520px] glass-strong border-l border-border h-full overflow-y-auto shadow-modal"
+              role="complementary"
+              aria-label={`${detailReport.title} details`}
+            >
+              <div className="sticky top-0 z-10 flex items-center justify-between px-4 h-12 border-b border-border glass-strong">
+                <span className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.1em]">
+                  Report details
+                </span>
+                <button
+                  onClick={() => setDetailId(null)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-[rgba(255,255,255,0.06)] text-ink-4 hover:text-ink-2 transition-colors btn-press"
+                  aria-label="Close panel"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+              <ReportDetail
+                report={detailReport}
+                zoneName={zoneName(detailReport.zoneId)}
+              />
+            </motion.aside>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* MOBILE: centered popup modal */}
+      <AnimatePresence>
+        {isMobile && detailReport && (
+          <motion.div
+            key="report-mobile-modal"
+            className="fixed inset-0 z-40 flex items-center justify-center p-3 pb-safe"
+          >
+            <motion.div
+              variants={modalBackdrop}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              transition={{ duration: 0.2 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setDetailId(null)}
+            />
+            <motion.div
+              key={detailReport.id}
+              variants={modalContent}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              transition={springSettle}
+              className="relative w-full max-w-[460px] max-h-[88vh] glass-strong border border-border rounded-modal overflow-y-auto shadow-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-label={`${detailReport.title} details`}
+            >
+              <div className="sticky top-0 z-10 flex items-center justify-between px-4 h-12 border-b border-border glass-strong">
+                <span className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.1em]">
+                  Report details
+                </span>
+                <button
+                  onClick={() => setDetailId(null)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-[rgba(255,255,255,0.06)] text-ink-4 hover:text-ink-2 transition-colors btn-press"
+                  aria-label="Close popup"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+              <ReportDetail
+                report={detailReport}
+                zoneName={zoneName(detailReport.zoneId)}
+              />
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
 

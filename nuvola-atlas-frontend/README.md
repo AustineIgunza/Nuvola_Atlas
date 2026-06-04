@@ -22,13 +22,22 @@ cp .env.example .env
 
 ## Connecting to the Real Backend
 
-When Khillon's Laravel backend is live, change one env var:
+Two env vars control which API the frontend talks to:
 
 ```env
-VITE_API_BASE=https://api.nuvola-atlas.ke
+# Where to send requests. Default: /api/v1 (same-origin, e.g. via a Vercel rewrite)
+VITE_API_BASE=https://api.nuvola-atlas.ke/api/v1
+
+# Master switch. Default is `false` — the app uses mock fixtures. Set to
+# `true` on Vercel Production only; leave preview deployments on mock so
+# partners can review UI without depending on Khillon's backend uptime.
+VITE_USE_REMOTE_API=true
 ```
 
-The mock API client automatically switches to real `fetch()` calls when `VITE_API_BASE` starts with `http`. No code changes needed. See `docs/INTEGRATION.md` for the full API contract.
+When `VITE_USE_REMOTE_API` is anything other than `true`/`1`, the app reads
+from `src/api/mock.ts` and `src/api/fixtures.ts`. No code changes are
+needed to flip between mock and real. The wire contract is documented in
+[`../nuvola-atlas-backend/docs/api/openapi.yaml`](../nuvola-atlas-backend/docs/api/openapi.yaml).
 
 ## File Structure
 

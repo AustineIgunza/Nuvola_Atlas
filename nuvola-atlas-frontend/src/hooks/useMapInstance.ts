@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { NAIROBI, INITIAL_ZOOM } from "@/components/map/atlas-map.constants";
+import { useUIStore } from "@/stores/ui";
 
 const TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 if (TOKEN) mapboxgl.accessToken = TOKEN;
@@ -19,7 +20,11 @@ export function useMapInstance() {
 
     const m = new mapboxgl.Map({
       container,
-      style: "mapbox://styles/mapbox/light-v11",
+      // Seed the map with whatever basemap the atlas store currently holds
+      // (themed by useThemeStore via stores/atlas.ts). useMapStyle still
+      // re-applies on later changes; this just avoids a wasted style flip on
+      // mount when the user is in dark mode.
+      style: useUIStore.getState().mapStyle,
       center: NAIROBI,
       zoom: INITIAL_ZOOM,
       pitch: 15,

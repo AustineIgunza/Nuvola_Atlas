@@ -13,6 +13,7 @@ export default function SearchModal() {
   const open = useUIStore((s) => s.searchOpen);
   const closeSearch = useUIStore((s) => s.closeSearch);
   const setSelectedZone = useUIStore((s) => s.setSelectedZone);
+  const openQuickView = useUIStore((s) => s.openQuickView);
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
@@ -38,8 +39,8 @@ export default function SearchModal() {
   const handleSelect = useCallback((item: (typeof allItems)[0]) => {
     closeSearch();
     if (item.type === "zone") { setSelectedZone(item.id); navigate(`/atlas?zone=${item.id}`); }
-    else navigate(`/infrastructure/${item.id}`);
-  }, [closeSearch, setSelectedZone, navigate]);
+    else openQuickView(item.id);
+  }, [closeSearch, setSelectedZone, navigate, openQuickView]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {

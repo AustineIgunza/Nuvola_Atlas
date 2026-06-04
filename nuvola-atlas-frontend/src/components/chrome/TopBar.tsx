@@ -7,22 +7,31 @@ import { cn } from "@/lib/cn";
 import { springSettle } from "@/lib/motion";
 import { useUIStore } from "@/stores/ui";
 import { useThemeStore } from "@/stores/theme";
+import {
+  BASEMAP_STYLES,
+  MAP_STYLES,
+  defaultStyleForTheme,
+} from "@/components/map/atlas-map.constants";
 import { api } from "@/api";
 
 const VIEW_MODES = ["Map", "Satellite", "Terrain"] as const;
 type ViewMode = (typeof VIEW_MODES)[number];
-const VIEW_STYLES: Record<ViewMode, string> = {
-  Map: "mapbox://styles/mapbox/light-v11",
-  Satellite: "mapbox://styles/mapbox/satellite-streets-v12",
-  Terrain: "mapbox://styles/mapbox/outdoors-v12",
-};
-const STYLE_TO_MODE = Object.entries(VIEW_STYLES).reduce<Record<string, ViewMode>>(
-  (acc, [mode, style]) => {
-    acc[style] = mode as ViewMode;
-    return acc;
-  },
-  {},
-);
+
+// "Map" resolves at render time so it follows the current theme; Satellite
+// and Terrain are fixed Mapbox styles that ignore theme.
+function styleForViewMode(mode: ViewMode, theme: "light" | "dark"): string {
+  if (mode === "Satellite") return MAP_STYLES.satellite;
+  if (mode === "Terrain") return MAP_STYLES.terrain;
+  return defaultStyleForTheme(theme);
+}
+
+// Reverse lookup: any "Map" basemap (light-v11 OR dark-v11) maps to "Map".
+function modeForStyle(style: string): ViewMode {
+  if (BASEMAP_STYLES.has(style)) return "Map";
+  if (style === MAP_STYLES.satellite) return "Satellite";
+  if (style === MAP_STYLES.terrain) return "Terrain";
+  return "Map";
+}
 
 export default function TopBar() {
   const location = useLocation();
@@ -33,13 +42,22 @@ export default function TopBar() {
   const setMapStyle = useUIStore((s) => s.setMapStyle);
   // Derive the active mode from the persistent map style so the indicator is
   // always in sync (e.g., after a route change that remounts TopBar).
-  const activeMode: ViewMode = STYLE_TO_MODE[mapStyle] ?? "Map";
+  const activeMode: ViewMode = modeForStyle(mapStyle);
   const [showSettings, setShowSettings] = useState(false);
   const [viewMenuOpen, setViewMenuOpen] = useState(false);
   const viewMenuRef = useRef<HTMLDivElement>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
   const theme = useThemeStore((s) => s.theme);
   const setTheme = useThemeStore((s) => s.setTheme);
+
+  // Theme follows basemap: if the user is on the "Map" basemap, swap to the
+  // theme-appropriate variant when theme flips. Leave Satellite / Terrain
+  // alone — those are explicit overrides, not theme-driven.
+  useEffect(() => {
+    if (!BASEMAP_STYLES.has(mapStyle)) return;
+    const next = defaultStyleForTheme(theme);
+    if (next !== mapStyle) setMapStyle(next);
+  }, [theme, mapStyle, setMapStyle]);
 
   // Close mobile view menu on outside click
   useEffect(() => {
@@ -66,7 +84,7 @@ export default function TopBar() {
   }, [showSettings]);
 
   function selectViewMode(mode: ViewMode) {
-    setMapStyle(VIEW_STYLES[mode]);
+    setMapStyle(styleForViewMode(mode, theme));
     setViewMenuOpen(false);
   }
 
