@@ -1,0 +1,637 @@
+openapi: 3.1.0
+info:
+  title: Nuvola Atlas API
+  version: 1.0.0
+  summary: Spatial intelligence + Vitality Index API for Nairobi County (pilot).
+  description: |
+    Public API for the Nuvola Atlas platform. The frontend, partner
+    integrations, and FastAPI ingestion services consume this contract.
+
+    All endpoints are namespaced under `/api/v1/`. Breaking changes go to
+    `/api/v2/`; v1 endpoints will not be removed without a 90-day
+    deprecation header. Errors are returned as RFC 7807
+    `application/problem+json`.
+  contact:
+    name: Nuvola Atlas Team
+    email: security@nuvola-atlas.example
+  license:
+    name: TBD (pre-pilot)
+servers:
+  - url: https://api.nuvola-atlas.example/api/v1
+    description: Production
+  - url: http://localhost:8000/api/v1
+    description: Local development
+security:
+  - bearerAuth: []
+tags:
+  - name: Zones
+    description: Sub-county zone data and Vitality scores
+  - name: Projects
+    description: Infrastructure projects
+  - name: Alerts
+    description: Live alerts feed
+  - name: Reports
+    description: Partner-facing reports
+  - name: History
+    description: Vitality score history
+  - name: Vitality
+    description: Methodology and pillar metadata
+  - name: Auth
+    description: Authentication
+  - name: Ops
+    description: Operational endpoints (unversioned)
+paths:
+  /zones:
+    get:
+      tags: [Zones]
+      summary: List zones
+      description: Page-paginated list of all sub-county zones with their Vitality scores.
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ZonePage'
+  /zones/{id}:
+    get:
+      tags: [Zones]
+      summary: Get zone detail
+      description: Full zone payload including boundary polygon and layers.
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/ZoneId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Zone' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /zones/{id}/layers:
+    get:
+      tags: [Zones]
+      summary: Get zone GeoJSON layers
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/ZoneId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/ZoneLayer' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /zones/{id}/activity:
+    get:
+      tags: [Zones]
+      summary: Zone activity feed
+      description: Cursor-paginated. Use the `meta.next_cursor` to page forward.
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/ZoneId'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityCursorPage'
+        '404': { $ref: '#/components/responses/NotFound' }
+  /projects:
+    get:
+      tags: [Projects]
+      summary: List infrastructure projects
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - in: query
+          name: type
+          schema: { type: string, enum: [road, energy, grid] }
+        - in: query
+          name: zone_id
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectPage'
+  /projects/{id}:
+    get:
+      tags: [Projects]
+      summary: Get project detail
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Project' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /alerts:
+    get:
+      tags: [Alerts]
+      summary: List alerts (cursor-paginated)
+      description: |
+        The feed grows without bound — pagination is cursor-based.
+        Pass `meta.next_cursor` back via the `cursor` query parameter
+        to advance.
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - in: query
+          name: severity
+          schema: { type: string, enum: [high, medium, low] }
+        - in: query
+          name: read
+          schema: { type: boolean }
+        - in: query
+          name: zone_id
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertCursorPage'
+  /alerts/mark-all-read:
+    post:
+      tags: [Alerts]
+      summary: Mark all alerts as read
+      description: Requires `editor` or `admin` role.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /reports:
+    get:
+      tags: [Reports]
+      summary: List reports
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - in: query
+          name: status
+          schema: { type: string, enum: [draft, review, published] }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportPage'
+    post:
+      tags: [Reports]
+      summary: Create a new report
+      description: Requires `editor` or `admin` role.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportCreate'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Report' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /history:
+    get:
+      tags: [History]
+      summary: Vitality history timeline
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/HistoryPoint' }
+                  meta: { $ref: '#/components/schemas/PageMeta' }
+  /vitality/methodology:
+    get:
+      tags: [Vitality]
+      summary: Pillar definitions, weights, and methodology
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pillars:
+                    type: array
+                    items: { $ref: '#/components/schemas/PillarDef' }
+  /auth/sign-in:
+    post:
+      tags: [Auth]
+      summary: Authenticate
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, format: password, minLength: 8 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  user: { $ref: '#/components/schemas/User' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new account
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name: { type: string }
+                email: { type: string, format: email }
+                password: { type: string, format: password, minLength: 8 }
+      responses:
+        '201':
+          description: Created
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /auth/forgot-password:
+    post:
+      tags: [Auth]
+      summary: Send password-reset email
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses:
+        '200':
+          description: Reset link sent if account exists
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /auth/reset-password:
+    post:
+      tags: [Auth]
+      summary: Reset password using emailed token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, email, password]
+              properties:
+                token: { type: string }
+                email: { type: string, format: email }
+                password: { type: string, format: password, minLength: 8 }
+      responses:
+        '200':
+          description: OK
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Current authenticated user
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+  /auth/sign-out:
+    post:
+      tags: [Auth]
+      summary: Revoke the current bearer token
+      responses:
+        '204':
+          description: No content
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum personal access token
+  parameters:
+    Page:
+      in: query
+      name: page
+      schema: { type: integer, minimum: 1, default: 1 }
+    Cursor:
+      in: query
+      name: cursor
+      schema: { type: string, nullable: true }
+      description: Opaque cursor returned in `meta.next_cursor`. Omit on first page.
+    ZoneId:
+      in: path
+      name: id
+      required: true
+      schema: { type: string }
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unauthenticated:
+      description: Missing or invalid bearer token
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Forbidden:
+      description: Authenticated but the caller's role does not permit this action
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    ValidationError:
+      description: Validation failed
+      content:
+        application/problem+json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/Problem'
+              - type: object
+                properties:
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items: { type: string }
+  schemas:
+    Problem:
+      type: object
+      description: RFC 7807 problem details.
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string }
+      required: [title, status]
+    PageMeta:
+      type: object
+      properties:
+        current_page: { type: integer }
+        last_page: { type: integer }
+        per_page: { type: integer }
+        total: { type: integer }
+    CursorMeta:
+      type: object
+      properties:
+        per_page: { type: integer }
+        next_cursor: { type: string, nullable: true }
+        prev_cursor: { type: string, nullable: true }
+    Zone:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        score: { type: integer, minimum: 0, maximum: 100 }
+        centroid:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items: { type: number }
+        boundary:
+          description: GeoJSON polygon or multi-polygon
+          type: object
+          nullable: true
+        pillars:
+          type: object
+          properties:
+            social: { type: integer }
+            safety: { type: integer }
+            density: { type: integer }
+            infra: { type: integer }
+        deltas:
+          type: object
+          properties:
+            social: { type: integer }
+            safety: { type: integer }
+            density: { type: integer }
+            infra: { type: integer }
+        layers:
+          type: array
+          items: { $ref: '#/components/schemas/ZoneLayer' }
+    ZoneLayer:
+      type: object
+      properties:
+        zoneId: { type: string }
+        kind: { type: string, enum: [roads, energy, density] }
+        featureCollection:
+          description: GeoJSON FeatureCollection
+          type: object
+    ZonePage:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Zone' }
+        meta: { $ref: '#/components/schemas/PageMeta' }
+    Project:
+      type: object
+      properties:
+        id: { type: string }
+        zoneId: { type: string }
+        name: { type: string }
+        agency: { type: string }
+        type: { type: string, enum: [road, energy, grid] }
+        status: { type: string }
+        progress: { type: integer, minimum: 0, maximum: 100 }
+        budget: { type: string }
+        started: { type: string, format: date }
+        eta: { type: string, format: date }
+        milestones:
+          type: array
+          items:
+            type: object
+            properties:
+              date: { type: string, format: date }
+              label: { type: string }
+              done: { type: boolean }
+    ProjectPage:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Project' }
+        meta: { $ref: '#/components/schemas/PageMeta' }
+    Alert:
+      type: object
+      properties:
+        id: { type: string }
+        severity: { type: string, enum: [high, medium, low] }
+        kind: { type: string }
+        title: { type: string }
+        body: { type: string }
+        zoneId: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        read: { type: boolean }
+        impactLevel: { type: string }
+        affectedInfra:
+          type: array
+          items: { type: string }
+        recommendedActions:
+          type: array
+          items: { type: string }
+        relatedProjectIds:
+          type: array
+          items: { type: string }
+    AlertCursorPage:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Alert' }
+        meta: { $ref: '#/components/schemas/CursorMeta' }
+    Activity:
+      type: object
+      properties:
+        id: { type: string }
+        zoneId: { type: string }
+        kind: { type: string }
+        message: { type: string }
+        createdAt: { type: string, format: date-time }
+    ActivityCursorPage:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Activity' }
+        meta: { $ref: '#/components/schemas/CursorMeta' }
+    Report:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        author: { type: string }
+        zoneId: { type: string, nullable: true }
+        status: { type: string, enum: [draft, review, published] }
+        priority: { type: string, enum: [low, medium, high, critical] }
+        type: { type: string }
+        format: { type: string }
+        date: { type: string, format: date }
+        sizeBytes: { type: integer }
+        executiveSummary: { type: string }
+        pillarFocus:
+          type: array
+          items: { type: string, enum: [social, safety, density, infra] }
+        tags:
+          type: array
+          items: { type: string }
+    ReportCreate:
+      type: object
+      required: [title, status]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 200 }
+        zoneId: { type: string, nullable: true }
+        status: { type: string, enum: [draft, review, published] }
+        priority: { type: string, enum: [low, medium, high, critical] }
+        type: { type: string }
+        executiveSummary: { type: string }
+        pillarFocus:
+          type: array
+          items: { type: string, enum: [social, safety, density, infra] }
+        tags:
+          type: array
+          items: { type: string }
+    ReportPage:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Report' }
+        meta: { $ref: '#/components/schemas/PageMeta' }
+    HistoryPoint:
+      type: object
+      properties:
+        zoneId: { type: string }
+        month: { type: string }
+        score: { type: integer, minimum: 0, maximum: 100 }
+    PillarDef:
+      type: object
+      properties:
+        key: { type: string, enum: [social, safety, density, infra] }
+        label: { type: string }
+        weight: { type: number }
+        description: { type: string }
+        subMetrics:
+          type: array
+          items:
+            type: object
+            properties:
+              key: { type: string }
+              label: { type: string }
+              source: { type: string }
+    User:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string, format: email }
+        role: { type: string, enum: [viewer, partner, editor, admin] }
+        email_verified: { type: boolean }

@@ -18,7 +18,7 @@ class AuthApiTest extends TestCase
             'password' => Hash::make('password123'),
         ]);
 
-        $response = $this->postJson('/api/auth/sign-in', [
+        $response = $this->postJson('/api/v1/auth/sign-in', [
             'email' => 'test@nuvola.ke',
             'password' => 'password123',
         ]);
@@ -35,7 +35,7 @@ class AuthApiTest extends TestCase
             'password' => Hash::make('password123'),
         ]);
 
-        $response = $this->postJson('/api/auth/sign-in', [
+        $response = $this->postJson('/api/v1/auth/sign-in', [
             'email' => 'test@nuvola.ke',
             'password' => 'wrongpass',
         ]);
@@ -45,7 +45,7 @@ class AuthApiTest extends TestCase
 
     public function test_sign_in_validation_fails(): void
     {
-        $response = $this->postJson('/api/auth/sign-in', []);
+        $response = $this->postJson('/api/v1/auth/sign-in', []);
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['email', 'password']);

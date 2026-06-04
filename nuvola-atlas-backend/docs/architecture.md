@@ -70,7 +70,7 @@ Nuvola Atlas is a spatial intelligence platform for African industrial developme
 ## Authentication Flow
 
 ```
-1. POST /api/auth/sign-in { email, password }
+1. POST /api/v1/auth/sign-in { email, password }
    │
    ▼
 2. Sanctum creates personal access token (expires in 8 hours)
@@ -99,21 +99,40 @@ Nuvola Atlas is a spatial intelligence platform for African industrial developme
 
 ## API Endpoints
 
+Authoritative spec: [`docs/api/openapi.yaml`](api/openapi.yaml) (OpenAPI 3.1).
+All endpoints are namespaced under `/api/v1/`. Errors are RFC 7807
+`application/problem+json`.
+
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | /api/zones | Public | List all 17 zones with scores |
-| GET | /api/zones/{id} | Public | Zone detail with layers + boundary |
-| GET | /api/zones/{id}/layers | Public | Zone GeoJSON layers |
-| GET | /api/zones/{id}/activity | Public | Zone activity feed |
-| GET | /api/projects | Public | List infrastructure projects |
-| GET | /api/projects/{id} | Public | Project detail with milestones |
-| GET | /api/alerts | Public | List alerts |
-| GET | /api/reports | Public | List reports |
-| GET | /api/history | Public | Vitality history timeline |
-| GET | /api/vitality/methodology | Public | Pillar definitions + weights |
-| POST | /api/auth/sign-in | Public | Authenticate, get token |
-| POST | /api/reports | Auth | Create a new report |
-| POST | /api/alerts/mark-all-read | Auth | Mark all alerts as read |
+| GET | /api/v1/zones | Public | List all 17 zones with scores |
+| GET | /api/v1/zones/{id} | Public | Zone detail with layers + boundary |
+| GET | /api/v1/zones/{id}/layers | Public | Zone GeoJSON layers |
+| GET | /api/v1/zones/{id}/activity | Public | Zone activity feed (cursor) |
+| GET | /api/v1/projects | Public | List infrastructure projects |
+| GET | /api/v1/projects/{id} | Public | Project detail with milestones |
+| GET | /api/v1/alerts | Public | List alerts (cursor) |
+| GET | /api/v1/reports | Public | List reports |
+| GET | /api/v1/history | Public | Vitality history timeline |
+| GET | /api/v1/vitality/methodology | Public | Pillar definitions + weights |
+| POST | /api/v1/auth/sign-in | Public | Authenticate, get token |
+| POST | /api/v1/reports | Editor+ | Create a new report (role: editor or admin) |
+| POST | /api/v1/alerts/mark-all-read | Editor+ | Mark all alerts as read (role: editor or admin) |
+| GET | /api/health | Public | DB + cache health probe |
+
+## Roles
+
+| Role | Rank | Notes |
+|------|------|-------|
+| `viewer` | 1 | Default for new sign-ups. Read-only across all endpoints. |
+| `partner` | 2 | Read access + (future) zone-scoped writes. |
+| `editor` | 3 | Internal team. Can write reports + flip alerts. |
+| `admin` | 4 | Full access + user management. |
+
+Roles are enforced by the `role:` route middleware (`Route::middleware('role:editor,admin')`)
+and by `App\Enums\Role` Gates (`Gate::allows('edit-internal')`). `/auth/me`
+returns the caller's role and `email_verified` flag so the frontend can
+gate UI affordances on the same source of truth.
 
 ## Artisan Commands
 

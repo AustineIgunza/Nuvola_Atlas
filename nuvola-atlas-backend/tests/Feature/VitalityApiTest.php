@@ -10,7 +10,7 @@ class VitalityApiTest extends TestCase
 {
     public function test_can_get_methodology(): void
     {
-        $response = $this->getJson('/api/vitality/methodology');
+        $response = $this->getJson('/api/v1/vitality/methodology');
 
         $response->assertOk()
             ->assertJsonStructure(['pillars'])

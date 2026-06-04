@@ -1,8 +1,14 @@
 # Nuvola Atlas API Reference
 
-Base URL: `http://localhost:8000/api`
+> The authoritative machine-readable spec lives at
+> [`docs/api/openapi.yaml`](api/openapi.yaml) (OpenAPI 3.1). This page is a
+> human-friendly companion — when the two disagree, the OpenAPI file wins.
 
-All endpoints return JSON. Rate limited to 60 requests/minute per IP.
+Base URL: `http://localhost:8000/api/v1`
+
+All endpoints return JSON. Errors are RFC 7807 `application/problem+json`.
+Rate limited to 60 requests/minute per IP. Path examples below omit the
+`/v1` prefix for brevity but should be sent under `/api/v1/...`.
 
 ---
 

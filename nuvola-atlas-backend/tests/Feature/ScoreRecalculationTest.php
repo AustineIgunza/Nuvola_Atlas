@@ -46,7 +46,7 @@ class ScoreRecalculationTest extends TestCase
             ->assertSuccessful();
 
         $zone = Zone::find('test-zone');
-        // Weighted: (80*3 + 70*3 + 60*2 + 75*5) / 13 = (240+210+120+375)/13 ≈ 72.7 → 73
+        // Weighted: (80*3 + 70*3 + 60*2 + 75*5) / 13 = (240+210+120+375)/13 â‰ˆ 72.7 â†’ 73
         $this->assertSame(73, $zone->score);
     }
 
@@ -68,7 +68,7 @@ class ScoreRecalculationTest extends TestCase
 
     public function test_methodology_endpoint_includes_weights(): void
     {
-        $response = $this->getJson('/api/vitality/methodology');
+        $response = $this->getJson('/api/v1/vitality/methodology');
 
         $response->assertOk()
             ->assertJsonStructure(['pillars', 'weights'])

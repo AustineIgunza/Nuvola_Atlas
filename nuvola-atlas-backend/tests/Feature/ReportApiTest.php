@@ -23,16 +23,16 @@ class ReportApiTest extends TestCase
             'format' => 'PDF',
         ]);
 
-        $response = $this->getJson('/api/reports');
+        $response = $this->getJson('/api/v1/reports');
 
-        $response->assertOk()->assertJsonCount(1);
+        $response->assertOk()->assertJsonCount(1, 'data');
     }
 
     public function test_can_create_report(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->editor()->create();
 
-        $response = $this->actingAs($user)->postJson('/api/reports', [
+        $response = $this->actingAs($user)->postJson('/api/v1/reports', [
             'title' => 'New Test Report',
         ]);
 
@@ -42,9 +42,9 @@ class ReportApiTest extends TestCase
 
     public function test_create_report_validation_fails(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->editor()->create();
 
-        $response = $this->actingAs($user)->postJson('/api/reports', []);
+        $response = $this->actingAs($user)->postJson('/api/v1/reports', []);
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['title']);

@@ -51,25 +51,25 @@ class ProjectApiTest extends TestCase
     {
         $this->seedZoneAndProject();
 
-        $response = $this->getJson('/api/projects');
+        $response = $this->getJson('/api/v1/projects');
 
         $response->assertOk()
-            ->assertJsonCount(1)
-            ->assertJsonStructure(['*' => ['id', 'name', 'zoneId', 'type', 'status', 'progress']]);
+            ->assertJsonCount(1, 'data')
+            ->assertJsonStructure(['data' => ['*' => ['id', 'name', 'zoneId', 'type', 'status', 'progress']]]);
     }
 
     public function test_can_show_single_project(): void
     {
         $this->seedZoneAndProject();
 
-        $response = $this->getJson('/api/projects/p1');
+        $response = $this->getJson('/api/v1/projects/p1');
 
         $response->assertOk()->assertJsonPath('id', 'p1');
     }
 
     public function test_show_project_not_found_returns_404(): void
     {
-        $response = $this->getJson('/api/projects/nonexistent');
+        $response = $this->getJson('/api/v1/projects/nonexistent');
 
         $response->assertNotFound();
     }

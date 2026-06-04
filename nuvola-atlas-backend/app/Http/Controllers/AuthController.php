@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Role;
 use App\Http\Requests\ForgotPasswordRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\ResetPasswordRequest;
 use App\Http\Requests\SignInRequest;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -22,6 +24,7 @@ class AuthController extends Controller
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
+        /** @var User $user */
         $user = Auth::user();
         $token = $user->createToken('api')->plainTextToken;
         $expiresAt = now()->addMinutes(config('sanctum.expiration', 480))->toIso8601String();
@@ -29,12 +32,7 @@ class AuthController extends Controller
         return response()->json([
             'token' => $token,
             'expires_at' => $expiresAt,
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'role' => $user->role ?? 'viewer',
-            ],
+            'user' => $this->userPayload($user),
         ]);
     }
 
@@ -46,7 +44,13 @@ class AuthController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+            'role' => Role::Viewer,
         ]);
+
+        // Triggers SendEmailVerificationNotification when the user implements
+        // MustVerifyEmail. In dev the mail goes to log; in prod use a real
+        // mailer (configured via MAIL_* env vars).
+        event(new Registered($user));
 
         $token = $user->createToken('api')->plainTextToken;
         $expiresAt = now()->addMinutes(config('sanctum.expiration', 480))->toIso8601String();
@@ -54,35 +58,25 @@ class AuthController extends Controller
         return response()->json([
             'token' => $token,
             'expires_at' => $expiresAt,
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'role' => $user->role ?? 'viewer',
-            ],
+            'user' => $this->userPayload($user),
         ], 201);
     }
 
     public function me(): JsonResponse
     {
+        /** @var User $user */
         $user = Auth::user();
 
-        return response()->json([
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'role' => $user->role ?? 'viewer',
-        ]);
+        return response()->json($this->userPayload($user));
     }
 
     public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
     {
-        $status = Password::sendResetLink($request->only('email'));
+        Password::sendResetLink($request->only('email'));
 
+        // Don't leak whether the account exists — same response either way.
         return response()->json([
-            'message' => $status === Password::RESET_LINK_SENT
-                ? 'Reset link sent (check mail log in development).'
-                : 'If an account exists, a reset link has been sent.',
+            'message' => 'If an account exists, a reset link has been sent.',
         ]);
     }
 
@@ -92,6 +86,8 @@ class AuthController extends Controller
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function (User $user, string $password) {
                 $user->forceFill(['password' => Hash::make($password)])->save();
+                // Revoke every token — a password reset signals a security
+                // event, so all active sessions should be invalidated.
                 $user->tokens()->delete();
             }
         );
@@ -108,5 +104,16 @@ class AuthController extends Controller
         Auth::user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Signed out.']);
+    }
+
+    private function userPayload(User $user): array
+    {
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role()->value,
+            'email_verified' => $user->hasVerifiedEmail(),
+        ];
     }
 }

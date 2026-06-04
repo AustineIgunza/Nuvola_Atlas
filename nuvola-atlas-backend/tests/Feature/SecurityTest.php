@@ -10,7 +10,7 @@ class SecurityTest extends TestCase
 {
     public function test_api_responses_contain_security_headers(): void
     {
-        $response = $this->getJson('/api/zones');
+        $response = $this->getJson('/api/v1/zones');
 
         $response->assertHeader('X-Content-Type-Options', 'nosniff');
         $response->assertHeader('X-Frame-Options', 'DENY');
@@ -20,20 +20,20 @@ class SecurityTest extends TestCase
 
     public function test_write_routes_require_authentication(): void
     {
-        $this->postJson('/api/alerts/mark-all-read')
+        $this->postJson('/api/v1/alerts/mark-all-read')
             ->assertUnauthorized();
 
-        $this->postJson('/api/reports', ['title' => 'Test'])
+        $this->postJson('/api/v1/reports', ['title' => 'Test'])
             ->assertUnauthorized();
     }
 
     public function test_read_routes_remain_public(): void
     {
-        $this->getJson('/api/zones')->assertOk();
-        $this->getJson('/api/projects')->assertOk();
-        $this->getJson('/api/alerts')->assertOk();
-        $this->getJson('/api/reports')->assertOk();
-        $this->getJson('/api/history')->assertOk();
-        $this->getJson('/api/vitality/methodology')->assertOk();
+        $this->getJson('/api/v1/zones')->assertOk();
+        $this->getJson('/api/v1/projects')->assertOk();
+        $this->getJson('/api/v1/alerts')->assertOk();
+        $this->getJson('/api/v1/reports')->assertOk();
+        $this->getJson('/api/v1/history')->assertOk();
+        $this->getJson('/api/v1/vitality/methodology')->assertOk();
     }
 }

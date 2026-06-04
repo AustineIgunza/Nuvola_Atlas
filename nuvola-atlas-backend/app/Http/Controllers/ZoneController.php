@@ -34,7 +34,7 @@ class ZoneController extends Controller
         Zone::findOrFail($id);
 
         return ActivityResource::collection(
-            Activity::where('zone_id', $id)->latest()->paginate(20)
+            Activity::where('zone_id', $id)->latest()->cursorPaginate(20)
         );
     }
 

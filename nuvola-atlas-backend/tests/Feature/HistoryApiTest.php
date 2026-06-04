@@ -16,8 +16,8 @@ class HistoryApiTest extends TestCase
             'overall_avg' => 69.0,
         ]);
 
-        $response = $this->getJson('/api/history');
+        $response = $this->getJson('/api/v1/history');
 
-        $response->assertOk()->assertJsonCount(1);
+        $response->assertOk()->assertJsonCount(1, 'data');
     }
 }

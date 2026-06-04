@@ -22,14 +22,14 @@ class AlertApiTest extends TestCase
             'read' => false,
         ]);
 
-        $response = $this->getJson('/api/alerts');
+        $response = $this->getJson('/api/v1/alerts');
 
-        $response->assertOk()->assertJsonCount(1);
+        $response->assertOk()->assertJsonCount(1, 'data');
     }
 
     public function test_can_mark_all_read(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->editor()->create();
 
         Alert::create([
             'id' => 'a1',
@@ -41,7 +41,7 @@ class AlertApiTest extends TestCase
             'read' => false,
         ]);
 
-        $response = $this->actingAs($user)->postJson('/api/alerts/mark-all-read');
+        $response = $this->actingAs($user)->postJson('/api/v1/alerts/mark-all-read');
 
         $response->assertOk()->assertJsonPath('ok', true);
         $this->assertDatabaseHas('alerts', ['id' => 'a1', 'read' => true]);

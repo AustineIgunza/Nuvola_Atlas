@@ -42,12 +42,12 @@ class ZoneApiTest extends TestCase
         $this->seedZone();
         $this->seedZone('starehe', 'Starehe');
 
-        $response = $this->getJson('/api/zones');
+        $response = $this->getJson('/api/v1/zones');
 
         $response->assertOk()
-            ->assertJsonCount(2)
+            ->assertJsonCount(2, 'data')
             ->assertJsonStructure([
-                '*' => ['id', 'name', 'score', 'pillars', 'deltas', 'centroid', 'lastSyncMin'],
+                'data' => ['*' => ['id', 'name', 'score', 'pillars', 'deltas', 'centroid', 'lastSyncMin']],
             ]);
     }
 
@@ -55,7 +55,7 @@ class ZoneApiTest extends TestCase
     {
         $this->seedZone();
 
-        $response = $this->getJson('/api/zones/westlands');
+        $response = $this->getJson('/api/v1/zones/westlands');
 
         $response->assertOk()
             ->assertJsonPath('id', 'westlands')
@@ -73,7 +73,7 @@ class ZoneApiTest extends TestCase
             'geojson' => ['type' => 'FeatureCollection', 'features' => []],
         ]);
 
-        $response = $this->getJson('/api/zones/westlands');
+        $response = $this->getJson('/api/v1/zones/westlands');
 
         $response->assertOk()
             ->assertJsonStructure(['layers' => ['roadProgress', 'smartGrid', 'density']]);
@@ -81,7 +81,7 @@ class ZoneApiTest extends TestCase
 
     public function test_show_zone_not_found_returns_404(): void
     {
-        $response = $this->getJson('/api/zones/nonexistent');
+        $response = $this->getJson('/api/v1/zones/nonexistent');
 
         $response->assertNotFound();
     }
@@ -98,9 +98,9 @@ class ZoneApiTest extends TestCase
             'source' => 'KeNHA',
         ]);
 
-        $response = $this->getJson('/api/zones/westlands/activity');
+        $response = $this->getJson('/api/v1/zones/westlands/activity');
 
-        $response->assertOk()->assertJsonCount(1);
+        $response->assertOk()->assertJsonCount(1, 'data');
     }
 
     public function test_can_get_zone_layers(): void
@@ -113,7 +113,7 @@ class ZoneApiTest extends TestCase
             'geojson' => ['type' => 'FeatureCollection', 'features' => []],
         ]);
 
-        $response = $this->getJson('/api/zones/westlands/layers');
+        $response = $this->getJson('/api/v1/zones/westlands/layers');
 
         $response->assertOk()->assertJsonCount(1);
     }

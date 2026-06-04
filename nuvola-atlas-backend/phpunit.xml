@@ -23,9 +23,16 @@
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>
-        <env name="DB_CONNECTION" value="pgsql"/>
-        <env name="DB_PORT" value="5434"/>
-        <env name="DB_DATABASE" value="nuvola_atlas_test"/>
+        <!-- Tests run against the local docker postgres+postgis stack (see
+             docker-compose.yml + docker/postgres/init.sql). All overrides are
+             forced here so a developer's .env (which may point at Supabase
+             or a different host) cannot leak into the test run. -->
+        <env name="DB_CONNECTION" value="pgsql" force="true"/>
+        <env name="DB_HOST" value="127.0.0.1" force="true"/>
+        <env name="DB_PORT" value="5434" force="true"/>
+        <env name="DB_DATABASE" value="nuvola_atlas_test" force="true"/>
+        <env name="DB_USERNAME" value="nuvola" force="true"/>
+        <env name="DB_PASSWORD" value="nuvola_secret" force="true"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>

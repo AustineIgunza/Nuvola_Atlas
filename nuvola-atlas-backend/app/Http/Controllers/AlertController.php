@@ -24,7 +24,7 @@ class AlertController extends Controller
             $query->where('zone_id', $request->input('zone_id'));
         }
 
-        return AlertResource::collection($query->paginate(15));
+        return AlertResource::collection($query->cursorPaginate(15));
     }
 
     public function markAllRead()
