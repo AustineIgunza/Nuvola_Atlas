@@ -1,0 +1,48 @@
+version: 2
+
+updates:
+  # Frontend (npm)
+  - package-ecosystem: npm
+    directory: /nuvola-atlas-frontend
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Africa/Nairobi
+    open-pull-requests-limit: 5
+    labels: [dependencies, frontend]
+    groups:
+      react:
+        patterns: ["react", "react-dom", "@types/react*"]
+      mapbox:
+        patterns: ["mapbox-gl", "@types/mapbox-gl"]
+      tooling:
+        patterns: ["vite", "vitest", "@vitejs/*", "typescript", "tailwindcss", "postcss", "autoprefixer"]
+    ignore:
+      # Hold mapbox-gl major upgrades — they tend to ship breaking style + GL changes.
+      - dependency-name: "mapbox-gl"
+        update-types: ["version-update:semver-major"]
+
+  # Backend (composer)
+  - package-ecosystem: composer
+    directory: /nuvola-atlas-backend
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Africa/Nairobi
+    open-pull-requests-limit: 5
+    labels: [dependencies, backend]
+    groups:
+      laravel:
+        patterns: ["laravel/*"]
+      dev-tooling:
+        dependency-type: "development"
+
+  # CI workflows themselves
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+    labels: [dependencies, ci]
