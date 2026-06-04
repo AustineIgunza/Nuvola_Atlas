@@ -1,17 +1,70 @@
 # NUVOLA ATLAS — Execution Plan
 
 _Owner: Austine Igunza (frontend). Backend / scoring owners: Khillon & Devyan._
-_Last updated: 2026-06-04._
+_Last updated: 2026-06-04 (end of working session)._
+_HEAD: `c839103` on `origin/main`._
 
-## Session log — 2026-06-04 (pushed to `main`)
+## Session log — 2026-06-04 (all pushed to `main`)
 
-Three commits on top of `34f75b1`:
+Six commits on top of `34f75b1`:
 
-- **17846cb** — Backend API contract hardening: `/api/v1/` namespace, RFC 7807 errors, cursor pagination on alerts + activity, OpenAPI 3.1 spec, `/api/health`, test infra pinned to local docker postgres+postgis. Auth hardening: `Role` enum, `EnsureRole` middleware, gated write routes, `MustVerifyEmail`, `/auth/me` returns `role` + `email_verified`. Full suite: 39 tests / 120 assertions / 5s.
-- **0af12e8** — Frontend polish: Reset View button, active-layer pulse, keyboard a11y; `AtlasMap` lazy-loaded (1.8 MB mapbox-gl stays deferred); Alert + Report adopt the Infra side-panel/mobile-modal pattern; `ProjectQuickView` overlay from search; `VITE_USE_REMOTE_API` explicit flag with mock default; `AuthUser` carries `role` + `email_verified`.
-- **1808ddb** — `audit_logs` table + `AuditableObserver` + `Audit::record()` helper; auth events audited; tightened `SecurityHeaders` (CSP + COOP + CORP + HSTS preload). `SECURITY.md` at repo root. Suite: 43 / 137 / ~5s.
+1. **17846cb** `feat(backend)` — API v1 namespace, RFC 7807 errors, role-based auth.
+   - All routes under `/api/v1/`; new `/api/health` (DB + cache probe).
+   - `bootstrap/app.php` renders every API failure as `application/problem+json`.
+   - `/alerts` and `/zones/{id}/activity` now cursor-paginated.
+   - OpenAPI 3.1 spec at `nuvola-atlas-backend/docs/api/openapi.yaml`.
+   - `App\Enums\Role` (viewer/partner/editor/admin) + `EnsureRole` middleware (`role:` alias).
+   - `User implements MustVerifyEmail`; `/auth/me` returns `role` + `email_verified`.
+   - `phpunit.xml` force-overrides DB host/user/pass to local docker postgres+postgis.
+   - Suite at end of commit: **39/120 green ~5s**.
+2. **bb42f59** `feat(frontend)` — map polish, click→popup pass, bundle hygiene, remote API flag.
+   - Reset View (Compass) button on AtlasMap; active layer dots pulse; markers keyboard-accessible; ScorecardPanel closes on Esc.
+   - `AtlasMap` lazy-loaded; AtlasPage shell drops to 18.5 KB, mapbox-gl (1.8 MB) deferred.
+   - `AlertList` + `ReportsTable` adopt the Infra pattern (desktop side panel, mobile centered modal) via new `AlertDetail.tsx` + `ReportDetail.tsx`; legacy `ReportDetailModal.tsx` deleted.
+   - `ProjectQuickView` mounted in `AppShell`; `SearchModal` opens non-zone results as an in-place overlay via `openQuickView`.
+   - `client.ts`: explicit `VITE_USE_REMOTE_API` (default mock); parses both Problem and legacy error shapes.
+   - `AuthUser` carries `role` + `email_verified`; exports `hasRoleAtLeast()` helper.
+3. **0af12e8** `docs(CLAUDE.md)` — routine 4-check baseline (fe tsc + fe vite build + be route:list + be phpunit) + per-slice push cadence are now mandatory in `CLAUDE.md`.
+4. **1808ddb** `feat(backend)` — append-only audit log + tighter security headers.
+   - `audit_logs` table (actor_id, action, resource_type, resource_id, before jsonb, after jsonb, ip, ua, created_at) — no `updated_at`.
+   - `App\Models\AuditLog`, `App\Support\Audit::record()`, `App\Observers\AuditableObserver` registered on `Report` + `Alert`.
+   - Explicit `Audit::record()` for `auth.sign_in`, `auth.sign_out`, `alert.bulk_read`.
+   - `SecurityHeaders` gains CSP (HTML only), HSTS preload (prod), COOP, CORP; also runs on web routes, not just API.
+   - `SECURITY.md` at repo root.
+   - Suite at end of commit: **43/137 green ~5s** (4 new `AuditLogTest` cases).
+5. **b63225a** `docs+fix` — schema reference, mock writes persist across reloads, todo sync.
+   - New `nuvola-atlas-backend/docs/schema.md` — every table catalogued (users, sanctum tokens, zones, zone_layers, projects, alerts, reports, activities, vitality_history, audit_logs) with columns, FK rules, indexes, PostGIS notes; plus the `psql` commands to inspect the live DB.
+   - `mock.ts` persists `reports` + `alerts` state to localStorage so a posted report survives a refresh during demos. (Real persistence still needs `VITE_USE_REMOTE_API=true` + a deployed backend.)
+6. **3cc967d** `ci` — fix npm path, scope checks, add Dependabot.
+   - `.github/workflows/ci.yml`: pnpm → npm; per-job path filters; cancel-in-progress concurrency; cached deps; backend job spins up `postgis/postgis:16-3.4` as a service; runs route smoke + migrate:fresh + phpunit; Pint + PHPStan informational (`continue-on-error: true`) until the ~70 files of pre-existing debt are cleaned up.
+   - `.github/dependabot.yml`: weekly npm + composer PRs (Mon 06:00 EAT), monthly github-actions, grouped updates for react/mapbox/laravel/tooling; mapbox-gl major-version hold.
+7. **c839103** `docs(todo)` — sections 9.6 marked done with commit refs (this file).
 
-**Remaining pre-pilot priorities:** 9.3 API keys + 2FA, 9.7 AES-at-rest verification + RLS scaffold, 9.6 CI pipelines, 3.3 Reverb realtime, 9.11 Sentry wiring.
+### Current end-to-end status
+
+| Layer | State | Notes |
+|-------|-------|-------|
+| Frontend build | ✅ green | `tsc --noEmit` clean; `vite build` warns only on the documented 1.8 MB mapbox chunk; 15/15 vitest tests pass in ~4s. |
+| Backend tests | ✅ 43/137 | `php vendor/phpunit/phpunit/phpunit` (needs `docker compose up -d postgres` first). |
+| Backend routes | ✅ 19 routes | `php artisan route:list --path=api` shows the v1 surface + `/api/health`. |
+| CI on push | ⏳ awaiting first run | First run after the new pipeline is in flight on GitHub — verify it goes green in Actions tab. |
+| Vercel preview | ✅ green | `vercel.json` delegates to `nuvola-atlas-frontend/`. |
+| Vercel production | ⚠️ mock data | `VITE_USE_REMOTE_API` not set on Vercel yet — that's why a posted report disappears on reload. To switch to real data: set `VITE_USE_REMOTE_API=true` + `VITE_API_BASE=https://<backend>/api/v1` on Production and redeploy. Backend has to be deployed first. |
+| Backend hosting | ❌ none yet | Pick Forge + DigitalOcean (recommended in 9.4) or Vercel-hosted Laravel; nothing's live. |
+
+### Manual TODO that only the user can do
+
+- **GitHub → Settings → Branches → `main`** — turn on branch protection (require Backend + Frontend checks, 1 approval, block force-push).
+- **Vercel → Project → Settings → Env Vars → Production** — add `VITE_USE_REMOTE_API=true` + `VITE_API_BASE=https://<backend-host>/api/v1` once the backend is hosted.
+- **Verify the first CI run** in GitHub Actions; if it fails on something that passes locally, paste the failing step.
+
+### Next pre-pilot priorities (in suggested order)
+
+1. **9.4 Backend hosting decision + deploy** — until a backend exists at a public URL, the FE flag does nothing. (Forge + DigitalOcean is the documented pick.)
+2. **3.3 Reverb realtime** — only meaningful once the backend is reachable.
+3. **9.11 Sentry + structured JSON logs** — wire frontend + backend; depends on a Sentry org.
+4. **9.7 finish-up** — RLS scaffold on a partner-scoped table, AES-at-rest toggle verified on Supabase, secret-rotation policy doc.
+5. **9.3 finish-up** — API key auth path for programmatic partners; 2FA TOTP for admins.
 
 ---
 
