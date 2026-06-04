@@ -332,12 +332,19 @@ Total requested: KES 1,000,000 over 12 months.
 # Frontend Build Instructions
 
 ## Who I am
-I'm Austine Igunza, frontend programmer on the Nuvola Atlas student team
-(Strathmore University). Per our project proposal my scope is EXACTLY:
-"Mapbox GL JS frontend, dashboard interface, and the user-facing components
-of the Vitality Scorecard." I do NOT build the backend, the FastAPI data
-ingestion, or the scoring algorithm — those are Khillon's and Devyan's. If a
-task drifts into backend territory, STOP and tell me rather than guessing.
+I'm Austine Igunza on the Nuvola Atlas student team (Strathmore University).
+My formal scope per the proposal is the frontend ("Mapbox GL JS frontend,
+dashboard interface, and the user-facing components of the Vitality
+Scorecard"), but **for the current working sessions backend work is
+explicitly authorized** — I am temporarily covering Khillon's Laravel
+backend (and may also touch Devyan's FastAPI ingestion / scoring code where
+needed) to unblock the pilot. Treat backend tasks as in-scope unless I say
+otherwise. Still STOP and ASK on ambiguous architectural decisions rather
+than guessing.
+
+> Reverting this: when the team is back to strict role separation, restore
+> this section to the original "I do NOT build the backend ... STOP and tell
+> me rather than guessing" language.
 
 ## Design north star — READ THIS FIRST
 There is a working prototype in this repo: `NuvolaAtlasPrototype.jsx`.
@@ -355,6 +362,25 @@ Build in the discrete phases listed at the end. After EACH phase:
   3. STOP and wait for my approval before the next phase.
 Never skip ahead or scaffold a later phase early. If a design or scope
 decision is unclear, ASK — do not invent features beyond the spec.
+
+## Routine systems check — do this after EVERY meaningful slice
+Before marking a slice "done" or moving to the next task, run a full
+systems check so regressions surface inside the same session, not after
+the next push:
+
+  1. Frontend types:  `cd nuvola-atlas-frontend && npx tsc --noEmit`
+  2. Frontend build:  `cd nuvola-atlas-frontend && npx vite build`
+  3. Backend routes:  `cd nuvola-atlas-backend && php artisan route:list --path=api`
+  4. Backend tests:   `cd nuvola-atlas-backend && php vendor/phpunit/phpunit/phpunit --no-coverage`
+     (Requires `docker compose up -d postgres` from the backend dir —
+     phpunit.xml force-overrides to a local docker postgres+postgis on
+     127.0.0.1:5434. Without docker the tests hang on TCP timeout.)
+
+If any check fails, fix it before continuing — don't paper over it.
+Treat green-across-all-four as the baseline for "system functions
+work." Push commits after the slice goes green, not at the end of the
+session — keep the remote close to my local state so nothing's lost
+between sessions.
 
 ## Stack — from the proposal section 4.2, do not deviate
 - Framework: React via Inertia.js inside a Laravel 11 app. Assume the Laravel
