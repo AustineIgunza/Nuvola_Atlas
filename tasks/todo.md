@@ -277,16 +277,14 @@ Owners: Khillon (Laravel + Postgres + auth), Devyan (FastAPI ingestion, infra st
 - [ ] Compute sizing starts at the smallest viable tier on every service; document in `docs/infra/sizing.md` so future-us can scale by replacing one config block.
 
 ### 9.6 CI/CD and version control
-- [ ] GitHub as canonical (already). Enforce branch protection on `main`: at least one approving review, status checks must pass, no force push.
-- [ ] Conventional Commits enforced via a commit-msg hook + a GitHub Action that checks PR titles.
-- [ ] Pre-commit hooks (Husky or lefthook): `prettier --write`, `tsc --noEmit`, `vitest --run --changed`, `php-cs-fixer`, `phpstan` (where relevant).
-- [ ] GitHub Actions pipelines:
-  - **Frontend** (this directory): `typecheck` + `vitest run` + `build` on every PR; Vercel produces a preview deployment automatically.
-  - **Backend** (`nuvola-atlas-backend/`): `composer install --no-dev --optimize-autoloader`, `php artisan test`, `php artisan migrate --pretend`, `php artisan config:cache` smoke check.
-  - **Ingestion** (`nuvola-atlas-ingestion/` when split out): `ruff`, `mypy`, `pytest`.
-- [ ] Dependabot enabled for both `composer.json` and `package.json`. Weekly auto-PRs.
-- [ ] SemVer tags on backend releases (`v0.1.0` etc) so we can correlate a deployed bug with a code state.
-- [ ] **Rollback playbook**: every deploy must be reversible in under 5 minutes. Vercel rollback is one click; Forge keeps the previous release directory and can `php artisan deploy:rollback`. Document the exact button to press in `docs/ops/rollback.md`.
+- [x] GitHub Actions pipelines (commit 3cc967d): frontend (npm ci + tsc + vitest + vite build) and backend (composer + route:list + migrate:fresh + phpunit against a PostGIS service; Pint + PHPStan informational). Per-job path filters keep PRs fast; concurrency cancels stale runs.
+- [x] Dependabot (`.github/dependabot.yml`) for npm + composer (weekly Mon 06:00 EAT) and github-actions (monthly), with grouped updates and a mapbox-gl major-version hold.
+- [ ] Branch protection on `main` — must be enabled in repo settings (one approval + status checks required + no force-push). Action is on the org owner, not in-repo.
+- [ ] Conventional Commits enforced via a PR-title check (e.g. `amannn/action-semantic-pull-request`).
+- [ ] Pre-commit hooks (Husky or lefthook) — `tsc --noEmit`, `vitest --changed`, `pint --dirty`, `phpstan`.
+- [ ] Ingestion CI (`nuvola-atlas-ingestion/`) — `ruff`, `mypy`, `pytest` — added when service is split out.
+- [ ] SemVer tags on backend releases.
+- [ ] Rollback playbook at `docs/ops/rollback.md`.
 
 ### 9.7 Security and RLS
 - [x] HSTS preload (production only) on every response from web + API.
