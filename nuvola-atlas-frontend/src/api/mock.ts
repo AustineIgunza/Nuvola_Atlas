@@ -18,8 +18,33 @@ import type {
   PillarDef,
 } from "@/types";
 
-let alerts = structuredClone(ALERTS);
-let reports = structuredClone(REPORTS);
+// Mock state persists to localStorage so a page reload doesn't wipe a
+// freshly-created report or a freshly-read alert — which is confusing for
+// anyone demoing the UI before the real backend is wired.
+const ALERTS_KEY = "nuvola_mock_alerts_v1";
+const REPORTS_KEY = "nuvola_mock_reports_v1";
+
+function load<T>(key: string, fallback: T[]): T[] {
+  if (typeof window === "undefined") return structuredClone(fallback);
+  try {
+    const raw = window.localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T[]) : structuredClone(fallback);
+  } catch {
+    return structuredClone(fallback);
+  }
+}
+
+function save<T>(key: string, value: T[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    /* quota — best-effort persistence */
+  }
+}
+
+let alerts = load<typeof ALERTS[number]>(ALERTS_KEY, ALERTS);
+let reports = load<typeof REPORTS[number]>(REPORTS_KEY, REPORTS);
 
 export const mockApi = {
   getZones: async (): Promise<Zone[]> => {
@@ -59,6 +84,7 @@ export const mockApi = {
   markAllRead: async (): Promise<{ ok: true }> => {
     await delay();
     alerts = alerts.map((a) => ({ ...a, read: true }));
+    save(ALERTS_KEY, alerts);
     return { ok: true as const };
   },
 
@@ -85,6 +111,7 @@ export const mockApi = {
       executiveSummary: "",
     };
     reports = [r, ...reports];
+    save(REPORTS_KEY, reports);
     return r;
   },
 

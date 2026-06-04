@@ -1,7 +1,17 @@
 # NUVOLA ATLAS — Execution Plan
 
 _Owner: Austine Igunza (frontend). Backend / scoring owners: Khillon & Devyan._
-_Last updated: 2026-05-28._
+_Last updated: 2026-06-04._
+
+## Session log — 2026-06-04 (pushed to `main`)
+
+Three commits on top of `34f75b1`:
+
+- **17846cb** — Backend API contract hardening: `/api/v1/` namespace, RFC 7807 errors, cursor pagination on alerts + activity, OpenAPI 3.1 spec, `/api/health`, test infra pinned to local docker postgres+postgis. Auth hardening: `Role` enum, `EnsureRole` middleware, gated write routes, `MustVerifyEmail`, `/auth/me` returns `role` + `email_verified`. Full suite: 39 tests / 120 assertions / 5s.
+- **0af12e8** — Frontend polish: Reset View button, active-layer pulse, keyboard a11y; `AtlasMap` lazy-loaded (1.8 MB mapbox-gl stays deferred); Alert + Report adopt the Infra side-panel/mobile-modal pattern; `ProjectQuickView` overlay from search; `VITE_USE_REMOTE_API` explicit flag with mock default; `AuthUser` carries `role` + `email_verified`.
+- **1808ddb** — `audit_logs` table + `AuditableObserver` + `Audit::record()` helper; auth events audited; tightened `SecurityHeaders` (CSP + COOP + CORP + HSTS preload). `SECURITY.md` at repo root. Suite: 43 / 137 / ~5s.
+
+**Remaining pre-pilot priorities:** 9.3 API keys + 2FA, 9.7 AES-at-rest verification + RLS scaffold, 9.6 CI pipelines, 3.3 Reverb realtime, 9.11 Sentry wiring.
 
 ---
 
@@ -44,24 +54,24 @@ _Last updated: 2026-05-28._
 - [ ] Repeat on a real iPhone (portrait + landscape).
 - [ ] Capture short screen recordings into `docs/qa/` so we have a pre-pilot baseline.
 
-### 2.2 Light-mode polish (we shipped the toggle but it isn't beautiful yet)
-- [ ] Mapbox basemap currently doesn't follow the app theme. When in light mode, the Atlas map should default to `light-v11`; when in dark mode, default to a dark style like `dark-v11`. Wire `useThemeStore.theme` → default `mapStyle` and only override if the user explicitly picked Satellite / Terrain.
-- [ ] Audit any remaining components that hard-code white-on-dark colors (look for inline `text-white` on glass surfaces, hex strings in component code). Fix anything that's unreadable in light mode.
-- [ ] Map markers: the white outer ring looks great on dark mode but blends into a light basemap. Add a thin dark stroke fallback when light mode is active.
+### 2.2 Light-mode polish — ✅ shipped (commit 17846cb / 0af12e8)
+- [x] Mapbox basemap follows the app theme (light-v11 in light, dark-v11 in dark; Satellite/Terrain are explicit overrides).
+- [x] Hard-coded `text-white` audited — every remaining occurrence sits on `bg-accent`/`bg-danger`/explicit dark fills (intentional).
+- [x] Markers use `--zone-marker-ring` CSS var; light theme swaps to a dark semi-opaque stroke so the pill reads on a light basemap.
 
-### 2.3 Remaining "click → popup" pass
-- [ ] Alerts: clicking an `AlertCard` should open an `AlertDetailModal` (centered on mobile, side panel on desktop, same pattern as Infra).
-- [ ] Reports: `ReportDetailModal` already exists; verify it's a centered modal on mobile (currently looks like a side panel — make it match the Infra pattern).
-- [ ] Search modal: when a non-zone result is picked, open the relevant project detail as a popup overlay on the current page instead of navigating away.
+### 2.3 Click → popup pass — ✅ shipped
+- [x] Alerts: `AlertList` now renders the Infra pattern (desktop slide-in side panel, mobile centered modal) via `AlertDetail.tsx`. `AlertCard` is a click-trigger; no more inline expand.
+- [x] Reports: `ReportsTable` adopts the same Infra pattern via new `ReportDetail.tsx`; removed legacy `ReportDetailModal.tsx`.
+- [x] Search modal: `ProjectQuickView` (mounted in `AppShell`) opens projects as an in-place overlay via `useChromeStore.openQuickView` — no navigation away from the current page.
 
-### 2.4 Map polish
-- [ ] "Reset view" button on the map (top-right under the Mapbox nav control) that flies back to the Nairobi centroid and clears `?zone=`.
-- [ ] Subtle pulse on whichever layer toggle is currently on, so the user always knows which layers are active.
-- [ ] Keyboard a11y: Enter on a focused zone marker opens the scorecard; Esc closes whichever popup is open.
+### 2.4 Map polish — ✅ shipped
+- [x] Reset View button (Compass icon, top-right) — flies to Nairobi centroid + clears `?zone=` deeplink.
+- [x] Active layer dots pulse via the existing `.pulse-glow` class.
+- [x] Markers got `tabIndex` + `role=button` + Enter/Space handler; `ScorecardPanel` closes on Esc.
 
-### 2.5 Bundle & build hygiene
-- [ ] Lazy-load `mapbox-gl` only inside `AtlasMap.tsx`. Today it's a 1.8 MB chunk that every signed-in page pays for; the sign-in / vitality / reports / alerts pages should not touch mapbox at all.
-- [ ] Resolve the rollup warning: `stores/chrome.ts` is both statically and dynamically imported (from `stores/atlas.ts`). Use a synchronous import in `atlas.ts` since `ui.ts` already imports `chrome.ts` statically.
+### 2.5 Bundle & build hygiene — ✅ shipped
+- [x] `AtlasMap` lazy-loaded inside `AtlasPage`. AtlasPage shell is 18.5 KB; AtlasMap is a 12.6 KB chunk; the 1.8 MB mapbox-gl bundle stays deferred behind the dynamic import. Non-map pages never load it.
+- [x] No more chrome.ts dynamic-import warning (vite build is warning-free apart from the documented mapbox chunk-size notice).
 
 ---
 
@@ -72,16 +82,16 @@ The single biggest pre-pilot milestone. Today the frontend reads from
 **no UI changes** required (because the data contract in `src/types/index.ts`
 is the source of truth on both sides).
 
-### 3.1 Freeze the API contract with Khillon
-- [ ] Agree the response shapes for: `GET /api/zones`, `GET /api/zones/{id}`, `GET /api/zones/{id}/layers` (returns `{ roads, energy, density }` each a `FeatureCollection`), `GET /api/zones/{id}/activity`, `GET /api/alerts`, `PATCH /api/alerts/{id}`, `GET /api/reports`, `POST /api/reports`, `GET /api/reports/{id}`, `GET /api/projects`.
-- [ ] Confirm Sanctum bearer auth + CORS + 401 → `/sign-in` redirect on a deployed Laravel instance (not just `php artisan serve`).
+### 3.1 Freeze the API contract with Khillon — ✅ shipped (commit 17846cb)
+- [x] Authoritative OpenAPI 3.1 spec at `nuvola-atlas-backend/docs/api/openapi.yaml`. All routes namespaced under `/api/v1/`; errors standardised to RFC 7807 `application/problem+json`.
+- [x] Sanctum bearer auth + 401-to-sign-in handled by `handleResponse()` on the client. CORS is env-driven (`CORS_ALLOWED_ORIGINS`).
 
-### 3.2 Flip the data flag
-- [ ] Add a `VITE_USE_REMOTE_API=true` env in `src/api/index.ts` that picks `remote` over `mock`. Default stays `mock` so local dev works without the backend.
-- [ ] On Vercel: set the flag for `production` only. Previews stay on mock so partners can review UI without Khillon's backend being up.
+### 3.2 Flip the data flag — ✅ shipped (commit 0af12e8)
+- [x] `VITE_USE_REMOTE_API` env in `client.ts`. Default is mock so local dev + Vercel preview deployments stay offline-safe.
+- [ ] **Action on Vercel**: set `VITE_USE_REMOTE_API=true` + `VITE_API_BASE=https://<backend-host>/api/v1` on Production. Add the same vars locally in `.env` to point at a real backend.
 
 ### 3.3 Realtime
-- [ ] Replace the stubbed `useLiveData` with a real Laravel Echo subscription to the `zones` and `alerts` Reverb channels. Same hook shape, just a different transport.
+- [ ] Wire `useLiveData` against Laravel Echo + Reverb (channels `zones`, `alerts`). Hook shape stays mock-compatible so the swap is one-line.
 
 ---
 
@@ -215,16 +225,16 @@ Owner: Ken + Joy, ongoing.
 Owners: Khillon (Laravel + Postgres + auth), Devyan (FastAPI ingestion, infra strategy, CI/CD), me (frontend deploy + client telemetry), Ken (compliance and budget sign-off). Everything in this section is **pre-pilot blocking** unless explicitly marked otherwise.
 
 ### 9.1 APIs and backend logic
-- [ ] Write the public API spec as OpenAPI 3.1 (`docs/api/openapi.yaml`). Single source of truth for the frontend, Khillon's controllers, and any future partner integration. Generate Postman / Insomnia collections from it.
-- [ ] Version the API under `/api/v1/`. Reserve `/api/v2/` for breaking changes. Never delete a v1 endpoint without a 90-day deprecation header.
-- [ ] Standardize the error response shape (RFC 7807 `application/problem+json`: `type`, `title`, `status`, `detail`, `instance`). Frontend already expects `{ message, errors }`; align both sides on RFC 7807 before partners depend on it.
-- [ ] Pagination: cursor-based for `/api/alerts` and `/api/activity` (these grow without bound), page-based for `/api/zones`, `/api/projects`, `/api/reports` (small, bounded sets).
-- [ ] Validate every write with Laravel `FormRequest` classes; never trust client-supplied IDs.
-- [ ] Resource layer (Laravel API Resources) so internal Eloquent models can change without breaking the wire shape.
-- [ ] Idempotency keys (`Idempotency-Key` header) on all `POST`s once partner programmatic access is enabled.
-- [ ] Background jobs (Laravel Queue + Horizon) for: report generation, scheduled ingestion, bulk PDF export, broadcast fan-out.
-- [ ] Document the Laravel ↔ FastAPI contract separately — these are internal endpoints, never exposed publicly. Auth via a shared signed secret in the request header, rotated quarterly.
-- [ ] Reverb broadcast payloads documented in the OpenAPI spec under an `x-async` extension (or AsyncAPI side-doc) so the frontend doesn't have to grep the Laravel source to know what shape arrives.
+- [x] OpenAPI 3.1 spec at `nuvola-atlas-backend/docs/api/openapi.yaml` — single source of truth.
+- [x] `/api/v1/` namespace; `/api/v2/` reserved.
+- [x] RFC 7807 error rendering via `problemResponse()` in `bootstrap/app.php`. Client-side `pickErrorMessage()` parses both Problem and legacy shapes.
+- [x] Cursor pagination on `/alerts` and `/zones/{id}/activity`; page-based on `zones`, `projects`, `reports`.
+- [x] FormRequests on every write (`SignInRequest`, `RegisterRequest`, `StoreReportRequest`, etc).
+- [x] Laravel API Resources (`ZoneResource`, `ProjectResource`, `AlertResource`, `ReportResource`, `ZoneLayerResource`, `HistoryResource`, `ActivityResource`) shield models from wire shape.
+- [ ] Idempotency-Key header on POSTs (deferred — adds when programmatic partner access goes live).
+- [ ] Background jobs via Horizon (deferred to 9.5).
+- [ ] Laravel ↔ FastAPI internal contract doc (deferred until ingestion service exists).
+- [ ] Reverb payloads documented under `x-async` in OpenAPI (deferred — write when 3.3 ships).
 
 ### 9.2 Database and storage
 - [ ] Final PostGIS schema review with Khillon before any partner data is ingested. Tables we know we need: `zones`, `pillar_scores`, `pillar_metric_history`, `infra_projects`, `project_milestones`, `alerts`, `reports`, `activity`, `users`, `personal_access_tokens` (Sanctum), `ingestion_runs`, `audit_log`.
@@ -237,14 +247,14 @@ Owners: Khillon (Laravel + Postgres + auth), Devyan (FastAPI ingestion, infra st
 - [ ] Pillar metric history retention: keep raw monthly readings forever (it's tiny), keep computed scores forever, throw away raw HTTP responses from ingestion after 30 days.
 
 ### 9.3 Auth and permissions
-- [ ] Laravel Sanctum for SPA bearer tokens (already chosen, already wired). Confirm token TTL matches frontend assumption of 8h.
-- [ ] Email verification on sign-up — required before any non-read action.
-- [ ] Password reset flow with rate-limited token email.
-- [ ] Roles: `viewer` (public read), `partner` (read + zone-scoped write), `editor` (internal team write), `admin` (everything + user management). Use Laravel's `Gate` + a `spatie/laravel-permission`-style package.
-- [ ] Separate **API key** auth path for programmatic partners (independent of user bearer tokens, longer TTL, revokable in admin UI).
-- [ ] 2FA (TOTP) required for `admin` accounts before launch. Use Laravel Fortify's TwoFactorAuthenticatable.
-- [ ] OAuth (Google / Microsoft) for partner orgs that require SSO — Phase 2, not blocking the pilot.
-- [ ] Per-zone data access control for sensitive layers (e.g., raw NPS crime data only for partners that signed a data-use letter). Enforced at the controller + DB-policy level, not just in the UI.
+- [x] Sanctum SPA tokens, 8h TTL.
+- [x] Email verification: `User implements MustVerifyEmail`; registration fires `Registered` event so the verification email is queued. `/auth/me` returns `email_verified` flag.
+- [x] Password reset (`/auth/forgot-password` + `/auth/reset-password`), rate-limited via the `auth` limiter (5/min/IP); successful reset revokes every active token.
+- [x] Roles enum (`viewer`/`partner`/`editor`/`admin`) with `rank()`/`isAtLeast()` helpers. `role:` middleware + Gates (`edit-internal`, `manage-users`). Write routes gated.
+- [ ] Separate API-key path for programmatic partners (deferred — not pilot-blocking).
+- [ ] 2FA TOTP for admin accounts (deferred to pre-launch).
+- [ ] OAuth (Google/Microsoft) SSO (Phase 2).
+- [ ] Per-zone data ACLs for sensitive layers (deferred — depends on partner data agreements).
 
 ### 9.4 Hosting and deployment
 - [ ] Frontend: Vercel (already live). Production = `main`, previews = every PR.
@@ -279,18 +289,16 @@ Owners: Khillon (Laravel + Postgres + auth), Devyan (FastAPI ingestion, infra st
 - [ ] **Rollback playbook**: every deploy must be reversible in under 5 minutes. Vercel rollback is one click; Forge keeps the previous release directory and can `php artisan deploy:rollback`. Document the exact button to press in `docs/ops/rollback.md`.
 
 ### 9.7 Security and RLS
-- [ ] HSTS header (`max-age=31536000; includeSubDomains; preload`) on every response from both frontend and backend.
-- [ ] Content Security Policy hardened: only `'self'` + `*.mapbox.com` + the backend host. No inline scripts. No `unsafe-eval`.
-- [ ] AES-256 at rest for the database (managed Postgres providers handle this transparently — verify the toggle is on). TLS 1.3 in transit.
-- [ ] Secret rotation policy: every 90 days for service-to-service shared secrets; immediately on any team-member departure.
-- [ ] Dependency scanning: GitHub Dependabot + `npm audit --omit=dev` in CI. Block CI on `high` or `critical` advisories.
-- [ ] SQL: **only** Eloquent / parameterized PDO. Forbid raw `DB::raw()` in code review unless wrapped in a justified comment.
-- [ ] XSS: React escapes by default + CSP. The only place we render `dangerouslySetInnerHTML` today is the Mapbox popup HTML strings in `useMapPopups.ts` — keep that block tightly scoped and never interpolate user-supplied content into it.
-- [ ] CSRF: Sanctum handles it for the SPA. API-key clients are stateless and don't need CSRF.
-- [ ] **PostgreSQL Row-Level Security (RLS)** on partner-scoped tables (e.g., `partner_dataset_overlays`). Each partner can only read / write rows where `partner_id = current_setting('app.current_partner_id')`. Laravel sets the session variable per-request from the authenticated token.
-- [ ] Audit log on every write: `audit_log(actor_id, action, resource_type, resource_id, before, after, ip, ua, created_at)`. Append-only.
-- [ ] Pentest before public launch — engage Strathmore Information Security Club or pay for a small external assessment (budget line in Section 7 of the proposal).
-- [ ] Responsible-disclosure email (`security@<entity-domain>`) + a short SECURITY.md at the repo root.
+- [x] HSTS preload (production only) on every response from web + API.
+- [x] CSP hardened on HTML responses (same-origin + Mapbox; no `unsafe-eval`; `frame-ancestors 'none'`).
+- [x] Append-only `audit_logs` table + `AuditableObserver` on Report/Alert + explicit `Audit::record()` for auth events.
+- [x] `SECURITY.md` at repo root with responsible-disclosure policy.
+- [x] X-Content-Type-Options, X-Frame-Options DENY, Referrer-Policy, Permissions-Policy, COOP, CORP set in `SecurityHeaders`.
+- [ ] AES-256 at rest — verify Supabase encryption toggle is on before partner data lands. TLS 1.3 in transit is default.
+- [ ] Secret rotation policy doc (90-day cadence; immediate on departure).
+- [ ] Dependabot enabled + `npm audit --omit=dev` blocking CI on high/critical.
+- [ ] PostgreSQL **RLS** on a partner-scoped table (e.g. `partner_dataset_overlays`). Scaffold: migration + `app.current_partner_id` session var set by middleware on every request.
+- [ ] Pentest before public launch (Strathmore Info Sec Club or external).
 
 ### 9.8 Rate limiting
 - [ ] Per-IP throttle on `/sign-in`, `/sign-up`, `/forgot-password`: 10 attempts / 10 minutes / IP (Laravel `RateLimiter::for`).
@@ -349,7 +357,7 @@ Owners: Khillon (Laravel + Postgres + auth), Devyan (FastAPI ingestion, infra st
 - [ ] Backup-restore drill every quarter. Time it. Document in `docs/ops/restore-drill.md`.
 - [ ] **RTO** (Recovery Time Objective): 4 hours for the API in a full-host loss.
 - [ ] **RPO** (Recovery Point Objective): ≤ 1 hour for the database (point-in-time recovery), ≤ 24 hours for object storage.
-- [ ] Health checks: `GET /api/health` (DB ping + Redis ping + cache write) and `GET /api/health/ingestion` (latest successful ingestion < 6h ago). Hooked into status page and CI smoke tests.
+- [x] `GET /api/health` (DB ping + cache write) shipped. `GET /api/health/ingestion` still pending (depends on ingestion service).
 - [ ] Single-point-of-failure audit: list every external dependency (Mapbox, KNBS, KPLC scraper targets, Sentry, GitHub). For each, what happens if it's down for 24 hours? Document the degradation strategy.
 - [ ] Incident response runbook (`docs/ops/incident-response.md`): who pages who, what the first 15 minutes look like, when to update the status page.
 - [ ] Light on-call rotation among the five of us (we're not a 24/7 operation, but during partner working hours someone is reachable).
