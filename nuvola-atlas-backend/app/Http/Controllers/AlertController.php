@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\AlertResource;
 use App\Models\Alert;
+use App\Support\Audit;
 use Illuminate\Http\Request;
 
 class AlertController extends Controller
@@ -29,7 +30,9 @@ class AlertController extends Controller
 
     public function markAllRead()
     {
-        Alert::where('read', false)->update(['read' => true]);
+        $affected = Alert::where('read', false)->update(['read' => true]);
+
+        Audit::record(action: 'alert.bulk_read', after: ['affected' => $affected]);
 
         return response()->json(['ok' => true]);
     }

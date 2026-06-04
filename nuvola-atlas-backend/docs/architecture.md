@@ -134,6 +134,40 @@ and by `App\Enums\Role` Gates (`Gate::allows('edit-internal')`). `/auth/me`
 returns the caller's role and `email_verified` flag so the frontend can
 gate UI affordances on the same source of truth.
 
+## Audit Log
+
+`audit_logs` is append-only (no `updated_at`, no Eloquent updates allowed).
+Schema: `actor_id`, `action`, `resource_type`, `resource_id`, `before` (jsonb),
+`after` (jsonb), `ip`, `user_agent`, `created_at`. Writes come from two
+places:
+
+- `App\Observers\AuditableObserver` — registered on `Report` and `Alert`
+  in `AppServiceProvider`. Captures `<model>.created`, `<model>.updated`,
+  `<model>.deleted` automatically.
+- `App\Support\Audit::record(...)` — explicit calls for non-Eloquent
+  events. Today: `auth.sign_in`, `auth.sign_out`, `alert.bulk_read`.
+
+Audit failures are reported but never propagate — auditing must not break
+the request. Recovery and forensic queries hit Postgres directly; there is
+no public API for `audit_logs`.
+
+## Security Headers
+
+`App\Http\Middleware\SecurityHeaders` runs on both web and API:
+
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `Referrer-Policy: strict-origin-when-cross-origin`
+- `Permissions-Policy: camera=(), microphone=(), geolocation=()`
+- `Cross-Origin-Opener-Policy: same-origin`
+- `Cross-Origin-Resource-Policy: same-site`
+- `Strict-Transport-Security: max-age=31536000; includeSubDomains; preload`
+  (production only)
+- `Content-Security-Policy` (HTML responses only): same-origin + Mapbox
+  hosts; no `unsafe-eval`; `frame-ancestors 'none'`.
+
+See `SECURITY.md` for the responsible-disclosure policy.
+
 ## Artisan Commands
 
 | Command | Schedule | Description |

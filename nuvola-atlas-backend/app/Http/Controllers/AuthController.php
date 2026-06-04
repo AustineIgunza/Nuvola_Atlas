@@ -8,6 +8,7 @@ use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\ResetPasswordRequest;
 use App\Http\Requests\SignInRequest;
 use App\Models\User;
+use App\Support\Audit;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -28,6 +29,8 @@ class AuthController extends Controller
         $user = Auth::user();
         $token = $user->createToken('api')->plainTextToken;
         $expiresAt = now()->addMinutes(config('sanctum.expiration', 480))->toIso8601String();
+
+        Audit::record(action: 'auth.sign_in', resource: $user);
 
         return response()->json([
             'token' => $token,
@@ -101,7 +104,11 @@ class AuthController extends Controller
 
     public function signOut(): JsonResponse
     {
-        Auth::user()->currentAccessToken()->delete();
+        /** @var User $user */
+        $user = Auth::user();
+        $user->currentAccessToken()->delete();
+
+        Audit::record(action: 'auth.sign_out', resource: $user);
 
         return response()->json(['message' => 'Signed out.']);
     }

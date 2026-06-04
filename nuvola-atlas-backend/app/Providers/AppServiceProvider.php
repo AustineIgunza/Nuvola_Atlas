@@ -3,8 +3,11 @@
 namespace App\Providers;
 
 use App\Enums\Role;
+use App\Models\Alert;
+use App\Models\Report;
 use App\Models\User;
 use App\Models\ZoneLayer;
+use App\Observers\AuditableObserver;
 use App\Observers\ZoneLayerObserver;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -24,6 +27,10 @@ class AppServiceProvider extends ServiceProvider
     {
         JsonResource::withoutWrapping();
         ZoneLayer::observe(ZoneLayerObserver::class);
+
+        // Append-only audit trail on user-driven writes.
+        Report::observe(AuditableObserver::class);
+        Alert::observe(AuditableObserver::class);
 
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
