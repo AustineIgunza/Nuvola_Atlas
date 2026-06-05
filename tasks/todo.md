@@ -2,7 +2,7 @@
 
 _Owner: Austine Igunza (frontend). Backend / scoring owners: Khillon & Devyan._
 _Last updated: 2026-06-05._
-_HEAD: `3d63be6` on `origin/main` (admin dashboard slice staged locally for the next commit)._
+_HEAD: `cf8ae60` on `origin/main` (admin dashboard + metrics/audit/users APIs shipped today)._
 
 ## Session log — 2026-06-05 (Forge + DigitalOcean deploy prep, 9.4)
 
