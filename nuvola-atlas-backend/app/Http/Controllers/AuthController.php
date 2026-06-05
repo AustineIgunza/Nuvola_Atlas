@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Role;
+use App\Http\Controllers\TwoFactorController;
 use App\Http\Requests\ForgotPasswordRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\ResetPasswordRequest;
@@ -27,6 +28,20 @@ class AuthController extends Controller
 
         /** @var User $user */
         $user = Auth::user();
+
+        // If 2FA is enabled, do NOT issue the access token here. Instead
+        // mint a short-lived challenge token; the client posts it back to
+        // /auth/2fa/verify with a TOTP code to get the real token.
+        if ($user->hasTwoFactorEnabled()) {
+            $challenge = TwoFactorController::issueChallenge($user);
+            Audit::record(action: 'auth.two_factor_challenged', resource: $user);
+
+            return response()->json([
+                'requires_two_factor' => true,
+                'challenge_token' => $challenge,
+            ]);
+        }
+
         $token = $user->createToken('api')->plainTextToken;
         $expiresAt = now()->addMinutes(config('sanctum.expiration', 480))->toIso8601String();
 

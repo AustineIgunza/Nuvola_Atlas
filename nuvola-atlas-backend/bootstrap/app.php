@@ -101,6 +101,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureRole::class,
             'partner.context' => \App\Http\Middleware\SetPartnerContext::class,
+            'admin.two_factor' => \App\Http\Middleware\RequireAdminTwoFactor::class,
         ]);
         $middleware->redirectGuestsTo(fn (Request $request) => $request->is('api/*') ? null : route('login'));
     })

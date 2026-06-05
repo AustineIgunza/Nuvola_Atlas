@@ -51,4 +51,31 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->belongsTo(Partner::class);
     }
+
+    public function hasTwoFactorEnabled(): bool
+    {
+        return $this->two_factor_confirmed_at !== null
+            && $this->two_factor_secret !== null;
+    }
+
+    public function twoFactorRecoveryCodes(): array
+    {
+        if ($this->two_factor_recovery_codes === null) {
+            return [];
+        }
+
+        return json_decode(
+            \Illuminate\Support\Facades\Crypt::decryptString($this->two_factor_recovery_codes),
+            true,
+        ) ?? [];
+    }
+
+    public function twoFactorSecret(): ?string
+    {
+        if ($this->two_factor_secret === null) {
+            return null;
+        }
+
+        return \Illuminate\Support\Facades\Crypt::decryptString($this->two_factor_secret);
+    }
 }
