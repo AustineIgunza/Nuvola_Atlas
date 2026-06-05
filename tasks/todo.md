@@ -463,13 +463,14 @@ Owners: Khillon (Laravel + Postgres + auth), Devyan (FastAPI ingestion, infra st
 
 ### 9.13 Admin dashboard (new — first cut shipped)
 - [x] `/admin` route (role-gated to admin via `RequireAdmin`; sidebar shows the Admin link only for admins).
-- [x] Backend endpoints: `/api/v1/admin/metrics` (30s-cached counters), `/admin/audit` (cursor-paginated audit feed with action filter), `/admin/users` (paginated, name/email search, role filter), plus the existing `/admin/api-keys`.
-- [x] Frontend pages: KPI cards (users / partners / reports / unread alerts / audit events 24 h / active API keys / admins on 2FA / snapshot time), audit log table with filter, users table with role badge + 2FA dot, API-keys table with revoke confirm.
+- [x] Backend endpoints: `/api/v1/admin/metrics` (30s-cached counters), `/admin/audit` (cursor-paginated audit feed with action filter) + `/admin/audit/export` (CSV stream, 10k row cap), `/admin/users` (paginated, name/email search) + `PATCH /admin/users/{id}` (role change, self-lockout guard, audit-logged), `/admin/api-keys` (list / mint / revoke).
+- [x] Frontend pages: KPI cards (users / partners / reports / unread alerts / audit events 24 h / active API keys / admins on 2FA / snapshot time), audit log table with filter + CSV export, users table with role badge + 2FA dot + inline role-change menu (self-row locked), API-keys table with revoke confirm and mint wizard.
+- [x] **Mint-key wizard** — `MintApiKeyModal` with user picker (partner/editor pool), name, abilities multi-select (api:read / api:write), expiry presets (30 / 90 / 365 / never). Token shown once with copy-to-clipboard + "cannot be shown again" warning. Backend audit row on mint.
+- [x] **User management writes** — inline role-change menu in `UsersTable` posts to `PATCH /admin/users/{id}`. Backend blocks self-role-change (acting admin's row is rendered as a static badge with `title="You cannot change your own role"`).
+- [x] **CSV export for audit feed** — Symfony StreamedResponse, chunks 500 rows at a time, `Content-Disposition: attachment`. Frontend fetches with bearer header (anchor click can't send auth), creates a blob URL, triggers download.
 - [x] Mock fixtures so the dashboard renders in preview/local without a backend.
-- [ ] Mint-key wizard UI (backend ready; frontend currently lists + revokes only).
 - [ ] Vitality trend sparklines per zone; 30-day audit-event sparkline.
-- [ ] User management writes — promote/demote, force 2FA enrolment reminder email, lock account.
-- [ ] CSV / JSON export for audit feed.
+- [ ] Force-2FA enrolment reminder email, lock account.
 
 ### 9.12 Availability and recovery
 - [ ] Uptime target: **99 %** for the pilot (≈ 7 h / month allowed downtime). 99.9 % only once we have a paid partner with an SLA.

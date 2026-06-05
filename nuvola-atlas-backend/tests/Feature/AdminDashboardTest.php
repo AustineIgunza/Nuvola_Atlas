@@ -91,6 +91,51 @@ class AdminDashboardTest extends TestCase
         $this->actingAs($editor)->getJson('/api/v1/admin/metrics')->assertForbidden();
         $this->actingAs($editor)->getJson('/api/v1/admin/audit')->assertForbidden();
         $this->actingAs($editor)->getJson('/api/v1/admin/users')->assertForbidden();
+        $this->actingAs($editor)->patchJson('/api/v1/admin/users/1', ['role' => 'admin'])->assertForbidden();
+    }
+
+    public function test_admin_can_change_another_users_role_and_audit_logs_it(): void
+    {
+        $admin = $this->adminWithTwoFactor();
+        $viewer = User::factory()->create(['role' => Role::Viewer]);
+
+        $this->actingAs($admin)
+            ->patchJson("/api/v1/admin/users/{$viewer->id}", ['role' => 'editor'])
+            ->assertOk()
+            ->assertJsonPath('data.role', 'editor');
+
+        $this->assertSame('editor', $viewer->refresh()->role()->value);
+
+        $row = AuditLog::where('action', 'user.role_changed')->latest('id')->first();
+        $this->assertNotNull($row);
+        $this->assertSame('viewer', $row->before['role'] ?? null);
+        $this->assertSame('editor', $row->after['role'] ?? null);
+    }
+
+    public function test_admin_cannot_change_own_role(): void
+    {
+        $admin = $this->adminWithTwoFactor();
+
+        $this->actingAs($admin)
+            ->patchJson("/api/v1/admin/users/{$admin->id}", ['role' => 'viewer'])
+            ->assertForbidden();
+    }
+
+    public function test_audit_csv_export_returns_csv_attachment(): void
+    {
+        $admin = $this->adminWithTwoFactor();
+        AuditLog::create(['action' => 'export.event_x', 'actor_id' => $admin->id]);
+
+        $response = $this->actingAs($admin)
+            ->get('/api/v1/admin/audit/export?action=export.event_x')
+            ->assertOk();
+
+        $response->assertHeader('Content-Type', 'text/csv; charset=utf-8');
+        $this->assertStringContainsString('attachment; filename="nuvola-audit-', $response->headers->get('Content-Disposition'));
+
+        $body = $response->streamedContent();
+        $this->assertStringStartsWith('id,created_at,action,', $body);
+        $this->assertStringContainsString('export.event_x', $body);
     }
 
     private function adminWithTwoFactor(): User

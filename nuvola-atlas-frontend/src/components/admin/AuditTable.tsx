@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Download } from "lucide-react";
 import { adminApi, type AuditEntry } from "@/api/admin";
+import { authHeaders, USE_MOCK } from "@/api/client";
 import { cn } from "@/lib/cn";
 
 const ACTION_COLOR: Record<string, string> = {
@@ -24,11 +26,37 @@ function fmtTime(iso: string | null): string {
 
 export default function AuditTable() {
   const [actionFilter, setActionFilter] = useState<string>("");
+  const [exporting, setExporting] = useState(false);
   const { data, isLoading, isError } = useQuery({
     queryKey: ["admin", "audit", actionFilter],
     queryFn: () => adminApi.audit(null, actionFilter || undefined),
     staleTime: 30_000,
   });
+
+  async function exportCsv(): Promise<void> {
+    if (USE_MOCK) {
+      window.alert("CSV export needs a real backend (set VITE_USE_REMOTE_API=true).");
+      return;
+    }
+    setExporting(true);
+    try {
+      const res = await fetch(adminApi.auditExportUrl(actionFilter || undefined), {
+        headers: authHeaders(),
+      });
+      if (!res.ok) throw new Error(`Export failed (${res.status})`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `nuvola-audit-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } finally {
+      setExporting(false);
+    }
+  }
 
   return (
     <div className="space-y-3">
@@ -48,6 +76,15 @@ export default function AuditTable() {
             Clear
           </button>
         )}
+        <button
+          onClick={exportCsv}
+          disabled={exporting}
+          className="flex items-center gap-1.5 px-3 h-9 rounded-control bg-[rgba(255,255,255,0.06)] text-[12px] text-ink-2 hover:text-ink-1 disabled:opacity-50"
+          title="Download current filter as CSV (up to 10k rows)"
+        >
+          <Download size={13} />
+          {exporting ? "Exporting…" : "Export CSV"}
+        </button>
       </div>
 
       {isLoading && <div className="text-[13px] text-ink-3 py-6 text-center">Loading audit log…</div>}

@@ -165,4 +165,25 @@ export const adminApi = {
     });
     await handleResponse<{ message: string }>(res);
   },
+
+  updateUserRole: async (id: number, role: string): Promise<AdminUser> => {
+    if (USE_MOCK) {
+      // mutate the mock list in-place so the UI feels responsive
+      return { id, name: "Mock user", email: "mock@example.test", role, email_verified: true, two_factor_enabled: false, partner: null, created_at: null };
+    }
+    const res = await fetch(`${BASE}/admin/users/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...authHeaders() },
+      body: JSON.stringify({ role }),
+    });
+    const r = await handleResponse<{ data: AdminUser }>(res);
+    return r.data;
+  },
+
+  auditExportUrl: (action?: string): string => {
+    const params = new URLSearchParams();
+    if (action) params.set("action", action);
+    const qs = params.toString() ? `?${params}` : "";
+    return `${BASE}/admin/audit/export${qs}`;
+  },
 };

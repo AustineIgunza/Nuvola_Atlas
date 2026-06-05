@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Plus } from "lucide-react";
 import { adminApi, type ApiKey } from "@/api/admin";
+import MintApiKeyModal from "./MintApiKeyModal";
 
 function fmtTime(iso: string | null): string {
   if (!iso) return "—";
@@ -10,6 +12,7 @@ function fmtTime(iso: string | null): string {
 export default function ApiKeysTable() {
   const qc = useQueryClient();
   const [confirmingId, setConfirmingId] = useState<number | null>(null);
+  const [mintOpen, setMintOpen] = useState(false);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["admin", "api-keys"],
@@ -28,11 +31,22 @@ export default function ApiKeysTable() {
 
   return (
     <div className="space-y-3">
-      <p className="text-[12px] text-ink-4">
-        Long-lived bearer tokens issued to programmatic partners. Plaintext
-        tokens are shown only at mint time — there is no way to recover one
-        after that. Revoke and reissue if a partner reports loss.
-      </p>
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-[12px] text-ink-4 flex-1">
+          Long-lived bearer tokens issued to programmatic partners. Plaintext
+          tokens are shown only at mint time — there is no way to recover one
+          after that. Revoke and reissue if a partner reports loss.
+        </p>
+        <button
+          onClick={() => setMintOpen(true)}
+          className="shrink-0 flex items-center gap-1.5 px-3 h-8 rounded-control bg-accent text-white text-[12px] font-semibold"
+        >
+          <Plus size={14} />
+          New key
+        </button>
+      </div>
+
+      <MintApiKeyModal open={mintOpen} onClose={() => setMintOpen(false)} />
 
       {isLoading && <div className="text-[13px] text-ink-3 py-6 text-center">Loading API keys…</div>}
       {isError && <div className="text-[13px] text-danger py-6 text-center">Failed to load API keys.</div>}

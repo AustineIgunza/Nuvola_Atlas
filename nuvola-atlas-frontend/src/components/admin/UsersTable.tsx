@@ -1,6 +1,8 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect, useRef } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ChevronDown } from "lucide-react";
 import { adminApi } from "@/api/admin";
+import { useAuthStore } from "@/stores/auth";
 import { cn } from "@/lib/cn";
 
 const ROLE_TONE: Record<string, string> = {
@@ -10,13 +12,42 @@ const ROLE_TONE: Record<string, string> = {
   viewer: "bg-[rgba(255,255,255,0.06)] text-ink-3",
 };
 
+const ROLES = ["admin", "editor", "partner", "viewer"] as const;
+
 export default function UsersTable() {
   const [q, setQ] = useState("");
+  const [openMenuFor, setOpenMenuFor] = useState<number | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const currentUserEmail = useAuthStore((s) => s.user?.email);
+  const qc = useQueryClient();
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ["admin", "users", q],
     queryFn: () => adminApi.users(1, q || undefined),
     staleTime: 30_000,
   });
+
+  const updateRole = useMutation({
+    mutationFn: ({ id, role }: { id: number; role: string }) =>
+      adminApi.updateUserRole(id, role),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "users"] });
+      qc.invalidateQueries({ queryKey: ["admin", "metrics"] });
+      setOpenMenuFor(null);
+    },
+  });
+
+  useEffect(() => {
+    function onClick(e: MouseEvent): void {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpenMenuFor(null);
+      }
+    }
+    if (openMenuFor !== null) {
+      document.addEventListener("mousedown", onClick);
+      return () => document.removeEventListener("mousedown", onClick);
+    }
+  }, [openMenuFor]);
 
   return (
     <div className="space-y-3">
@@ -49,10 +80,52 @@ export default function UsersTable() {
                 <tr key={u.id} className="border-t border-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.02)]">
                   <td className="px-3 py-2 text-ink-1">{u.name}</td>
                   <td className="px-3 py-2 text-ink-3">{u.email}</td>
-                  <td className="px-3 py-2">
-                    <span className={cn("inline-block px-2 py-0.5 rounded-chip text-[11px] font-medium", ROLE_TONE[u.role] ?? ROLE_TONE.viewer)}>
-                      {u.role}
-                    </span>
+                  <td className="px-3 py-2 relative">
+                    {u.email === currentUserEmail ? (
+                      <span
+                        className={cn(
+                          "inline-block px-2 py-0.5 rounded-chip text-[11px] font-medium",
+                          ROLE_TONE[u.role] ?? ROLE_TONE.viewer,
+                        )}
+                        title="You cannot change your own role"
+                      >
+                        {u.role}
+                      </span>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => setOpenMenuFor(openMenuFor === u.id ? null : u.id)}
+                          className={cn(
+                            "inline-flex items-center gap-1 px-2 py-0.5 rounded-chip text-[11px] font-medium hover:brightness-110",
+                            ROLE_TONE[u.role] ?? ROLE_TONE.viewer,
+                          )}
+                          aria-haspopup="menu"
+                          aria-expanded={openMenuFor === u.id}
+                        >
+                          {u.role}
+                          <ChevronDown size={11} />
+                        </button>
+                        {openMenuFor === u.id && (
+                          <div
+                            ref={menuRef}
+                            role="menu"
+                            className="absolute left-3 top-9 z-10 glass-strong rounded-control shadow-modal py-1 min-w-[120px]"
+                          >
+                            {ROLES.filter((r) => r !== u.role).map((r) => (
+                              <button
+                                key={r}
+                                role="menuitem"
+                                onClick={() => updateRole.mutate({ id: u.id, role: r })}
+                                disabled={updateRole.isPending}
+                                className="w-full px-3 py-1.5 text-left text-[12px] text-ink-2 hover:bg-[rgba(255,255,255,0.04)] disabled:opacity-50"
+                              >
+                                Set as {r}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    )}
                   </td>
                   <td className="px-3 py-2">
                     <span className={cn("inline-block w-2 h-2 rounded-full", u.two_factor_enabled ? "bg-success" : "bg-ink-4")} />

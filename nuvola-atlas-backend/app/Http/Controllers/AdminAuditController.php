@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Models\AuditLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AdminAuditController extends Controller
 {
@@ -56,6 +57,58 @@ class AdminAuditController extends Controller
                 'prev_cursor' => $page->previousCursor()?->encode(),
                 'per_page' => $page->perPage(),
             ],
+        ]);
+    }
+
+    /**
+     * CSV export of the audit feed. Caps at 10k rows so the response stays
+     * bounded; for deeper exports the analyst can paginate the JSON feed.
+     * Headers force a download in the browser.
+     */
+    public function export(Request $request): StreamedResponse
+    {
+        $query = AuditLog::query()
+            ->with('actor:id,name,email,role')
+            ->latest('id')
+            ->limit(10_000);
+
+        if ($action = $request->string('action')->trim()->toString()) {
+            $query->where('action', $action);
+        }
+        if ($actorId = $request->integer('actor_id')) {
+            $query->where('actor_id', $actorId);
+        }
+
+        $filename = 'nuvola-audit-'.now()->format('Y-m-d-His').'.csv';
+
+        return new StreamedResponse(function () use ($query): void {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, [
+                'id', 'created_at', 'action', 'actor_name', 'actor_email',
+                'actor_role', 'resource_type', 'resource_id', 'ip',
+            ]);
+
+            $query->chunk(500, function ($rows) use ($out): void {
+                foreach ($rows as $row) {
+                    fputcsv($out, [
+                        $row->id,
+                        $row->created_at?->toIso8601String(),
+                        $row->action,
+                        $row->actor?->name,
+                        $row->actor?->email,
+                        $row->actor?->role()->value,
+                        $row->resource_type,
+                        $row->resource_id,
+                        $row->ip,
+                    ]);
+                }
+            });
+
+            fclose($out);
+        }, 200, [
+            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'Cache-Control' => 'no-store',
         ]);
     }
 }
