@@ -47,6 +47,23 @@ edit the env later:
    - **Direct** (port `5432`) → `DB_MIGRATIONS_HOST` + `DB_MIGRATIONS_PORT`
      (Laravel migrations open long transactions; the pooler will trip them).
 4. Database → SSL Configuration → enforce. `DB_SSLMODE=require` matches.
+5. **Create a non-superuser app role** so RLS bites (§9.7):
+   ```sql
+   CREATE ROLE nuvola_app LOGIN PASSWORD '<random>';
+   GRANT USAGE ON SCHEMA public TO nuvola_app;
+   GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES    IN SCHEMA public TO nuvola_app;
+   GRANT USAGE, SELECT                  ON ALL SEQUENCES IN SCHEMA public TO nuvola_app;
+   ALTER DEFAULT PRIVILEGES IN SCHEMA public
+       GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES    TO nuvola_app;
+   ALTER DEFAULT PRIVILEGES IN SCHEMA public
+       GRANT USAGE, SELECT                  ON SEQUENCES TO nuvola_app;
+   ```
+   Point `DB_USERNAME` at `nuvola_app` (not `postgres`). Run migrations
+   with the `postgres` user (`DB_MIGRATIONS_*` direct connection), but
+   serve requests as `nuvola_app`. The RLS policy on
+   `partner_dataset_overlays` only applies because `nuvola_app` is not a
+   superuser and not the table owner — `postgres` would silently bypass
+   it even with FORCE.
 
 > Skip this step only if you decide to run Postgres on the droplet itself.
 > If you do, `apt install postgresql-16-postgis-3`, create the role + db, and

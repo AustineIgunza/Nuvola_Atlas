@@ -38,7 +38,7 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
         Route::post('auth/reset-password', [AuthController::class, 'resetPassword']);
     });
 
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware(['auth:sanctum', 'partner.context'])->group(function () {
         Route::get('auth/me', [AuthController::class, 'me']);
         Route::post('auth/sign-out', [AuthController::class, 'signOut']);
 

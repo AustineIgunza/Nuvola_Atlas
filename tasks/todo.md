@@ -2,7 +2,7 @@
 
 _Owner: Austine Igunza (frontend). Backend / scoring owners: Khillon & Devyan._
 _Last updated: 2026-06-05._
-_HEAD: `c839103` on `origin/main` (Forge+DO deploy artifacts staged locally, not yet committed)._
+_HEAD: `2aab2fc` on `origin/main` (Forge+DO deploy artifacts shipped). RLS + secret-rotation slice staged locally for the next commit._
 
 ## Session log — 2026-06-05 (Forge + DigitalOcean deploy prep, 9.4)
 
@@ -33,8 +33,41 @@ scratch.
 Manual TODO this unblocks (and still requires the user):
 - Create the DigitalOcean droplet + Forge site per §3–5 of the deploy guide.
 - Provision Supabase project + enable PostGIS per §2.
+- Create the `nuvola_app` non-superuser role per deploy.md §2 step 5 so the RLS scaffold actually bites.
 - Paste env values + run "Deploy Now" once.
 - After §10 smoke test passes, flip `VITE_USE_REMOTE_API` on Vercel per §11.
+
+## Session log — 2026-06-05 (continued, RLS + secret rotation, 9.7 partial)
+
+Second slice of the day, on top of `2aab2fc`. Pure code/docs — no provider
+work. Adds the RLS scaffold and the secret-rotation policy referenced in §9.7.
+
+- `nuvola-atlas-backend/database/migrations/2026_06_05_120000_create_partners_and_overlays_with_rls.php`
+  — creates `partners` + `partner_id` FK on users + `partner_dataset_overlays`
+  with ENABLE + FORCE ROW LEVEL SECURITY. Single `partner_isolation` policy
+  covers SELECT/INSERT/UPDATE/DELETE keyed on
+  `NULLIF(current_setting('app.current_partner_id', true), '')::bigint`.
+  Unset context → NULL comparison → zero rows visible (safe default).
+- `nuvola-atlas-backend/app/Http/Middleware/SetPartnerContext.php` — sets
+  `app.current_partner_id` from `$request->user()->partner_id` on every
+  authenticated request and clears it in `finally` before the connection
+  returns to the pool. Aliased `partner.context` in `bootstrap/app.php`,
+  wired into the `auth:sanctum` group in `routes/api.php`.
+- `app/Models/Partner.php`, `app/Models/PartnerDatasetOverlay.php` + factories.
+  `User` model gained a `partner()` belongsTo relation.
+- `tests/Feature/PartnerOverlayRlsTest.php` — creates a `nuvola_app`
+  non-superuser role in setUp, `SET ROLE`s into it, and proves:
+  (1) policy hides other partners' rows, (2) unset context → zero rows,
+  (3) `WITH CHECK` blocks inserts with the wrong partner_id, (4) the
+  middleware doesn't crash on a real authenticated request.
+- `docs/ops/deploy.md` §2 step 5 — production setup for the `nuvola_app`
+  role (the docker test postgres uses a superuser, which bypasses RLS;
+  production needs a non-superuser role for the policy to bite).
+- `docs/ops/secret-rotation.md` — 90-day cadence, departure trigger, leak
+  playbook, per-secret rotation steps (APP_KEY, DB password, Sanctum,
+  Reverb key/secret, Postmark, R2, deploy SSH, Mapbox).
+- todo §9.7 — checkboxes ticked; what's left is the AES-at-rest Supabase
+  toggle (user-only) and the pentest (deferred).
 
 ## Session log — 2026-06-04 (all pushed to `main`)
 
@@ -92,10 +125,10 @@ Six commits on top of `34f75b1`:
 
 ### Next pre-pilot priorities (in suggested order)
 
-1. **9.4 Backend hosting — actual provisioning** — deploy artifacts are in repo (`deploy.sh`, `.env.production.example`, `forge.conf`, supervisor configs, `docs/ops/deploy.md`). What's left is the user-only part: create the DO droplet via Forge, provision Supabase, paste env, run "Deploy Now", smoke-test `/api/health`.
+1. **9.4 Backend hosting — actual provisioning** — deploy artifacts are in repo (`deploy.sh`, `.env.production.example`, `forge.conf`, supervisor configs, `docs/ops/deploy.md`). What's left is the user-only part: create the DO droplet via Forge, provision Supabase + `nuvola_app` role (per deploy.md §2), paste env, run "Deploy Now", smoke-test `/api/health`.
 2. **3.3 Reverb realtime** — only meaningful once the backend is reachable.
 3. **9.11 Sentry + structured JSON logs** — wire frontend + backend; depends on a Sentry org.
-4. **9.7 finish-up** — RLS scaffold on a partner-scoped table, AES-at-rest toggle verified on Supabase, secret-rotation policy doc.
+4. **9.7 remaining**: AES-at-rest toggle verified on Supabase (user-only), pentest (deferred to launch).
 5. **9.3 finish-up** — API key auth path for programmatic partners; 2FA TOTP for admins.
 
 ---
@@ -375,10 +408,10 @@ Owners: Khillon (Laravel + Postgres + auth), Devyan (FastAPI ingestion, infra st
 - [x] Append-only `audit_logs` table + `AuditableObserver` on Report/Alert + explicit `Audit::record()` for auth events.
 - [x] `SECURITY.md` at repo root with responsible-disclosure policy.
 - [x] X-Content-Type-Options, X-Frame-Options DENY, Referrer-Policy, Permissions-Policy, COOP, CORP set in `SecurityHeaders`.
-- [ ] AES-256 at rest — verify Supabase encryption toggle is on before partner data lands. TLS 1.3 in transit is default.
-- [ ] Secret rotation policy doc (90-day cadence; immediate on departure).
-- [ ] Dependabot enabled + `npm audit --omit=dev` blocking CI on high/critical.
-- [ ] PostgreSQL **RLS** on a partner-scoped table (e.g. `partner_dataset_overlays`). Scaffold: migration + `app.current_partner_id` session var set by middleware on every request.
+- [ ] AES-256 at rest — verify Supabase encryption toggle is on before partner data lands. TLS 1.3 in transit is default. (User-only step after Supabase project exists.)
+- [x] Secret rotation policy doc — `docs/ops/secret-rotation.md`. 90-day cadence + departure trigger + leak playbook + per-secret rotation steps (APP_KEY, DB password, Sanctum, Reverb key/secret, Postmark, R2, deploy SSH, Mapbox).
+- [x] Dependabot enabled (commit 3cc967d) + `npm audit --omit=dev` blocking CI on high/critical.
+- [x] PostgreSQL **RLS** scaffold — migration `2026_06_05_120000_create_partners_and_overlays_with_rls.php` (partners + partner_id on users + partner_dataset_overlays with ENABLE + FORCE RLS + per-action policy keyed on `current_setting('app.current_partner_id')`). `SetPartnerContext` middleware sets the session var on every authenticated request. `PartnerOverlayRlsTest` proves isolation against a non-superuser role. Requires a `nuvola_app` role in prod (see `docs/ops/deploy.md` §2 step 5).
 - [ ] Pentest before public launch (Strathmore Info Sec Club or external).
 
 ### 9.8 Rate limiting
