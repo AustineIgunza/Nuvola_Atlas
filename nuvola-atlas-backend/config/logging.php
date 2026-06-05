@@ -105,6 +105,21 @@ return [
             'processors' => [PsrLogMessageProcessor::class],
         ],
 
+        // Structured JSON to stderr — production points LOG_CHANNEL or
+        // LOG_STACK at this so BetterStack / Forge's papertrail agent can
+        // parse fields instead of regex-ing line-prefix text. Local dev
+        // keeps 'single' or 'daily' for readability.
+        'json' => [
+            'driver' => 'monolog',
+            'level' => env('LOG_LEVEL', 'debug'),
+            'handler' => StreamHandler::class,
+            'handler_with' => [
+                'stream' => 'php://stderr',
+            ],
+            'formatter' => \Monolog\Formatter\JsonFormatter::class,
+            'processors' => [PsrLogMessageProcessor::class],
+        ],
+
         'syslog' => [
             'driver' => 'syslog',
             'level' => env('LOG_LEVEL', 'debug'),

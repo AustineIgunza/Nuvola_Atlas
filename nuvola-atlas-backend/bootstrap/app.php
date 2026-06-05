@@ -119,4 +119,14 @@ return Application::configure(basePath: dirname(__DIR__))
 
             return problemResponse($e, $request);
         });
+
+        // Forward unhandled exceptions to Sentry when configured. The package
+        // only binds the `sentry` container key after sentry-laravel boots
+        // with a non-empty DSN — so this is a true no-op in local dev, CI,
+        // and any environment without SENTRY_LARAVEL_DSN set.
+        $exceptions->reportable(function (\Throwable $e): void {
+            if (app()->bound('sentry')) {
+                app('sentry')->captureException($e);
+            }
+        });
     })->create();
