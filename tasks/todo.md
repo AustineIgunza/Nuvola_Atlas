@@ -2,7 +2,7 @@
 
 _Owner: Austine Igunza (frontend). Backend / scoring owners: Khillon & Devyan._
 _Last updated: 2026-06-05._
-_HEAD: `c26a191` on `origin/main` (Forge+DO deploy + RLS + secret rotation shipped today)._
+_HEAD: `3d63be6` on `origin/main` (admin dashboard slice staged locally for the next commit)._
 
 ## Session log — 2026-06-05 (Forge + DigitalOcean deploy prep, 9.4)
 
@@ -125,11 +125,11 @@ Six commits on top of `34f75b1`:
 
 ### Next pre-pilot priorities (in suggested order)
 
-1. **9.4 Backend hosting — actual provisioning** — deploy artifacts are in repo (`deploy.sh`, `.env.production.example`, `forge.conf`, supervisor configs, `docs/ops/deploy.md`). What's left is the user-only part: create the DO droplet via Forge, provision Supabase + `nuvola_app` role (per deploy.md §2), paste env, run "Deploy Now", smoke-test `/api/health`.
+1. **9.4 Backend hosting — actual provisioning** — deploy artifacts are in repo. What's left is user-only: DO droplet via Forge, Supabase + `nuvola_app` role (per `docs/ops/deploy.md` §2), paste env, Deploy Now, smoke `/api/health`.
 2. **3.3 Reverb realtime** — only meaningful once the backend is reachable.
-3. **9.11 Sentry + structured JSON logs** — wire frontend + backend; depends on a Sentry org.
-4. **9.7 remaining**: AES-at-rest toggle verified on Supabase (user-only), pentest (deferred to launch).
-5. **9.3 finish-up** — API key auth path for programmatic partners; 2FA TOTP for admins.
+3. **9.11 remaining** — drop a real Sentry DSN on Forge + Vercel once a Sentry org exists. SDKs wire themselves up; verify first crash lands in the dashboard.
+4. **9.7 remaining** — AES-at-rest Supabase toggle (user-only), pentest (deferred).
+5. **Admin dashboard enhancements** — mint-key wizard UI (currently API-only), Vitality trend sparklines, charts for audit-event volume.
 
 ---
 
@@ -369,8 +369,8 @@ Owners: Khillon (Laravel + Postgres + auth), Devyan (FastAPI ingestion, infra st
 - [x] Email verification: `User implements MustVerifyEmail`; registration fires `Registered` event so the verification email is queued. `/auth/me` returns `email_verified` flag.
 - [x] Password reset (`/auth/forgot-password` + `/auth/reset-password`), rate-limited via the `auth` limiter (5/min/IP); successful reset revokes every active token.
 - [x] Roles enum (`viewer`/`partner`/`editor`/`admin`) with `rank()`/`isAtLeast()` helpers. `role:` middleware + Gates (`edit-internal`, `manage-users`). Write routes gated.
-- [ ] Separate API-key path for programmatic partners (deferred — not pilot-blocking).
-- [ ] 2FA TOTP for admin accounts (deferred to pre-launch).
+- [x] **API-key path for programmatic partners** — `AdminApiKeyController` (mint/list/revoke) backed by Sanctum personal access tokens with a fixed `ABILITIES` allowlist (`api:read`, `api:write`). Admin-only, gated by `role:admin` + `admin.two_factor`. Plaintext token returned exactly once at mint; audit log entries on create/revoke.
+- [x] **2FA TOTP for admin accounts** — `pragmarx/google2fa`; new `two_factor_*` columns on users (Crypt-encrypted secret + recovery codes); `TwoFactorController` enable/confirm/disable/verify; sign-in returns a challenge token instead of an access token when 2FA is on; `RequireAdminTwoFactor` middleware (`admin.two_factor`) forces admins to enrol before any `/admin/*` route is reachable; 8 single-use recovery codes per user.
 - [ ] OAuth (Google/Microsoft) SSO (Phase 2).
 - [ ] Per-zone data ACLs for sensitive layers (deferred — depends on partner data agreements).
 
@@ -446,12 +446,13 @@ Owners: Khillon (Laravel + Postgres + auth), Devyan (FastAPI ingestion, infra st
 - [ ] Auto-scaling rules (Forge / Fly): scale up at CPU > 70 % sustained 5 min; scale down at CPU < 30 % sustained 15 min. Cap at 3 nodes during pilot to control cost.
 
 ### 9.11 Error tracking and logs
-- [ ] **Sentry** for frontend + backend + FastAPI. Free tier covers the pilot. Capture user context (without PII) so we can correlate an error to a partner session.
-- [ ] Upload source maps for every production frontend build (Sentry Vite plugin in `vite.config.ts`).
-- [ ] Frontend: hook `ErrorBoundary.componentDidCatch` into Sentry so client-side errors don't just `console.error` and disappear.
-- [ ] Backend: Laravel's exception handler reports to Sentry; structured JSON logs to stdout for log aggregation.
-- [ ] FastAPI: `structlog` + Sentry's ASGI integration.
+- [x] **Sentry** SDKs wired on frontend + backend. `sentry/sentry-laravel` (^4.25); reportable() callback in `bootstrap/app.php` gated on `app()->bound('sentry')` — no-op without DSN. `@sentry/react` initialised from `src/lib/sentry.ts`; init only runs when `VITE_SENTRY_DSN` is set. Privacy-first defaults (no replay, no PII).
+- [x] **Source-map upload**: `@sentry/vite-plugin` registered in `vite.config.ts` only when all three of `SENTRY_ORG` + `SENTRY_PROJECT` + `SENTRY_AUTH_TOKEN` are set. Uses `sourcemap: 'hidden'` so maps upload without shipping in bundle URLs.
+- [x] `ErrorBoundary.componentDidCatch` → `captureBoundaryError()` with the React componentStack as context.
+- [x] **Structured JSON logs**: new `json` channel in `config/logging.php` (Monolog `JsonFormatter` → `php://stderr`); `.env.production.example` switches `LOG_STACK=json,daily` so BetterStack / papertrail can parse fields.
+- [ ] FastAPI: `structlog` + Sentry's ASGI integration (deferred — service not split out yet).
 - [ ] Centralized log aggregation: **BetterStack** (Logtail) free tier for the pilot. One dashboard for the three services.
+- [ ] Provision the actual Sentry project + drop the DSNs into Forge + Vercel envs (user-only step, follow-on to 9.4).
 - [ ] Frontend network telemetry: ship a tiny `/api/client-telemetry` endpoint that records timing + 4xx/5xx rates from real partner sessions (opt-in for partners).
 - [ ] Alert thresholds (Sentry + BetterStack):
   - Any `error.level=fatal` → immediate Slack ping.
@@ -459,6 +460,16 @@ Owners: Khillon (Laravel + Postgres + auth), Devyan (FastAPI ingestion, infra st
   - Ingestion job failure → ping.
   - Mapbox tile load failure rate > 5 % → ping (signals quota or outage).
 - [ ] Lightweight in-app "Report a problem" widget (mailto for the pilot, real ticketing later).
+
+### 9.13 Admin dashboard (new — first cut shipped)
+- [x] `/admin` route (role-gated to admin via `RequireAdmin`; sidebar shows the Admin link only for admins).
+- [x] Backend endpoints: `/api/v1/admin/metrics` (30s-cached counters), `/admin/audit` (cursor-paginated audit feed with action filter), `/admin/users` (paginated, name/email search, role filter), plus the existing `/admin/api-keys`.
+- [x] Frontend pages: KPI cards (users / partners / reports / unread alerts / audit events 24 h / active API keys / admins on 2FA / snapshot time), audit log table with filter, users table with role badge + 2FA dot, API-keys table with revoke confirm.
+- [x] Mock fixtures so the dashboard renders in preview/local without a backend.
+- [ ] Mint-key wizard UI (backend ready; frontend currently lists + revokes only).
+- [ ] Vitality trend sparklines per zone; 30-day audit-event sparkline.
+- [ ] User management writes — promote/demote, force 2FA enrolment reminder email, lock account.
+- [ ] CSV / JSON export for audit feed.
 
 ### 9.12 Availability and recovery
 - [ ] Uptime target: **99 %** for the pilot (≈ 7 h / month allowed downtime). 99.9 % only once we have a paid partner with an SLA.

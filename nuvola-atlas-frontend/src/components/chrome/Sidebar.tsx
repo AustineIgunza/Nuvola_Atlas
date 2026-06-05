@@ -2,29 +2,32 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Map, BarChart3, HardHat, FileText, Bell, LogOut,
+  Map, BarChart3, HardHat, FileText, Bell, LogOut, Shield,
   ChevronRight, Info, Menu, X,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { springSettle, staggerContainer, staggerItem, panelSlideLeft } from "@/lib/motion";
 import { useUIStore } from "@/stores/ui";
-import { useAuthStore } from "@/stores/auth";
+import { useAuthStore, hasRoleAtLeast } from "@/stores/auth";
 import { api } from "@/api";
 import { scoreColor } from "@/lib/scoreColor";
 import { useState, useEffect } from "react";
 
 const NAV = [
-  { path: "/atlas", label: "Atlas", icon: Map },
-  { path: "/vitality", label: "Vitality", icon: BarChart3 },
-  { path: "/infrastructure", label: "Infrastructure", icon: HardHat },
-  { path: "/reports", label: "Reports", icon: FileText },
-  { path: "/alerts", label: "Alerts", icon: Bell },
+  { path: "/atlas", label: "Atlas", icon: Map, requiresAdmin: false },
+  { path: "/vitality", label: "Vitality", icon: BarChart3, requiresAdmin: false },
+  { path: "/infrastructure", label: "Infrastructure", icon: HardHat, requiresAdmin: false },
+  { path: "/reports", label: "Reports", icon: FileText, requiresAdmin: false },
+  { path: "/alerts", label: "Alerts", icon: Bell, requiresAdmin: false },
+  { path: "/admin", label: "Admin", icon: Shield, requiresAdmin: true },
 ] as const;
 
 export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const signOut = useAuthStore((s) => s.signOut);
+  const user = useAuthStore((s) => s.user);
+  const isAdmin = hasRoleAtLeast(user, "admin");
   const collapsed = useUIStore((s) => s.sidebarCollapsed);
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
   const setSelectedZone = useUIStore((s) => s.setSelectedZone);
@@ -119,7 +122,7 @@ export default function Sidebar() {
           animate="visible"
           className="space-y-1"
         >
-          {NAV.map(({ path, label, icon: Icon }) => {
+          {NAV.filter((item) => !item.requiresAdmin || isAdmin).map(({ path, label, icon: Icon }) => {
             const active = location.pathname.startsWith(path);
             return (
               <motion.button

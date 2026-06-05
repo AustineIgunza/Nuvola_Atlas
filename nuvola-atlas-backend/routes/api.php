@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\AdminApiKeyController;
+use App\Http\Controllers\AdminAuditController;
+use App\Http\Controllers\AdminMetricsController;
+use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AlertController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HealthController;
@@ -59,10 +62,14 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
             Route::post('reports', [ReportController::class, 'store']);
         });
 
-        // Admin-only: long-lived partner API keys, the audit log feed, and
-        // user management. Anything under /admin/ requires role=admin AND
-        // 2FA enrolled. Never accepts a partner-scoped API key.
+        // Admin-only: dashboard metrics, audit feed, user management, and
+        // long-lived partner API keys. Anything under /admin/ requires
+        // role=admin AND 2FA enrolled. Never accepts a partner-scoped key.
         Route::middleware(['role:admin', 'admin.two_factor'])->prefix('admin')->group(function () {
+            Route::get('metrics', [AdminMetricsController::class, 'index']);
+            Route::get('audit', [AdminAuditController::class, 'index']);
+            Route::get('users', [AdminUserController::class, 'index']);
+
             Route::get('api-keys', [AdminApiKeyController::class, 'index']);
             Route::post('api-keys', [AdminApiKeyController::class, 'store']);
             Route::delete('api-keys/{id}', [AdminApiKeyController::class, 'destroy']);

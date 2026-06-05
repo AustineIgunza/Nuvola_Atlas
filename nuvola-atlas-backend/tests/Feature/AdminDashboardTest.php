@@ -1,0 +1,107 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature;
+
+use App\Enums\Role;
+use App\Models\AuditLog;
+use App\Models\Partner;
+use App\Models\Report;
+use App\Models\User;
+use Illuminate\Support\Facades\Crypt;
+use PragmaRX\Google2FA\Google2FA;
+use Tests\TestCase;
+
+class AdminDashboardTest extends TestCase
+{
+    public function test_metrics_endpoint_returns_expected_shape(): void
+    {
+        $admin = $this->adminWithTwoFactor();
+
+        // Seed a small mix of entities so the counts aren't all zero.
+        Partner::factory()->count(2)->create();
+        Report::factory()->count(3)->create();
+
+        $response = $this->actingAs($admin)
+            ->getJson('/api/v1/admin/metrics')
+            ->assertOk()
+            ->assertJsonStructure(['data' => [
+                'users_total', 'partners_total', 'reports_total',
+                'alerts_unread', 'audit_events_last_24h',
+                'api_keys_active', 'admins_total', 'admins_with_two_factor',
+                'generated_at',
+            ]]);
+
+        $data = $response->json('data');
+        $this->assertGreaterThanOrEqual(2, $data['partners_total']);
+        $this->assertGreaterThanOrEqual(3, $data['reports_total']);
+        $this->assertGreaterThanOrEqual(1, $data['admins_total']);
+        $this->assertGreaterThanOrEqual(1, $data['admins_with_two_factor']);
+    }
+
+    public function test_audit_endpoint_returns_paginated_feed(): void
+    {
+        $admin = $this->adminWithTwoFactor();
+
+        AuditLog::create(['action' => 'test.event_a', 'actor_id' => $admin->id]);
+        AuditLog::create(['action' => 'test.event_b', 'actor_id' => $admin->id]);
+
+        $response = $this->actingAs($admin)
+            ->getJson('/api/v1/admin/audit')
+            ->assertOk()
+            ->assertJsonStructure(['data', 'meta' => ['next_cursor', 'prev_cursor', 'per_page']]);
+
+        $this->assertGreaterThanOrEqual(2, count($response->json('data')));
+
+        // Action filter narrows the feed.
+        $filtered = $this->actingAs($admin)
+            ->getJson('/api/v1/admin/audit?action=test.event_a')
+            ->assertOk();
+        foreach ($filtered->json('data') as $row) {
+            $this->assertSame('test.event_a', $row['action']);
+        }
+    }
+
+    public function test_users_endpoint_returns_role_and_2fa_badge(): void
+    {
+        $admin = $this->adminWithTwoFactor();
+        User::factory()->editor()->create(['email' => 'ed@example.test']);
+        User::factory()->partner()->create(['email' => 'pa@example.test']);
+
+        $response = $this->actingAs($admin)
+            ->getJson('/api/v1/admin/users')
+            ->assertOk()
+            ->assertJsonStructure(['data', 'meta' => ['current_page', 'last_page', 'per_page', 'total']]);
+
+        $rows = collect($response->json('data'));
+        $this->assertTrue($rows->contains(fn ($r) => $r['email'] === 'ed@example.test' && $r['role'] === 'editor'));
+        $this->assertTrue($rows->contains(fn ($r) => $r['email'] === 'pa@example.test' && $r['role'] === 'partner'));
+
+        // The admin we acted as should have two_factor_enabled = true.
+        $adminRow = $rows->firstWhere('email', $admin->email);
+        $this->assertNotNull($adminRow);
+        $this->assertTrue($adminRow['two_factor_enabled']);
+    }
+
+    public function test_non_admin_cannot_reach_admin_endpoints(): void
+    {
+        $editor = User::factory()->editor()->create();
+
+        $this->actingAs($editor)->getJson('/api/v1/admin/metrics')->assertForbidden();
+        $this->actingAs($editor)->getJson('/api/v1/admin/audit')->assertForbidden();
+        $this->actingAs($editor)->getJson('/api/v1/admin/users')->assertForbidden();
+    }
+
+    private function adminWithTwoFactor(): User
+    {
+        $secret = (new Google2FA)->generateSecretKey();
+
+        return User::factory()->create([
+            'role' => Role::Admin,
+            'two_factor_secret' => Crypt::encryptString($secret),
+            'two_factor_recovery_codes' => Crypt::encryptString(json_encode(['r1', 'r2'])),
+            'two_factor_confirmed_at' => now(),
+        ]);
+    }
+}

@@ -1,7 +1,7 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useAuthStore } from "@/stores/auth";
+import { useAuthStore, hasRoleAtLeast } from "@/stores/auth";
 import SignInPage from "@/pages/SignInPage";
 
 const SignUpPage = lazy(() => import("@/pages/SignUpPage"));
@@ -10,10 +10,18 @@ const VitalityPage = lazy(() => import("@/pages/VitalityPage"));
 const InfraPage = lazy(() => import("@/pages/InfraPage"));
 const ReportsPage = lazy(() => import("@/pages/ReportsPage"));
 const AlertsPage = lazy(() => import("@/pages/AlertsPage"));
+const AdminPage = lazy(() => import("@/pages/AdminPage"));
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((s) => s.user);
   if (!user) return <Navigate to="/sign-in" replace />;
+  return <>{children}</>;
+}
+
+function RequireAdmin({ children }: { children: React.ReactNode }) {
+  const user = useAuthStore((s) => s.user);
+  if (!user) return <Navigate to="/sign-in" replace />;
+  if (!hasRoleAtLeast(user, "admin")) return <Navigate to="/atlas" replace />;
   return <>{children}</>;
 }
 
@@ -42,6 +50,7 @@ export default function App() {
         <Route path="/infrastructure/:projectId?" element={<RequireAuth><InfraPage /></RequireAuth>} />
         <Route path="/reports" element={<RequireAuth><ReportsPage /></RequireAuth>} />
         <Route path="/alerts" element={<RequireAuth><AlertsPage /></RequireAuth>} />
+        <Route path="/admin" element={<RequireAdmin><AdminPage /></RequireAdmin>} />
         <Route path="*" element={<Navigate to="/atlas" replace />} />
       </Routes>
     </Suspense>
