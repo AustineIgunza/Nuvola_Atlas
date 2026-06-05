@@ -1,8 +1,40 @@
 # NUVOLA ATLAS — Execution Plan
 
 _Owner: Austine Igunza (frontend). Backend / scoring owners: Khillon & Devyan._
-_Last updated: 2026-06-04 (end of working session)._
-_HEAD: `c839103` on `origin/main`._
+_Last updated: 2026-06-05._
+_HEAD: `c839103` on `origin/main` (Forge+DO deploy artifacts staged locally, not yet committed)._
+
+## Session log — 2026-06-05 (Forge + DigitalOcean deploy prep, 9.4)
+
+Five new files staged for the next commit. Nothing actually deployed — the
+artifacts let whoever owns infra (likely Khillon or Devyan) provision the
+droplet from a paint-by-numbers guide instead of designing the deploy from
+scratch.
+
+- `nuvola-atlas-backend/deploy.sh` — Forge deploy script. Idempotent:
+  composer install (no-dev) → `artisan down` → migrate → cache config/route/
+  view/event → `artisan up` → `queue:restart` + `reverb:restart` → php-fpm
+  reload behind a flock. Trapped to bring the app back up if migrate fails.
+- `nuvola-atlas-backend/.env.production.example` — production template:
+  Supabase pooled+direct DB strings, Redis for cache/session/queue/state,
+  Reverb with TLS through nginx, Cloudflare R2 storage, Postmark mail,
+  Sanctum 8h, Sentry placeholders for 9.11.
+- `nuvola-atlas-backend/docker/nginx/forge.conf` — six labelled paste-in
+  blocks for the Forge nginx editor: monorepo docroot, Cloudflare real-IP,
+  Reverb websocket upgrade (`/app` + `/apps/*` → `127.0.0.1:8080`), static
+  asset caching, and an optional edge rate-limit on `/api/v1/auth/*`.
+- `nuvola-atlas-backend/docker/supervisor/nuvola-queue.conf` and
+  `nuvola-reverb.conf` — Forge Daemon configs (commands, processes, stop
+  signals/timeouts) kept in-repo for review.
+- `docs/ops/deploy.md` — twelve-step Forge+DO+Supabase walkthrough with a
+  rollback note. New `docs/ops/` root at the repo (matches §9.6 references
+  to `docs/ops/rollback.md`, etc.).
+
+Manual TODO this unblocks (and still requires the user):
+- Create the DigitalOcean droplet + Forge site per §3–5 of the deploy guide.
+- Provision Supabase project + enable PostGIS per §2.
+- Paste env values + run "Deploy Now" once.
+- After §10 smoke test passes, flip `VITE_USE_REMOTE_API` on Vercel per §11.
 
 ## Session log — 2026-06-04 (all pushed to `main`)
 
@@ -60,7 +92,7 @@ Six commits on top of `34f75b1`:
 
 ### Next pre-pilot priorities (in suggested order)
 
-1. **9.4 Backend hosting decision + deploy** — until a backend exists at a public URL, the FE flag does nothing. (Forge + DigitalOcean is the documented pick.)
+1. **9.4 Backend hosting — actual provisioning** — deploy artifacts are in repo (`deploy.sh`, `.env.production.example`, `forge.conf`, supervisor configs, `docs/ops/deploy.md`). What's left is the user-only part: create the DO droplet via Forge, provision Supabase, paste env, run "Deploy Now", smoke-test `/api/health`.
 2. **3.3 Reverb realtime** — only meaningful once the backend is reachable.
 3. **9.11 Sentry + structured JSON logs** — wire frontend + backend; depends on a Sentry org.
 4. **9.7 finish-up** — RLS scaffold on a partner-scoped table, AES-at-rest toggle verified on Supabase, secret-rotation policy doc.
@@ -310,13 +342,11 @@ Owners: Khillon (Laravel + Postgres + auth), Devyan (FastAPI ingestion, infra st
 - [ ] Per-zone data ACLs for sensitive layers (deferred — depends on partner data agreements).
 
 ### 9.4 Hosting and deployment
-- [ ] Frontend: Vercel (already live). Production = `main`, previews = every PR.
-- [ ] Backend (Laravel + Reverb): pick one and stick with it.
-  - **Recommended**: Laravel Forge + a single DigitalOcean droplet (~USD 12/month) for the pilot year; well-documented, easy handover. Move to Forge + multi-node only if partner traffic justifies it.
-  - Alternative: Laravel Vapor (AWS Lambda) — pay-per-request, scales to zero, but harder for a student team to debug.
-  - Alternative: a single VPS we manage by hand — cheapest but fragile.
+- [x] Frontend: Vercel (already live). Production = `main`, previews = every PR.
+- [x] Backend stack picked: **Laravel Forge + DigitalOcean** + **Supabase Postgres+PostGIS**. Deploy artifacts staged: `nuvola-atlas-backend/deploy.sh`, `.env.production.example`, `docker/nginx/forge.conf`, `docker/supervisor/{nuvola-queue,nuvola-reverb}.conf`. Walkthrough at `docs/ops/deploy.md`.
+- [ ] **Provision step (user-only)**: create DO droplet via Forge, provision Supabase project + enable PostGIS, paste env, run Deploy Now, smoke `/api/health`. See `docs/ops/deploy.md` §1–10.
 - [ ] FastAPI ingestion service: Fly.io (free for small workloads) or Railway. Separate from Laravel so an ingestion outage doesn't take the API down.
-- [ ] Managed Postgres + PostGIS: **Supabase** (PostGIS extension supported, free tier covers pilot) or **Neon** (branching is great for previews). Decision before month 3.
+- [x] Managed Postgres + PostGIS decision: **Supabase** (pooled connection on :6543, direct on :5432 for migrations, `DB_SSLMODE=require`).
 - [ ] DNS via Cloudflare — free, with built-in DDoS and analytics. Even before launch.
 - [ ] TLS: Let's Encrypt via Forge (auto-renew) on the backend; Vercel handles frontend TLS automatically.
 - [ ] Three environments: `production`, `staging`, `local`. **Never** demo to a partner from `local` or from `production` mid-deploy.
