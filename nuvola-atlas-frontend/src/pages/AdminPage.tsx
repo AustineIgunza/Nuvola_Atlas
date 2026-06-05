@@ -1,39 +1,80 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
+import { Shield } from "lucide-react";
 import AppShell from "@/components/chrome/AppShell";
 import AdminTabs, { type AdminTab } from "@/components/admin/AdminTabs";
 import MetricCard from "@/components/admin/MetricCard";
 import AuditTable from "@/components/admin/AuditTable";
 import UsersTable from "@/components/admin/UsersTable";
 import ApiKeysTable from "@/components/admin/ApiKeysTable";
+import TwoFactorSetup from "@/components/admin/TwoFactorSetup";
 import { adminApi } from "@/api/admin";
 import { springSettle } from "@/lib/motion";
 
-export default function AdminPage() {
-  const [tab, setTab] = useState<AdminTab>("overview");
+// Detect the structured 2FA-required body the backend's RequireAdminTwoFactor
+// middleware returns. The fetch wrapper turns that into a thrown Error whose
+// message is either the RFC 7807 `detail` or a generic one — we match on the
+// "two-factor" wording either way.
+function isTwoFactorError(err: unknown): boolean {
+  if (!(err instanceof Error)) return false;
+  return /two[- ]?factor/i.test(err.message);
+}
 
-  const { data: metrics, isLoading } = useQuery({
+export default function AdminPage() {
+  const qc = useQueryClient();
+  const [tab, setTab] = useState<AdminTab>("overview");
+  const [twoFactorMode, setTwoFactorMode] = useState(false);
+
+  const { data: metrics, isLoading, error } = useQuery({
     queryKey: ["admin", "metrics"],
     queryFn: adminApi.metrics,
     staleTime: 30_000,
+    retry: false,
   });
+
+  const showTwoFactor = twoFactorMode || (error && isTwoFactorError(error));
+
+  if (showTwoFactor) {
+    return (
+      <AppShell>
+        <div className="max-w-[1100px] mx-auto px-4 md:px-6 py-10">
+          <TwoFactorSetup
+            onComplete={() => {
+              setTwoFactorMode(false);
+              qc.invalidateQueries({ queryKey: ["admin"] });
+            }}
+          />
+        </div>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell>
       <div className="max-w-[1100px] mx-auto px-4 md:px-6 py-6 space-y-6">
-        <header>
-          <motion.h1
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={springSettle}
-            className="text-[20px] font-semibold tracking-[-0.02em] text-ink-1"
+        <header className="flex items-start justify-between gap-3">
+          <div>
+            <motion.h1
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={springSettle}
+              className="text-[20px] font-semibold tracking-[-0.02em] text-ink-1"
+            >
+              Admin
+            </motion.h1>
+            <p className="text-[12px] text-ink-4 mt-1">
+              Operational view of the Atlas instance — counters refresh every 30 s.
+            </p>
+          </div>
+          <button
+            onClick={() => setTwoFactorMode(true)}
+            className="flex items-center gap-1.5 px-3 h-8 rounded-control bg-[rgba(255,255,255,0.06)] text-[12px] text-ink-2 hover:text-ink-1"
+            title="Enrol your account in TOTP — required for /admin/* in production"
           >
-            Admin
-          </motion.h1>
-          <p className="text-[12px] text-ink-4 mt-1">
-            Operational view of the Atlas instance — counters refresh every 30 s.
-          </p>
+            <Shield size={13} />
+            Set up 2FA
+          </button>
         </header>
 
         <AdminTabs active={tab} onChange={setTab} />

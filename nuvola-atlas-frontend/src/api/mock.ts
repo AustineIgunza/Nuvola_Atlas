@@ -134,11 +134,30 @@ export const mockApi = {
     };
   },
 
+  // Mock-mode promotion by email so the admin dashboard is reachable
+  // without a real backend. Mirrors the seed in UserSeeder.php (which
+  // creates austine@nuvola.dev as admin) and adds convenience prefixes:
+  //   admin@*   → admin   (also: austine@nuvola.dev — matches the seed)
+  //   editor@*  → editor
+  //   partner@* → partner
+  //   anything else → viewer
+  // Password is not checked in mock — sign-in succeeds for any value.
   signIn: async (email: string, _password: string) => {
     await delay();
+    const lc = email.toLowerCase();
+    const role: "admin" | "editor" | "partner" | "viewer" =
+      lc === "austine@nuvola.dev" || lc.startsWith("admin@")
+        ? "admin"
+        : lc.startsWith("editor@")
+        ? "editor"
+        : lc.startsWith("partner@")
+        ? "partner"
+        : "viewer";
+    const inferredName =
+      role === "admin" ? "Mock Admin" : role === "editor" ? "Mock Editor" : role === "partner" ? "Mock Partner" : "Mock Viewer";
     return {
       token: "mock-token",
-      user: { name: "Austine Igunza", email },
+      user: { name: inferredName, email, role, email_verified: true },
     };
   },
 };
