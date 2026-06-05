@@ -30,15 +30,18 @@ class AuthController extends Controller
         $user = Auth::user();
 
         // If 2FA is enabled, do NOT issue the access token here. Instead
-        // mint a short-lived challenge token; the client posts it back to
-        // /auth/2fa/verify with a TOTP code to get the real token.
+        // mail a fresh 6-digit code to the user and return a challenge
+        // token. The client posts it back to /auth/2fa/verify with the
+        // code from their inbox to get the real Sanctum token.
         if ($user->hasTwoFactorEnabled()) {
-            $challenge = TwoFactorController::issueChallenge($user);
+            $challenge = TwoFactorController::issueSignInChallenge($user);
             Audit::record(action: 'auth.two_factor_challenged', resource: $user);
 
             return response()->json([
                 'requires_two_factor' => true,
+                'channel' => 'email',
                 'challenge_token' => $challenge,
+                'email_hint' => $user->maskedEmail(),
             ]);
         }
 

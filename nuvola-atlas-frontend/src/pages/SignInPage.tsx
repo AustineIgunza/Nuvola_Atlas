@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useNavigate, Navigate, Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuthStore } from "@/stores/auth";
+import { Mail } from "lucide-react";
+import { useAuthStore, type AuthRole } from "@/stores/auth";
 import { api } from "@/api";
+import { twoFactorApi } from "@/api/twoFactor";
 import { springSettle } from "@/lib/motion";
 
 type SignInLocationState = {
@@ -25,6 +27,11 @@ function BrandMark() {
   );
 }
 
+interface ChallengeState {
+  token: string;
+  emailHint: string;
+}
+
 export default function SignInPage() {
   const user = useAuthStore((s) => s.user);
   const signIn = useAuthStore((s) => s.signIn);
@@ -36,6 +43,8 @@ export default function SignInPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [justRegistered, setJustRegistered] = useState(Boolean(navState?.justRegistered));
+  const [challenge, setChallenge] = useState<ChallengeState | null>(null);
+  const [code, setCode] = useState("");
 
   if (user) return <Navigate to="/atlas" replace />;
 
@@ -47,10 +56,57 @@ export default function SignInPage() {
     setJustRegistered(false);
     try {
       const res = await api.signIn(email, password);
-      signIn(res.user, res.token);
+      // Backend signals "code emailed, finish the challenge to get a token"
+      // with `requires_two_factor: true`. Switch the form into code-entry
+      // mode instead of completing sign-in here.
+      if ("requires_two_factor" in res) {
+        setChallenge({ token: res.challenge_token, emailHint: res.email_hint });
+        setCode("");
+        return;
+      }
+      signIn(
+        { ...res.user, role: res.user.role as AuthRole | undefined },
+        res.token,
+      );
       navigate("/atlas", { replace: true });
     } catch {
       setError("Sign-in failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleVerify(e: React.FormEvent) {
+    e.preventDefault();
+    if (!challenge) return;
+    if (code.length !== 6) { setError("Enter the 6-digit code from your email"); return; }
+    setLoading(true);
+    setError("");
+    try {
+      const res = await twoFactorApi.verify(challenge.token, code);
+      signIn(
+        { name: res.user.name, email: res.user.email, role: res.user.role as "viewer" | "partner" | "editor" | "admin", email_verified: res.user.email_verified },
+        res.token,
+      );
+      navigate("/atlas", { replace: true });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Verification failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleResend() {
+    if (!challenge) return;
+    // Restart the sign-in to mint a fresh challenge token + email a new code.
+    setLoading(true);
+    try {
+      const res = await api.signIn(email, password);
+      if ("requires_two_factor" in res) {
+        setChallenge({ token: res.challenge_token, emailHint: res.email_hint });
+        setCode("");
+        setError("");
+      }
     } finally {
       setLoading(false);
     }
@@ -80,7 +136,7 @@ export default function SignInPage() {
           transition={{ delay: 0.2 }}
           className="text-[24px] font-semibold tracking-[-0.02em] text-ink-1 mb-1"
         >
-          Sign in
+          {challenge ? "Check your email" : "Sign in"}
         </motion.h1>
         <motion.p
           initial={{ opacity: 0 }}
@@ -88,7 +144,9 @@ export default function SignInPage() {
           transition={{ delay: 0.25 }}
           className="text-[13px] text-ink-3 mb-7"
         >
-          Spatial Intelligence Network for African Industrial Development
+          {challenge
+            ? `We sent a 6-digit code to ${challenge.emailHint}. It expires in 5 minutes.`
+            : "Spatial Intelligence Network for African Industrial Development"}
         </motion.p>
 
         <AnimatePresence>
@@ -108,6 +166,63 @@ export default function SignInPage() {
           )}
         </AnimatePresence>
 
+        {challenge && (
+          <form onSubmit={handleVerify} className="space-y-4">
+            <div className="rounded-control p-3 bg-[rgba(74,158,255,0.08)] ring-1 ring-[rgba(74,158,255,0.25)] flex items-start gap-2">
+              <Mail size={14} className="text-accent mt-0.5 shrink-0" />
+              <div className="text-[12px] text-ink-2">
+                Code sent to <span className="font-mono text-ink-1">{challenge.emailHint}</span>
+              </div>
+            </div>
+
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={6}
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              placeholder="123456"
+              autoFocus
+              autoComplete="one-time-code"
+              className="w-full h-12 px-4 rounded-control bg-[rgba(255,255,255,0.06)] border border-border text-[20px] tabular-nums text-center tracking-[0.4em] text-ink-1 placeholder:text-ink-4 outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all"
+            />
+
+            {error && (
+              <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-[12px] text-danger">
+                {error}
+              </motion.p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading || code.length !== 6}
+              className="w-full h-11 rounded-control bg-accent text-white text-[14px] font-semibold hover:brightness-110 disabled:opacity-50 transition-all"
+            >
+              {loading ? "Verifying…" : "Verify & continue"}
+            </button>
+
+            <div className="flex items-center justify-between text-[12px]">
+              <button
+                type="button"
+                onClick={() => { setChallenge(null); setCode(""); setError(""); }}
+                className="text-ink-3 hover:text-ink-2"
+              >
+                ← Back
+              </button>
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={loading}
+                className="text-accent hover:underline disabled:opacity-50"
+              >
+                Resend code
+              </button>
+            </div>
+          </form>
+        )}
+
+        {!challenge && (
         <form onSubmit={handleSubmit} className="space-y-4">
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
             <label htmlFor="email" className="block text-[12px] font-medium text-ink-3 mb-1.5">Email</label>
@@ -160,6 +275,7 @@ export default function SignInPage() {
             )}
           </motion.button>
         </form>
+        )}
 
         <motion.p
           initial={{ opacity: 0 }}

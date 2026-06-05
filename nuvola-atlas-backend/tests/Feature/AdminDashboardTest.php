@@ -9,8 +9,6 @@ use App\Models\AuditLog;
 use App\Models\Partner;
 use App\Models\Report;
 use App\Models\User;
-use Illuminate\Support\Facades\Crypt;
-use PragmaRX\Google2FA\Google2FA;
 use Tests\TestCase;
 
 class AdminDashboardTest extends TestCase
@@ -140,13 +138,9 @@ class AdminDashboardTest extends TestCase
 
     private function adminWithTwoFactor(): User
     {
-        $secret = (new Google2FA)->generateSecretKey();
-
         return User::factory()->create([
             'role' => Role::Admin,
-            'two_factor_secret' => Crypt::encryptString($secret),
-            'two_factor_recovery_codes' => Crypt::encryptString(json_encode(['r1', 'r2'])),
-            'two_factor_confirmed_at' => now(),
+            'email_two_factor_enabled_at' => now(),
         ]);
     }
 }

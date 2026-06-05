@@ -12,7 +12,6 @@
         "laravel/reverb": "^1.10",
         "laravel/sanctum": "^4.3",
         "laravel/tinker": "^3.0",
-        "pragmarx/google2fa": "^9.0",
         "sentry/sentry-laravel": "^4.25"
     },
     "require-dev": {

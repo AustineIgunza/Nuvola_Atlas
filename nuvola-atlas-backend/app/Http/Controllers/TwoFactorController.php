@@ -4,44 +4,45 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Mail\TwoFactorCodeMail;
 use App\Models\User;
 use App\Support\Audit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
-use PragmaRX\Google2FA\Google2FA;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 /**
- * TOTP-based two-factor authentication.
+ * Email-based 2FA.
  *
  * Flow:
- *   1. POST /api/v1/auth/2fa/enable       (auth required) — generates a
- *      secret + 8 recovery codes, returns the otpauth:// URI for the user
- *      to scan, and the plaintext recovery codes. The secret is NOT yet
- *      active until confirmed.
- *   2. POST /api/v1/auth/2fa/confirm      (auth required) — user submits
- *      the first TOTP code. On success two_factor_confirmed_at is set
- *      and the account is now 2FA-gated.
- *   3. POST /api/v1/auth/2fa/disable      (auth required) — body: code.
- *      Clears the columns.
- *   4. POST /api/v1/auth/2fa/verify       (no auth) — body: challenge_token
- *      + code. On success returns a real Sanctum access token. Used by the
- *      sign-in flow when AuthController::signIn() determines 2FA is on.
+ *   1. POST /auth/2fa/email/start    (auth) — emails a 6-digit code to the
+ *      user's verified address. Code lives in the cache for 5 minutes.
+ *   2. POST /auth/2fa/email/confirm  (auth) — user submits the code from
+ *      their inbox. On success `email_two_factor_enabled_at` is flipped.
+ *   3. POST /auth/2fa/email/disable  (auth) — body: password + recent code.
+ *   4. POST /auth/2fa/verify         (no auth) — body: challenge_token +
+ *      code. AuthController::signIn issues the challenge_token when the
+ *      account has 2FA on; this endpoint exchanges it for a real Sanctum
+ *      access token.
  *
- * Admins are the only role required to enrol (per todo §9.3 scope choice);
- * other roles can opt in but never have to.
+ * Why email and not TOTP: easier UX for partners who don't want yet
+ * another authenticator app. Weaker than TOTP if email is compromised,
+ * but only as weak as password reset already is on the same address.
  */
 class TwoFactorController extends Controller
 {
-    private const RECOVERY_CODE_COUNT = 8;
     private const CHALLENGE_TTL_SECONDS = 300;
+    private const ENROL_TTL_SECONDS = 300;
+    private const RESEND_LIMIT_PER_MINUTE = 1;
 
-    public function enable(Request $request): JsonResponse
+    public function emailStart(Request $request): JsonResponse
     {
         /** @var User $user */
         $user = $request->user();
@@ -50,55 +51,44 @@ class TwoFactorController extends Controller
             throw new AccessDeniedHttpException('Two-factor authentication is already enabled.');
         }
 
-        $g2fa = new Google2FA;
-        $secret = $g2fa->generateSecretKey();
+        $this->rateLimitResend('2fa.enrol_send:'.$user->id);
 
-        $codes = collect(range(1, self::RECOVERY_CODE_COUNT))
-            ->map(fn () => Str::random(10).'-'.Str::random(10))
-            ->all();
+        $code = self::issueCode();
+        Cache::put($this->enrolCacheKey($user), $code, self::ENROL_TTL_SECONDS);
 
-        $user->forceFill([
-            'two_factor_secret' => Crypt::encryptString($secret),
-            'two_factor_recovery_codes' => Crypt::encryptString(json_encode($codes)),
-            'two_factor_confirmed_at' => null,
-        ])->save();
-
-        $appName = config('app.name', 'Nuvola Atlas');
-        $otpauthUri = $g2fa->getQRCodeUrl($appName, $user->email, $secret);
+        Mail::to($user->email)->send(new TwoFactorCodeMail(
+            code: $code,
+            purpose: 'enrol',
+            ttlSeconds: self::ENROL_TTL_SECONDS,
+        ));
 
         return response()->json([
-            'secret' => $secret,
-            'otpauth_uri' => $otpauthUri,
-            'recovery_codes' => $codes,
+            'message' => 'Code sent to your email.',
+            'email_hint' => $user->maskedEmail(),
+            'expires_in_seconds' => self::ENROL_TTL_SECONDS,
         ]);
     }
 
-    public function confirm(Request $request): JsonResponse
+    public function emailConfirm(Request $request): JsonResponse
     {
         $request->validate(['code' => ['required', 'string', 'size:6']]);
 
         /** @var User $user */
         $user = $request->user();
 
-        if ($user->two_factor_secret === null) {
-            throw new AccessDeniedHttpException('Two-factor enrolment has not started.');
+        $stored = Cache::pull($this->enrolCacheKey($user));
+        if (! is_string($stored) || ! hash_equals($stored, (string) $request->input('code'))) {
+            return response()->json(['message' => 'Invalid or expired code.'], 422);
         }
 
-        $g2fa = new Google2FA;
-        $valid = $g2fa->verifyKey($user->twoFactorSecret(), $request->input('code'));
-
-        if (! $valid) {
-            return response()->json(['message' => 'Invalid code.'], 422);
-        }
-
-        $user->forceFill(['two_factor_confirmed_at' => now()])->save();
+        $user->forceFill(['email_two_factor_enabled_at' => now()])->save();
 
         Audit::record(action: 'auth.two_factor_enabled', resource: $user);
 
         return response()->json(['message' => 'Two-factor authentication enabled.']);
     }
 
-    public function disable(Request $request): JsonResponse
+    public function emailDisable(Request $request): JsonResponse
     {
         $request->validate([
             'password' => ['required', 'string'],
@@ -112,15 +102,13 @@ class TwoFactorController extends Controller
             return response()->json(['message' => 'Invalid password.'], 422);
         }
 
-        if (! $this->codeIsValid($user, $request->input('code'))) {
-            return response()->json(['message' => 'Invalid code.'], 422);
+        // For disable we accept a fresh code from a new /email/start call.
+        $stored = Cache::pull($this->enrolCacheKey($user));
+        if (! is_string($stored) || ! hash_equals($stored, (string) $request->input('code'))) {
+            return response()->json(['message' => 'Invalid or expired code.'], 422);
         }
 
-        $user->forceFill([
-            'two_factor_secret' => null,
-            'two_factor_recovery_codes' => null,
-            'two_factor_confirmed_at' => null,
-        ])->save();
+        $user->forceFill(['email_two_factor_enabled_at' => null])->save();
 
         Audit::record(action: 'auth.two_factor_disabled', resource: $user);
 
@@ -131,20 +119,27 @@ class TwoFactorController extends Controller
     {
         $request->validate([
             'challenge_token' => ['required', 'string'],
-            'code' => ['required', 'string'],
+            'code' => ['required', 'string', 'size:6'],
         ]);
 
-        $userId = Cache::pull('2fa:challenge:'.hash('sha256', $request->input('challenge_token')));
-        if ($userId === null) {
+        $challenge = Cache::pull($this->challengeCacheKey($request->input('challenge_token')));
+        if (! is_array($challenge) || ! isset($challenge['user_id'], $challenge['code'])) {
             throw new UnauthorizedHttpException('Bearer', 'Challenge expired or invalid.');
         }
 
-        $user = User::find($userId);
+        $user = User::find($challenge['user_id']);
         if ($user === null || ! $user->hasTwoFactorEnabled()) {
             throw new UnauthorizedHttpException('Bearer', 'Two-factor not configured.');
         }
 
-        if (! $this->codeIsValid($user, $request->input('code'))) {
+        if (! hash_equals((string) $challenge['code'], (string) $request->input('code'))) {
+            // Put it back so the user gets one or two retries before TTL ends.
+            Cache::put(
+                $this->challengeCacheKey($request->input('challenge_token')),
+                $challenge,
+                self::CHALLENGE_TTL_SECONDS,
+            );
+
             return response()->json(['message' => 'Invalid code.'], 422);
         }
 
@@ -165,38 +160,56 @@ class TwoFactorController extends Controller
         ]);
     }
 
-    public static function issueChallenge(User $user): string
+    /**
+     * Mints a challenge token + caches the code and emails it. Called by
+     * AuthController::signIn when the authenticated user has 2FA on.
+     */
+    public static function issueSignInChallenge(User $user): string
     {
         $token = Str::random(40);
+        $code = self::issueCode();
+
         Cache::put(
-            '2fa:challenge:'.hash('sha256', $token),
-            $user->id,
+            'auth.two_factor_challenge:'.hash('sha256', $token),
+            ['user_id' => $user->id, 'code' => $code],
             self::CHALLENGE_TTL_SECONDS,
         );
+
+        Mail::to($user->email)->send(new TwoFactorCodeMail(
+            code: $code,
+            purpose: 'sign_in',
+            ttlSeconds: self::CHALLENGE_TTL_SECONDS,
+        ));
 
         return $token;
     }
 
-    private function codeIsValid(User $user, string $code): bool
+    private static function issueCode(): string
     {
-        // 6-digit TOTP path.
-        if (preg_match('/^\d{6}$/', $code)) {
-            return (new Google2FA)->verifyKey($user->twoFactorSecret() ?? '', $code);
+        // 6-digit, leading zeros preserved — `00 - 99 99 99` range.
+        return str_pad((string) random_int(0, 999_999), 6, '0', STR_PAD_LEFT);
+    }
+
+    private function enrolCacheKey(User $user): string
+    {
+        return 'auth.two_factor_enrol:'.$user->id;
+    }
+
+    private function challengeCacheKey(string $token): string
+    {
+        return 'auth.two_factor_challenge:'.hash('sha256', $token);
+    }
+
+    private function rateLimitResend(string $key): void
+    {
+        $attempts = RateLimiter::attempts($key);
+        if ($attempts >= self::RESEND_LIMIT_PER_MINUTE) {
+            $retryAfter = RateLimiter::availableIn($key);
+            throw new TooManyRequestsHttpException(
+                $retryAfter,
+                'Wait '.$retryAfter.'s before requesting another code.'
+            );
         }
-
-        // Recovery code path — single-use; consumed on match.
-        $codes = $user->twoFactorRecoveryCodes();
-        if (in_array($code, $codes, true)) {
-            $remaining = array_values(array_filter($codes, fn ($c) => $c !== $code));
-            $user->forceFill([
-                'two_factor_recovery_codes' => empty($remaining)
-                    ? null
-                    : Crypt::encryptString(json_encode($remaining)),
-            ])->save();
-
-            return true;
-        }
-
-        return false;
+        RateLimiter::hit($key, 60);
     }
 }

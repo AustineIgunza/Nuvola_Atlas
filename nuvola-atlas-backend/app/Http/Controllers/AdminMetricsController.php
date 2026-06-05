@@ -48,7 +48,7 @@ class AdminMetricsController extends Controller
                 'admins_total' => User::query()->where('role', 'admin')->count(),
                 'admins_with_two_factor' => User::query()
                     ->where('role', 'admin')
-                    ->whereNotNull('two_factor_confirmed_at')
+                    ->whereNotNull('email_two_factor_enabled_at')
                     ->count(),
                 'generated_at' => $now->toIso8601String(),
             ];

@@ -137,7 +137,11 @@ export const mockApi = {
   // Mock-mode promotion by email so the admin dashboard is reachable
   // without a real backend. Mirrors the seed in UserSeeder.php (which
   // creates austine@nuvola.dev as admin) and adds convenience prefixes:
-  //   admin@*   → admin   (also: austine@nuvola.dev — matches the seed)
+  //   admin@*       → admin (returns the email-2FA challenge so the
+  //                  challenge UI can be tested without a backend)
+  //   admin-no2fa@* → admin but bypasses 2FA (skip-the-challenge path
+  //                  for testing the dashboard quickly)
+  //   austine@nuvola.dev → admin without 2FA (matches the seed)
   //   editor@*  → editor
   //   partner@* → partner
   //   anything else → viewer
@@ -145,8 +149,24 @@ export const mockApi = {
   signIn: async (email: string, _password: string) => {
     await delay();
     const lc = email.toLowerCase();
+    const isAdmin = lc === "austine@nuvola.dev" || lc.startsWith("admin@") || lc.startsWith("admin-no2fa@");
+    const challengeOn2fa = lc.startsWith("admin@") && !lc.startsWith("admin-no2fa@");
+
+    if (challengeOn2fa) {
+      // Mock the email-2FA challenge so the SignInPage code-entry UI can
+      // be exercised without a backend. The challenge_token is also a
+      // sentinel — the mock verify call accepts any 6-digit code while
+      // this token is in flight.
+      return {
+        requires_two_factor: true as const,
+        channel: "email" as const,
+        challenge_token: "mock-challenge-" + Math.random().toString(36).slice(2, 10),
+        email_hint: maskEmail(email),
+      };
+    }
+
     const role: "admin" | "editor" | "partner" | "viewer" =
-      lc === "austine@nuvola.dev" || lc.startsWith("admin@")
+      isAdmin
         ? "admin"
         : lc.startsWith("editor@")
         ? "editor"
@@ -160,4 +180,25 @@ export const mockApi = {
       user: { name: inferredName, email, role, email_verified: true },
     };
   },
+
+  // Mock verify accepts any 6-digit code for any mock challenge token.
+  verifyTwoFactor: async (challenge_token: string, code: string) => {
+    await delay();
+    if (!/^\d{6}$/.test(code)) throw new Error("Enter a 6-digit code.");
+    if (!challenge_token.startsWith("mock-challenge-")) throw new Error("Invalid challenge.");
+    return {
+      token: "mock-token",
+      expires_at: new Date(Date.now() + 480 * 60_000).toISOString(),
+      user: { id: 1, name: "Mock Admin", email: "admin@nuvola.dev", role: "admin" as const, email_verified: true },
+    };
+  },
 };
+
+function maskEmail(email: string): string {
+  const at = email.indexOf("@");
+  if (at < 0) return email;
+  const local = email.slice(0, at);
+  const domain = email.slice(at);
+  if (local.length <= 2) return local + "***" + domain;
+  return local.slice(0, 2) + "*".repeat(Math.max(3, local.length - 2)) + domain;
+}

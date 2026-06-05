@@ -40,7 +40,7 @@ class AdminUserController extends Controller
                 'email' => $u->email,
                 'role' => $u->role()->value,
                 'email_verified' => $u->hasVerifiedEmail(),
-                'two_factor_enabled' => $u->hasTwoFactorEnabled(),
+                'two_factor_enabled' => $u->hasTwoFactorEnabled(),  // now sourced from email_two_factor_enabled_at
                 'partner' => $u->partner ? [
                     'id' => $u->partner->id,
                     'name' => $u->partner->name,

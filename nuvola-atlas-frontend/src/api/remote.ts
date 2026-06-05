@@ -66,6 +66,11 @@ export const remoteApi = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
-    return handleResponse<{ token: string; user: { name: string; email: string } }>(res);
+    // Backend may return either a real token, or a 2FA challenge — the
+    // discriminator is `requires_two_factor`. SignInPage branches on it.
+    return handleResponse<
+      | { token: string; user: { name: string; email: string; role?: string; email_verified?: boolean } }
+      | { requires_two_factor: true; channel: "email"; challenge_token: string; email_hint: string }
+    >(res);
   },
 };

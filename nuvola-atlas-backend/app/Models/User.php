@@ -54,28 +54,23 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function hasTwoFactorEnabled(): bool
     {
-        return $this->two_factor_confirmed_at !== null
-            && $this->two_factor_secret !== null;
+        return $this->email_two_factor_enabled_at !== null;
     }
 
-    public function twoFactorRecoveryCodes(): array
+    /**
+     * Returns the user's email with the local-part masked except the first
+     * two characters, e.g. `au***@nuvola.dev`. Used in sign-in responses so
+     * the UI can hint where the code was sent without disclosing the full
+     * address to anyone who got hold of the credentials.
+     */
+    public function maskedEmail(): string
     {
-        if ($this->two_factor_recovery_codes === null) {
-            return [];
-        }
-
-        return json_decode(
-            \Illuminate\Support\Facades\Crypt::decryptString($this->two_factor_recovery_codes),
-            true,
-        ) ?? [];
-    }
-
-    public function twoFactorSecret(): ?string
-    {
-        if ($this->two_factor_secret === null) {
-            return null;
-        }
-
-        return \Illuminate\Support\Facades\Crypt::decryptString($this->two_factor_secret);
+        $email = $this->email ?? '';
+        $at = strpos($email, '@');
+        if ($at === false) return $email;
+        $local = substr($email, 0, $at);
+        $domain = substr($email, $at);
+        if (strlen($local) <= 2) return $local.'***'.$domain;
+        return substr($local, 0, 2).str_repeat('*', max(3, strlen($local) - 2)).$domain;
     }
 }

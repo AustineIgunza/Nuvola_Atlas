@@ -41,6 +41,8 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
         Route::post('auth/register', [AuthController::class, 'register']);
         Route::post('auth/forgot-password', [AuthController::class, 'forgotPassword']);
         Route::post('auth/reset-password', [AuthController::class, 'resetPassword']);
+        // Email-2FA sign-in challenge verification — not authed because the
+        // user doesn't yet have a session at this stage.
         Route::post('auth/2fa/verify', [TwoFactorController::class, 'verify']);
     });
 
@@ -48,12 +50,12 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
         Route::get('auth/me', [AuthController::class, 'me']);
         Route::post('auth/sign-out', [AuthController::class, 'signOut']);
 
-        // 2FA self-service: every authenticated user can enrol/confirm/
-        // disable their own TOTP. Admins are *required* to enrol before
-        // they can reach /admin/* (see admin.two_factor below).
-        Route::post('auth/2fa/enable', [TwoFactorController::class, 'enable']);
-        Route::post('auth/2fa/confirm', [TwoFactorController::class, 'confirm']);
-        Route::post('auth/2fa/disable', [TwoFactorController::class, 'disable']);
+        // Email-2FA self-service: any authenticated user can enrol; admins
+        // are *required* to enrol before they can reach /admin/* (see
+        // admin.two_factor below).
+        Route::post('auth/2fa/email/start', [TwoFactorController::class, 'emailStart']);
+        Route::post('auth/2fa/email/confirm', [TwoFactorController::class, 'emailConfirm']);
+        Route::post('auth/2fa/email/disable', [TwoFactorController::class, 'emailDisable']);
 
         // Internal writes require editor or admin role; viewers and partners
         // can read everything but not flip alerts or publish reports.
