@@ -2,7 +2,7 @@
 
 _Owner: Austine Igunza (frontend). Backend / scoring owners: Khillon & Devyan._
 _Last updated: 2026-06-05._
-_HEAD: `cf8ae60` on `origin/main` (admin dashboard + metrics/audit/users APIs shipped today)._
+_HEAD: `ea41fdf` on `origin/main` (admin v2 — mint wizard, role writes, audit CSV — shipped today)._
 
 ## Session log — 2026-06-05 (Forge + DigitalOcean deploy prep, 9.4)
 
