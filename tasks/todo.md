@@ -1,8 +1,72 @@
 # NUVOLA ATLAS — Execution Plan
 
 _Owner: Austine Igunza (frontend). Backend / scoring owners: Khillon & Devyan._
-_Last updated: 2026-06-05._
-_HEAD: `ea41fdf` on `origin/main` (admin v2 — mint wizard, role writes, audit CSV — shipped today)._
+_Last updated: 2026-06-08._
+_HEAD: `42959c2` on `origin/main` (admin sparklines + auth IP throttle + ops runbooks)._
+
+## Session log — 2026-06-08 (admin sparklines, auth throttle, ops docs)
+
+Three slices on top of `1b3b985`, all pushed:
+
+1. **68187df** `feat(admin)` — audit-volume + vitality-trend sparklines (9.13).
+   - Backend: `GET /api/v1/admin/metrics/audit-volume` returns a 30-entry
+     daily series (oldest → newest, zero-filled) cached 5 min.
+     Postgres-friendly `TO_CHAR` for grouping; SQLite fallback to
+     `DATE()`. New `AdminDashboardTest::test_audit_volume_returns_thirty_day_series_with_zero_fill`.
+   - Frontend: pure-SVG `<Sparkline>` primitive (no chart lib), with
+     gradient area fill + path stroke, scales to its own min/max with
+     a 2 px y-pad. `<MetricCard>` gained an optional `spark` slot;
+     overview row now shows the 30-day audit-event spark next to the
+     24h count and a 12-month county-wide Vitality trend spark
+     (green) reusing the existing `/api/v1/history` endpoint. Mock
+     fixture for the audit-volume series so preview/local renders
+     without a backend.
+2. **3e0164e** `feat(security)` — tighten auth rate-limit to 10/10min/IP (9.8).
+   - `AppServiceProvider`: `RateLimiter::for('auth', ...)` switched from
+     `Limit::perMinute(5)` to `Limit::perMinutes(10, 10)`. Caps a single
+     IP at ~60 attempts/hour across `/sign-in`, `/register`,
+     `/forgot-password`, `/reset-password`, `/auth/2fa/verify`.
+   - New `AuthRateLimitTest` (3 cases): 11th wrong-password attempt
+     returns 429 + Problem JSON; per-IP scoping confirmed; forgot-
+     password is covered by the same limiter.
+   - Existing auth-touching tests (AuthApiTest, TwoFactorTest,
+     AuditLogTest) all stay under the 10-attempt budget per-test
+     because each test gets a fresh app + fresh array cache.
+3. **42959c2** `docs(ops)` — rollback + incident-response + postmortem
+   template (9.6, 9.12).
+   - `docs/ops/rollback.md`: decision tree, RTO table (FE 2 min / BE
+     5 min / DB 30 min), Vercel rollback steps, Forge code-only vs
+     migrations-involved paths, full Supabase restore, mandatory
+     after-rollback checklist, explicit "what does NOT get a rollback"
+     list.
+   - `docs/ops/incident-response.md`: SEV-1/2/3 definitions, IC/Comms/
+     Tech/Scribe role collapse, first-15-minutes script, comms
+     templates, symptom→first-action lookup table.
+   - `docs/ops/postmortem-template.md`: blameless template (impact,
+     timeline, root cause, contributing factors, what went well/badly/
+     lucky, action items with hard rules, optional data-loss section,
+     verification checklist).
+   - `docs/ops/deploy.md`: replaced the placeholder rollback section
+     with pointers to the three new docs.
+
+End-of-session checks: tsc clean, vite build clean (mapbox-only
+warning), route:list 31 (was 30; +`/admin/metrics/audit-volume`),
+phpunit 71/71 in ~11 s (68 → 71, +1 audit-volume +3 rate-limit).
+
+What this unblocks:
+- Admin dashboard overview now reads as a trend dashboard, not just
+  counters — closes one of the two remaining §9.13 items.
+- The auth-IP throttle takes care of the §9.8 sign-in/sign-up/forgot
+  bullet, which was the only blocking item in §9.8 that didn't need
+  user infra (Cloudflare bot-fight, per-API-key throttle still open).
+- §9.6 rollback playbook + §9.12 incident-response runbook +
+  postmortem template are no longer just references — they exist.
+
+Still pre-pilot blocking and user-only:
+- 9.4 backend hosting provisioning (DO droplet + Supabase + env paste).
+- 9.7 AES-at-rest Supabase toggle.
+- 9.11 Sentry DSN drop-in.
+
 
 ## Session log — 2026-06-05 (Forge + DigitalOcean deploy prep, 9.4)
 
@@ -129,7 +193,10 @@ Six commits on top of `34f75b1`:
 2. **3.3 Reverb realtime** — only meaningful once the backend is reachable.
 3. **9.11 remaining** — drop a real Sentry DSN on Forge + Vercel once a Sentry org exists. SDKs wire themselves up; verify first crash lands in the dashboard.
 4. **9.7 remaining** — AES-at-rest Supabase toggle (user-only), pentest (deferred).
-5. **Admin dashboard enhancements** — mint-key wizard UI (currently API-only), Vitality trend sparklines, charts for audit-event volume.
+5. **§9.13 admin tail** — per-zone Vitality trend sparkline (needs a `zone_vitality_history` table — schema work, defer until Devyan's ingestion writes it), force-2FA enrolment reminder email + lock-account flow.
+6. **§9.8 tail** — per-API-key rate limit (configurable in the mint wizard), Cloudflare Bot-Fight mode in front of the backend (depends on 9.4).
+7. **§9.9 caching** — `ETag` + `Cache-Control: private, max-age=300` on `/api/v1/zones` and `/api/v1/projects`. Self-contained, in my lane.
+8. **§9.12 health tail** — `/api/health/ingestion` (depends on the ingestion service existing).
 
 ---
 
@@ -400,7 +467,7 @@ Owners: Khillon (Laravel + Postgres + auth), Devyan (FastAPI ingestion, infra st
 - [ ] Pre-commit hooks (Husky or lefthook) — `tsc --noEmit`, `vitest --changed`, `pint --dirty`, `phpstan`.
 - [ ] Ingestion CI (`nuvola-atlas-ingestion/`) — `ruff`, `mypy`, `pytest` — added when service is split out.
 - [ ] SemVer tags on backend releases.
-- [ ] Rollback playbook at `docs/ops/rollback.md`.
+- [x] Rollback playbook at `docs/ops/rollback.md` (commit 42959c2). Decision tree, RTO targets, Vercel + Forge code-only + Forge-with-migrations + full Supabase restore paths, mandatory after-rollback checklist.
 
 ### 9.7 Security and RLS
 - [x] HSTS preload (production only) on every response from web + API.
@@ -415,7 +482,7 @@ Owners: Khillon (Laravel + Postgres + auth), Devyan (FastAPI ingestion, infra st
 - [ ] Pentest before public launch (Strathmore Info Sec Club or external).
 
 ### 9.8 Rate limiting
-- [ ] Per-IP throttle on `/sign-in`, `/sign-up`, `/forgot-password`: 10 attempts / 10 minutes / IP (Laravel `RateLimiter::for`).
+- [x] Per-IP throttle on `/sign-in`, `/sign-up`, `/forgot-password`: 10 attempts / 10 minutes / IP (Laravel `RateLimiter::for`). Shipped in 3e0164e — `auth` named limiter switched from `perMinute(5)` to `perMinutes(10, 10)`. Covers the whole throttle:auth group (also `/reset-password`, `/auth/2fa/verify`). 429 renders as RFC 7807 Problem JSON automatically. `AuthRateLimitTest` covers the cap, per-IP scoping, and forgot-password coverage.
 - [ ] Per-user-token throttle on read APIs: 600 req/min, burst 100.
 - [ ] Per-API-key throttle on partner programmatic access: configurable per partner via the admin panel; default 60 req/min.
 - [ ] Cloudflare's free Bot-Fight Mode in front of the backend; auto-blocks the noisy stuff before it hits Laravel.
@@ -469,7 +536,7 @@ Owners: Khillon (Laravel + Postgres + auth), Devyan (FastAPI ingestion, infra st
 - [x] **User management writes** — inline role-change menu in `UsersTable` posts to `PATCH /admin/users/{id}`. Backend blocks self-role-change (acting admin's row is rendered as a static badge with `title="You cannot change your own role"`).
 - [x] **CSV export for audit feed** — Symfony StreamedResponse, chunks 500 rows at a time, `Content-Disposition: attachment`. Frontend fetches with bearer header (anchor click can't send auth), creates a blob URL, triggers download.
 - [x] Mock fixtures so the dashboard renders in preview/local without a backend.
-- [ ] Vitality trend sparklines per zone; 30-day audit-event sparkline.
+- [x] 30-day audit-event sparkline shipped in 68187df. Overview row's "Audit events (24h)" card now embeds a 30-day spark + 30-day total. New `GET /api/v1/admin/metrics/audit-volume` backs it; pure-SVG `<Sparkline>` primitive (no chart lib); mock fixture so preview/local renders without a backend. **County-wide Vitality trend** spark (12-month, reusing `/history`) also added as a new card. **Per-zone** Vitality trend sparkline is still deferred — needs a `zone_vitality_history` table that doesn't exist yet (the current `vitality_history` table is global `month` + `overall_avg`).
 - [ ] Force-2FA enrolment reminder email, lock account.
 
 ### 9.12 Availability and recovery
@@ -485,9 +552,9 @@ Owners: Khillon (Laravel + Postgres + auth), Devyan (FastAPI ingestion, infra st
 - [ ] **RPO** (Recovery Point Objective): ≤ 1 hour for the database (point-in-time recovery), ≤ 24 hours for object storage.
 - [x] `GET /api/health` (DB ping + cache write) shipped. `GET /api/health/ingestion` still pending (depends on ingestion service).
 - [ ] Single-point-of-failure audit: list every external dependency (Mapbox, KNBS, KPLC scraper targets, Sentry, GitHub). For each, what happens if it's down for 24 hours? Document the degradation strategy.
-- [ ] Incident response runbook (`docs/ops/incident-response.md`): who pages who, what the first 15 minutes look like, when to update the status page.
+- [x] Incident response runbook (`docs/ops/incident-response.md`): who pages who, what the first 15 minutes look like, when to update the status page (commit 42959c2). SEV-1/2/3 definitions, IC/Comms/Tech/Scribe role collapse for the 5-person team, comms templates, symptom→first-action lookup table.
 - [ ] Light on-call rotation among the five of us (we're not a 24/7 operation, but during partner working hours someone is reachable).
-- [ ] Postmortem template (`docs/ops/postmortem-template.md`) for any incident lasting > 30 min. Blameless.
+- [x] Postmortem template (`docs/ops/postmortem-template.md`) for any incident lasting > 30 min. Blameless. Shipped in 42959c2 — impact + timeline + root cause vs contributing factors + what-went-well/badly/lucky + action items with hard rules (owner + date, no "investigate", no "improve communication") + optional data-loss + verification + sign-off.
 
 ---
 
