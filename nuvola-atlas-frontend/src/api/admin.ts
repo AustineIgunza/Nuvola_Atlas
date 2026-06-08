@@ -68,7 +68,38 @@ export interface MintApiKeyResponse {
   data: ApiKey;
 }
 
+export interface AuditVolumePoint {
+  date: string;
+  count: number;
+}
+
+export interface AuditVolume {
+  series: AuditVolumePoint[];
+  window_days: number;
+  total: number;
+  generated_at: string;
+}
+
 // ── Mock fixtures so the dashboard renders in preview/local without a backend.
+const mockAuditVolume = (): AuditVolume => {
+  // Slight wobble so the sparkline reads as a real trend in mock mode.
+  const series: AuditVolumePoint[] = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(today.getTime() - i * 86_400_000);
+    const base = 6 + Math.round(4 * Math.sin(i / 4));
+    const noise = ((i * 37) % 5) - 2;
+    series.push({ date: d.toISOString().slice(0, 10), count: Math.max(0, base + noise) });
+  }
+  return {
+    series,
+    window_days: 30,
+    total: series.reduce((s, p) => s + p.count, 0),
+    generated_at: new Date().toISOString(),
+  };
+};
+
 const mockMetrics = (): AdminMetrics => ({
   users_total: 27,
   partners_total: 4,
@@ -115,6 +146,12 @@ export const adminApi = {
   metrics: async (): Promise<AdminMetrics> => {
     if (USE_MOCK) return mockMetrics();
     const r = await getJson<{ data: AdminMetrics }>("/admin/metrics");
+    return r.data;
+  },
+
+  auditVolume: async (): Promise<AuditVolume> => {
+    if (USE_MOCK) return mockAuditVolume();
+    const r = await getJson<{ data: AuditVolume }>("/admin/metrics/audit-volume");
     return r.data;
   },
 

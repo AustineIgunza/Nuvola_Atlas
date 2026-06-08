@@ -119,6 +119,44 @@ class AdminDashboardTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_audit_volume_returns_thirty_day_series_with_zero_fill(): void
+    {
+        $admin = $this->adminWithTwoFactor();
+
+        // Two events today, one 5 days ago. Everything else should be zero.
+        AuditLog::create(['action' => 'spark.today_a', 'actor_id' => $admin->id]);
+        AuditLog::create(['action' => 'spark.today_b', 'actor_id' => $admin->id]);
+        AuditLog::create([
+            'action' => 'spark.five_days_ago',
+            'actor_id' => $admin->id,
+            'created_at' => now()->subDays(5),
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->getJson('/api/v1/admin/metrics/audit-volume')
+            ->assertOk()
+            ->assertJsonStructure(['data' => [
+                'series' => [['date', 'count']],
+                'window_days', 'total', 'generated_at',
+            ]]);
+
+        $data = $response->json('data');
+        $this->assertSame(30, count($data['series']));
+        $this->assertSame(30, $data['window_days']);
+        $this->assertGreaterThanOrEqual(3, $data['total']);
+
+        // Today's bucket is the last entry and contains at least our 2 events.
+        $today = end($data['series']);
+        $this->assertSame(now()->toDateString(), $today['date']);
+        $this->assertGreaterThanOrEqual(2, $today['count']);
+
+        // Series is sorted oldest → newest.
+        $dates = array_column($data['series'], 'date');
+        $sorted = $dates;
+        sort($sorted);
+        $this->assertSame($sorted, $dates);
+    }
+
     public function test_audit_csv_export_returns_csv_attachment(): void
     {
         $admin = $this->adminWithTwoFactor();

@@ -69,6 +69,7 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
         // role=admin AND 2FA enrolled. Never accepts a partner-scoped key.
         Route::middleware(['role:admin', 'admin.two_factor'])->prefix('admin')->group(function () {
             Route::get('metrics', [AdminMetricsController::class, 'index']);
+            Route::get('metrics/audit-volume', [AdminMetricsController::class, 'auditVolume']);
 
             Route::get('audit', [AdminAuditController::class, 'index']);
             Route::get('audit/export', [AdminAuditController::class, 'export']);

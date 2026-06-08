@@ -10,6 +10,7 @@ import UsersTable from "@/components/admin/UsersTable";
 import ApiKeysTable from "@/components/admin/ApiKeysTable";
 import TwoFactorSetup from "@/components/admin/TwoFactorSetup";
 import { adminApi } from "@/api/admin";
+import { api } from "@/api";
 import { springSettle } from "@/lib/motion";
 
 // Detect the structured 2FA-required body the backend's RequireAdminTwoFactor
@@ -32,6 +33,27 @@ export default function AdminPage() {
     staleTime: 30_000,
     retry: false,
   });
+
+  // Sparkline series. Audit volume is admin-scoped; vitality history is a
+  // public read but reused here as the county-wide trend line.
+  const { data: auditVolume } = useQuery({
+    queryKey: ["admin", "audit-volume"],
+    queryFn: adminApi.auditVolume,
+    staleTime: 5 * 60_000,
+    retry: false,
+    enabled: !error,
+  });
+
+  const { data: historyPoints } = useQuery({
+    queryKey: ["history", "global"],
+    queryFn: api.getHistory,
+    staleTime: 5 * 60_000,
+    retry: false,
+  });
+
+  const auditSeries = auditVolume?.series.map((p) => p.count);
+  const vitalitySeries = historyPoints?.map((p) => p.overallAvg);
+  const vitalityLatest = vitalitySeries?.[vitalitySeries.length - 1];
 
   const showTwoFactor = twoFactorMode || (error && isTwoFactorError(error));
 
@@ -101,9 +123,19 @@ export default function AdminPage() {
                   <MetricCard
                     label="Audit events (24h)"
                     value={metrics.audit_events_last_24h}
-                    hint="rolling window"
+                    hint={auditVolume ? `${auditVolume.total} in last 30d` : "rolling window"}
+                    spark={auditSeries}
+                    sparkAriaLabel="30-day audit event volume"
                   />
                   <MetricCard label="Active API keys" value={metrics.api_keys_active} />
+                  <MetricCard
+                    label="Vitality trend"
+                    value={vitalityLatest != null ? vitalityLatest.toFixed(1) : "—"}
+                    hint={historyPoints && historyPoints.length > 0 ? `12-month avg, latest ${historyPoints[historyPoints.length - 1].month}` : "12-month avg"}
+                    spark={vitalitySeries}
+                    sparkColor="#34c97a"
+                    sparkAriaLabel="12-month county-wide Vitality trend"
+                  />
                   <MetricCard
                     label="Admins on 2FA"
                     value={`${metrics.admins_with_two_factor}/${metrics.admins_total}`}
