@@ -36,8 +36,13 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
 
+        // Auth-IP throttle (§9.8): 10 attempts per 10-minute rolling window
+        // per IP. Caps brute-force attempts on /sign-in, /register,
+        // /forgot-password, /reset-password, and /auth/2fa/verify well below
+        // a useful guess rate (60/hr ceiling) while leaving headroom for a
+        // real user fat-fingering a password or reset code.
         RateLimiter::for('auth', function (Request $request) {
-            return Limit::perMinute(5)->by($request->ip());
+            return Limit::perMinutes(10, 10)->by($request->ip());
         });
 
         // Role gates — controllers/blade can call `Gate::allows('edit-internal')`
