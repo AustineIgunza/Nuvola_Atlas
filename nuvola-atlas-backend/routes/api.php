@@ -23,13 +23,21 @@ Route::get('health', [HealthController::class, 'index']);
 // /api/v1/ — all current consumer endpoints. Reserve /api/v2/ for breaking
 // changes; never delete a v1 endpoint without a 90-day deprecation header.
 Route::prefix('v1')->middleware('throttle:api')->group(function () {
-    Route::get('zones', [ZoneController::class, 'index']);
-    Route::get('zones/{id}', [ZoneController::class, 'show']);
-    Route::get('zones/{id}/activity', [ZoneController::class, 'activity']);
-    Route::get('zones/{id}/layers', [ZoneController::class, 'layers']);
+    // Read-only zone + project endpoints are slow-moving — apply the
+    // HTTP cache layer (ETag + Cache-Control: private, max-age=300) so
+    // partner integrations and TanStack Query don't re-pay payload cost
+    // for re-renders within a 5-minute window. /activity is realtime so
+    // it stays no-cache.
+    Route::middleware('http.cache:300')->group(function () {
+        Route::get('zones', [ZoneController::class, 'index']);
+        Route::get('zones/{id}', [ZoneController::class, 'show']);
+        Route::get('zones/{id}/layers', [ZoneController::class, 'layers']);
 
-    Route::get('projects', [ProjectController::class, 'index']);
-    Route::get('projects/{id}', [ProjectController::class, 'show']);
+        Route::get('projects', [ProjectController::class, 'index']);
+        Route::get('projects/{id}', [ProjectController::class, 'show']);
+    });
+
+    Route::get('zones/{id}/activity', [ZoneController::class, 'activity']);
 
     Route::get('alerts', [AlertController::class, 'index']);
     Route::get('reports', [ReportController::class, 'index']);
