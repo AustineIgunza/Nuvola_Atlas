@@ -235,6 +235,8 @@ If migrations are the problem and `migrate:rollback` isn't safe, restore the
 Supabase point-in-time snapshot (Database → Backups) to a *new* db, swap
 `DB_*` env to point at it, redeploy.
 
-A proper rollback runbook with timing targets belongs at
-`docs/ops/rollback.md` (§9.6) — write it once we've actually rolled back a
-prod incident.
+Full rollback runbook with RTO targets, decision tree, and the
+migration-rollback-vs-restore split: `docs/ops/rollback.md`.
+For the comms-and-coordination side of an incident,
+`docs/ops/incident-response.md`. Every incident lasting more than 30
+minutes ends with `docs/ops/postmortem-template.md` filled in.
