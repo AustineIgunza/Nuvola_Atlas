@@ -1,8 +1,0 @@
-[build]
-builder = "railpack"
-
-[deploy]
-healthcheckPath = "/"
-healthcheckTimeout = 30
-restartPolicyType = "on_failure"
-restartPolicyMaxRetries = 3

@@ -445,7 +445,7 @@ Owners: Khillon (Laravel + Postgres + auth), Devyan (FastAPI ingestion, infra st
 - [x] Frontend: Vercel (already live). Production = `main`, previews = every PR.
 - [x] Backend stack picked: **Laravel Forge + DigitalOcean** + **Supabase Postgres+PostGIS**. Deploy artifacts staged: `nuvola-atlas-backend/deploy.sh`, `.env.production.example`, `docker/nginx/forge.conf`, `docker/supervisor/{nuvola-queue,nuvola-reverb}.conf`. Walkthrough at `docs/ops/deploy.md`.
 - [ ] **Provision step (user-only)**: create DO droplet via Forge, provision Supabase project + enable PostGIS, paste env, run Deploy Now, smoke `/api/health`. See `docs/ops/deploy.md` §1–10.
-- [ ] FastAPI ingestion service: Fly.io (free for small workloads) or Railway. Separate from Laravel so an ingestion outage doesn't take the API down.
+- [ ] FastAPI ingestion service: **Vercel Functions** (Python 3.13/3.14 via Fluid Compute). Same Vercel account as the frontend, deployed from `nuvola-atlas-ingestion/` once that workspace is split out. Separate project from the Laravel API so an ingestion outage doesn't take the API down. (Earlier Railway/Fly.io options dropped on 2026-06-08; orphaned `Dockerfile`/`railway.toml`/`docker-compose.prod.yml` removed in the same commit.)
 - [x] Managed Postgres + PostGIS decision: **Supabase** (pooled connection on :6543, direct on :5432 for migrations, `DB_SSLMODE=require`).
 - [ ] DNS via Cloudflare — free, with built-in DDoS and analytics. Even before launch.
 - [ ] TLS: Let's Encrypt via Forge (auto-renew) on the backend; Vercel handles frontend TLS automatically.
