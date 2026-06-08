@@ -1,8 +1,61 @@
 # NUVOLA ATLAS — Execution Plan
 
 _Owner: Austine Igunza (frontend). Backend / scoring owners: Khillon & Devyan._
-_Last updated: 2026-06-08._
-_HEAD: `42959c2` on `origin/main` (admin sparklines + auth IP throttle + ops runbooks)._
+_Last updated: 2026-06-08 (second pass)._
+_HEAD: `da014dc` on `origin/main` (Railway cleanup; pin Vercel for ingestion)._
+
+## Session log — 2026-06-08 (continued — provisioning roster, caching, force-2FA, Railway purge)
+
+Five additional slices on top of `5e2db49`, all pushed:
+
+5. **c8d7757** `docs(ops)` — account provisioning roster in `docs/ops/deploy.md` §0
+   (Tier 1 / Tier 2 / data sourcing / MCPs / share-rule / 30-min fast path);
+   every external dependency the project needs is now catalogued with
+   "who creates the account, what they share, where it lands, what
+   Claude does next." Replaces ad-hoc tribal knowledge.
+6. **17800db** `docs(ops)` — Status column added to §0.2 / §0.3 / §0.5
+   with ✅ / ⏳ / 🚫 markers + "status notes" callouts. As of today
+   only `gh` CLI is ✅; GitHub repo and Vercel project are ⏳ (account
+   exists, prod env vars + branch-protection rule are missing);
+   everything else is 🚫.
+7. **9142085** `feat(perf)` — §9.9 HTTP caching middleware. New
+   `App\Http\Middleware\HttpCache` (aliased `http.cache`) computes
+   `ETag` (md5 of body) + `Cache-Control: private, max-age=N`
+   (default 300) on cacheable GETs only, returns 304 with the ETag
+   when `If-None-Match` matches (including wildcard per RFC 7232 §4.1).
+   Applied to `/api/v1/zones`, `/zones/{id}`, `/zones/{id}/layers`,
+   `/projects`, `/projects/{id}`. `/activity` stays out (real-time);
+   `/alerts` and `/reports` unchanged. `HttpCacheTest` (7 cases)
+   covers shape, 304 path, mismatch path, wildcard, /projects
+   coverage, /alerts is NOT cached, and ETag rotates with data.
+8. **13051c9** `feat(security)` — §9.13 force-2FA enrolment escalation.
+   Migration adds `email_two_factor_reminded_at` + `email_two_factor_locked_at`
+   (datetime, nullable). Daily-scheduled `nuvola:remind-admin-2fa`
+   command (`Schedule::command(...)->dailyAt('09:00')`) finds admins
+   missing 2FA: day-0 reminder email + audit `user.two_factor_reminder_sent`,
+   day-7 escalation that revokes every Sanctum token + sends "locked"
+   email + audits `user.two_factor_locked`. `TwoFactorController::emailConfirm`
+   self-heals both timestamps on successful enrolment. Admin users
+   table now shows three new states (On / Locked / Reminded / Off)
+   with hover-tooltips, fed by `two_factor_locked` +
+   `two_factor_reminded_at` fields newly exposed on `/admin/users`.
+   `RemindAdminsWithoutTwoFactorTest` (8 cases): first reminder,
+   no-op in grace window, escalation + token revoke, already-locked
+   skipped, enrolled ignored, non-admin ignored, dry-run no-mutation,
+   enrolment clears state.
+9. **da014dc** `chore(ops)` — Railway cleanup. Deleted four orphan
+   files from an abandoned Railway exploration: `nuvola-atlas-backend/Dockerfile`,
+   `railway.toml`, `docker-compose.prod.yml`, `docker/nginx/default.conf`.
+   Replaced `nuvola-atlas-backend/docs/deployment.md` with a redirect
+   stub to `docs/ops/deploy.md`. Updated §9.4 ingestion-service
+   bullet: was "Fly.io or Railway", now "Vercel Functions (Python
+   3.13/3.14 via Fluid Compute)" per the session-start Vercel
+   knowledge update — same Vercel account as the frontend, no
+   second host onboarding.
+
+End-of-session checks: tsc clean, vite build clean (mapbox-only chunk
+warning), route:list 31 (unchanged), phpunit 71 → **86** (+1 audit-
+volume earlier + 3 rate-limit earlier + 7 http-cache + 8 force-2FA).
 
 ## Session log — 2026-06-08 (admin sparklines, auth throttle, ops docs)
 
@@ -193,10 +246,11 @@ Six commits on top of `34f75b1`:
 2. **3.3 Reverb realtime** — only meaningful once the backend is reachable.
 3. **9.11 remaining** — drop a real Sentry DSN on Forge + Vercel once a Sentry org exists. SDKs wire themselves up; verify first crash lands in the dashboard.
 4. **9.7 remaining** — AES-at-rest Supabase toggle (user-only), pentest (deferred).
-5. **§9.13 admin tail** — per-zone Vitality trend sparkline (needs a `zone_vitality_history` table — schema work, defer until Devyan's ingestion writes it), force-2FA enrolment reminder email + lock-account flow.
+5. **§9.13 admin tail** — per-zone Vitality trend sparkline (needs a `zone_vitality_history` table — schema work, defer until Devyan's ingestion writes it); ad-hoc "remind now" admin endpoint (current path is the daily cron only).
 6. **§9.8 tail** — per-API-key rate limit (configurable in the mint wizard), Cloudflare Bot-Fight mode in front of the backend (depends on 9.4).
-7. **§9.9 caching** — `ETag` + `Cache-Control: private, max-age=300` on `/api/v1/zones` and `/api/v1/projects`. Self-contained, in my lane.
-8. **§9.12 health tail** — `/api/health/ingestion` (depends on the ingestion service existing).
+7. **§9.9 caching tail** — bump TanStack Query `staleTime` to 5 min for `/zones` now that the backend backs it with a 300-s max-age. Document partner ETag usage.
+8. **§9.12 health tail** — `/api/health/ingestion` (depends on the ingestion service existing — see Vercel-pinned bullet in §9.4).
+9. **§9.1 deferred** — `Idempotency-Key` header on POSTs; only matters once partner-key writes exist, so still deferred.
 
 ---
 
@@ -491,7 +545,7 @@ Owners: Khillon (Laravel + Postgres + auth), Devyan (FastAPI ingestion, infra st
 
 ### 9.9 Caching and CDN
 - [ ] Vercel CDN handles the static frontend automatically. Confirm `Cache-Control: public, max-age=31536000, immutable` on hashed assets.
-- [ ] Backend HTTP caching: `ETag` + `Cache-Control: private, max-age=300` on `/api/zones` (rarely changes), `/api/projects` (slow-moving). Skip caching on `/api/alerts` and `/api/activity` (real-time).
+- [x] Backend HTTP caching: `ETag` + `Cache-Control: private, max-age=300` on `/api/zones` (rarely changes), `/api/projects` (slow-moving). Skip caching on `/api/alerts` and `/api/activity` (real-time). Shipped in 9142085 — new `App\Http\Middleware\HttpCache` (alias `http.cache`); applied to `/zones`, `/zones/{id}`, `/zones/{id}/layers`, `/projects`, `/projects/{id}`. Returns 304 on `If-None-Match` match (incl. wildcard). `HttpCacheTest` (7 cases).
 - [ ] Redis (managed via Upstash free tier OR a Forge-managed instance) for:
   - Laravel cache driver (replaces `file` driver in prod).
   - Session driver.
@@ -537,7 +591,7 @@ Owners: Khillon (Laravel + Postgres + auth), Devyan (FastAPI ingestion, infra st
 - [x] **CSV export for audit feed** — Symfony StreamedResponse, chunks 500 rows at a time, `Content-Disposition: attachment`. Frontend fetches with bearer header (anchor click can't send auth), creates a blob URL, triggers download.
 - [x] Mock fixtures so the dashboard renders in preview/local without a backend.
 - [x] 30-day audit-event sparkline shipped in 68187df. Overview row's "Audit events (24h)" card now embeds a 30-day spark + 30-day total. New `GET /api/v1/admin/metrics/audit-volume` backs it; pure-SVG `<Sparkline>` primitive (no chart lib); mock fixture so preview/local renders without a backend. **County-wide Vitality trend** spark (12-month, reusing `/history`) also added as a new card. **Per-zone** Vitality trend sparkline is still deferred — needs a `zone_vitality_history` table that doesn't exist yet (the current `vitality_history` table is global `month` + `overall_avg`).
-- [ ] Force-2FA enrolment reminder email, lock account.
+- [x] Force-2FA enrolment reminder email, lock account. Shipped in 13051c9 — daily `nuvola:remind-admin-2fa` command (scheduled `dailyAt('09:00')`): day-0 reminder mail + `user.two_factor_reminder_sent` audit; day-7 revokes all Sanctum tokens + sends locked-mail + `user.two_factor_locked` audit. `TwoFactorController::emailConfirm` self-heals both timestamps. UsersTable now has four states (On / Locked / Reminded / Off). `RemindAdminsWithoutTwoFactorTest` (8 cases).
 
 ### 9.12 Availability and recovery
 - [ ] Uptime target: **99 %** for the pilot (≈ 7 h / month allowed downtime). 99.9 % only once we have a paid partner with an SLA.
