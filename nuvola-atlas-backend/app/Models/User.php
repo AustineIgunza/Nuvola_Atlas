@@ -27,6 +27,9 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return [
             'email_verified_at' => 'datetime',
+            'email_two_factor_enabled_at' => 'datetime',
+            'email_two_factor_reminded_at' => 'datetime',
+            'email_two_factor_locked_at' => 'datetime',
             'password' => 'hashed',
             'role' => Role::class,
         ];

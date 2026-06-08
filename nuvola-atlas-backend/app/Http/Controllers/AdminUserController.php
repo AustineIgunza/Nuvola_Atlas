@@ -41,6 +41,8 @@ class AdminUserController extends Controller
                 'role' => $u->role()->value,
                 'email_verified' => $u->hasVerifiedEmail(),
                 'two_factor_enabled' => $u->hasTwoFactorEnabled(),  // now sourced from email_two_factor_enabled_at
+                'two_factor_locked' => $u->email_two_factor_locked_at !== null,
+                'two_factor_reminded_at' => $u->email_two_factor_reminded_at?->toIso8601String(),
                 'partner' => $u->partner ? [
                     'id' => $u->partner->id,
                     'name' => $u->partner->name,

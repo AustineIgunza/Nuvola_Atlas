@@ -128,8 +128,31 @@ export default function UsersTable() {
                     )}
                   </td>
                   <td className="px-3 py-2">
-                    <span className={cn("inline-block w-2 h-2 rounded-full", u.two_factor_enabled ? "bg-success" : "bg-ink-4")} />
-                    <span className="ml-2 text-[12px] text-ink-3">{u.two_factor_enabled ? "On" : "Off"}</span>
+                    {u.two_factor_enabled ? (
+                      <>
+                        <span className="inline-block w-2 h-2 rounded-full bg-success" />
+                        <span className="ml-2 text-[12px] text-ink-3">On</span>
+                      </>
+                    ) : u.two_factor_locked ? (
+                      <span
+                        className="inline-block px-2 py-0.5 rounded-chip text-[11px] font-medium bg-[rgba(255,93,93,0.12)] text-danger"
+                        title="Account locked pending 2FA enrolment. Tokens revoked; sign-in lands on the enrolment wizard."
+                      >
+                        locked
+                      </span>
+                    ) : u.two_factor_reminded_at ? (
+                      <span
+                        className="inline-block px-2 py-0.5 rounded-chip text-[11px] font-medium bg-[rgba(255,189,89,0.12)] text-warn"
+                        title={`Reminder sent on ${new Date(u.two_factor_reminded_at).toLocaleDateString()}; lock fires 7 days later`}
+                      >
+                        reminded
+                      </span>
+                    ) : (
+                      <>
+                        <span className="inline-block w-2 h-2 rounded-full bg-ink-4" />
+                        <span className="ml-2 text-[12px] text-ink-3">Off</span>
+                      </>
+                    )}
                   </td>
                   <td className="px-3 py-2 text-[12px] text-ink-3">{u.email_verified ? "verified" : "pending"}</td>
                   <td className="px-3 py-2 text-ink-3">{u.partner?.name ?? <span className="text-ink-4">—</span>}</td>

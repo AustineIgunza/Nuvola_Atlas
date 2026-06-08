@@ -37,6 +37,8 @@ export interface AdminUser {
   role: string;
   email_verified: boolean;
   two_factor_enabled: boolean;
+  two_factor_locked?: boolean;
+  two_factor_reminded_at?: string | null;
   partner: { id: number; name: string } | null;
   created_at: string | null;
 }
@@ -123,12 +125,13 @@ const mockAudit = (): AuditPage => ({
 
 const mockUsers = (): AdminUserPage => ({
   data: [
-    { id: 1, name: "Joy Nthei", email: "joy@nuvola.dev", role: "admin", email_verified: true, two_factor_enabled: true, partner: null, created_at: new Date(Date.now() - 30 * 86400_000).toISOString() },
-    { id: 2, name: "Ken N'ganga", email: "ken@nuvola.dev", role: "admin", email_verified: true, two_factor_enabled: true, partner: null, created_at: new Date(Date.now() - 30 * 86400_000).toISOString() },
-    { id: 3, name: "Austine Igunza", email: "austine@nuvola.dev", role: "editor", email_verified: true, two_factor_enabled: false, partner: null, created_at: new Date(Date.now() - 28 * 86400_000).toISOString() },
-    { id: 4, name: "Pilot Partner", email: "pilot@example.test", role: "partner", email_verified: true, two_factor_enabled: false, partner: { id: 1, name: "Nairobi County Planning" }, created_at: new Date(Date.now() - 5 * 86400_000).toISOString() },
+    { id: 1, name: "Joy Nthei", email: "joy@nuvola.dev", role: "admin", email_verified: true, two_factor_enabled: true, two_factor_locked: false, two_factor_reminded_at: null, partner: null, created_at: new Date(Date.now() - 30 * 86400_000).toISOString() },
+    { id: 2, name: "Ken N'ganga", email: "ken@nuvola.dev", role: "admin", email_verified: true, two_factor_enabled: false, two_factor_locked: false, two_factor_reminded_at: new Date(Date.now() - 3 * 86400_000).toISOString(), partner: null, created_at: new Date(Date.now() - 30 * 86400_000).toISOString() },
+    { id: 3, name: "Austine Igunza", email: "austine@nuvola.dev", role: "editor", email_verified: true, two_factor_enabled: false, two_factor_locked: false, two_factor_reminded_at: null, partner: null, created_at: new Date(Date.now() - 28 * 86400_000).toISOString() },
+    { id: 4, name: "Pilot Partner", email: "pilot@example.test", role: "partner", email_verified: true, two_factor_enabled: false, two_factor_locked: false, two_factor_reminded_at: null, partner: { id: 1, name: "Nairobi County Planning" }, created_at: new Date(Date.now() - 5 * 86400_000).toISOString() },
+    { id: 5, name: "Khillon", email: "khillon@nuvola.dev", role: "admin", email_verified: true, two_factor_enabled: false, two_factor_locked: true, two_factor_reminded_at: new Date(Date.now() - 12 * 86400_000).toISOString(), partner: null, created_at: new Date(Date.now() - 30 * 86400_000).toISOString() },
   ],
-  meta: { current_page: 1, last_page: 1, per_page: 20, total: 4 },
+  meta: { current_page: 1, last_page: 1, per_page: 20, total: 5 },
 });
 
 const mockApiKeys = (): { data: ApiKey[] } => ({

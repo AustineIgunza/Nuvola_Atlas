@@ -81,7 +81,13 @@ class TwoFactorController extends Controller
             return response()->json(['message' => 'Invalid or expired code.'], 422);
         }
 
-        $user->forceFill(['email_two_factor_enabled_at' => now()])->save();
+        // Successful enrolment self-heals any prior reminder/lock state so
+        // the user is not stuck behind an old escalation flag.
+        $user->forceFill([
+            'email_two_factor_enabled_at' => now(),
+            'email_two_factor_reminded_at' => null,
+            'email_two_factor_locked_at' => null,
+        ])->save();
 
         Audit::record(action: 'auth.two_factor_enabled', resource: $user);
 
