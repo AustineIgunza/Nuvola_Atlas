@@ -55,6 +55,10 @@ class AdminApiKeyController extends Controller
             'abilities' => ['required', 'array', 'min:1'],
             'abilities.*' => ['string', Rule::in(self::ABILITIES)],
             'expires_in_days' => ['nullable', 'integer', 'min:1', 'max:730'],
+            // Null = no per-key cap (still throttled by the default `api`
+            // limiter at 60/min). Capped at 6000 so an admin can't disable
+            // throttling by typing a five-digit number.
+            'rate_limit_per_minute' => ['nullable', 'integer', 'min:1', 'max:6000'],
         ]);
 
         /** @var User $user */
@@ -70,6 +74,14 @@ class AdminApiKeyController extends Controller
             expiresAt: $expiresAt,
         );
 
+        // The cap lives on the PAT row directly; createToken doesn't expose
+        // it, so we write it on the freshly-issued access token and save.
+        if (array_key_exists('rate_limit_per_minute', $validated)) {
+            $token->accessToken->forceFill([
+                'rate_limit_per_minute' => $validated['rate_limit_per_minute'],
+            ])->save();
+        }
+
         Audit::record(
             action: 'api_key.created',
             resource: $token->accessToken,
@@ -79,6 +91,7 @@ class AdminApiKeyController extends Controller
                 'name' => $validated['name'],
                 'abilities' => $validated['abilities'],
                 'expires_at' => $expiresAt?->toIso8601String(),
+                'rate_limit_per_minute' => $validated['rate_limit_per_minute'] ?? null,
             ],
         );
 
@@ -117,6 +130,9 @@ class AdminApiKeyController extends Controller
             'id' => $t->id,
             'name' => $t->name,
             'abilities' => $t->abilities,
+            'rate_limit_per_minute' => $t->rate_limit_per_minute !== null
+                ? (int) $t->rate_limit_per_minute
+                : null,
             'last_used_at' => $t->last_used_at?->toIso8601String(),
             'expires_at' => $t->expires_at?->toIso8601String(),
             'created_at' => $t->created_at?->toIso8601String(),

@@ -52,6 +52,7 @@ export interface ApiKey {
   id: number;
   name: string;
   abilities: string[];
+  rate_limit_per_minute: number | null;
   last_used_at: string | null;
   expires_at: string | null;
   created_at: string | null;
@@ -63,6 +64,8 @@ export interface MintApiKeyPayload {
   name: string;
   abilities: string[];
   expires_in_days?: number;
+  // null = no per-key cap (still under the default 60/min `api` ceiling).
+  rate_limit_per_minute?: number | null;
 }
 
 export interface MintApiKeyResponse {
@@ -136,7 +139,7 @@ const mockUsers = (): AdminUserPage => ({
 
 const mockApiKeys = (): { data: ApiKey[] } => ({
   data: [
-    { id: 7, name: "partner pilot — readonly", abilities: ["api:read"], last_used_at: new Date(Date.now() - 2 * 3600_000).toISOString(), expires_at: new Date(Date.now() + 90 * 86400_000).toISOString(), created_at: new Date(Date.now() - 86400_000).toISOString(), user: { id: 4, name: "Pilot Partner", email: "pilot@example.test", role: "partner", partner_id: 1 } },
+    { id: 7, name: "partner pilot — readonly", abilities: ["api:read"], rate_limit_per_minute: 60, last_used_at: new Date(Date.now() - 2 * 3600_000).toISOString(), expires_at: new Date(Date.now() + 90 * 86400_000).toISOString(), created_at: new Date(Date.now() - 86400_000).toISOString(), user: { id: 4, name: "Pilot Partner", email: "pilot@example.test", role: "partner", partner_id: 1 } },
   ],
 });
 
@@ -186,7 +189,7 @@ export const adminApi = {
       // Return a fake token so the wizard UI can show its "copy once" flow.
       return {
         token: `${Math.floor(Math.random() * 1000)}|${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`,
-        data: { id: Math.floor(Math.random() * 1000), name: payload.name, abilities: payload.abilities, last_used_at: null, expires_at: payload.expires_in_days ? new Date(Date.now() + payload.expires_in_days * 86400_000).toISOString() : null, created_at: new Date().toISOString(), user: { id: payload.user_id, name: "Mock user", email: "mock@example.test", role: "partner", partner_id: null } },
+        data: { id: Math.floor(Math.random() * 1000), name: payload.name, abilities: payload.abilities, rate_limit_per_minute: payload.rate_limit_per_minute ?? null, last_used_at: null, expires_at: payload.expires_in_days ? new Date(Date.now() + payload.expires_in_days * 86400_000).toISOString() : null, created_at: new Date().toISOString(), user: { id: payload.user_id, name: "Mock user", email: "mock@example.test", role: "partner", partner_id: null } },
       };
     }
     const res = await fetch(`${BASE}/admin/api-keys`, {

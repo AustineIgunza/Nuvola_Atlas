@@ -50,6 +50,45 @@ class AdminApiKeyTest extends TestCase
         $this->assertSame($partner->id, $record->tokenable_id);
         $this->assertSame(['api:read'], $record->abilities);
         $this->assertNotNull($record->expires_at);
+
+        // No explicit cap passed → null in the payload, no per-key throttle.
+        $this->assertNull($response->json('data.rate_limit_per_minute'));
+    }
+
+    public function test_mint_persists_custom_rate_limit_per_minute(): void
+    {
+        $admin = $this->adminWithTwoFactor();
+        $partner = User::factory()->partner()->create();
+
+        $response = $this->actingAs($admin)
+            ->postJson('/api/v1/admin/api-keys', [
+                'user_id' => $partner->id,
+                'name' => 'pilot partner — capped',
+                'abilities' => ['api:read'],
+                'rate_limit_per_minute' => 120,
+            ])
+            ->assertCreated();
+
+        $this->assertSame(120, $response->json('data.rate_limit_per_minute'));
+
+        $record = PersonalAccessToken::findToken($response->json('token'));
+        $this->assertNotNull($record);
+        $this->assertSame(120, (int) $record->rate_limit_per_minute);
+    }
+
+    public function test_rate_limit_above_ceiling_is_rejected(): void
+    {
+        $admin = $this->adminWithTwoFactor();
+        $partner = User::factory()->partner()->create();
+
+        $this->actingAs($admin)
+            ->postJson('/api/v1/admin/api-keys', [
+                'user_id' => $partner->id,
+                'name' => 'cannot disable throttling',
+                'abilities' => ['api:read'],
+                'rate_limit_per_minute' => 100_000,
+            ])
+            ->assertUnprocessable();
     }
 
     public function test_invalid_ability_is_rejected(): void

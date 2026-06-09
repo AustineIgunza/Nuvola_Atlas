@@ -17,6 +17,17 @@ const EXPIRY_PRESETS = [
   { label: "Never", days: undefined },
 ] as const;
 
+// Per-key throttle presets. `null` = no per-key cap (the request still falls
+// under the default 60/min `api` limiter — pick "Unlimited" only when the
+// partner has a contractual reason to burst).
+const RATE_LIMIT_PRESETS = [
+  { label: "30 / min", rate: 30 },
+  { label: "60 / min", rate: 60 },
+  { label: "120 / min", rate: 120 },
+  { label: "300 / min", rate: 300 },
+  { label: "Unlimited", rate: null },
+] as const;
+
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -28,6 +39,7 @@ export default function MintApiKeyModal({ open, onClose }: Props) {
   const [name, setName] = useState("");
   const [abilities, setAbilities] = useState<string[]>(["api:read"]);
   const [expiresInDays, setExpiresInDays] = useState<number | undefined>(90);
+  const [rateLimit, setRateLimit] = useState<number | null>(60);
   const [minted, setMinted] = useState<MintApiKeyResponse | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -51,6 +63,7 @@ export default function MintApiKeyModal({ open, onClose }: Props) {
       name,
       abilities,
       expires_in_days: expiresInDays,
+      rate_limit_per_minute: rateLimit,
     }),
     onSuccess: (res) => {
       setMinted(res);
@@ -67,6 +80,7 @@ export default function MintApiKeyModal({ open, onClose }: Props) {
         setName("");
         setAbilities(["api:read"]);
         setExpiresInDays(90);
+        setRateLimit(60);
         setMinted(null);
         setCopied(false);
         mint.reset();
@@ -193,6 +207,28 @@ export default function MintApiKeyModal({ open, onClose }: Props) {
                     </div>
                   </Field>
 
+                  <Field
+                    label="Rate limit"
+                    hint="Caps the partner key in isolation — independent of any other key issued to the same user."
+                  >
+                    <div className="flex flex-wrap gap-2">
+                      {RATE_LIMIT_PRESETS.map((p) => (
+                        <button
+                          key={p.label}
+                          onClick={() => setRateLimit(p.rate)}
+                          className={cn(
+                            "px-3 h-8 rounded-chip text-[12px] transition-colors",
+                            rateLimit === p.rate
+                              ? "bg-accent text-white"
+                              : "bg-[rgba(255,255,255,0.04)] text-ink-3 hover:text-ink-2",
+                          )}
+                        >
+                          {p.label}
+                        </button>
+                      ))}
+                    </div>
+                  </Field>
+
                   {mint.isError && (
                     <div className="text-[12px] text-danger">
                       {(mint.error as Error).message}
@@ -244,6 +280,14 @@ export default function MintApiKeyModal({ open, onClose }: Props) {
                         {minted.data.expires_at
                           ? new Date(minted.data.expires_at).toLocaleDateString()
                           : "Never"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-ink-4">Rate limit</dt>
+                      <dd className="text-ink-1">
+                        {minted.data.rate_limit_per_minute
+                          ? `${minted.data.rate_limit_per_minute} / min`
+                          : "Unlimited"}
                       </dd>
                     </div>
                   </dl>

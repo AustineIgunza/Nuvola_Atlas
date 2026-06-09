@@ -59,6 +59,7 @@ export default function ApiKeysTable() {
                 <th className="text-left font-medium px-3 py-2">Name</th>
                 <th className="text-left font-medium px-3 py-2 w-[160px]">Partner / user</th>
                 <th className="text-left font-medium px-3 py-2 w-[120px]">Abilities</th>
+                <th className="text-left font-medium px-3 py-2 w-[110px]">Rate limit</th>
                 <th className="text-left font-medium px-3 py-2 w-[140px]">Last used</th>
                 <th className="text-left font-medium px-3 py-2 w-[140px]">Expires</th>
                 <th className="text-right font-medium px-3 py-2 w-[120px]">Action</th>
@@ -79,6 +80,9 @@ export default function ApiKeysTable() {
                     )}
                   </td>
                   <td className="px-3 py-2 text-ink-3 text-[12px] tabular-nums">{k.abilities.join(", ")}</td>
+                  <td className="px-3 py-2 text-ink-3 text-[12px] tabular-nums">
+                    {k.rate_limit_per_minute ? `${k.rate_limit_per_minute} / min` : <span className="text-ink-4">Unlimited</span>}
+                  </td>
                   <td className="px-3 py-2 text-ink-3 text-[12px]">{fmtTime(k.last_used_at)}</td>
                   <td className="px-3 py-2 text-ink-3 text-[12px]">{fmtTime(k.expires_at)}</td>
                   <td className="px-3 py-2 text-right">
@@ -111,7 +115,7 @@ export default function ApiKeysTable() {
               ))}
               {data.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-3 py-6 text-center text-ink-4">No active API keys.</td>
+                  <td colSpan={7} className="px-3 py-6 text-center text-ink-4">No active API keys.</td>
                 </tr>
               )}
             </tbody>
