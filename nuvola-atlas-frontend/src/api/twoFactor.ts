@@ -1,4 +1,5 @@
 import { BASE, USE_MOCK, authHeaders, handleResponse } from "./client";
+import { mockApi } from "./mock";
 
 export interface EmailStartResponse {
   message: string;
@@ -50,9 +51,6 @@ export const twoFactorApi = {
   /** Sign-in challenge: exchange challenge_token + code for a real Sanctum token. */
   verify: async (challenge_token: string, code: string): Promise<VerifyResponse> => {
     if (USE_MOCK) {
-      const { mockApi } = await import("./mock");
-      // Mock signIn returned `verifyTwoFactor` in the same module — bounce
-      // through it so the mock path is one source of truth.
       return (mockApi as unknown as { verifyTwoFactor: (t: string, c: string) => Promise<VerifyResponse> })
         .verifyTwoFactor(challenge_token, code);
     }

@@ -4,12 +4,14 @@ import SearchModal from "./SearchModal";
 import MobileTabBar from "./MobileTabBar";
 import ProjectQuickView from "./ProjectQuickView";
 import MethodologyModal from "@/components/modals/MethodologyModal";
+import { useLiveData } from "@/hooks/useLiveData";
 
 interface Props {
   children: React.ReactNode;
 }
 
 export default function AppShell({ children }: Props) {
+  useLiveData();
   return (
     <div className="flex min-h-screen">
       <Sidebar />

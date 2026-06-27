@@ -1,12 +1,12 @@
 # NUVOLA ATLAS — Execution Plan
 
 _Owner: Austine Igunza (frontend). Backend / scoring owners: Khillon & Devyan._
-_Last updated: 2026-06-17._
+_Last updated: 2026-06-27._
 
 ## Status snapshot
 
-_Four-check baseline all green (clean tree, in sync with `origin/main`):_
-_`tsc --noEmit` clean · `vite build` green ~20 s (documented 1.8 MB mapbox chunk + one mixed-import nit, tracked in §2.5) · `route:list` **32** · phpunit **91/91**, 367 assertions, ~16 s._
+_Four-check baseline all green (frontend half re-verified 2026-06-27 after the §2.5 / §3.3 / §9.9 slice; backend half last green at HEAD c32002e):_
+_`tsc --noEmit` clean · `vite build` green ~15 s (only the documented 1.8 MB mapbox chunk warning remains — mixed-import nit cleared) · `vitest run` 15/15 green · `route:list` **32** · phpunit **91/91**, 367 assertions, ~16 s._
 
 ### ✅ What we have DONE (shipped + pushed to `main`)
 - **Frontend Atlas + Scorecard** — mobile UX, light/dark theme, click→popup pass, map polish, lazy-loaded Mapbox, bundle hygiene. (§1, §2.2–2.5)
@@ -30,11 +30,11 @@ _`tsc --noEmit` clean · `vite build` green ~20 s (documented 1.8 MB mapbox chun
 
 ### 👤 What I (Austine, frontend) am YET TO DO
 - [ ] **2.1 on-device verification (CRITICAL, do-first)** — real Android + iPhone portrait/landscape pass; capture recordings into `docs/qa/`.
-- [ ] **3.3 Reverb realtime** wiring (blocked on backend reachable).
+- [x] **3.3 Reverb realtime** — `useLiveData` hook mounted in `AppShell`; mock pulse via `src/lib/realtime.ts` fires zones/alerts/activity events on a 45 s cycle; "Auto-refresh" toggle in Settings persists to `localStorage` and gates the subscription. Real Reverb swap is a one-line change inside `useLiveData` (replace `startMockPulse` with the Echo subscription on the same channel names).
 - [ ] **3.2 Vercel prod env** flip — `VITE_USE_REMOTE_API=true` + `VITE_API_BASE` (blocked on backend live).
 - [ ] **5.2 outreach assets** — 1-page Atlas explainer PDF + 90 s `/atlas` screen recording (after 2.1).
-- [ ] **9.9 frontend tail** — bump TanStack `staleTime` to 5 min for `/zones`; confirm Vercel immutable-asset headers.
-- [ ] **Build nit (§2.5)** — convert `twoFactor.ts:53` dynamic `import("./mock")` to a static import to clear the vite warning.
+- [x] **9.9 frontend tail** — `staleTime: 5 * 60_000` set on `["zones"]` via `queryClient.setQueryDefaults` in `main.tsx`; Vercel root `vercel.json` now sends `Cache-Control: public, max-age=31536000, immutable` on `/assets/*`.
+- [x] **Build nit (§2.5)** — `twoFactor.ts` now imports `mockApi` statically; vite mixed-import warning cleared. Only the documented mapbox-gl 1.8 MB chunk warning remains.
 
 ---
 
@@ -94,8 +94,8 @@ _`tsc --noEmit` clean · `vite build` green ~20 s (documented 1.8 MB mapbox chun
 
 ### 2.5 Bundle & build hygiene — ✅ shipped (one new nit)
 - [x] `AtlasMap` lazy-loaded inside `AtlasPage`. AtlasPage shell is 18.5 KB; AtlasMap is a 12.6 KB chunk; the 1.8 MB mapbox-gl bundle stays deferred behind the dynamic import. Non-map pages never load it.
-- [x] No more chrome.ts dynamic-import warning. _(A different mixed-import warning has since surfaced from the 2FA wiring — see the unchecked item below; the "warning-free apart from mapbox" claim no longer holds until it's fixed.)_
-- [ ] **Mixed static/dynamic import on `./mock`.** `src/api/twoFactor.ts:53` does `await import("./mock")` while `src/api/index.ts:2` imports `./mock` statically, so the dynamic import can't code-split (mock is always bundled). Convert it to a top-level `import { mockApi } from "./mock"` to clear the vite warning. Verified safe — `mock.ts` imports only `./client` + types, so no circular dep. Cosmetic; `vite build` stays green either way.
+- [x] No more chrome.ts dynamic-import warning. _(A different mixed-import warning had surfaced from the 2FA wiring — cleared on 2026-06-27 by converting `twoFactor.ts` to a static `import { mockApi } from "./mock"`. Only the documented mapbox-gl 1.8 MB chunk warning remains.)_
+- [x] **Mixed static/dynamic import on `./mock`.** Resolved 2026-06-27 — `src/api/twoFactor.ts` now imports `mockApi` statically. No circular-dep regression; build stays green.
 
 ---
 
@@ -114,8 +114,10 @@ is the source of truth on both sides).
 - [x] `VITE_USE_REMOTE_API` env in `client.ts`. Default is mock so local dev + Vercel preview deployments stay offline-safe.
 - [ ] **Action on Vercel**: set `VITE_USE_REMOTE_API=true` + `VITE_API_BASE=https://<backend-host>/api/v1` on Production. Add the same vars locally in `.env` to point at a real backend.
 
-### 3.3 Realtime
-- [ ] Wire `useLiveData` against Laravel Echo + Reverb (channels `zones`, `alerts`). Hook shape stays mock-compatible so the swap is one-line.
+### 3.3 Realtime — ✅ mock pulse shipped, real Reverb swap pending backend
+- [x] `useLiveData()` hook at `src/hooks/useLiveData.ts` mounted once in `AppShell`. Subscribes to a typed `LiveEvent` stream (`channel: "zones" | "alerts" | "activity"`) and invalidates the matching TanStack Query keys. Auto-refresh toggle in Settings persists to `localStorage` and pauses the subscription when off.
+- [x] Mock pulse in `src/lib/realtime.ts` cycles through the three channels every 45 s, seeded with real zone IDs so events name real localities. Real Echo/Reverb swap replaces `startMockPulse` with the Echo subscription on the same channel names — the listener payload shape already matches.
+- [ ] Real Reverb subscription (blocked on §9.4 backend host + Reverb running).
 
 ---
 
@@ -329,7 +331,7 @@ Owners: Khillon (Laravel + Postgres + auth), Devyan (FastAPI ingestion, infra st
 - [ ] Frontend: TanStack Query already deduplicates in-flight requests and respects `staleTime: 60_000`. No further client-side limiting needed pre-pilot.
 
 ### 9.9 Caching and CDN
-- [ ] Vercel CDN handles the static frontend automatically. Confirm `Cache-Control: public, max-age=31536000, immutable` on hashed assets.
+- [x] Vercel CDN handles the static frontend automatically. Root `vercel.json` now explicitly sets `Cache-Control: public, max-age=31536000, immutable` on `/assets/*` so the immutable header is guaranteed even with `framework: null`.
 - [x] Backend HTTP caching: `ETag` + `Cache-Control: private, max-age=300` on `/api/zones` (rarely changes), `/api/projects` (slow-moving). Skip caching on `/api/alerts` and `/api/activity` (real-time). New `App\Http\Middleware\HttpCache` (alias `http.cache`); applied to `/zones`, `/zones/{id}`, `/zones/{id}/layers`, `/projects`, `/projects/{id}`. Returns 304 on `If-None-Match` match (incl. wildcard). `HttpCacheTest` (7 cases).
 - [ ] Redis (managed via Upstash free tier OR a Forge-managed instance) for:
   - Laravel cache driver (replaces `file` driver in prod).
@@ -338,7 +340,7 @@ Owners: Khillon (Laravel + Postgres + auth), Devyan (FastAPI ingestion, infra st
   - Rate-limit counters.
   - Reverb pub/sub once we scale to >1 backend node.
 - [ ] Mapbox tile cache: handled by Mapbox's CDN automatically; verify cache headers show up in browser DevTools so the user isn't downloading tiles repeatedly.
-- [ ] TanStack Query (frontend): keep `staleTime: 60_000` for now; bump to 5 min for `/api/zones` once we confirm backend update frequency matches.
+- [x] TanStack Query (frontend): `staleTime: 60_000` default; `["zones"]` bumped to `5 * 60_000` via `queryClient.setQueryDefaults` in `src/main.tsx` (zones ingestion is quarterly-ish, so the longer window cuts refetch chatter).
 
 ### 9.10 Load balancing and scaling
 - [ ] Frontend: Vercel handles it.

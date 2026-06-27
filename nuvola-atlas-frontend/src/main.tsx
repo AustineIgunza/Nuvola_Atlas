@@ -23,6 +23,11 @@ const queryClient = new QueryClient({
   },
 });
 
+// Zones change on a quarterly-ish cadence (ingestion runs are scheduled, not
+// real-time), so a 5-minute staleTime cuts refetch chatter without making the
+// UI feel stale. See §9.9.
+queryClient.setQueryDefaults(["zones"], { staleTime: 5 * 60_000 });
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ErrorBoundary>

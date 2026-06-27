@@ -37,6 +37,8 @@ export default function TopBar() {
   const location = useLocation();
   const navigate = useNavigate();
   const openSearch = useUIStore((s) => s.openSearch);
+  const autoRefresh = useUIStore((s) => s.autoRefresh);
+  const setAutoRefresh = useUIStore((s) => s.setAutoRefresh);
   const isAtlas = location.pathname === "/atlas";
   const mapStyle = useUIStore((s) => s.mapStyle);
   const setMapStyle = useUIStore((s) => s.setMapStyle);
@@ -289,7 +291,12 @@ export default function TopBar() {
                   </label>
                   <label className="flex items-center justify-between cursor-pointer">
                     <span>Auto-refresh</span>
-                    <input type="checkbox" defaultChecked className="accent-accent" />
+                    <input
+                      type="checkbox"
+                      checked={autoRefresh}
+                      onChange={(e) => setAutoRefresh(e.target.checked)}
+                      className="accent-accent"
+                    />
                   </label>
                 </div>
               </motion.div>

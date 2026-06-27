@@ -1,5 +1,13 @@
 import { create } from "zustand";
 
+const AUTO_REFRESH_KEY = "nuvola_auto_refresh";
+
+function loadAutoRefresh(): boolean {
+  if (typeof window === "undefined") return true;
+  const raw = window.localStorage.getItem(AUTO_REFRESH_KEY);
+  return raw === null ? true : raw === "1";
+}
+
 interface ChromeState {
   panelOpen: boolean;
   searchOpen: boolean;
@@ -9,6 +17,7 @@ interface ChromeState {
   // project result from SearchModal so the current page doesn't have to
   // navigate away to show the detail.
   quickViewProjectId: string | null;
+  autoRefresh: boolean;
 
   togglePanel: () => void;
   openPanel: () => void;
@@ -20,6 +29,7 @@ interface ChromeState {
   toggleSidebar: () => void;
   openQuickView: (projectId: string) => void;
   closeQuickView: () => void;
+  setAutoRefresh: (on: boolean) => void;
 }
 
 export const useChromeStore = create<ChromeState>((set) => ({
@@ -28,6 +38,7 @@ export const useChromeStore = create<ChromeState>((set) => ({
   methodOpen: false,
   sidebarCollapsed: false,
   quickViewProjectId: null,
+  autoRefresh: loadAutoRefresh(),
 
   togglePanel: () => set((s) => ({ panelOpen: !s.panelOpen })),
   openPanel: () => set({ panelOpen: true }),
@@ -39,4 +50,10 @@ export const useChromeStore = create<ChromeState>((set) => ({
   toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
   openQuickView: (projectId) => set({ quickViewProjectId: projectId }),
   closeQuickView: () => set({ quickViewProjectId: null }),
+  setAutoRefresh: (on) => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(AUTO_REFRESH_KEY, on ? "1" : "0");
+    }
+    set({ autoRefresh: on });
+  },
 }));
