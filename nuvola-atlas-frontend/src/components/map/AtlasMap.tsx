@@ -99,7 +99,7 @@ export default function AtlasMap({ zones }: Props) {
         aria-label="Reset view to Nairobi"
         className={`absolute top-3 z-10 w-9 h-9 flex items-center justify-center rounded-control bg-bone/90 text-navy/70 hover:text-navy shadow-[0_1px_4px_rgba(11,34,53,0.12),0_6px_18px_rgba(11,34,53,0.12)] backdrop-blur-sm transition-[right] duration-300 ${
           panelOpen
-            ? "right-3 lg:right-[calc(340px+1.25rem)] xl:right-[calc(380px+1.25rem)]"
+            ? "right-3 lg:right-[calc(380px+1.25rem)] xl:right-[calc(420px+1.25rem)]"
             : "right-3"
         }`}
       >

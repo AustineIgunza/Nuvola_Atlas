@@ -172,7 +172,7 @@ export default function ScorecardPanel({ zone }: Props) {
             transition={springSettle}
             role="complementary"
             aria-label={`${zone.name} scorecard`}
-            className="absolute top-3 right-3 bottom-3 z-20 w-[340px] xl:w-[380px] flex flex-col glass-strong border border-border rounded-modal shadow-modal overflow-hidden"
+            className="absolute top-3 right-3 bottom-3 z-20 w-[380px] xl:w-[420px] flex flex-col glass-strong border border-border rounded-modal shadow-modal overflow-hidden"
           >
             <div
               className="h-[2.5px] shrink-0"

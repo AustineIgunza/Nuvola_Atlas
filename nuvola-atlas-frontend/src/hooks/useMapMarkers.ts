@@ -90,7 +90,7 @@ export function useMapMarkers(
         // On desktop the scorecard panel floats over the map's right edge, so
         // shift the fly-to target left to centre the zone in the visible area.
         const panelOffset: [number, number] = window.matchMedia("(min-width: 1024px)").matches
-          ? [-180, 0]
+          ? [-200, 0]
           : [0, 0];
         m.flyTo({
           center: zone.centroid,

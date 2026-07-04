@@ -20,14 +20,16 @@ interface Props {
  */
 export default function DetailPopup({ open, onClose, label, ariaLabel, wide, children }: Props) {
   const reduce = useReducedMotion();
-  const [expanded, setExpanded] = useState(false);
+  // Detail popups open expanded by default — the rich content reads best at the
+  // wide width; the collapse button narrows it for a side-by-side-with-map view.
+  const [expanded, setExpanded] = useState(true);
   const [isMobile, setIsMobile] = useState(
     () => typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches,
   );
 
-  // A fresh popup always opens at its default width.
+  // A fresh popup always reopens expanded.
   useEffect(() => {
-    if (!open) setExpanded(false);
+    if (!open) setExpanded(true);
   }, [open]);
 
   // Keep the last rendered children through the exit animation so the popup
