@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { api } from "@/api";
 import { useUIStore } from "@/stores/ui";
 import AppShell from "@/components/chrome/AppShell";
-import ScorecardConstellation from "@/components/scorecard/constellation/ScorecardConstellation";
+import ScorecardPanel from "@/components/scorecard/ScorecardPanel";
 
 // mapbox-gl is ~1.8 MB; defer it so the Atlas shell paints first.
 const AtlasMap = lazy(() => import("@/components/map/AtlasMap"));
@@ -68,8 +68,8 @@ export default function AtlasPage() {
             </div>
           ) : null}
 
-          {/* Scorecard constellation — four corner cards overlaying the map */}
-          <ScorecardConstellation zone={selectedZone} />
+          {/* Vitality Scorecard — floating drill-in panel over the map's right edge */}
+          <ScorecardPanel zone={selectedZone} />
         </div>
       </div>
     </AppShell>

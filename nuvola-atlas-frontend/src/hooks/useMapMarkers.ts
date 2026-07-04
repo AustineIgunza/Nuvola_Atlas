@@ -87,7 +87,19 @@ export function useMapMarkers(
     if (selectedZoneId) {
       const zone = zones.find((z) => z.id === selectedZoneId);
       if (zone) {
-        m.flyTo({ center: zone.centroid, zoom: 13, duration: 1400, pitch: 20, essential: true });
+        // On desktop the scorecard panel floats over the map's right edge, so
+        // shift the fly-to target left to centre the zone in the visible area.
+        const panelOffset: [number, number] = window.matchMedia("(min-width: 1024px)").matches
+          ? [-180, 0]
+          : [0, 0];
+        m.flyTo({
+          center: zone.centroid,
+          zoom: 13,
+          duration: 1400,
+          pitch: 20,
+          offset: panelOffset,
+          essential: true,
+        });
       }
     }
 

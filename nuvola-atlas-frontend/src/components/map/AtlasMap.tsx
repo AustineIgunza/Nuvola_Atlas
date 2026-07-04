@@ -87,7 +87,8 @@ export default function AtlasMap({ zones }: Props) {
       </motion.div>
 
       {/* Reset View — top-right; flies to Nairobi centroid and clears the
-          ?zone= deeplink so the URL bar matches the visible state. */}
+          ?zone= deeplink so the URL bar matches the visible state. Shifts
+          left of the scorecard panel while it's open on desktop. */}
       <motion.button
         onClick={resetView}
         initial={{ opacity: 0, y: -10 }}
@@ -96,19 +97,21 @@ export default function AtlasMap({ zones }: Props) {
         whileHover={{ scale: 1.06 }}
         whileTap={{ scale: 0.93 }}
         aria-label="Reset view to Nairobi"
-        className="absolute top-3 right-3 z-10 w-9 h-9 flex items-center justify-center rounded-control bg-bone/90 text-navy/70 hover:text-navy shadow-[0_1px_4px_rgba(11,34,53,0.12),0_6px_18px_rgba(11,34,53,0.12)] backdrop-blur-sm"
+        className={`absolute top-3 z-10 w-9 h-9 flex items-center justify-center rounded-control bg-bone/90 text-navy/70 hover:text-navy shadow-[0_1px_4px_rgba(11,34,53,0.12),0_6px_18px_rgba(11,34,53,0.12)] backdrop-blur-sm transition-[right] duration-300 ${
+          panelOpen
+            ? "right-3 lg:right-[calc(340px+1.25rem)] xl:right-[calc(380px+1.25rem)]"
+            : "right-3"
+        }`}
       >
         <Compass size={16} />
       </motion.button>
 
-      {/* Legend — pushed up on mobile to clear the scorecard pull-up tab;
-          fades out while the corner-card constellation is open so the
-          bottom-left card has the space. */}
+      {/* Legend — pushed up on mobile to clear the scorecard pull-up tab.
+          The scorecard panel floats on the right, so the legend stays put. */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: panelOpen ? 0 : 1, y: panelOpen ? 6 : 0 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={springSettle}
-        style={{ pointerEvents: panelOpen ? "none" : "auto" }}
         className="atlas-legend absolute bottom-16 sm:bottom-4 left-2 sm:left-4 z-10 bg-bone/90 backdrop-blur-sm rounded-card px-2.5 py-1.5 sm:px-4 sm:py-3 shadow-[0_1px_2px_rgba(11,34,53,0.06),0_18px_50px_rgba(11,34,53,0.10)] text-[10px] sm:text-[11px] space-y-1"
       >
         <div className="font-semibold text-[12px] text-navy/70 mb-2">Vitality Score</div>

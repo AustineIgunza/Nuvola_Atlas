@@ -426,8 +426,8 @@ html[data-theme="light"] .atlas-legend {
 }
 
 /* ── Selected zone marker pulse ───────────────────────────────────────────
-   Radiating ring on the selected zone pill so the constellation's framed
-   zone reads as highlighted. Honors the global reduced-motion override. */
+   Radiating ring on the selected zone pill so the zone the scorecard panel
+   describes reads as highlighted. Honors the global reduced-motion override. */
 .zone-pill {
   position: relative;
 }
