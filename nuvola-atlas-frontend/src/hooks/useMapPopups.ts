@@ -49,13 +49,54 @@ export function useMapPopups(
         .addTo(m);
     };
 
+    // Water main — a short popup naming the reticulation route + served access.
+    const openWaterMainPopup = (e: mapboxgl.MapMouseEvent & { features?: mapboxgl.MapboxGeoJSONFeature[] }) => {
+      if (!useUIStore.getState().activeLayers.water) return;
+      const p = e.features?.[0]?.properties;
+      if (!p) return;
+      new mapboxgl.Popup({ offset: 12, className: "atlas-popup", closeButton: true, closeOnMove: false })
+        .setLngLat(e.lngLat)
+        .setHTML(`
+          <div style="font-family:'Poppins',-apple-system,sans-serif;font-size:12.5px;min-width:170px;color:${BRAND.navy};">
+            <div style="font-weight:600;margin-bottom:3px;">${p.name}</div>
+            <div style="color:${BRAND.inkSoft};">Trunk main · served access <span style="color:${BRAND.tealDeep};font-weight:700;">${p.access}%</span></div>
+          </div>
+        `)
+        .addTo(m);
+    };
+
+    // Real sanitation facility — names the SDG-6 works, agency, and delivery.
+    const openWaterFacilityPopup = (e: mapboxgl.MapMouseEvent & { features?: mapboxgl.MapboxGeoJSONFeature[] }) => {
+      const p = e.features?.[0]?.properties;
+      if (!p) return;
+      new mapboxgl.Popup({ offset: 14, className: "atlas-popup", closeButton: true, closeOnMove: false })
+        .setLngLat(e.lngLat)
+        .setHTML(`
+          <div style="font-family:'Poppins',-apple-system,sans-serif;font-size:12.5px;min-width:200px;color:${BRAND.navy};">
+            <div style="font-size:9.5px;font-weight:700;color:${BRAND.tealDeep};text-transform:uppercase;letter-spacing:0.04em;">◈ ${p.facility}</div>
+            <div style="font-weight:600;margin:3px 0 2px;">${p.name}</div>
+            <div style="font-size:11px;color:${BRAND.inkSoft};margin-bottom:7px;">${p.agency} · <span style="text-transform:capitalize;">${p.status}</span></div>
+            <div style="height:6px;border-radius:999px;background:rgba(11,34,53,0.10);overflow:hidden;">
+              <div style="height:100%;width:${p.progress}%;background:${BRAND.tealDeep};border-radius:999px;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:5px;font-size:11px;color:${BRAND.inkSoft};">
+              <span><span style="color:${BRAND.navy};font-weight:700;">${p.progress}%</span> complete</span>
+              <span>ETA ${p.eta}</span>
+            </div>
+          </div>
+        `)
+        .addTo(m);
+    };
+
     // Water & Sanitation (SDG 6) — the richest popup: it states the zone's
     // water-access picture and, where trunk sewerage is not viable, names the
     // specific decentralized-sanitation infrastructure solution + rationale.
+    // Facility nodes route to the dedicated facility popup instead.
     const openWaterPopup = (e: mapboxgl.MapMouseEvent & { features?: mapboxgl.MapboxGeoJSONFeature[] }) => {
       if (!useUIStore.getState().activeLayers.water) return;
       const p = e.features?.[0]?.properties;
       if (!p) return;
+      if (p.kind === "facility") return openWaterFacilityPopup(e);
       const opportunity = p.sewerViable === false || p.sewerViable === "false";
       const stat = (label: string, value: string) => `
         <div style="flex:1;min-width:0;">
@@ -113,6 +154,25 @@ export function useMapPopups(
         .addTo(m);
     };
 
+    // Safety corridor — names the high-risk route + its risk band.
+    const openSafetyCorridorPopup = (e: mapboxgl.MapMouseEvent & { features?: mapboxgl.MapboxGeoJSONFeature[] }) => {
+      if (!useUIStore.getState().activeLayers.safety) return;
+      const p = e.features?.[0]?.properties;
+      if (!p) return;
+      const risk = Number(p.risk);
+      const riskColor = risk >= 40 ? BRAND.rose : risk >= 30 ? BRAND.gold : BRAND.steel;
+      const riskLabel = risk >= 40 ? "At risk" : risk >= 30 ? "Watch" : "Secure";
+      new mapboxgl.Popup({ offset: 12, className: "atlas-popup", closeButton: true, closeOnMove: false })
+        .setLngLat(e.lngLat)
+        .setHTML(`
+          <div style="font-family:'Poppins',-apple-system,sans-serif;font-size:12.5px;min-width:180px;color:${BRAND.navy};">
+            <div style="font-weight:600;margin-bottom:3px;">${p.name}</div>
+            <div style="color:${BRAND.inkSoft};">Transit corridor · <span style="color:${riskColor};font-weight:700;">${riskLabel}</span> <span style="color:${BRAND.inkSoft};">(risk ${p.risk})</span></div>
+          </div>
+        `)
+        .addTo(m);
+    };
+
     const openSafetyPopup = (e: mapboxgl.MapMouseEvent & { features?: mapboxgl.MapboxGeoJSONFeature[] }) => {
       if (!useUIStore.getState().activeLayers.safety) return;
       const p = e.features?.[0]?.properties;
@@ -165,9 +225,9 @@ export function useMapPopups(
       const gates = [
         ...(active.roads ? ["roads-touch"] : []),
         ...(active.energy ? ["grid-touch"] : []),
-        ...(active.water ? ["water-touch"] : []),
+        ...(active.water ? ["water-touch", "water-main-touch"] : []),
         ...(active.momentum ? ["momentum-touch"] : []),
-        ...(active.safety ? ["safety-touch"] : []),
+        ...(active.safety ? ["safety-touch", "safety-corridor-touch"] : []),
       ];
       if (gates.length && m.queryRenderedFeatures(e.point, { layers: gates }).length) return;
       const zoneId = e.features?.[0]?.properties?.zoneId;
@@ -183,10 +243,13 @@ export function useMapPopups(
     m.on("click", "roads-line", openRoadPopup);
     m.on("click", "water-touch", openWaterPopup);
     m.on("click", "water-core", openWaterPopup);
+    m.on("click", "water-facility", openWaterFacilityPopup);
+    m.on("click", "water-main-touch", openWaterMainPopup);
     m.on("click", "momentum-touch", openMomentumPopup);
     m.on("click", "momentum-core", openMomentumPopup);
     m.on("click", "safety-touch", openSafetyPopup);
     m.on("click", "safety-core", openSafetyPopup);
+    m.on("click", "safety-corridor-touch", openSafetyCorridorPopup);
 
     const setPointer = () => { m.getCanvas().style.cursor = "pointer"; };
     const clearPointer = () => { m.getCanvas().style.cursor = ""; };
@@ -196,9 +259,15 @@ export function useMapPopups(
     m.on("mouseleave", "roads-touch", clearPointer);
     m.on("mouseenter", "water-touch", setPointer);
     m.on("mouseleave", "water-touch", clearPointer);
+    m.on("mouseenter", "water-facility", setPointer);
+    m.on("mouseleave", "water-facility", clearPointer);
+    m.on("mouseenter", "water-main-touch", setPointer);
+    m.on("mouseleave", "water-main-touch", clearPointer);
     m.on("mouseenter", "momentum-touch", setPointer);
     m.on("mouseleave", "momentum-touch", clearPointer);
     m.on("mouseenter", "safety-touch", setPointer);
     m.on("mouseleave", "safety-touch", clearPointer);
+    m.on("mouseenter", "safety-corridor-touch", setPointer);
+    m.on("mouseleave", "safety-corridor-touch", clearPointer);
   }, [mapRef, loaded]);
 }
