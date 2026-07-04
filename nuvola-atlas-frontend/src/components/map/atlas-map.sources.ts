@@ -203,16 +203,6 @@ export function addSourcesAndLayers(
     },
   });
   m.addLayer({
-    id: "vitality-outline", type: "line", source: "vitality",
-    layout: { "line-join": "round" },
-    paint: {
-      "line-color": BRAND.bone,
-      "line-width": 1.2,
-      "line-opacity": active.vitality ? 0.55 : 0,
-    },
-  });
-
-  m.addLayer({
     id: "roads-line", type: "line", source: "roads",
     layout: { "line-cap": "round", "line-join": "round" },
     paint: { "line-color": BRAND.terracotta, "line-width": 3, "line-dasharray": [1.5, 2.5], "line-opacity": active.roads ? 0.85 : 0 },

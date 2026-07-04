@@ -88,9 +88,6 @@ export function useMapLayers(
             : 0,
         );
       }
-      if (m.getLayer("vitality-outline")) {
-        m.setPaintProperty("vitality-outline", "line-opacity", activeLayers.vitality ? 0.55 : 0);
-      }
       if (m.getLayer("roads-line")) {
         m.setPaintProperty("roads-line", "line-opacity", activeLayers.roads ? 0.85 : 0);
       }
