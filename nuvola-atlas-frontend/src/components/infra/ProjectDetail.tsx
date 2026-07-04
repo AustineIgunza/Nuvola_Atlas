@@ -10,7 +10,7 @@ import { SEVERITY_COLORS } from "@/components/alerts/alerts.constants";
 import Timeline from "./Timeline";
 import type { Project } from "@/types";
 
-const TYPE_COLORS: Record<string, string> = { road: "#C0552B", energy: "#E0A82E", grid: "#1F8A78" };
+const TYPE_COLORS: Record<string, string> = { road: "#C0552B", energy: "#E0A82E", grid: "#1F8A78", water: "#176B5D" };
 
 const STATUS_STYLE: Record<Project["status"], { color: string; label: string }> = {
   active: { color: BRAND.teal, label: "Active" },

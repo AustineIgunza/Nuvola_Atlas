@@ -12,6 +12,7 @@ const FILTERS: { label: string; value: InfraType | "all" }[] = [
   { label: "Road", value: "road" },
   { label: "Energy", value: "energy" },
   { label: "Grid", value: "grid" },
+  { label: "Water", value: "water" },
 ];
 
 interface Props {

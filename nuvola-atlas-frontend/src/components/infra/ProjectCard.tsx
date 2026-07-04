@@ -3,7 +3,7 @@ import { cn } from "@/lib/cn";
 import { springSettle } from "@/lib/motion";
 import type { Project } from "@/types";
 
-const TYPE_COLORS: Record<string, string> = { road: "#C0552B", energy: "#E0A82E", grid: "#1F8A78" };
+const TYPE_COLORS: Record<string, string> = { road: "#C0552B", energy: "#E0A82E", grid: "#1F8A78", water: "#176B5D" };
 const STATUS_COLORS: Record<string, string> = { active: "#1F8A78", stalled: "#D3402E", planned: "#E0A82E" };
 
 interface Props {

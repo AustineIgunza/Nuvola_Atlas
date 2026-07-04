@@ -7,6 +7,7 @@ const KIND_COLORS: Record<string, string> = {
   grid: "#1F8A78",
   esia: "#1F8A78",
   density: "#E0A82E",
+  water: "#176B5D",
 };
 
 interface Props {

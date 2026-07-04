@@ -39,6 +39,15 @@ export const PROJECTS: Project[] = [
   { id: "p8", name: "Kibra Access Roads", zoneId: "kibra", agency: "KURA", type: "road", status: "active", progress: 28, budget: "KES 95M", started: "2025-07-01", eta: "2026-06-30", milestones: [{ date: "2025-07-01", label: "Community engagement", done: true }, { date: "2025-11-01", label: "Drainage", done: false }, { date: "2026-03-01", label: "Paving", done: false }, { date: "2026-06-30", label: "Completion", done: false }], marker: [36.7900, -1.3100] },
   { id: "p9", name: "Mathare Distribution Line", zoneId: "mathare", agency: "KPLC", type: "energy", status: "planned", progress: 8, budget: "KES 120M", started: "2026-01-15", eta: "2026-12-31", milestones: [{ date: "2026-01-15", label: "Feasibility study", done: true }, { date: "2026-04-01", label: "Design phase", done: false }, { date: "2026-08-01", label: "Construction", done: false }, { date: "2026-12-31", label: "Energization", done: false }], marker: [36.8600, -1.2550] },
   { id: "p10", name: "Makadara Smart Grid Pilot", zoneId: "makadara", agency: "KETRACO", type: "grid", status: "active", progress: 67, budget: "KES 310M", started: "2025-02-01", eta: "2026-03-31", milestones: [{ date: "2025-02-01", label: "Meter procurement", done: true }, { date: "2025-06-15", label: "Installation phase 1", done: true }, { date: "2025-11-01", label: "Installation phase 2", done: true }, { date: "2026-03-31", label: "Full deployment", done: false }], marker: [36.8650, -1.2980] },
+  { id: "p11", name: "Kibra Communal Water Kiosks", zoneId: "kibra", agency: "NCWSC", type: "water", status: "active", progress: 42, budget: "KES 85M", started: "2025-06-01", eta: "2026-08-31", milestones: [{ date: "2025-06-01", label: "Community water-point mapping", done: true }, { date: "2025-09-15", label: "Borehole drilling & yield test", done: true }, { date: "2026-01-15", label: "Kiosk construction (14 sites)", done: false }, { date: "2026-05-01", label: "Metered distribution network", done: false }, { date: "2026-08-31", label: "Commissioning & tariff setup", done: false }], marker: [36.7820, -1.3180] },
+  { id: "p12", name: "Mathare DEWATS Sanitation Block", zoneId: "mathare", agency: "Athi Water Works", type: "water", status: "active", progress: 35, budget: "KES 68M", started: "2025-08-01", eta: "2026-10-31", milestones: [{ date: "2025-08-01", label: "Site survey & flood-line study", done: true }, { date: "2025-11-01", label: "Community engagement & siting", done: true }, { date: "2026-03-01", label: "Ablution block construction", done: false }, { date: "2026-07-01", label: "Biodigester & DEWATS install", done: false }, { date: "2026-10-31", label: "Handover to sanitation SACCO", done: false }], marker: [36.8550, -1.2600] },
+  { id: "p13", name: "Dagoretti South Water Main Extension", zoneId: "dagoretti-south", agency: "NCWSC", type: "water", status: "active", progress: 58, budget: "KES 140M", started: "2025-04-15", eta: "2026-05-31", milestones: [{ date: "2025-04-15", label: "Route survey & wayleave", done: true }, { date: "2025-08-01", label: "Trenching (6.2 km)", done: true }, { date: "2025-12-15", label: "DN300 pipe laying", done: false }, { date: "2026-03-15", label: "Pressure testing", done: false }, { date: "2026-05-31", label: "Zonal connection & flush", done: false }], marker: [36.7480, -1.3020] },
+  { id: "p14", name: "Embakasi Faecal Sludge Treatment Plant", zoneId: "embakasi-south", agency: "Athi Water Works", type: "water", status: "planned", progress: 12, budget: "KES 310M", started: "2026-02-01", eta: "2027-03-31", milestones: [{ date: "2026-02-01", label: "Feasibility & catchment study", done: true }, { date: "2026-05-01", label: "ESIA & NEMA licensing", done: false }, { date: "2026-09-01", label: "Land acquisition (4 ha)", done: false }, { date: "2027-01-15", label: "Plant construction", done: false }, { date: "2027-03-31", label: "Commissioning (400 m³/day)", done: false }], marker: [36.9130, -1.3270] },
+  { id: "p15", name: "Ruaraka Bypass Rehabilitation", zoneId: "ruaraka", agency: "KURA", type: "road", status: "active", progress: 53, budget: "KES 420M", started: "2025-05-01", eta: "2026-07-31", milestones: [{ date: "2025-05-01", label: "Mobilization", done: true }, { date: "2025-09-01", label: "Culvert & drainage works", done: true }, { date: "2026-01-15", label: "Base & binder course", done: false }, { date: "2026-05-01", label: "Asphalt overlay", done: false }, { date: "2026-07-31", label: "Road marking & handover", done: false }], marker: [36.8830, -1.2470] },
+  { id: "p16", name: "Dagoretti North Fibre Ring", zoneId: "dagoretti-north", agency: "ICTA", type: "grid", status: "active", progress: 47, budget: "KES 130M", started: "2025-06-15", eta: "2026-06-30", milestones: [{ date: "2025-06-15", label: "Route survey", done: true }, { date: "2025-10-01", label: "Duct & manhole works", done: true }, { date: "2026-02-01", label: "Fibre blowing", done: false }, { date: "2026-06-30", label: "Node activation", done: false }], marker: [36.7630, -1.2720] },
+  { id: "p17", name: "Embakasi North Feeder Line", zoneId: "embakasi-north", agency: "KPLC", type: "energy", status: "active", progress: 64, budget: "KES 280M", started: "2025-03-15", eta: "2026-04-30", milestones: [{ date: "2025-03-15", label: "Design & wayleave", done: true }, { date: "2025-07-01", label: "Pole & conductor stringing", done: true }, { date: "2025-12-01", label: "Transformer bays", done: true }, { date: "2026-04-30", label: "Energization", done: false }], marker: [36.9080, -1.2770] },
+  { id: "p18", name: "Jogoo Road Corridor Upgrade", zoneId: "embakasi-central", agency: "KURA", type: "road", status: "stalled", progress: 31, budget: "KES 360M", started: "2025-02-20", eta: "2026-03-31", milestones: [{ date: "2025-02-20", label: "Mobilization", done: true }, { date: "2025-06-01", label: "Utility relocation", done: true }, { date: "2025-10-01", label: "Carriageway widening", done: false }, { date: "2026-03-31", label: "Non-motorized transport lanes", done: false }], marker: [36.8930, -1.3070] },
+  { id: "p19", name: "Embakasi West Solar Streetlights", zoneId: "embakasi-west", agency: "KPLC", type: "energy", status: "active", progress: 49, budget: "KES 190M", started: "2025-07-01", eta: "2026-05-31", milestones: [{ date: "2025-07-01", label: "Site audit & spacing plan", done: true }, { date: "2025-11-15", label: "Foundation & pole erection", done: true }, { date: "2026-02-15", label: "Solar head & battery mount", done: false }, { date: "2026-05-31", label: "Network commissioning", done: false }], marker: [36.8730, -1.3170] },
 ];
 
 export const ALERTS: AlertItem[] = [
@@ -112,6 +121,77 @@ export const ALERTS: AlertItem[] = [
     ],
     impactLevel: "minor",
     relatedProjectIds: ["p4"],
+  },
+  {
+    id: "a7", severity: "high", kind: "infra", title: "Kibra water kiosk borehole yield below projection", body: "Yield testing on the Kibra Communal Water Kiosks borehole returned 8.4 m³/hr against a design assumption of 14 m³/hr. At current yield the 14-kiosk network cannot meet peak demand for the 185,000 residents, and average wait times would stay above the 15-minute target.", zoneId: "kibra", createdAt: "2026-05-23T08:45:00Z", read: false,
+    affectedInfra: ["Kibra Communal Water Kiosks", "Shared water points (62% of households)", "Metered distribution network"],
+    recommendedActions: [
+      "Commission a second borehole or bulk-water connection from the Ngong trunk main",
+      "Right-size the kiosk network to the verified yield before construction proceeds",
+      "Introduce off-peak storage tanks to buffer demand and cut wait times",
+      "Re-run the demand model with NCWSC using verified yield figures",
+    ],
+    impactLevel: "major",
+    relatedProjectIds: ["p11"],
+  },
+  {
+    id: "a8", severity: "medium", kind: "esia", title: "Embakasi FSTP public participation opens", body: "The Environmental & Social Impact Assessment for the Embakasi Faecal Sludge Treatment Plant is open for public comment on the NEMA portal until June 20. The plant would give informal settlements a decentralized alternative to conventional sewerage, which is not viable at Embakasi's density and cost.", zoneId: "embakasi-south", createdAt: "2026-05-21T12:00:00Z", read: false,
+    affectedInfra: ["Embakasi Faecal Sludge Treatment Plant", "Exhauster-truck disposal routes", "Nairobi River discharge points"],
+    recommendedActions: [
+      "Mobilize community input during the public participation window",
+      "Verify buffer distances from the nearest residential cluster (4 ha site)",
+      "Confirm faecal-sludge feedstock volumes with licensed exhauster operators",
+      "Align the treatment standard with the Kenya effluent discharge regulations",
+    ],
+    impactLevel: "moderate",
+    relatedProjectIds: ["p14"],
+  },
+  {
+    id: "a9", severity: "high", kind: "vitality", title: "Mathare sanitation coverage critically low", body: "Baseline survey confirms only 11% of Mathare households have access to a safely managed sanitation facility. With the valley's flood risk and informal layout, conventional sewered toilets are not deliverable — the DEWATS sanitation block is the primary intervention but is only 35% complete.", zoneId: "mathare", createdAt: "2026-05-19T09:15:00Z", read: false,
+    affectedInfra: ["Mathare DEWATS Sanitation Block", "Riverine pit latrines", "Mathare River water quality"],
+    recommendedActions: [
+      "Accelerate the DEWATS ablution-block construction phase",
+      "Deploy interim container-based sanitation units during the long rains",
+      "Establish a community sanitation SACCO to run the block after handover",
+      "Test Mathare River downstream for faecal contamination as a baseline",
+    ],
+    impactLevel: "critical",
+    relatedProjectIds: ["p12"],
+  },
+  {
+    id: "a10", severity: "medium", kind: "infra", title: "Dagoretti South water main trench flooding", body: "Long-rains flooding has submerged 1.8 km of open trench on the Dagoretti South Water Main Extension, halting DN300 pipe laying. The project remains at 58% and the May 31 zonal-connection milestone is now at risk.", zoneId: "dagoretti-south", createdAt: "2026-05-17T15:30:00Z", read: false,
+    affectedInfra: ["Dagoretti South Water Main Extension", "Open trench (1.8 km)", "Ngong Road service reservoir"],
+    recommendedActions: [
+      "Deploy dewatering pumps and shore up trench walls before resuming",
+      "Re-sequence pipe laying to elevated dry sections first",
+      "Revise the connection milestone to account for weather delay",
+      "Add temporary drainage to protect the remaining open trench",
+    ],
+    impactLevel: "moderate",
+    relatedProjectIds: ["p13"],
+  },
+  {
+    id: "a11", severity: "low", kind: "partner", title: "Athi Water co-financing agreement signed", body: "Athi Water Works Development Agency has signed a co-financing agreement covering the Mathare DEWATS block and the Embakasi Faecal Sludge Treatment Plant, unlocking KES 210M in matched sanitation funding under the SDG-6 acceleration window.", zoneId: null, createdAt: "2026-05-14T11:30:00Z", read: true,
+    affectedInfra: ["Mathare DEWATS Sanitation Block", "Embakasi Faecal Sludge Treatment Plant", "County sanitation budget line"],
+    recommendedActions: [
+      "Formalize disbursement milestones tied to construction progress",
+      "Map both projects into the county SDG-6 monitoring framework",
+      "Schedule a joint quarterly review with Athi Water and NCWSC",
+    ],
+    impactLevel: "minor",
+    relatedProjectIds: ["p12", "p14"],
+  },
+  {
+    id: "a12", severity: "high", kind: "infra", title: "Jogoo Road corridor upgrade stalled", body: "The Jogoo Road Corridor Upgrade has been stalled at 31% for over a month after a utility-relocation dispute with a fibre operator. Non-motorized transport lanes and carriageway widening are both on hold, and Embakasi Central's density pillar is exposed.", zoneId: "embakasi-central", createdAt: "2026-05-16T10:20:00Z", read: false,
+    affectedInfra: ["Jogoo Road Corridor Upgrade", "Buried fibre & water reticulation", "Non-motorized transport lanes"],
+    recommendedActions: [
+      "Convene KURA, the fibre operator, and NCWSC to resolve the wayleave clash",
+      "Escalate the utility-relocation dispute to the county infrastructure committee",
+      "Publish a revised programme once relocation responsibility is agreed",
+      "Secure the idle site to prevent equipment and material loss",
+    ],
+    impactLevel: "major",
+    relatedProjectIds: ["p18"],
   },
 ];
 
@@ -270,6 +350,73 @@ export const REPORTS: Report[] = [
       { heading: "Environmental Compliance", content: "ESIA filed and approved (NEMA, Feb 2025). Quarterly monitoring reports submitted on schedule.\nDust suppression measures in place during base course phase. Noise complaints from adjacent residential areas addressed through restricted working hours (7am-6pm).\nNo outstanding compliance issues." },
     ],
   },
+  {
+    id: "r8",
+    title: "Nairobi Water & Sanitation Access Review",
+    zoneId: null,
+    date: "2026-05-24",
+    status: "published",
+    author: "Devyan Jethwa",
+    sizeBytes: 2_180_000,
+    format: "PDF",
+    type: "environmental",
+    priority: "critical",
+    tags: ["sdg-6", "water", "sanitation", "county-wide", "clean-water", "informal-settlements"],
+    pillarFocus: ["infra", "social"],
+    dateRange: { from: "2026-01-01", to: "2026-05-15" },
+    executiveSummary: "A county-wide read on Clean Water & Sanitation (SDG 6) across all 17 Nairobi zones. Safely-managed water access averages 71% county-wide but collapses to 38-46% in the informal settlements of Kibra and Mathare, where conventional sewered sanitation is neither affordable nor physically deliverable. The review argues for a decentralized sanitation strategy — DEWATS blocks, faecal-sludge treatment, and metered communal kiosks — as the context-specific path to closing the gap, and tracks the four active water projects now in delivery.",
+    sections: [
+      { heading: "Why Conventional Sewerage Falls Short", content: "Nairobi's trunk sewer network reaches roughly 48% of the county population and almost none of the high-density informal settlements. Extending gravity sewers into Kibra and Mathare would require gradients, land corridors, and household connection costs that the settlements' density and tenure simply do not allow.\nThe evidence points to a decentralized model: on-site and cluster-scale treatment (DEWATS), scheduled faecal-sludge emptying to dedicated treatment plants, and metered water kiosks — each sized to the settlement rather than the citywide grid." },
+      { heading: "Access Metrics by Zone Band", content: "Established zones (Westlands, Langata, Embakasi East): 78-91% safely-managed water; sewered or septic sanitation adequate.\nPeri-urban zones (Dagoretti South, Kasarani, Ruaraka): 60-72% water access; sanitation mixed, septic-dominant, water-main extensions the key lever.\nInformal settlements (Kibra 44%, Mathare 38%): shared water points serve 62% of Kibra households at a 31-minute average wait; only 11% of Mathare households have safely-managed sanitation. These two zones anchor the county's SDG-6 gap." },
+      { heading: "Active Interventions", content: "Kibra Communal Water Kiosks (NCWSC, KES 85M, 42%): 14 metered kiosks targeting sub-15-minute wait times — borehole yield now a live risk (see Alert a7).\nMathare DEWATS Sanitation Block (Athi Water, KES 68M, 35%): decentralized ablution + biodigester block sited above the flood line.\nDagoretti South Water Main Extension (NCWSC, KES 140M, 58%): 6.2 km DN300 main bringing reticulated supply to peri-urban households.\nEmbakasi Faecal Sludge Treatment Plant (Athi Water, KES 310M, planned): 400 m³/day plant giving exhauster operators a licensed disposal point in place of river discharge." },
+      { heading: "Sanitation Strategy Recommendations", content: "1. Formalize decentralized sanitation (DEWATS + faecal-sludge management) as the default for informal settlements rather than deferring to sewer extension.\n2. Ring-fence the Athi Water co-financing (KES 210M) to the Mathare and Embakasi sanitation projects.\n3. Pair every water-access project with a sanitation counterpart — kiosks without safe disposal shift the problem downstream.\n4. Stand up a county faecal-sludge management chain: scheduled emptying, licensed transport, and the Embakasi treatment endpoint.\n5. Add downstream Nairobi River water-quality monitoring as the outcome metric for the sanitation programme." },
+      { heading: "SDG-6 Outlook", content: "If the four active projects complete on their current envelopes, county safely-managed water access rises an estimated 6-8 points and the two informal-settlement zones gain their first metered supply and decentralized sanitation infrastructure. The binding constraints are borehole yield in Kibra, the long-rains schedule slip in Dagoretti South, and land acquisition for the Embakasi plant." },
+    ],
+  },
+  {
+    id: "r9",
+    title: "Kibra Decentralized Sanitation Feasibility",
+    zoneId: "kibra",
+    date: "2026-05-19",
+    status: "review",
+    author: "Joy Nthei",
+    sizeBytes: 1_120_000,
+    format: "PDF",
+    type: "environmental",
+    priority: "high",
+    tags: ["sdg-6", "sanitation", "kibra", "dewats", "informal-settlement", "feasibility"],
+    pillarFocus: ["infra", "social"],
+    dateRange: { from: "2026-02-01", to: "2026-05-15" },
+    executiveSummary: "A feasibility assessment for extending decentralized sanitation into Kibra alongside the communal water kiosk programme. With 78,723 persons/km² and no viable sewer corridor, Kibra requires cluster-scale DEWATS and container-based sanitation rather than conventional connections. The study models three delivery options and recommends a phased DEWATS-plus-kiosk pairing anchored to the existing NCWSC water project.",
+    sections: [
+      { heading: "The Sanitation Gap", content: "Only an estimated 18% of Kibra households have access to a safely-managed toilet. The remainder rely on shared pit latrines, 'flying toilets', or informal connections that discharge into open drains and ultimately the Ngong River.\nThe combination of extreme density, insecure land tenure, and a high water table rules out both household sewer connections and conventional septic tanks at scale." },
+      { heading: "Delivery Options Modelled", content: "Option A — Sewer extension: Rejected. Requires household connection costs and land corridors incompatible with the settlement layout; cost per capita 3-4x alternatives.\nOption B — Container-based sanitation (CBS): Low capital, fast to deploy, but depends on a reliable collection logistics chain and ongoing operating subsidy.\nOption C — Cluster DEWATS blocks: Moderate capital, treats waste on-site, pairs naturally with the water-kiosk footprint. Recommended as the primary model, with CBS as an interim and hard-to-reach-cluster supplement." },
+      { heading: "Water-Sanitation Pairing", content: "Each of the 14 planned water kiosks anchors a natural service cluster. Siting a DEWATS ablution block at 6-8 of these clusters would give roughly 55% of the settlement a safely-managed option within a 5-minute walk.\nMetered water revenue can cross-subsidize sanitation-block operating costs through a single community SACCO, improving the odds of post-handover sustainability." },
+      { heading: "Recommendations", content: "1. Adopt cluster DEWATS as Kibra's primary sanitation model; do not wait on sewer extension.\n2. Co-locate sanitation blocks with the NCWSC water kiosks and operate both under one SACCO.\n3. Pilot container-based sanitation in the two highest-density clusters where even DEWATS siting is constrained.\n4. Resolve the borehole-yield risk first — sanitation blocks need assured water to function.\n5. Sequence Phase 1 (4 blocks) against the kiosk construction milestone to share mobilization costs." },
+    ],
+  },
+  {
+    id: "r10",
+    title: "Embakasi East Grid Connection Q2 Update",
+    zoneId: "embakasi-east",
+    date: "2026-05-23",
+    status: "published",
+    author: "Khillon",
+    sizeBytes: 890_000,
+    format: "PDF",
+    type: "infrastructure",
+    priority: "medium",
+    tags: ["energy", "grid", "embakasi-east", "KETRACO", "quarterly"],
+    pillarFocus: ["infra"],
+    dateRange: { from: "2026-04-01", to: "2026-05-23" },
+    executiveSummary: "A short-cycle update on the final grid-connection milestone for the Embakasi Substation Upgrade. Testing is complete and the substation is energized on the KETRACO side; the outstanding dependency is KPLC's downstream feeder coordination, currently the pacing item and linked to the wider KPLC data-feed interruption flagged in Alert a4. Connection is now estimated for July 2026.",
+    sections: [
+      { heading: "Status Since Q1", content: "Transformer load testing closed out on May 21 with all results within tolerance. The substation is live on the transmission side. The only remaining milestone — grid connection — is gated by KPLC feeder works at Embakasi North, not by KETRACO scope." },
+      { heading: "KPLC Coordination Risk", content: "The 72-hour KPLC data-feed interruption (Alert a4) coincided with the feeder-coordination delay. While the two may be unrelated, both point to integration friction on the KPLC side. The connection estimate has moved from January to July 2026." },
+      { heading: "Downstream Readiness", content: "Once connected, load redistribution should reduce Embakasi Central's unplanned outage rate (currently ~4.2/month) and give Embakasi North's feeder-line project (p17) headroom to energize. Embakasi West sees minimal direct benefit." },
+      { heading: "Next Actions", content: "1. Obtain a firm feeder-works date from KPLC regional coordination.\n2. Treat energy-layer scores for the Embakasi cluster as provisional until the KPLC feed stabilizes.\n3. Re-baseline the connection milestone in the Atlas to July 2026." },
+    ],
+  },
 ];
 
 export const HISTORY: HistoryPoint[] = [
@@ -301,6 +448,30 @@ export const ACTIVITIES: Record<string, ActivityEntry[]> = {
   "embakasi-east": [
     { id: "act7", zoneId: "embakasi-east", kind: "grid", text: "Substation transformer testing completed successfully", source: "KETRACO", createdAt: "2026-05-21T15:00:00Z" },
     { id: "act8", zoneId: "embakasi-east", kind: "road", text: "Access road to substation graded", source: "KURA", createdAt: "2026-05-19T10:00:00Z" },
+  ],
+  kibra: [
+    { id: "act9", zoneId: "kibra", kind: "water", text: "Communal water-kiosk borehole yield test returned 8.4 m³/hr — below projection", source: "NCWSC", createdAt: "2026-05-23T08:45:00Z" },
+    { id: "act10", zoneId: "kibra", kind: "water", text: "Decentralized sanitation feasibility study entered review", source: "Athi Water Works", createdAt: "2026-05-19T13:00:00Z" },
+    { id: "act11", zoneId: "kibra", kind: "road", text: "Kibra Access Roads community engagement phase signed off", source: "KURA", createdAt: "2026-05-14T09:30:00Z" },
+  ],
+  mathare: [
+    { id: "act12", zoneId: "mathare", kind: "water", text: "DEWATS sanitation block siting confirmed above the flood line", source: "Athi Water Works", createdAt: "2026-05-20T11:15:00Z" },
+    { id: "act13", zoneId: "mathare", kind: "water", text: "Baseline survey: 11% of households have safely-managed sanitation", source: "NCWSC", createdAt: "2026-05-18T10:00:00Z" },
+    { id: "act14", zoneId: "mathare", kind: "esia", text: "Distribution Line ESIA published on the NEMA portal", source: "NEMA", createdAt: "2026-05-15T11:00:00Z" },
+  ],
+  "dagoretti-south": [
+    { id: "act15", zoneId: "dagoretti-south", kind: "water", text: "Water-main trench flooding halted DN300 pipe laying at 58%", source: "NCWSC", createdAt: "2026-05-17T15:30:00Z" },
+    { id: "act16", zoneId: "dagoretti-south", kind: "water", text: "Trenching completed across 6.2 km of the extension route", source: "NCWSC", createdAt: "2026-05-06T09:00:00Z" },
+  ],
+  "embakasi-south": [
+    { id: "act17", zoneId: "embakasi-south", kind: "esia", text: "Faecal Sludge Treatment Plant ESIA opened for public participation", source: "NEMA", createdAt: "2026-05-21T12:00:00Z" },
+    { id: "act18", zoneId: "embakasi-south", kind: "water", text: "Athi Water co-financing agreement unlocked KES 210M for sanitation", source: "Athi Water Works", createdAt: "2026-05-14T11:30:00Z" },
+  ],
+  ruaraka: [
+    { id: "act19", zoneId: "ruaraka", kind: "road", text: "Bypass rehabilitation culvert and drainage works completed", source: "KURA", createdAt: "2026-05-13T14:00:00Z" },
+  ],
+  "dagoretti-north": [
+    { id: "act20", zoneId: "dagoretti-north", kind: "grid", text: "Fibre-ring duct and manhole works completed on schedule", source: "ICTA", createdAt: "2026-05-11T10:30:00Z" },
   ],
 };
 

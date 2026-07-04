@@ -15,6 +15,7 @@ const TYPE_LABEL: Record<InfraType, string> = {
   road: "Road works",
   energy: "Energy",
   grid: "Smart grid",
+  water: "Water & sanitation",
 };
 
 interface Props {

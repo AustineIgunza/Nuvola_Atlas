@@ -17,7 +17,7 @@ export interface Zone {
   lastSyncMin: number;
 }
 
-export type InfraType = "road" | "energy" | "grid";
+export type InfraType = "road" | "energy" | "grid" | "water";
 export type ProjectStatus = "active" | "stalled" | "planned";
 
 export interface ProjectMilestone {
@@ -92,7 +92,7 @@ export interface HistoryPoint {
 export interface ActivityEntry {
   id: string;
   zoneId: string;
-  kind: "road" | "grid" | "esia" | "density";
+  kind: "road" | "grid" | "esia" | "density" | "water";
   text: string;
   source: string;
   createdAt: string;
