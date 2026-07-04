@@ -34,10 +34,10 @@ export default class ErrorBoundary extends Component<Props, State> {
         <div className="glass-strong rounded-login w-full max-w-[420px] p-8 shadow-modal text-center">
           <div
             className="w-10 h-10 rounded-lg mx-auto mb-4 flex items-center justify-center"
-            style={{ background: "conic-gradient(from 135deg, #4a9eff, #b888ff, #4a9eff)" }}
+            style={{ background: "conic-gradient(from 135deg, #C0552B, #E0A82E, #1F8A78, #C0552B)" }}
           >
             <div className="w-[24px] h-[24px] rounded-md bg-atlas-base flex items-center justify-center">
-              <div className="w-[6px] h-[6px] rounded-full bg-white" />
+              <div className="w-[6px] h-[6px] rounded-full bg-bone" />
             </div>
           </div>
           <h1 className="text-[20px] font-semibold text-ink-1 mb-2">Something went wrong</h1>

@@ -26,7 +26,7 @@ export default function AlertCard({ alert: a, selected, onSelect, zoneName }: Pr
       className={cn(
         "relative rounded-card border transition-all overflow-hidden",
         selected
-          ? "border-accent/40 bg-[rgba(74,158,255,0.04)]"
+          ? "border-accent/40 bg-[rgba(192,85,43,0.04)]"
           : "border-border",
         a.read && !selected && "opacity-55",
       )}
@@ -78,7 +78,7 @@ export default function AlertCard({ alert: a, selected, onSelect, zoneName }: Pr
 
         {!a.read && (
           <div className="absolute top-3 right-3">
-            <div className="w-2.5 h-2.5 rounded-full bg-accent" style={{ boxShadow: "0 0 10px rgba(74,158,255,0.5)" }} />
+            <div className="w-2.5 h-2.5 rounded-full bg-accent" style={{ boxShadow: "0 0 10px rgba(192,85,43,0.5)" }} />
           </div>
         )}
       </button>

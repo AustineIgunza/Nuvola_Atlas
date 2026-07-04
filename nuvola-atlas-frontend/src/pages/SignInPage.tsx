@@ -6,26 +6,12 @@ import { useAuthStore, type AuthRole } from "@/stores/auth";
 import { api } from "@/api";
 import { twoFactorApi } from "@/api/twoFactor";
 import { springSettle } from "@/lib/motion";
+import { Emblem, Wordmark } from "@/components/brand/Brand";
 
 type SignInLocationState = {
   justRegistered?: boolean;
   email?: string;
 };
-
-function BrandMark() {
-  return (
-    <motion.div
-      className="w-8 h-8 rounded-lg flex items-center justify-center"
-      style={{ background: "conic-gradient(from 135deg, #4a9eff, #b888ff, #4a9eff)" }}
-      whileHover={{ rotate: 90, scale: 1.1 }}
-      transition={springSettle}
-    >
-      <div className="w-[20px] h-[20px] rounded-md bg-atlas-base flex items-center justify-center">
-        <div className="w-[5px] h-[5px] rounded-full bg-white" />
-      </div>
-    </motion.div>
-  );
-}
 
 interface ChallengeState {
   token: string;
@@ -124,10 +110,12 @@ export default function SignInPage() {
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.15, ...springSettle }}
-          className="flex items-center gap-3 mb-8"
+          className="flex items-center gap-2.5 mb-8"
         >
-          <BrandMark />
-          <span className="text-[18px] font-semibold tracking-[-0.02em] text-ink-1">Nuvola Atlas</span>
+          <motion.div whileHover={{ rotate: 8, scale: 1.08 }} transition={springSettle}>
+            <Emblem size={32} />
+          </motion.div>
+          <Wordmark className="text-[20px]" />
         </motion.div>
 
         <motion.h1
@@ -168,7 +156,7 @@ export default function SignInPage() {
 
         {challenge && (
           <form onSubmit={handleVerify} className="space-y-4">
-            <div className="rounded-control p-3 bg-[rgba(74,158,255,0.08)] ring-1 ring-[rgba(74,158,255,0.25)] flex items-start gap-2">
+            <div className="rounded-control p-3 bg-[rgba(192,85,43,0.08)] ring-1 ring-[rgba(192,85,43,0.25)] flex items-start gap-2">
               <Mail size={14} className="text-accent mt-0.5 shrink-0" />
               <div className="text-[12px] text-ink-2">
                 Code sent to <span className="font-mono text-ink-1">{challenge.emailHint}</span>
@@ -258,7 +246,7 @@ export default function SignInPage() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            whileHover={{ scale: 1.02, boxShadow: "0 8px 25px rgba(74,158,255,0.25)" }}
+            whileHover={{ scale: 1.02, boxShadow: "0 8px 25px rgba(192,85,43,0.28)" }}
             whileTap={{ scale: 0.97 }}
             type="submit"
             disabled={loading}

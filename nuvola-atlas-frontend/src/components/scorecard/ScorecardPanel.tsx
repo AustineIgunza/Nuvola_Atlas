@@ -131,9 +131,9 @@ export default function ScorecardPanel({ zone }: Props) {
                   transition={{ delay: 0.4, ...springSettle }}
                   className="mt-2 px-2.5 py-1 rounded-full text-[11px] font-medium"
                   style={{
-                    background: totalDelta >= 0 ? "rgba(52,201,122,0.12)" : "rgba(255,93,93,0.12)",
-                    color: totalDelta >= 0 ? "#34c97a" : "#ff5d5d",
-                    boxShadow: totalDelta >= 0 ? "0 0 10px rgba(52,201,122,0.25)" : "0 0 10px rgba(255,93,93,0.25)",
+                    background: totalDelta >= 0 ? "rgba(31,138,120,0.12)" : "rgba(211,64,46,0.12)",
+                    color: totalDelta >= 0 ? "#1F8A78" : "#D3402E",
+                    boxShadow: totalDelta >= 0 ? "0 0 10px rgba(31,138,120,0.25)" : "0 0 10px rgba(211,64,46,0.25)",
                   }}
                 >
                   {totalDelta >= 0 ? "\u25B2" : "\u25BC"} {Math.abs(totalDelta)} pts this quarter
@@ -182,8 +182,8 @@ export default function ScorecardPanel({ zone }: Props) {
                         <div
                           className="w-1.5 h-1.5 rounded-full"
                           style={{
-                            background: d.fresh ? "#34c97a" : "#ff5d5d",
-                            boxShadow: d.fresh ? "0 0 6px rgba(52,201,122,0.5)" : "0 0 6px rgba(255,93,93,0.5)",
+                            background: d.fresh ? "#1F8A78" : "#D3402E",
+                            boxShadow: d.fresh ? "0 0 6px rgba(31,138,120,0.5)" : "0 0 6px rgba(211,64,46,0.5)",
                           }}
                         />
                         <span className="text-ink-3">{d.source}</span>

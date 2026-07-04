@@ -133,7 +133,7 @@ export default function AdminPage() {
                     value={vitalityLatest != null ? vitalityLatest.toFixed(1) : "—"}
                     hint={historyPoints && historyPoints.length > 0 ? `12-month avg, latest ${historyPoints[historyPoints.length - 1].month}` : "12-month avg"}
                     spark={vitalitySeries}
-                    sparkColor="#34c97a"
+                    sparkColor="#1F8A78"
                     sparkAriaLabel="12-month county-wide Vitality trend"
                   />
                   <MetricCard

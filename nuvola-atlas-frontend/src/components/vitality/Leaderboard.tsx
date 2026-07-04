@@ -162,7 +162,7 @@ export default function Leaderboard() {
                   <th
                     key={h.key}
                     className="text-right py-2.5 px-2 font-medium cursor-pointer select-none transition-colors"
-                    style={{ color: sortBy === h.key ? (h.key === "score" ? "#4a9eff" : PILLAR_COLORS[h.key]) : undefined }}
+                    style={{ color: sortBy === h.key ? (h.key === "score" ? "#C0552B" : PILLAR_COLORS[h.key]) : undefined }}
                     onClick={() => setSortBy(h.key)}
                   >
                     <span className="inline-flex items-center gap-1 hover:text-ink-2">

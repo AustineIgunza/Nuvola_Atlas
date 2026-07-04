@@ -11,6 +11,7 @@ import { useUIStore } from "@/stores/ui";
 import { useAuthStore, hasRoleAtLeast } from "@/stores/auth";
 import { api } from "@/api";
 import { scoreColor } from "@/lib/scoreColor";
+import { Emblem, Wordmark } from "@/components/brand/Brand";
 import { useState, useEffect } from "react";
 
 const NAV = [
@@ -79,27 +80,23 @@ export default function Sidebar() {
         <Link
           to="/atlas"
           onClick={() => { setSelectedZone(null); setMobileOpen(false); }}
-          className="flex items-center gap-3 min-w-0 flex-1 rounded-control -mx-1 px-1 py-1 hover:bg-[rgba(255,255,255,0.04)] transition-colors btn-press"
-          aria-label="Nuvola Atlas — go to map"
+          className="flex items-center gap-2.5 min-w-0 flex-1 rounded-control -mx-1 px-1 py-1 hover:bg-[rgba(255,255,255,0.04)] transition-colors btn-press"
+          aria-label="Navuuna — go to map"
         >
           <motion.div
-            className="w-7 h-7 rounded-lg shrink-0 flex items-center justify-center glow-accent"
-            style={{ background: "conic-gradient(from 135deg, #4a9eff, #b888ff, #4a9eff)" }}
-            whileHover={{ rotate: 90 }}
+            className="shrink-0 flex items-center justify-center"
+            whileHover={{ rotate: 8, scale: 1.06 }}
             transition={springSettle}
           >
-            <div className="w-[18px] h-[18px] rounded-md bg-atlas-base flex items-center justify-center">
-              <div className="w-[5px] h-[5px] rounded-full bg-white" />
-            </div>
+            <Emblem size={28} />
           </motion.div>
           {(!collapsed || isMobile) && (
             <motion.span
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
               transition={springSettle}
-              className="text-[15px] font-semibold tracking-[-0.02em] text-ink-1 truncate"
             >
-              Nuvola Atlas
+              <Wordmark className="text-[17px]" />
             </motion.span>
           )}
         </Link>
@@ -142,7 +139,7 @@ export default function Sidebar() {
                 {active && (
                   <motion.div
                     layoutId="nav-active"
-                    className="absolute inset-0 bg-[rgba(74,158,255,0.1)] rounded-control nav-glow"
+                    className="absolute inset-0 bg-[rgba(192,85,43,0.12)] rounded-control nav-glow"
                     transition={springSettle}
                   />
                 )}
@@ -184,7 +181,7 @@ export default function Sidebar() {
                     className="toggle-track"
                     data-on={activeLayers[key]}
                     style={{
-                      background: activeLayers[key] ? "#4a9eff" : "rgba(255,255,255,0.12)",
+                      background: activeLayers[key] ? "#C0552B" : "rgba(244,239,230,0.14)",
                     }}
                     role="switch"
                     aria-checked={activeLayers[key]}
@@ -228,7 +225,7 @@ export default function Sidebar() {
                     className={cn(
                       "w-full flex items-center gap-2 h-8 px-3 rounded-chip text-[12px] transition-colors relative",
                       selectedZoneId === z.id
-                        ? "bg-[rgba(74,158,255,0.1)] text-ink-1"
+                        ? "bg-[rgba(192,85,43,0.12)] text-ink-1"
                         : "text-ink-3 hover:text-ink-2 hover:bg-[rgba(255,255,255,0.03)]",
                     )}
                   >

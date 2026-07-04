@@ -5,27 +5,27 @@ export const STATUS_STYLES: Record<
   { bg: string; text: string; glow: string }
 > = {
   published: {
-    bg: "rgba(52,201,122,0.12)",
-    text: "#34c97a",
+    bg: "rgba(31,138,120,0.12)",
+    text: "#1F8A78",
     glow: "glow-success",
   },
   review: {
-    bg: "rgba(255,179,64,0.12)",
-    text: "#ffb340",
+    bg: "rgba(224,168,46,0.12)",
+    text: "#E0A82E",
     glow: "glow-warning",
   },
   draft: {
     bg: "rgba(255,255,255,0.06)",
-    text: "#8a91a0",
+    text: "#94A2AF",
     glow: "",
   },
 };
 
 export const PRIORITY_STYLES: Record<string, { bg: string; text: string }> = {
-  critical: { bg: "rgba(255,93,93,0.15)", text: "#ff5d5d" },
-  high: { bg: "rgba(255,154,60,0.15)", text: "#ff9a3c" },
-  medium: { bg: "rgba(255,210,60,0.15)", text: "#ffd23c" },
-  low: { bg: "rgba(141,226,106,0.15)", text: "#8de26a" },
+  critical: { bg: "rgba(211,64,46,0.15)", text: "#D3402E" },
+  high: { bg: "rgba(192,85,43,0.15)", text: "#C0552B" },
+  medium: { bg: "rgba(224,168,46,0.15)", text: "#E0A82E" },
+  low: { bg: "rgba(31,138,120,0.15)", text: "#1F8A78" },
 };
 
 export const TYPE_LABELS: Record<string, string> = {

@@ -16,7 +16,7 @@ export default function Sparkline({
   data,
   width = 96,
   height = 28,
-  color = "#4a9eff",
+  color = "#C0552B",
   fillOpacity = 0.18,
   strokeWidth = 1.5,
   className,

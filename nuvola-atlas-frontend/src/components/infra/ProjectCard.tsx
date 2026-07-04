@@ -3,8 +3,8 @@ import { cn } from "@/lib/cn";
 import { springSettle } from "@/lib/motion";
 import type { Project } from "@/types";
 
-const TYPE_COLORS: Record<string, string> = { road: "#4a9eff", energy: "#ffb340", grid: "#b888ff" };
-const STATUS_COLORS: Record<string, string> = { active: "#34c97a", stalled: "#ff5d5d", planned: "#ffb340" };
+const TYPE_COLORS: Record<string, string> = { road: "#C0552B", energy: "#E0A82E", grid: "#1F8A78" };
+const STATUS_COLORS: Record<string, string> = { active: "#1F8A78", stalled: "#D3402E", planned: "#E0A82E" };
 
 interface Props {
   project: Project;
@@ -24,7 +24,7 @@ export default function ProjectCard({ project, selected, zoneName, onClick }: Pr
       className={cn(
         "w-full text-left p-4 rounded-card transition-colors border",
         selected
-          ? "bg-[rgba(74,158,255,0.08)] border-accent/40"
+          ? "bg-[rgba(192,85,43,0.08)] border-accent/40"
           : "bg-[rgba(255,255,255,0.02)] border-border hover:border-border-strong",
       )}
     >

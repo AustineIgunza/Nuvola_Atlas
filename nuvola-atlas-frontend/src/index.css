@@ -41,11 +41,11 @@
 
   body {
     margin: 0;
-    font-family: -apple-system, "SF Pro Text", "SF Pro Display", "Inter",
-      system-ui, sans-serif;
+    font-family: "Poppins", -apple-system, "SF Pro Text", "SF Pro Display",
+      "Inter", system-ui, sans-serif;
     letter-spacing: -0.005em;
-    background: #0a0d12;
-    color: #f4f6fa;
+    background: #0B2235;
+    color: #F4EFE6;
     min-height: 100vh;
     min-height: 100dvh;
     overflow-x: hidden;
@@ -67,9 +67,12 @@
     position: fixed;
     inset: 0;
     pointer-events: none;
+    /* Warm earth (terracotta) meets living teal on a deep navy field —
+       "cold infrastructure and warm earth" from the brand board. */
     background:
-      radial-gradient(ellipse 60% 50% at 85% 15%, rgba(74, 158, 255, 0.07) 0%, transparent 70%),
-      radial-gradient(ellipse 50% 60% at 15% 85%, rgba(184, 136, 255, 0.05) 0%, transparent 70%);
+      radial-gradient(ellipse 60% 50% at 85% 12%, rgba(192, 85, 43, 0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 55% 60% at 12% 88%, rgba(31, 138, 120, 0.09) 0%, transparent 72%),
+      radial-gradient(ellipse 100% 60% at 50% 118%, rgba(7, 20, 31, 0.55) 0%, transparent 62%);
     z-index: 0;
   }
 
@@ -85,12 +88,12 @@
   /* Custom scrollbar */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; transition: background 0.2s; }
-  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.16); }
+  ::-webkit-scrollbar-thumb { background: rgba(244,239,230,0.10); border-radius: 3px; transition: background 0.2s; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(244,239,230,0.20); }
 
-  /* Focus ring — accent, not default */
+  /* Focus ring — terracotta accent, not default */
   :focus-visible {
-    outline: 2px solid rgba(74, 158, 255, 0.5);
+    outline: 2px solid rgba(192, 85, 43, 0.55);
     outline-offset: 2px;
   }
 
@@ -117,17 +120,17 @@
 @layer components {
   /* ── Glass surfaces ────────────────────────────────────── */
   .glass {
-    background: rgba(22, 27, 36, 0.72);
+    background: rgba(15, 37, 56, 0.72);
     backdrop-filter: blur(24px) saturate(180%);
     -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(244, 239, 230, 0.09);
   }
 
   .glass-strong {
-    background: rgba(22, 27, 36, 0.82);
+    background: rgba(12, 33, 51, 0.85);
     backdrop-filter: blur(32px) saturate(190%);
     -webkit-backdrop-filter: blur(32px) saturate(190%);
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(244, 239, 230, 0.14);
   }
 
   /* ── iOS-style toggle ──────────────────────────────────── */
@@ -222,85 +225,85 @@
     50% { opacity: 0.6; box-shadow: 0 0 12px currentColor; }
   }
 
-  /* ── Glow effects ─────────────────────────────────────── */
+  /* ── Glow effects (Ground & Harvest) ──────────────────── */
   .glow-accent {
-    box-shadow: 0 0 12px rgba(74, 158, 255, 0.3), 0 0 4px rgba(74, 158, 255, 0.15);
+    box-shadow: 0 0 12px rgba(192, 85, 43, 0.32), 0 0 4px rgba(192, 85, 43, 0.16);
   }
 
   .glow-accent-strong {
-    box-shadow: 0 0 20px rgba(74, 158, 255, 0.4), 0 0 6px rgba(74, 158, 255, 0.2);
+    box-shadow: 0 0 20px rgba(192, 85, 43, 0.42), 0 0 6px rgba(192, 85, 43, 0.22);
   }
 
   .glow-success {
-    box-shadow: 0 0 12px rgba(52, 201, 122, 0.35), 0 0 4px rgba(52, 201, 122, 0.15);
+    box-shadow: 0 0 12px rgba(31, 138, 120, 0.35), 0 0 4px rgba(31, 138, 120, 0.15);
   }
 
   .glow-danger {
-    box-shadow: 0 0 12px rgba(255, 93, 93, 0.35), 0 0 4px rgba(255, 93, 93, 0.15);
+    box-shadow: 0 0 12px rgba(211, 64, 46, 0.35), 0 0 4px rgba(211, 64, 46, 0.15);
   }
 
   .glow-warning {
-    box-shadow: 0 0 12px rgba(255, 179, 64, 0.35), 0 0 4px rgba(255, 179, 64, 0.15);
+    box-shadow: 0 0 12px rgba(224, 168, 46, 0.35), 0 0 4px rgba(224, 168, 46, 0.15);
   }
 
   /* Active nav glow */
   .nav-glow {
-    box-shadow: 0 0 16px rgba(74, 158, 255, 0.15), inset 0 0 12px rgba(74, 158, 255, 0.05);
+    box-shadow: 0 0 16px rgba(192, 85, 43, 0.16), inset 0 0 12px rgba(192, 85, 43, 0.06);
   }
 
   /* Card glow on hover */
   .card-hover:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3), 0 0 15px rgba(74, 158, 255, 0.08);
-    border-color: rgba(74, 158, 255, 0.15);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35), 0 0 15px rgba(192, 85, 43, 0.09);
+    border-color: rgba(192, 85, 43, 0.16);
   }
 
   /* Glass glow border */
   .glass-glow {
-    background: rgba(22, 27, 36, 0.82);
+    background: rgba(12, 33, 51, 0.85);
     backdrop-filter: blur(32px) saturate(190%);
     -webkit-backdrop-filter: blur(32px) saturate(190%);
-    border: 1px solid rgba(74, 158, 255, 0.12);
-    box-shadow: 0 0 20px rgba(74, 158, 255, 0.06), inset 0 0 30px rgba(74, 158, 255, 0.03);
+    border: 1px solid rgba(192, 85, 43, 0.14);
+    box-shadow: 0 0 20px rgba(192, 85, 43, 0.07), inset 0 0 30px rgba(192, 85, 43, 0.03);
   }
 
   /* Pillar color glows */
   .glow-social {
-    box-shadow: 0 0 12px rgba(74, 158, 255, 0.35), 0 0 4px rgba(74, 158, 255, 0.15);
+    box-shadow: 0 0 12px rgba(31, 138, 120, 0.35), 0 0 4px rgba(31, 138, 120, 0.15);
   }
   .glow-safety {
-    box-shadow: 0 0 12px rgba(255, 93, 93, 0.35), 0 0 4px rgba(255, 93, 93, 0.15);
+    box-shadow: 0 0 12px rgba(62, 110, 147, 0.38), 0 0 4px rgba(62, 110, 147, 0.16);
   }
   .glow-density {
-    box-shadow: 0 0 12px rgba(184, 136, 255, 0.35), 0 0 4px rgba(184, 136, 255, 0.15);
+    box-shadow: 0 0 12px rgba(224, 168, 46, 0.35), 0 0 4px rgba(224, 168, 46, 0.15);
   }
   .glow-infra {
-    box-shadow: 0 0 12px rgba(52, 201, 122, 0.35), 0 0 4px rgba(52, 201, 122, 0.15);
+    box-shadow: 0 0 12px rgba(192, 85, 43, 0.35), 0 0 4px rgba(192, 85, 43, 0.15);
   }
 
-  /* Infra type glows */
+  /* Infra type glows — roads=terracotta, energy=gold, grid=teal */
   .glow-road {
-    box-shadow: 0 0 10px rgba(74, 158, 255, 0.4), 0 0 4px rgba(74, 158, 255, 0.2);
+    box-shadow: 0 0 10px rgba(192, 85, 43, 0.42), 0 0 4px rgba(192, 85, 43, 0.2);
   }
   .glow-energy {
-    box-shadow: 0 0 10px rgba(255, 179, 64, 0.4), 0 0 4px rgba(255, 179, 64, 0.2);
+    box-shadow: 0 0 10px rgba(224, 168, 46, 0.42), 0 0 4px rgba(224, 168, 46, 0.2);
   }
   .glow-grid {
-    box-shadow: 0 0 10px rgba(184, 136, 255, 0.4), 0 0 4px rgba(184, 136, 255, 0.2);
+    box-shadow: 0 0 10px rgba(31, 138, 120, 0.42), 0 0 4px rgba(31, 138, 120, 0.2);
   }
 
   /* Toggle glow when on */
   .toggle-track[data-on="true"] {
-    box-shadow: 0 0 10px rgba(74, 158, 255, 0.4), 0 0 3px rgba(74, 158, 255, 0.2);
+    box-shadow: 0 0 10px rgba(192, 85, 43, 0.42), 0 0 3px rgba(192, 85, 43, 0.2);
   }
 
   /* Button glow for accent buttons */
   .btn-glow {
-    box-shadow: 0 0 14px rgba(74, 158, 255, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 14px rgba(192, 85, 43, 0.32), 0 2px 8px rgba(0, 0, 0, 0.2);
     transition: box-shadow 0.3s ease, transform 0.2s ease;
   }
   .btn-glow:hover {
-    box-shadow: 0 0 22px rgba(74, 158, 255, 0.45), 0 4px 12px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 0 22px rgba(192, 85, 43, 0.46), 0 4px 12px rgba(0, 0, 0, 0.25);
   }
 
   /* Subtle border glow animation */
@@ -309,8 +312,8 @@
   }
 
   @keyframes borderGlow {
-    0%, 100% { border-color: rgba(74, 158, 255, 0.08); }
-    50% { border-color: rgba(74, 158, 255, 0.2); }
+    0%, 100% { border-color: rgba(192, 85, 43, 0.09); }
+    50% { border-color: rgba(192, 85, 43, 0.22); }
   }
 
   /* Safe-area padding for notched devices */
@@ -328,14 +331,14 @@
    Selectors use the html[data-theme=...] specificity so they win against
    single-class Tailwind utilities without needing !important.            */
 html[data-theme="light"] body {
-  background: #eef2f7;
-  color: #14181f;
+  background: #F4EFE6;
+  color: #1A1A1A;
 }
 
 html[data-theme="light"] #root::before {
   background:
-    radial-gradient(ellipse 60% 50% at 85% 15%, rgba(74, 158, 255, 0.10) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 60% at 15% 85%, rgba(184, 136, 255, 0.08) 0%, transparent 70%);
+    radial-gradient(ellipse 60% 50% at 85% 15%, rgba(192, 85, 43, 0.10) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 60% at 15% 85%, rgba(31, 138, 120, 0.08) 0%, transparent 70%);
 }
 
 html[data-theme="light"] .glass {
@@ -350,16 +353,16 @@ html[data-theme="light"] .glass-strong {
 
 html[data-theme="light"] .glass-glow {
   background: rgba(255, 255, 255, 0.92);
-  border-color: rgba(74, 158, 255, 0.22);
-  box-shadow: 0 0 20px rgba(74, 158, 255, 0.06), inset 0 0 30px rgba(74, 158, 255, 0.03);
+  border-color: rgba(192, 85, 43, 0.22);
+  box-shadow: 0 0 20px rgba(192, 85, 43, 0.06), inset 0 0 30px rgba(192, 85, 43, 0.03);
 }
 
-html[data-theme="light"] .bg-atlas-base { background-color: #eef2f7; }
-html[data-theme="light"] .text-ink-1 { color: #14181f; }
-html[data-theme="light"] .text-ink-2 { color: #3c4655; }
-html[data-theme="light"] .text-ink-3 { color: #6c7585; }
-html[data-theme="light"] .text-ink-4 { color: #98a1b1; }
-html[data-theme="light"] .border-border { border-color: rgba(0, 0, 0, 0.08); }
+html[data-theme="light"] .bg-atlas-base { background-color: #F4EFE6; }
+html[data-theme="light"] .text-ink-1 { color: #1A1A1A; }
+html[data-theme="light"] .text-ink-2 { color: #3B4650; }
+html[data-theme="light"] .text-ink-3 { color: #5E6B76; }
+html[data-theme="light"] .text-ink-4 { color: #8A96A1; }
+html[data-theme="light"] .border-border { border-color: rgba(26, 26, 26, 0.10); }
 
 /* Surface fills that are written inline as rgba(255,255,255, x) — flip to dark
    ink overlays so they remain visible on a white card */
@@ -373,12 +376,12 @@ html[data-theme="light"] .hover\:bg-\[rgba\(255\,255\,255\,0\.06\)\]:hover { bac
 html[data-theme="light"] .hover\:bg-\[rgba\(255\,255\,255\,0\.05\)\]:hover { background-color: rgba(0, 0, 0, 0.05); }
 html[data-theme="light"] .hover\:bg-\[rgba\(255\,255\,255\,0\.1\)\]:hover { background-color: rgba(0, 0, 0, 0.10); }
 html[data-theme="light"] .hover\:bg-\[rgba\(255\,255\,255\,0\.04\)\]:hover { background-color: rgba(0, 0, 0, 0.04); }
-html[data-theme="light"] .bg-\[rgba\(74\,158\,255\,0\.1\)\] { background-color: rgba(74, 158, 255, 0.10); }
-html[data-theme="light"] .bg-\[rgba\(74\,158\,255\,0\.08\)\] { background-color: rgba(74, 158, 255, 0.08); }
+html[data-theme="light"] .bg-\[rgba\(74\,158\,255\,0\.1\)\] { background-color: rgba(192, 85, 43, 0.10); }
+html[data-theme="light"] .bg-\[rgba\(74\,158\,255\,0\.08\)\] { background-color: rgba(192, 85, 43, 0.08); }
 
 /* Sidebar/topbar selected nav backdrop stays accent-tinted in light mode */
 html[data-theme="light"] .nav-glow {
-  box-shadow: 0 0 16px rgba(74, 158, 255, 0.18), inset 0 0 12px rgba(74, 158, 255, 0.06);
+  box-shadow: 0 0 16px rgba(192, 85, 43, 0.18), inset 0 0 12px rgba(192, 85, 43, 0.06);
 }
 
 /* Scrollbar tweak for light */

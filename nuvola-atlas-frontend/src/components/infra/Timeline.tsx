@@ -28,9 +28,9 @@ export default function Timeline({ milestones }: Props) {
                 transition={{ delay: i * 0.08 + 0.1, ...springSettle }}
                 className="w-3.5 h-3.5 rounded-full border-2 shrink-0"
                 style={{
-                  borderColor: m.done ? "#34c97a" : "rgba(255,255,255,0.2)",
-                  background: m.done ? "#34c97a" : "transparent",
-                  boxShadow: m.done ? "0 0 8px rgba(52,201,122,0.3)" : "none",
+                  borderColor: m.done ? "#1F8A78" : "rgba(255,255,255,0.2)",
+                  background: m.done ? "#1F8A78" : "transparent",
+                  boxShadow: m.done ? "0 0 8px rgba(31,138,120,0.3)" : "none",
                 }}
               />
               {!isLast && (
@@ -40,7 +40,7 @@ export default function Timeline({ milestones }: Props) {
                   transition={{ delay: i * 0.08 + 0.15, duration: 0.4 }}
                   className="w-px flex-1 mt-1 origin-top"
                   style={{
-                    background: m.done ? "rgba(52,201,122,0.25)" : "rgba(255,255,255,0.06)",
+                    background: m.done ? "rgba(31,138,120,0.25)" : "rgba(255,255,255,0.06)",
                   }}
                 />
               )}

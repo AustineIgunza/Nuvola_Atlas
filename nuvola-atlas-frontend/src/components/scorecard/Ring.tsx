@@ -39,11 +39,11 @@ export default function Ring({ score, size = 88 }: Props) {
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
         <defs>
           <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#ff5d5d" />
-            <stop offset="25%" stopColor="#ff9a3c" />
-            <stop offset="50%" stopColor="#ffd23c" />
-            <stop offset="75%" stopColor="#8de26a" />
-            <stop offset="100%" stopColor="#34c97a" />
+            <stop offset="0%" stopColor="#B23A2E" />
+            <stop offset="30%" stopColor="#C0552B" />
+            <stop offset="55%" stopColor="#E0A82E" />
+            <stop offset="78%" stopColor="#3F9E72" />
+            <stop offset="100%" stopColor="#1F8A78" />
           </linearGradient>
           <filter id="ring-glow">
             <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor={color} floodOpacity="0.4" />

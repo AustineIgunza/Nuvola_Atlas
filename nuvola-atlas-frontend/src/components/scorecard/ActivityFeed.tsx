@@ -3,10 +3,10 @@ import { api } from "@/api";
 import { formatRelative } from "@/lib/format";
 
 const KIND_COLORS: Record<string, string> = {
-  road: "#4a9eff",
-  grid: "#b888ff",
-  esia: "#34c97a",
-  density: "#ffb340",
+  road: "#C0552B",
+  grid: "#1F8A78",
+  esia: "#1F8A78",
+  density: "#E0A82E",
 };
 
 interface Props {
@@ -30,7 +30,7 @@ export default function ActivityFeed({ zoneId }: Props) {
         <div key={a.id} className="flex items-start gap-2.5">
           <div
             className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
-            style={{ background: KIND_COLORS[a.kind] ?? "#4a9eff" }}
+            style={{ background: KIND_COLORS[a.kind] ?? "#C0552B" }}
           />
           <div className="min-w-0">
             <p className="text-[12px] text-ink-2 leading-[1.5]">{a.text}</p>

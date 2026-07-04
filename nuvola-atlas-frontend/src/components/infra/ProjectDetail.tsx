@@ -6,7 +6,7 @@ import { springSettle } from "@/lib/motion";
 import Timeline from "./Timeline";
 import type { Project } from "@/types";
 
-const TYPE_COLORS: Record<string, string> = { road: "#4a9eff", energy: "#ffb340", grid: "#b888ff" };
+const TYPE_COLORS: Record<string, string> = { road: "#C0552B", energy: "#E0A82E", grid: "#1F8A78" };
 
 interface Props {
   project: Project;

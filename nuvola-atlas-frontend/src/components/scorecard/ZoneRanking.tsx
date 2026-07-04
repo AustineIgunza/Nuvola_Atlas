@@ -42,7 +42,7 @@ export default function ZoneRanking({ currentZone }: Props) {
               key={z.id}
               className={cn(
                 "flex items-center gap-2.5 py-1.5 px-2 rounded-control text-[11px]",
-                isCurrent && "bg-[rgba(74,158,255,0.08)] border border-accent/20",
+                isCurrent && "bg-[rgba(192,85,43,0.08)] border border-accent/20",
               )}
             >
               <span className="text-ink-4 font-bold w-4 text-right tabular-nums">{i + 1}</span>

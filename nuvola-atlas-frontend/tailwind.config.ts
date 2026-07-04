@@ -5,33 +5,45 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // ── Ground & Harvest palette (Navuuna brand board) ──────────────
         atlas: {
-          base: "#0a0d12",
+          base: "#0B2235", // Sovereign Navy — foundation
+          deep: "#07141F", // deeper navy for wells / insets
+          raised: "#123049", // elevated navy surface
         },
+        navy: "#0B2235",
+        bone: "#F4EFE6", // warm white — paper / verified record
         surface: {
-          DEFAULT: "rgba(22,27,36,0.72)",
-          solid: "#161b24",
+          DEFAULT: "rgba(15,37,56,0.72)",
+          solid: "#0F2A40",
         },
         border: {
-          DEFAULT: "rgba(255,255,255,0.08)",
-          strong: "rgba(255,255,255,0.14)",
+          DEFAULT: "rgba(244,239,230,0.10)",
+          strong: "rgba(244,239,230,0.18)",
         },
         ink: {
-          1: "#f4f6fa",
-          2: "#c8cdd6",
-          3: "#8a91a0",
-          4: "#5d6373",
+          1: "#F4EFE6", // Bone
+          2: "#CBC7BC",
+          3: "#94A2AF",
+          4: "#66757F",
         },
+        // Harvest Terracotta is the signature colour → primary accent / CTA
         accent: {
-          DEFAULT: "#4a9eff",
+          DEFAULT: "#C0552B",
+          soft: "#D26C41",
         },
-        success: "#34c97a",
-        warn: "#ffb340",
-        danger: "#ff5d5d",
-        violet: "#b888ff",
+        terracotta: "#C0552B", // signature — earth / infrastructure
+        teal: "#1F8A78", // freedom — human wellbeing (Social pillar)
+        gold: "#E0A82E", // value — used sparingly (Density pillar)
+        steel: "#3E6E93", // navy-family — Safety pillar
+        success: "#1F8A78",
+        warn: "#E0A82E",
+        danger: "#D3402E",
+        violet: "#E0A82E", // legacy alias → gold
       },
       fontFamily: {
         sans: [
+          '"Poppins"',
           "-apple-system",
           '"SF Pro Text"',
           '"SF Pro Display"',
@@ -39,6 +51,8 @@ const config: Config = {
           "system-ui",
           "sans-serif",
         ],
+        display: ['"Sora"', '"Poppins"', "system-ui", "sans-serif"],
+        brand: ['"Poppins"', "system-ui", "sans-serif"],
       },
       borderRadius: {
         chip: "8px",

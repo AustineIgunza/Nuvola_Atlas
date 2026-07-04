@@ -43,7 +43,7 @@ export default function TwoFactorSetup({ onComplete }: Props) {
       className="max-w-[480px] mx-auto glass rounded-control p-6 space-y-5"
     >
       <header className="flex items-start gap-3">
-        <div className="w-9 h-9 rounded-control bg-[rgba(74,158,255,0.15)] text-accent flex items-center justify-center shrink-0">
+        <div className="w-9 h-9 rounded-control bg-[rgba(192,85,43,0.15)] text-accent flex items-center justify-center shrink-0">
           <Shield size={18} />
         </div>
         <div>
@@ -78,7 +78,7 @@ export default function TwoFactorSetup({ onComplete }: Props) {
 
       {step === "code" && (
         <div className="space-y-4">
-          <div className="rounded-control p-3 bg-[rgba(74,158,255,0.08)] ring-1 ring-[rgba(74,158,255,0.25)]">
+          <div className="rounded-control p-3 bg-[rgba(192,85,43,0.08)] ring-1 ring-[rgba(192,85,43,0.25)]">
             <div className="flex items-start gap-2">
               <Mail size={14} className="text-accent mt-0.5 shrink-0" />
               <div className="text-[12px] text-ink-2">

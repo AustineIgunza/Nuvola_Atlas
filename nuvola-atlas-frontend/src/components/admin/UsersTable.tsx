@@ -6,9 +6,9 @@ import { useAuthStore } from "@/stores/auth";
 import { cn } from "@/lib/cn";
 
 const ROLE_TONE: Record<string, string> = {
-  admin: "bg-[rgba(74,158,255,0.15)] text-accent",
-  editor: "bg-[rgba(57,210,143,0.15)] text-success",
-  partner: "bg-[rgba(255,189,89,0.15)] text-warning",
+  admin: "bg-[rgba(192,85,43,0.15)] text-accent",
+  editor: "bg-[rgba(31,138,120,0.15)] text-success",
+  partner: "bg-[rgba(224,168,46,0.15)] text-warning",
   viewer: "bg-[rgba(255,255,255,0.06)] text-ink-3",
 };
 
@@ -135,7 +135,7 @@ export default function UsersTable() {
                       </>
                     ) : u.two_factor_locked ? (
                       <span
-                        className="inline-block px-2 py-0.5 rounded-chip text-[11px] font-medium bg-[rgba(255,93,93,0.12)] text-danger"
+                        className="inline-block px-2 py-0.5 rounded-chip text-[11px] font-medium bg-[rgba(211,64,46,0.12)] text-danger"
                         title="Account locked pending 2FA enrolment. Tokens revoked; sign-in lands on the enrolment wizard."
                       >
                         locked

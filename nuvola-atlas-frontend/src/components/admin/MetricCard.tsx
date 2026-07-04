@@ -14,14 +14,14 @@ interface Props {
 
 const TONE_RING: Record<NonNullable<Props["tone"]>, string> = {
   default: "ring-[rgba(255,255,255,0.06)]",
-  warning: "ring-[rgba(255,189,89,0.25)]",
-  success: "ring-[rgba(57,210,143,0.25)]",
+  warning: "ring-[rgba(224,168,46,0.25)]",
+  success: "ring-[rgba(31,138,120,0.25)]",
 };
 
 const TONE_COLOR: Record<NonNullable<Props["tone"]>, string> = {
-  default: "#4a9eff",
-  warning: "#ffb340",
-  success: "#34c97a",
+  default: "#C0552B",
+  warning: "#E0A82E",
+  success: "#1F8A78",
 };
 
 export default function MetricCard({

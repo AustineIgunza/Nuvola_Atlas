@@ -45,16 +45,16 @@ const SUB_METRICS: Record<PillarKey, SubMetricDef[]> = {
 };
 
 const TREND_ICON: Record<string, { char: string; color: string }> = {
-  up: { char: "▲", color: "#34c97a" },
-  down: { char: "▼", color: "#ff5d5d" },
-  stable: { char: "◆", color: "#8a91a0" },
+  up: { char: "▲", color: "#1F8A78" },
+  down: { char: "▼", color: "#D3402E" },
+  stable: { char: "◆", color: "#94A2AF" },
 };
 
 function scoreLabel(s: number): { text: string; color: string } {
-  if (s >= 75) return { text: "Strong", color: "#34c97a" };
-  if (s >= 60) return { text: "Moderate", color: "#ffd23c" };
-  if (s >= 45) return { text: "Weak", color: "#ff9a3c" };
-  return { text: "Critical", color: "#ff5d5d" };
+  if (s >= 75) return { text: "Strong", color: "#1F8A78" };
+  if (s >= 60) return { text: "Moderate", color: "#E0A82E" };
+  if (s >= 45) return { text: "Weak", color: "#C0552B" };
+  return { text: "Critical", color: "#D3402E" };
 }
 
 export default function PillarRow({ pillarKey, score, delta, index }: Props) {

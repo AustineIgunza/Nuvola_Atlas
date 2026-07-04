@@ -160,7 +160,7 @@ export default function TopBar() {
                         className={cn(
                           "w-full flex items-center justify-between h-9 px-3 rounded-chip text-[13px] font-medium transition-colors",
                           mode === activeMode
-                            ? "text-ink-1 bg-[rgba(74,158,255,0.08)]"
+                            ? "text-ink-1 bg-[rgba(192,85,43,0.08)]"
                             : "text-ink-3 hover:text-ink-2 hover:bg-[rgba(255,255,255,0.05)]",
                         )}
                       >
@@ -181,11 +181,11 @@ export default function TopBar() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, ...springSettle }}
           className={cn(
-            "items-center gap-1.5 px-2.5 h-6 rounded-full bg-[rgba(52,201,122,0.1)] shrink-0",
+            "items-center gap-1.5 px-2.5 h-6 rounded-full bg-[rgba(31,138,120,0.1)] shrink-0",
             isAtlas ? "hidden sm:flex" : "flex",
           )}
         >
-          <div className="w-1.5 h-1.5 rounded-full bg-success pulse-glow glow-success" style={{ color: "#34c97a" }} />
+          <div className="w-1.5 h-1.5 rounded-full bg-success pulse-glow glow-success" style={{ color: "#1F8A78" }} />
           <span className="text-[11px] font-medium text-success">Live</span>
         </motion.div>
       </div>

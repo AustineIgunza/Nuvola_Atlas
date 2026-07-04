@@ -22,10 +22,10 @@ const REPORT_TYPES = [
 ];
 
 const PRIORITIES = [
-  { value: "critical", label: "Critical", color: "#ff5d5d" },
-  { value: "high", label: "High", color: "#ff9a3c" },
-  { value: "medium", label: "Medium", color: "#ffd23c" },
-  { value: "low", label: "Low", color: "#8de26a" },
+  { value: "critical", label: "Critical", color: "#D3402E" },
+  { value: "high", label: "High", color: "#C0552B" },
+  { value: "medium", label: "Medium", color: "#E0A82E" },
+  { value: "low", label: "Low", color: "#1F8A78" },
 ];
 
 const PILLAR_KEYS: PillarKey[] = ["social", "safety", "density", "infra"];
