@@ -134,6 +134,49 @@ export function useMapPopups(
         .addTo(m);
     };
 
+    // Vitality choropleth — hovering lifts the cell, clicking selects the zone
+    // (same as clicking its score pill). The click yields to any active
+    // overlay's marker/line under the cursor so their popups keep priority.
+    let hoveredCell: number | null = null;
+    const clearCellHover = () => {
+      if (hoveredCell === null) return;
+      try {
+        m.setFeatureState({ source: "vitality", id: hoveredCell }, { hover: false });
+      } catch {
+        // source may not exist during style swap
+      }
+      hoveredCell = null;
+    };
+    const onCellMove = (e: mapboxgl.MapMouseEvent & { features?: mapboxgl.MapboxGeoJSONFeature[] }) => {
+      if (!useUIStore.getState().activeLayers.vitality) return clearCellHover();
+      const id = e.features?.[0]?.id;
+      if (typeof id !== "number" || id === hoveredCell) return;
+      clearCellHover();
+      try {
+        m.setFeatureState({ source: "vitality", id }, { hover: true });
+        hoveredCell = id;
+      } catch {
+        // source may not exist during style swap
+      }
+    };
+    const onCellClick = (e: mapboxgl.MapMouseEvent & { features?: mapboxgl.MapboxGeoJSONFeature[] }) => {
+      const active = useUIStore.getState().activeLayers;
+      if (!active.vitality) return;
+      const gates = [
+        ...(active.roads ? ["roads-touch"] : []),
+        ...(active.energy ? ["grid-touch"] : []),
+        ...(active.water ? ["water-touch"] : []),
+        ...(active.momentum ? ["momentum-touch"] : []),
+        ...(active.safety ? ["safety-touch"] : []),
+      ];
+      if (gates.length && m.queryRenderedFeatures(e.point, { layers: gates }).length) return;
+      const zoneId = e.features?.[0]?.properties?.zoneId;
+      if (zoneId) useUIStore.getState().setSelectedZone(String(zoneId));
+    };
+    m.on("mousemove", "vitality-fill", onCellMove);
+    m.on("mouseleave", "vitality-fill", clearCellHover);
+    m.on("click", "vitality-fill", onCellClick);
+
     m.on("click", "grid-touch", openGridPopup);
     m.on("click", "grid-inner", openGridPopup);
     m.on("click", "roads-touch", openRoadPopup);

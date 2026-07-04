@@ -3,6 +3,26 @@ import type { Zone } from "@/types";
 import { BRAND } from "@/lib/scoreColor";
 import { PROJECTS } from "@/api/fixtures";
 import { waterProfile } from "@/lib/waterSanitation";
+import { voronoiRings } from "@/lib/voronoi";
+
+/** Vitality choropleth — one clipped-Voronoi cell per zone so the map shows a
+ *  zone's *area of influence* (not just a pin), tinted along the score ramp. */
+export function generateVitalityCells(zones: Zone[]) {
+  if (!zones.length) return [];
+  const rings = voronoiRings(zones.map((z) => z.centroid));
+  return zones.flatMap((z, i) => {
+    const ring = rings[i];
+    if (!ring.length) return [];
+    return [
+      {
+        type: "Feature" as const,
+        id: i, // numeric id enables hover feature-state
+        geometry: { type: "Polygon" as const, coordinates: [ring] },
+        properties: { zoneId: z.id, zone: z.name, score: z.score },
+      },
+    ];
+  });
+}
 
 export function generateRoadFeatures(zones: Zone[]) {
   const pairs = [
@@ -130,6 +150,7 @@ export function addSourcesAndLayers(
   m: mapboxgl.Map,
   zones: Zone[],
   active: {
+    vitality: boolean;
     roads: boolean;
     energy: boolean;
     density: boolean;
@@ -138,6 +159,10 @@ export function addSourcesAndLayers(
     safety: boolean;
   },
 ) {
+  m.addSource("vitality", {
+    type: "geojson",
+    data: { type: "FeatureCollection", features: generateVitalityCells(zones) },
+  });
   m.addSource("roads", {
     type: "geojson",
     data: { type: "FeatureCollection", features: generateRoadFeatures(zones) },
@@ -161,6 +186,30 @@ export function addSourcesAndLayers(
   m.addSource("safety", {
     type: "geojson",
     data: { type: "FeatureCollection", features: generateSafetyFeatures(zones) },
+  });
+
+  // --- Vitality choropleth (added first → bottom-most; overlays draw above) ---
+  m.addLayer({
+    id: "vitality-fill", type: "fill", source: "vitality",
+    paint: {
+      // Stops mirror the score ramp in scoreColor.ts (SCORE_GRADIENT_CSS).
+      "fill-color": [
+        "interpolate", ["linear"], ["get", "score"],
+        0, "#B23A2E", 30, "#C0552B", 55, "#E0A82E", 78, "#3F9E72", 100, "#1F8A78",
+      ],
+      "fill-opacity": active.vitality
+        ? ["case", ["boolean", ["feature-state", "hover"], false], 0.3, 0.16]
+        : 0,
+    },
+  });
+  m.addLayer({
+    id: "vitality-outline", type: "line", source: "vitality",
+    layout: { "line-join": "round" },
+    paint: {
+      "line-color": BRAND.bone,
+      "line-width": 1.2,
+      "line-opacity": active.vitality ? 0.55 : 0,
+    },
   });
 
   m.addLayer({

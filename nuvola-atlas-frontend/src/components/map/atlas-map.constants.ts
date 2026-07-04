@@ -24,6 +24,7 @@ export function defaultStyleForTheme(theme: "light" | "dark"): string {
 import { BRAND } from "@/lib/scoreColor";
 
 export const LAYER_META = [
+  { key: "vitality" as const, label: "Vitality Zones", color: BRAND.gold },
   { key: "roads" as const, label: "Road Progress", color: BRAND.terracotta },
   { key: "energy" as const, label: "Smart Grid Status", color: BRAND.gold },
   { key: "density" as const, label: "Density", color: BRAND.steel },

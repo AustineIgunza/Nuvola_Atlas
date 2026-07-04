@@ -166,9 +166,13 @@ export default function Sidebar() {
                 Data Layers
               </div>
               {([
+                { key: "vitality" as const, label: "Vitality Zones" },
                 { key: "roads" as const, label: "Roads" },
                 { key: "energy" as const, label: "Energy & Grid" },
                 { key: "density" as const, label: "Density" },
+                { key: "water" as const, label: "Water & Sanitation" },
+                { key: "momentum" as const, label: "Project Momentum" },
+                { key: "safety" as const, label: "Safety & Security" },
               ]).map(({ key, label }) => (
                 <motion.button
                   key={key}

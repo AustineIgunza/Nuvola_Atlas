@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { Compass } from "lucide-react";
 import { useUIStore } from "@/stores/ui";
 import { springSettle } from "@/lib/motion";
-import { BRAND } from "@/lib/scoreColor";
+import { BRAND, SCORE_GRADIENT_CSS } from "@/lib/scoreColor";
 import { useMapInstance, TOKEN } from "@/hooks/useMapInstance";
 import { useMapLayers } from "@/hooks/useMapLayers";
 import { useMapMarkers } from "@/hooks/useMapMarkers";
@@ -72,7 +72,12 @@ export default function AtlasMap({ zones }: Props) {
             >
               <span
                 className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full transition-opacity shrink-0 ${on ? "pulse-glow" : ""}`}
-                style={{ backgroundColor: l.color, color: l.color, opacity: on ? 1 : 0.5 }}
+                style={{
+                  // The Vitality pill dot shows the score ramp itself.
+                  background: l.key === "vitality" ? SCORE_GRADIENT_CSS : l.color,
+                  color: l.color,
+                  opacity: on ? 1 : 0.5,
+                }}
               />
               <span className="hidden sm:inline">{l.label}</span>
               <span className="sm:hidden text-[10px]">{l.label.split(" ")[0]}</span>

@@ -5,6 +5,7 @@ import type { Zone } from "@/types";
 import { addSourcesAndLayers } from "@/components/map/atlas-map.sources";
 
 interface LayerState {
+  vitality: boolean;
   roads: boolean;
   energy: boolean;
   density: boolean;
@@ -78,6 +79,18 @@ export function useMapLayers(
     if (!m || !loaded) return;
 
     try {
+      if (m.getLayer("vitality-fill")) {
+        m.setPaintProperty(
+          "vitality-fill",
+          "fill-opacity",
+          activeLayers.vitality
+            ? ["case", ["boolean", ["feature-state", "hover"], false], 0.3, 0.16]
+            : 0,
+        );
+      }
+      if (m.getLayer("vitality-outline")) {
+        m.setPaintProperty("vitality-outline", "line-opacity", activeLayers.vitality ? 0.55 : 0);
+      }
       if (m.getLayer("roads-line")) {
         m.setPaintProperty("roads-line", "line-opacity", activeLayers.roads ? 0.85 : 0);
       }

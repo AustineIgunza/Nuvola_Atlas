@@ -4,6 +4,7 @@ import { useThemeStore } from "./theme";
 import { defaultStyleForTheme } from "@/components/map/atlas-map.constants";
 
 interface LayerState {
+  vitality: boolean;
   roads: boolean;
   energy: boolean;
   density: boolean;
@@ -26,7 +27,8 @@ interface AtlasState {
 
 export const useAtlasStore = create<AtlasState>((set) => ({
   selectedZoneId: null,
-  activeLayers: { roads: false, energy: false, density: false, water: false, momentum: false, safety: false },
+  // Vitality choropleth is the signature view — on by default; overlays opt-in.
+  activeLayers: { vitality: true, roads: false, energy: false, density: false, water: false, momentum: false, safety: false },
   scrubMonthIdx: 11,
   mapStyle: defaultStyleForTheme(useThemeStore.getState().theme),
 
