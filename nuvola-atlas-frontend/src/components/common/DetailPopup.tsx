@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { X } from "lucide-react";
+import { X, Maximize2, Minimize2 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { springSettle, panelSlideUp, modalBackdrop, fadeIn } from "@/lib/motion";
 
@@ -20,9 +20,15 @@ interface Props {
  */
 export default function DetailPopup({ open, onClose, label, ariaLabel, wide, children }: Props) {
   const reduce = useReducedMotion();
+  const [expanded, setExpanded] = useState(false);
   const [isMobile, setIsMobile] = useState(
     () => typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches,
   );
+
+  // A fresh popup always opens at its default width.
+  useEffect(() => {
+    if (!open) setExpanded(false);
+  }, [open]);
 
   // Keep the last rendered children through the exit animation so the popup
   // doesn't blank out while sliding away (children go null the moment the
@@ -49,10 +55,18 @@ export default function DetailPopup({ open, onClose, label, ariaLabel, wide, chi
   }, [open, onClose]);
 
   const header = (
-    <div className="relative shrink-0 flex items-center justify-between px-4 h-12 border-b border-border">
-      <span className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.1em]">
+    <div className="relative shrink-0 flex items-center justify-between gap-2 px-4 h-12 border-b border-border">
+      <span className="flex-1 min-w-0 truncate text-[11px] font-medium text-ink-4 uppercase tracking-[0.1em]">
         {label}
       </span>
+      <button
+        onClick={() => setExpanded((e) => !e)}
+        className="hidden lg:flex w-8 h-8 items-center justify-center rounded-full bg-[rgba(255,255,255,0.06)] text-ink-4 hover:text-ink-2 transition-colors btn-press"
+        aria-label={expanded ? "Collapse panel" : "Expand panel"}
+        title={expanded ? "Collapse" : "Expand"}
+      >
+        {expanded ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+      </button>
       <button
         onClick={onClose}
         className="w-8 h-8 flex items-center justify-center rounded-full bg-[rgba(255,255,255,0.06)] text-ink-4 hover:text-ink-2 transition-colors btn-press"
@@ -111,7 +125,12 @@ export default function DetailPopup({ open, onClose, label, ariaLabel, wide, chi
           className={cn(
             "fixed top-[4.25rem] bottom-4 right-4 z-40 flex flex-col",
             "glass-strong border border-border rounded-modal shadow-modal overflow-hidden",
-            wide ? "w-[440px] xl:w-[520px]" : "w-[440px] xl:w-[480px]",
+            "transition-[width] duration-300 ease-out",
+            expanded
+              ? "w-[min(760px,calc(100vw-2rem))]"
+              : wide
+                ? "w-[440px] xl:w-[520px]"
+                : "w-[440px] xl:w-[480px]",
           )}
           role="complementary"
           aria-label={ariaLabel}
