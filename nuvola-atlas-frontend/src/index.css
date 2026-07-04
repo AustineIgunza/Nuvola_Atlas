@@ -15,10 +15,14 @@
        into the light basemap, so the light theme below swaps it for a
        semi-opaque dark stroke. */
     --zone-marker-ring: #ffffff;
+    /* Score-ring background track — faint white on dark cards, faint ink on
+       light cards (SVG strokes can't be remapped by the bg-class overrides). */
+    --ring-track: rgba(255, 255, 255, 0.06);
   }
 
   html[data-theme="light"] {
     --zone-marker-ring: rgba(20, 24, 31, 0.55);
+    --ring-track: rgba(20, 24, 31, 0.08);
   }
 
   @media (max-width: 767px) {
@@ -388,12 +392,18 @@ html[data-theme="light"] .nav-glow {
 html[data-theme="light"] ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.12); }
 html[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.22); }
 
-/* Mapbox popup readability: works on both themes because background is white,
-   but in dark mode the close button needs to flip */
-html[data-theme="dark"] .atlas-popup .mapboxgl-popup-content {
-  background: rgba(255, 255, 255, 0.96);
-  color: #14181f;
+/* Mapbox popup: bone-toned card on both themes (no pure white), rounded to
+   the card token. The inline popup HTML already uses ink text colors. */
+.atlas-popup .mapboxgl-popup-content {
+  background: rgba(244, 239, 230, 0.97);
+  color: #1a1a1a;
+  border-radius: 14px;
+  box-shadow: 0 2px 6px rgba(11, 34, 53, 0.12), 0 16px 40px rgba(11, 34, 53, 0.16);
 }
+.atlas-popup.mapboxgl-popup-anchor-top .mapboxgl-popup-tip { border-bottom-color: rgba(244, 239, 230, 0.97); }
+.atlas-popup.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip { border-top-color: rgba(244, 239, 230, 0.97); }
+.atlas-popup.mapboxgl-popup-anchor-left .mapboxgl-popup-tip { border-right-color: rgba(244, 239, 230, 0.97); }
+.atlas-popup.mapboxgl-popup-anchor-right .mapboxgl-popup-tip { border-left-color: rgba(244, 239, 230, 0.97); }
 
 /* ── Float-over-map UI ────────────────────────────────────────────────────
    Layer pills and legend card sit on top of the basemap, not the app

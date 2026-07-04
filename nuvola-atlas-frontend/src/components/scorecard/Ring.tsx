@@ -54,7 +54,7 @@ export default function Ring({ score, size = 88 }: Props) {
           cy={size / 2}
           r={r}
           fill="none"
-          stroke="rgba(255,255,255,0.06)"
+          stroke="var(--ring-track)"
           strokeWidth={strokeWidth}
         />
         <circle

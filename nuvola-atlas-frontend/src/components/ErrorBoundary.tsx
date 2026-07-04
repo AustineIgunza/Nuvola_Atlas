@@ -1,6 +1,7 @@
 import { Component } from "react";
 import type { ReactNode, ErrorInfo } from "react";
 import { captureBoundaryError } from "@/lib/sentry";
+import { Emblem } from "@/components/brand/Brand";
 
 interface Props {
   children: ReactNode;
@@ -32,14 +33,7 @@ export default class ErrorBoundary extends Component<Props, State> {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-atlas-base">
         <div className="glass-strong rounded-login w-full max-w-[420px] p-8 shadow-modal text-center">
-          <div
-            className="w-10 h-10 rounded-lg mx-auto mb-4 flex items-center justify-center"
-            style={{ background: "conic-gradient(from 135deg, #C0552B, #E0A82E, #1F8A78, #C0552B)" }}
-          >
-            <div className="w-[24px] h-[24px] rounded-md bg-atlas-base flex items-center justify-center">
-              <div className="w-[6px] h-[6px] rounded-full bg-bone" />
-            </div>
-          </div>
+          <Emblem size={40} className="mx-auto mb-4" />
           <h1 className="text-[20px] font-semibold text-ink-1 mb-2">Something went wrong</h1>
           <p className="text-[13px] text-ink-3 mb-6">
             {this.state.error?.message || "An unexpected error occurred."}

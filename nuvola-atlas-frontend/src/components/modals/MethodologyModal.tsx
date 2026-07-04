@@ -76,7 +76,7 @@ export default function MethodologyModal() {
                 >
                   <div className="flex items-center gap-2.5 mb-2.5">
                     <motion.div
-                      className="w-6 h-6 rounded-md flex items-center justify-center text-[11px] font-bold text-white"
+                      className="w-6 h-6 rounded-chip flex items-center justify-center text-[11px] font-bold text-white"
                       style={{ background: PILLAR_COLORS[pillar.key] }}
                       whileHover={{ rotate: 10 }}
                     >

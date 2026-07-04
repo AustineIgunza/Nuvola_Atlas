@@ -127,7 +127,7 @@ export default function MintApiKeyModal({ open, onClose }: Props) {
             transition={{ type: "spring", stiffness: 320, damping: 28 }}
             className="fixed inset-0 z-50 flex items-start md:items-center justify-center p-3 md:p-6 pointer-events-none"
           >
-            <div className="w-full max-w-[520px] glass-strong rounded-control shadow-modal pointer-events-auto overflow-hidden">
+            <div className="w-full max-w-[520px] glass-strong rounded-modal shadow-modal pointer-events-auto overflow-hidden">
               <div className="flex items-center justify-between px-5 h-12 border-b border-border">
                 <h2 id="mint-key-title" className="text-[14px] font-semibold text-ink-1">
                   {minted ? "API key created" : "New API key"}
