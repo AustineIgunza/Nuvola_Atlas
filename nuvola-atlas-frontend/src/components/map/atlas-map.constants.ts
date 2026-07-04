@@ -27,6 +27,9 @@ export const LAYER_META = [
   { key: "roads" as const, label: "Road Progress", color: BRAND.terracotta },
   { key: "energy" as const, label: "Smart Grid Status", color: BRAND.gold },
   { key: "density" as const, label: "Density", color: BRAND.steel },
+  { key: "water" as const, label: "Water & Sanitation", color: BRAND.teal },
+  { key: "momentum" as const, label: "Project Momentum", color: BRAND.goldDeep },
+  { key: "safety" as const, label: "Safety & Security", color: BRAND.rose },
 ];
 
 export function markerScoreColor(score: number): string {

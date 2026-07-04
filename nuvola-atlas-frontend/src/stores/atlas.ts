@@ -7,6 +7,9 @@ interface LayerState {
   roads: boolean;
   energy: boolean;
   density: boolean;
+  water: boolean;
+  momentum: boolean;
+  safety: boolean;
 }
 
 interface AtlasState {
@@ -23,7 +26,7 @@ interface AtlasState {
 
 export const useAtlasStore = create<AtlasState>((set) => ({
   selectedZoneId: null,
-  activeLayers: { roads: false, energy: false, density: false },
+  activeLayers: { roads: false, energy: false, density: false, water: false, momentum: false, safety: false },
   scrubMonthIdx: 11,
   mapStyle: defaultStyleForTheme(useThemeStore.getState().theme),
 
