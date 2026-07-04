@@ -134,7 +134,7 @@ export default function SignInPage() {
         >
           {challenge
             ? `We sent a 6-digit code to ${challenge.emailHint}. It expires in 5 minutes.`
-            : "Spatial Intelligence Network for African Industrial Development"}
+            : "Africa's Ground Truth — infrastructure and heritage on one living ledger"}
         </motion.p>
 
         <AnimatePresence>

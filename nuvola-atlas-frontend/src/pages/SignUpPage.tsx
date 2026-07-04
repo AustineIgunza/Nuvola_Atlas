@@ -72,7 +72,7 @@ export default function SignUpPage() {
           transition={{ delay: 0.25 }}
           className="text-[13px] text-ink-3 mb-7"
         >
-          Join the Spatial Intelligence Network
+          Join the Ground Truth network
         </motion.p>
 
         <form onSubmit={handleSubmit} className="space-y-4">

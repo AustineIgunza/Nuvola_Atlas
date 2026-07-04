@@ -59,11 +59,29 @@ export default function MethodologyModal() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.15 }}
-              className="text-[13px] text-ink-3 mb-6 leading-relaxed"
+              className="text-[13px] text-ink-3 mb-4 leading-relaxed"
             >
               The UE Vitality Index produces a single 0-100 readiness score per sub-county, built from four equally-weighted pillars.
-              Each pillar combines several sub-metrics sourced from Kenyan government data, international indices, and ground-truth verification.
+              Each pillar combines several sub-metrics sourced from Kenyan government data, international indices, and ground-truth
+              verification carried on the Asase layer — Navuuna's live infrastructure map.
             </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.18 }}
+              className="mb-6 p-3.5 rounded-card bg-[rgba(255,255,255,0.03)] border border-border"
+            >
+              <div className="text-[10px] font-semibold text-ink-4 uppercase tracking-[0.08em] mb-1.5">
+                Freedom Index — the analytical core
+              </div>
+              <div className="font-mono text-[13px] text-ink-1 tracking-[-0.01em]">
+                F = Σ (Wellbeing + Safety + Participation) / Population Density
+              </div>
+              <p className="text-[11.5px] text-ink-4 mt-1.5 leading-relaxed">
+                The Vitality Score is the Freedom Index made operational: verified ground truth in, one comparable readiness signal out.
+              </p>
+            </motion.div>
 
             <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-4">
               {data?.pillars.map((pillar) => (

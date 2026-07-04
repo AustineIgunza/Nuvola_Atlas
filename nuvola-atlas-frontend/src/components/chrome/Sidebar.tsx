@@ -163,7 +163,7 @@ export default function Sidebar() {
               className="mt-4 pt-4 border-t border-border overflow-hidden"
             >
               <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.08em] px-3 mb-2">
-                Data Layers
+                Asase · Data Layers
               </div>
               {([
                 { key: "vitality" as const, label: "Vitality Zones" },
