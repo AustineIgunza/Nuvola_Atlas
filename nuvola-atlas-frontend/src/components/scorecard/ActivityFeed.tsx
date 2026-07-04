@@ -14,12 +14,25 @@ interface Props {
 }
 
 export default function ActivityFeed({ zoneId }: Props) {
-  const { data: activities } = useQuery({
+  const { data: activities, isLoading } = useQuery({
     queryKey: ["activity", zoneId],
     queryFn: () => api.getZoneActivity(zoneId),
   });
 
-  if (!activities || activities.length === 0) return null;
+  if (isLoading) return null;
+
+  if (!activities || activities.length === 0) {
+    return (
+      <div className="space-y-2">
+        <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.08em]">
+          Recent Activity
+        </div>
+        <p className="text-[11px] text-ink-4 leading-[1.5]">
+          No recent activity recorded for this zone — field updates will appear here as they sync.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-2.5">

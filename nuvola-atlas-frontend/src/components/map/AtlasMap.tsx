@@ -23,6 +23,7 @@ export default function AtlasMap({ zones }: Props) {
   const toggleLayer = useUIStore((s) => s.toggleLayer);
   const setSelectedZone = useUIStore((s) => s.setSelectedZone);
   const mapStyle = useUIStore((s) => s.mapStyle);
+  const panelOpen = useUIStore((s) => s.panelOpen);
   const [, setSearchParams] = useSearchParams();
 
   useMapLayers(mapRef, loaded, activeLayers, zones);
@@ -95,11 +96,14 @@ export default function AtlasMap({ zones }: Props) {
         <Compass size={16} />
       </motion.button>
 
-      {/* Legend — pushed up on mobile to clear the scorecard pull-up tab */}
+      {/* Legend — pushed up on mobile to clear the scorecard pull-up tab;
+          fades out while the corner-card constellation is open so the
+          bottom-left card has the space. */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4, ...springSettle }}
+        animate={{ opacity: panelOpen ? 0 : 1, y: panelOpen ? 6 : 0 }}
+        transition={springSettle}
+        style={{ pointerEvents: panelOpen ? "none" : "auto" }}
         className="atlas-legend absolute bottom-16 sm:bottom-4 left-2 sm:left-4 z-10 bg-bone/90 backdrop-blur-sm rounded-card px-2.5 py-1.5 sm:px-4 sm:py-3 shadow-[0_1px_2px_rgba(11,34,53,0.06),0_18px_50px_rgba(11,34,53,0.10)] text-[10px] sm:text-[11px] space-y-1"
       >
         <div className="font-semibold text-[12px] text-navy/70 mb-2">Vitality Score</div>

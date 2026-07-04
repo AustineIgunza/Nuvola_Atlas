@@ -101,6 +101,8 @@ export function useMapMarkers(
       pill.style.boxShadow = isSelected
         ? `0 4px 20px ${color}88, 0 0 24px ${color}55, 0 0 0 3px var(--zone-marker-ring)`
         : `0 2px 10px ${color}44, 0 0 16px ${color}33, 0 0 0 2px var(--zone-marker-ring)`;
+      pill.classList.toggle("zone-pill--selected", isSelected);
+      pill.style.setProperty("--pulse-color", color);
     });
   }, [mapRef, loaded, selectedZoneId, zones]);
 }

@@ -23,7 +23,7 @@ export default function ZoneRanking({ currentZone }: Props) {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.18 }}
-      className="mb-6 rounded-card bg-[rgba(255,255,255,0.02)] border border-border p-4"
+      className="rounded-card bg-[rgba(255,255,255,0.02)] border border-border p-4"
     >
       <div className="flex items-center justify-between mb-3">
         <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.08em]">
