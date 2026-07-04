@@ -21,14 +21,16 @@ export function defaultStyleForTheme(theme: "light" | "dark"): string {
   return theme === "dark" ? MAP_STYLES.dark : MAP_STYLES.light;
 }
 
+import { BRAND } from "@/lib/scoreColor";
+
 export const LAYER_META = [
-  { key: "roads" as const, label: "Road Progress", color: "#2C6FB0" },
-  { key: "energy" as const, label: "Smart Grid Status", color: "#C9A227" },
-  { key: "density" as const, label: "Density", color: "#C7603F" },
+  { key: "roads" as const, label: "Road Progress", color: BRAND.terracotta },
+  { key: "energy" as const, label: "Smart Grid Status", color: BRAND.gold },
+  { key: "density" as const, label: "Density", color: BRAND.steel },
 ];
 
 export function markerScoreColor(score: number): string {
-  if (score >= 70) return "#1B9C6B";
-  if (score >= 55) return "#C9A227";
-  return "#C7603F";
+  if (score >= 70) return BRAND.teal;
+  if (score >= 55) return BRAND.gold;
+  return BRAND.terracotta;
 }

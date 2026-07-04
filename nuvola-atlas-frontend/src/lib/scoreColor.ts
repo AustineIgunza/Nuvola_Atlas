@@ -46,6 +46,26 @@ export function scoreColorHex(score: number): string {
 export const SCORE_GRADIENT_CSS =
   "linear-gradient(90deg, #B23A2E, #C0552B, #E0A82E, #3F9E72, #1F8A78)";
 
+/** Ground & Harvest raw hex tokens — the single source for values that need a
+ *  literal hex rather than a Tailwind class: Mapbox paint expressions and
+ *  inline `style` props. Mirrors tailwind.config.ts; keep the two in sync. */
+export const BRAND = {
+  navy: "#0B2235", // Sovereign Navy — cold infrastructure / view-from-above
+  navyDeep: "#07141F",
+  navyRaised: "#123049",
+  terracotta: "#C0552B", // signature — earth / roads / infrastructure
+  terracottaDeep: "#A8481F",
+  gold: "#E0A82E", // value — energy / grid
+  goldDeep: "#B8801C", // momentum
+  teal: "#1F8A78", // freedom — water / life / Social pillar
+  tealDeep: "#176B5D",
+  steel: "#3E6E93", // navy-family — density / Safety pillar
+  rose: "#D3402E", // alert / risk
+  bone: "#F4EFE6", // warm off-white — paper / verified record
+  ink: "#1A1A1A",
+  inkSoft: "#6B6257", // warm taupe — secondary text on light surfaces
+} as const;
+
 export const PILLAR_COLORS: Record<string, string> = {
   social: "#1F8A78", // Living Teal — freedom / human wellbeing
   safety: "#3E6E93", // Sovereign Steel — security (navy family)

@@ -1,5 +1,6 @@
 import type mapboxgl from "mapbox-gl";
 import type { Zone } from "@/types";
+import { BRAND } from "@/lib/scoreColor";
 
 export function generateRoadFeatures(zones: Zone[]) {
   const pairs = [
@@ -84,11 +85,11 @@ export function addSourcesAndLayers(
 
   m.addLayer({
     id: "roads-line", type: "line", source: "roads",
-    paint: { "line-color": "#2C6FB0", "line-width": 3, "line-dasharray": [2, 2], "line-opacity": active.roads ? 0.85 : 0 },
+    paint: { "line-color": BRAND.terracotta, "line-width": 3, "line-dasharray": [2, 2], "line-opacity": active.roads ? 0.85 : 0 },
   });
   m.addLayer({
     id: "roads-glow", type: "line", source: "roads",
-    paint: { "line-color": "#2C6FB0", "line-width": 8, "line-blur": 6, "line-opacity": active.roads ? 0.25 : 0 },
+    paint: { "line-color": BRAND.terracotta, "line-width": 8, "line-blur": 6, "line-opacity": active.roads ? 0.25 : 0 },
   }, "roads-line");
   // Invisible thicker hit-target so touch on mobile is reliable. Opacity 0 but
   // still receives click/tap events. Width tuned to a finger-tip.
@@ -101,7 +102,7 @@ export function addSourcesAndLayers(
     id: "grid-outer", type: "circle", source: "grid",
     paint: {
       "circle-radius": 12, "circle-color": "transparent", "circle-stroke-width": 2,
-      "circle-stroke-color": ["case", ["==", ["get", "status"], "active"], "#C9A227", "#999"],
+      "circle-stroke-color": ["case", ["==", ["get", "status"], "active"], BRAND.gold, BRAND.steel],
       "circle-stroke-opacity": active.energy ? 0.9 : 0,
     },
   });
@@ -109,7 +110,7 @@ export function addSourcesAndLayers(
     id: "grid-inner", type: "circle", source: "grid",
     paint: {
       "circle-radius": 5,
-      "circle-color": ["case", ["==", ["get", "status"], "active"], "#C9A227", "#999"],
+      "circle-color": ["case", ["==", ["get", "status"], "active"], BRAND.gold, BRAND.steel],
       "circle-opacity": active.energy ? 0.9 : 0,
     },
   });
@@ -126,8 +127,8 @@ export function addSourcesAndLayers(
       "heatmap-radius": 35, "heatmap-opacity": active.density ? 0.65 : 0,
       "heatmap-color": [
         "interpolate", ["linear"], ["heatmap-density"],
-        0, "rgba(199,96,63,0)", 0.3, "rgba(199,96,63,0.25)",
-        0.6, "rgba(199,96,63,0.5)", 1, "rgba(199,96,63,0.85)",
+        0, "rgba(62,110,147,0)", 0.3, "rgba(62,110,147,0.28)",
+        0.6, "rgba(62,110,147,0.55)", 1, "rgba(62,110,147,0.9)",
       ],
     },
   });
@@ -135,8 +136,8 @@ export function addSourcesAndLayers(
     id: "density-circles", type: "circle", source: "density", minzoom: 13,
     paint: {
       "circle-radius": ["interpolate", ["linear"], ["zoom"], 13, 4, 16, 8],
-      "circle-color": "#C7603F", "circle-opacity": active.density ? 0.5 : 0,
-      "circle-stroke-width": 1, "circle-stroke-color": "#C7603F", "circle-stroke-opacity": active.density ? 0.3 : 0,
+      "circle-color": BRAND.steel, "circle-opacity": active.density ? 0.5 : 0,
+      "circle-stroke-width": 1, "circle-stroke-color": BRAND.steel, "circle-stroke-opacity": active.density ? 0.3 : 0,
     },
   });
 }

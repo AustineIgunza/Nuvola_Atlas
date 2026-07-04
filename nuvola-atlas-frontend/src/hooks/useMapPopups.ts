@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import { useUIStore } from "@/stores/ui";
+import { BRAND } from "@/lib/scoreColor";
 
 export function useMapPopups(
   mapRef: React.RefObject<mapboxgl.Map | null>,
@@ -24,10 +25,10 @@ export function useMapPopups(
       new mapboxgl.Popup({ offset: 15, className: "atlas-popup", closeButton: true, closeOnMove: false })
         .setLngLat(e.lngLat)
         .setHTML(`
-          <div style="font-family:-apple-system,sans-serif;font-size:13px;min-width:140px;">
+          <div style="font-family:'Poppins',-apple-system,sans-serif;font-size:13px;min-width:150px;color:${BRAND.navy};">
             <div style="font-weight:600;margin-bottom:4px;">${props.zone}</div>
-            <div style="color:#444;">Status: <span style="color:${props.status === "active" ? "#1B9C6B" : "#999"};font-weight:500;">${props.status}</span></div>
-            <div style="color:#444;">Capacity: <span style="font-weight:500;">${props.capacity} MW</span></div>
+            <div style="color:${BRAND.inkSoft};">Status: <span style="color:${props.status === "active" ? BRAND.teal : BRAND.steel};font-weight:600;text-transform:capitalize;">${props.status}</span></div>
+            <div style="color:${BRAND.inkSoft};">Capacity: <span style="color:${BRAND.gold};font-weight:600;">${props.capacity} MW</span></div>
           </div>
         `)
         .addTo(m);
@@ -40,9 +41,9 @@ export function useMapPopups(
       new mapboxgl.Popup({ offset: 15, className: "atlas-popup", closeButton: true, closeOnMove: false })
         .setLngLat(e.lngLat)
         .setHTML(`
-          <div style="font-family:-apple-system,sans-serif;font-size:13px;min-width:160px;">
+          <div style="font-family:'Poppins',-apple-system,sans-serif;font-size:13px;min-width:170px;color:${BRAND.navy};">
             <div style="font-weight:600;margin-bottom:4px;">${props.name}</div>
-            <div style="color:#444;">Progress: <span style="color:#2C6FB0;font-weight:600;">${props.progress}%</span></div>
+            <div style="color:${BRAND.inkSoft};">Progress: <span style="color:${BRAND.terracotta};font-weight:600;">${props.progress}%</span></div>
           </div>
         `)
         .addTo(m);
