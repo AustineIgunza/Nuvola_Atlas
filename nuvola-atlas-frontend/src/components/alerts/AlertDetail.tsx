@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
-import { AlertTriangle, Shield, ExternalLink, Calendar } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { AlertTriangle, Shield, ExternalLink, Calendar, MapPin } from "lucide-react";
+import { useUIStore } from "@/stores/ui";
 import { formatRelative, formatDate } from "@/lib/format";
 import { springSettle } from "@/lib/motion";
 import { SEVERITY_COLORS, IMPACT_STYLES, KIND_LABELS } from "./alerts.constants";
@@ -12,6 +14,8 @@ interface Props {
 }
 
 export default function AlertDetail({ alert: a, zoneName, projectName }: Props) {
+  const navigate = useNavigate();
+  const openQuickView = useUIStore((s) => s.openQuickView);
   const impact = IMPACT_STYLES[a.impactLevel] ?? IMPACT_STYLES.moderate;
   const sevColor = SEVERITY_COLORS[a.severity];
 
@@ -46,7 +50,17 @@ export default function AlertDetail({ alert: a, zoneName, projectName }: Props) 
       </h2>
 
       <div className="flex items-center gap-3 text-[12px] text-ink-4 mb-5 flex-wrap">
-        <span>{zoneName}</span>
+        {a.zoneId ? (
+          <button
+            onClick={() => navigate(`/atlas?zone=${a.zoneId}`)}
+            className="flex items-center gap-1 text-ink-3 hover:text-accent transition-colors"
+          >
+            <MapPin size={12} />
+            {zoneName}
+          </button>
+        ) : (
+          <span>{zoneName}</span>
+        )}
         <span className="flex items-center gap-1">
           <Calendar size={12} />
           {formatDate(a.createdAt)} &middot; {formatRelative(a.createdAt)}
@@ -119,12 +133,13 @@ export default function AlertDetail({ alert: a, zoneName, projectName }: Props) 
           </h3>
           <div className="flex flex-wrap gap-1.5">
             {a.relatedProjectIds.map((pid) => (
-              <span
+              <button
                 key={pid}
-                className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-accent/10 text-accent"
+                onClick={() => openQuickView(pid)}
+                className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-accent/10 text-accent hover:bg-accent/20 transition-colors btn-press"
               >
                 {projectName(pid)}
-              </span>
+              </button>
             ))}
           </div>
         </motion.div>

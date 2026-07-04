@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { Calendar, User, Tag, Layers } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Calendar, User, Tag, Layers, Download, MapPin } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { formatDate, formatBytes } from "@/lib/format";
 import { springSettle } from "@/lib/motion";
@@ -13,11 +14,31 @@ interface Props {
 }
 
 export default function ReportDetail({ report, zoneName }: Props) {
+  const navigate = useNavigate();
   const status = STATUS_STYLES[report.status];
   const priority = PRIORITY_STYLES[report.priority] ?? PRIORITY_STYLES.medium;
   const sections = report.sections ?? [];
   const tags = report.tags ?? [];
   const pillarFocus = report.pillarFocus ?? [];
+
+  function downloadReport() {
+    const lines = [
+      `NAVUUNA ATLAS — ${report.title}`,
+      `${report.author} · ${formatDate(report.date)} · ${zoneName}`,
+      `Status: ${report.status} · Priority: ${report.priority}`,
+      "",
+      "EXECUTIVE SUMMARY",
+      report.executiveSummary ?? "—",
+      ...sections.flatMap((s) => ["", s.heading.toUpperCase(), s.content]),
+    ];
+    const blob = new Blob([lines.join("\n")], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${report.id}.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
 
   return (
     <motion.div
@@ -40,7 +61,17 @@ export default function ReportDetail({ report, zoneName }: Props) {
             <Calendar size={12} className="text-ink-4" />
             {formatDate(report.date)}
           </span>
-          <span className="text-ink-4">{zoneName}</span>
+          {report.zoneId ? (
+            <button
+              onClick={() => navigate(`/atlas?zone=${report.zoneId}`)}
+              className="flex items-center gap-1 text-ink-3 hover:text-accent transition-colors"
+            >
+              <MapPin size={12} />
+              {zoneName}
+            </button>
+          ) : (
+            <span className="text-ink-4">{zoneName}</span>
+          )}
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <span
@@ -150,9 +181,19 @@ export default function ReportDetail({ report, zoneName }: Props) {
         </motion.div>
       )}
 
-      <div className="pt-3 border-t border-border/30 flex items-center justify-between text-[11px] text-ink-4">
-        <span>{formatBytes(report.sizeBytes)}</span>
-        <span>ID: {report.id}</span>
+      <div className="pt-4 border-t border-border/30 space-y-3">
+        <motion.button
+          whileTap={{ scale: 0.97 }}
+          onClick={downloadReport}
+          className="w-full h-9 flex items-center justify-center gap-1.5 rounded-control bg-accent text-white text-[12px] font-medium hover:brightness-110 transition-all btn-glow"
+        >
+          <Download size={13} />
+          Download report
+        </motion.button>
+        <div className="flex items-center justify-between text-[11px] text-ink-4">
+          <span>{formatBytes(report.sizeBytes)}</span>
+          <span>ID: {report.id}</span>
+        </div>
       </div>
     </motion.div>
   );
