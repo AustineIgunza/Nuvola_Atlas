@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FileText, Plus } from "lucide-react";
 import { cn } from "@/lib/cn";
@@ -10,7 +11,7 @@ import { STATUS_STYLES } from "./reports.constants";
 import DetailPopup from "@/components/common/DetailPopup";
 import ReportDetail from "./ReportDetail";
 import NewReportModal from "./NewReportModal";
-import type { ReportStatus } from "@/types";
+import type { Report, ReportStatus } from "@/types";
 
 const FILTERS: { label: string; value: ReportStatus | "all" }[] = [
   { label: "All", value: "all" },
@@ -20,9 +21,14 @@ const FILTERS: { label: string; value: ReportStatus | "all" }[] = [
 ];
 
 export default function ReportsTable() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const zoneParam = searchParams.get("zone");
   const [filter, setFilter] = useState<ReportStatus | "all">("all");
   const [modalOpen, setModalOpen] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
+  // Track which `?zone=` param we've already auto-opened so the user can close
+  // the popup without it snapping back on the next re-render.
+  const [autoOpenedFor, setAutoOpenedFor] = useState<string | null>(null);
 
   const { data: reports } = useQuery({
     queryKey: ["reports"],
@@ -36,7 +42,37 @@ export default function ReportsTable() {
   const detailReport = reports?.find((r) => r.id === detailId);
 
   const filtered =
-    reports?.filter((r) => filter === "all" || r.status === filter) ?? [];
+    reports?.filter((r) => {
+      if (filter !== "all" && r.status !== filter) return false;
+      if (zoneParam && r.zoneId !== zoneParam) return false;
+      return true;
+    }) ?? [];
+
+  // Coming from the zone scorecard (`/reports?zone=xxx`): auto-open the actual
+  // report for that zone — prefer the newest published report matching, then
+  // fall back to the newest of any status. Only fires once per `?zone=` value.
+  useEffect(() => {
+    if (!zoneParam || !reports || autoOpenedFor === zoneParam) return;
+    const forZone = reports.filter((r) => r.zoneId === zoneParam);
+    const pickNewest = (list: Report[]) =>
+      [...list].sort((a, b) => (a.date < b.date ? 1 : -1))[0];
+    const target =
+      pickNewest(forZone.filter((r) => r.status === "published")) ??
+      pickNewest(forZone);
+    if (target) setDetailId(target.id);
+    setAutoOpenedFor(zoneParam);
+  }, [zoneParam, reports, autoOpenedFor]);
+
+  // Closing the auto-opened detail popup drops the `?zone=` param so the URL
+  // reflects the visible state and refresh doesn't re-open the popup.
+  const handleCloseDetail = () => {
+    setDetailId(null);
+    if (zoneParam) {
+      const next = new URLSearchParams(searchParams);
+      next.delete("zone");
+      setSearchParams(next, { replace: true });
+    }
+  };
 
   function zoneName(id: string | null) {
     if (!id) return "All zones";
@@ -77,15 +113,29 @@ export default function ReportsTable() {
               </motion.button>
             ))}
           </div>
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={() => setModalOpen(true)}
-            className="flex items-center gap-1.5 h-9 px-4 rounded-control bg-accent text-white text-[12px] font-medium hover:brightness-110 transition-all self-start btn-glow"
-          >
-            <Plus size={14} />
-            New report
-          </motion.button>
+          <div className="flex items-center gap-2 self-start">
+            {zoneParam && (
+              <button
+                onClick={() => {
+                  const next = new URLSearchParams(searchParams);
+                  next.delete("zone");
+                  setSearchParams(next, { replace: true });
+                }}
+                className="h-8 px-3 rounded-chip bg-[rgba(255,255,255,0.06)] border border-border text-ink-2 text-[11px] font-medium hover:bg-[rgba(255,255,255,0.1)] transition-colors"
+              >
+                Zone: {zoneName(zoneParam)} · Clear
+              </button>
+            )}
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setModalOpen(true)}
+              className="flex items-center gap-1.5 h-9 px-4 rounded-control bg-accent text-white text-[12px] font-medium hover:brightness-110 transition-all btn-glow"
+            >
+              <Plus size={14} />
+              New report
+            </motion.button>
+          </div>
         </div>
 
         {/* Table */}
@@ -153,7 +203,7 @@ export default function ReportsTable() {
 
       <DetailPopup
         open={!!detailReport}
-        onClose={() => setDetailId(null)}
+        onClose={handleCloseDetail}
         label="Report details"
         ariaLabel={detailReport ? `${detailReport.title} details` : "Report details"}
         wide
