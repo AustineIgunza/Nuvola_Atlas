@@ -70,18 +70,21 @@ export function generateGridFeatures(zones: Zone[]) {
 export function generateDensityFeatures(zones: Zone[]) {
   return zones.flatMap((z) => {
     const count = Math.round((z.pillars.density / 100) * 20) + 5;
-    return Array.from({ length: count }, () => ({
+    return Array.from({ length: count }, (_, i) => ({
       type: "Feature" as const,
       geometry: {
         type: "Point" as const,
         coordinates: [
-          z.centroid[0] + (Math.random() - 0.5) * 0.04,
-          z.centroid[1] + (Math.random() - 0.5) * 0.03,
-        ],
+          z.centroid[0] + jitter(`${z.id}-dx-${i}`) * 0.04,
+          z.centroid[1] + jitter(`${z.id}-dy-${i}`) * 0.03,
+        ] as [number, number],
       },
       properties: {
-        weight: z.pillars.density / 100,
+        zoneId: z.id,
         zone: z.name,
+        density: z.pillars.density,
+        delta: z.deltas.density,
+        weight: z.pillars.density / 100,
       },
     }));
   });
@@ -136,6 +139,7 @@ export function generateWaterFeatures(zones: Zone[]) {
         geometry: { type: "LineString" as const, coordinates: [za.centroid, zb.centroid] },
         properties: {
           kind: "main",
+          zoneId: zb.id, // click deep-links to the destination (higher-need) zone
           name: `${za.name} → ${zb.name} main`,
           access: pb.accessPct,
           need: pb.needPct / 100,
@@ -151,6 +155,7 @@ export function generateWaterFeatures(zones: Zone[]) {
       geometry: { type: "Point" as const, coordinates: z.centroid },
       properties: {
         kind: "hub",
+        zoneId: z.id,
         zone: z.name,
         need: p.needPct / 100,
         needPct: p.needPct,
@@ -177,7 +182,7 @@ export function generateWaterFeatures(zones: Zone[]) {
           z.centroid[1] + jitter(`${z.id}-ty-${i}`) * 0.011,
         ] as [number, number],
       },
-      properties: { kind: "tap", zone: z.name, need: p.needPct / 100 },
+      properties: { kind: "tap", zoneId: z.id, zone: z.name, need: p.needPct / 100 },
     }));
     return [hub, ...tapFeatures];
   });
@@ -188,6 +193,7 @@ export function generateWaterFeatures(zones: Zone[]) {
     geometry: { type: "Point" as const, coordinates: p.marker },
     properties: {
       kind: "facility",
+      zoneId: p.zoneId,
       name: p.name,
       agency: p.agency,
       progress: p.progress,
@@ -216,67 +222,34 @@ export function generateMomentumFeatures() {
   }));
 }
 
-/** Safety & Security — drawn as real *corridors* (LineStrings) along the
- *  high-risk transit routes plus per-zone security posts, not one blob per zone.
- *  Corridors mirror the safety-corridor mapping from the county safety report:
- *  each is risk-colored by its worse endpoint (steel secure → gold watch → rose
- *  at-risk). A zone hub carries the safety profile for the popup + risk halo,
- *  and scattered posts stand in for lighting / patrol / security installations. */
+/** Safety & Security — drawn as a risk heatmap. Each zone contributes a stable
+ *  cluster of jittered points weighted by risk (100 - safety score), so the map
+ *  reads as a live heat surface: cool steel where security is strong, gold in
+ *  the watch zones, terracotta/rose over the at-risk wards. Higher-risk zones
+ *  also carry more points, so the heat both brightens and spreads. */
 export function generateSafetyFeatures(zones: Zone[]) {
-  const idx = new Map(zones.map((z, i) => [i, z] as const));
-  // High-risk transit corridors (zone-pair routes) from the safety corridor map.
-  const corridors = [
-    [4, 3], [16, 15], [14, 15], [15, 0], [6, 5], [9, 10], [14, 13], [4, 2],
-  ];
-
-  const corridorFeatures = corridors
-    .filter(([a, b]) => idx.has(a) && idx.has(b))
-    .map(([a, b]) => {
-      const za = idx.get(a)!;
-      const zb = idx.get(b)!;
-      const risk = Math.max(100 - za.pillars.safety, 100 - zb.pillars.safety);
-      return {
-        type: "Feature" as const,
-        geometry: { type: "LineString" as const, coordinates: [za.centroid, zb.centroid] },
-        properties: {
-          kind: "corridor",
-          name: `${za.name} ↔ ${zb.name} corridor`,
-          risk,
-        },
-      };
-    });
-
-  const nodeFeatures = zones.flatMap((z) => {
-    const risk = 100 - z.pillars.safety;
-    const hub = {
-      type: "Feature" as const,
-      geometry: { type: "Point" as const, coordinates: z.centroid },
-      properties: {
-        kind: "hub",
-        zone: z.name,
-        safety: z.pillars.safety,
-        risk,
-        delta: z.deltas.safety,
-      },
-    };
-    // Security posts — a small stable cluster per zone standing in for street
-    // lighting / patrol / installation points, risk-tinted like the hub.
-    const posts = 2 + Math.round((risk / 100) * 3);
-    const postFeatures = Array.from({ length: posts }, (_, i) => ({
+  return zones.flatMap((z) => {
+    const risk = 100 - z.pillars.safety; // 0..100 (higher = hotter)
+    const count = 10 + Math.round((risk / 100) * 22);
+    return Array.from({ length: count }, (_, i) => ({
       type: "Feature" as const,
       geometry: {
         type: "Point" as const,
         coordinates: [
-          z.centroid[0] + jitter(`${z.id}-sx-${i}`) * 0.016,
-          z.centroid[1] + jitter(`${z.id}-sy-${i}`) * 0.012,
+          z.centroid[0] + jitter(`${z.id}-hx-${i}`) * 0.03,
+          z.centroid[1] + jitter(`${z.id}-hy-${i}`) * 0.024,
         ] as [number, number],
       },
-      properties: { kind: "post", zone: z.name, risk },
+      properties: {
+        zoneId: z.id,
+        zone: z.name,
+        safety: z.pillars.safety,
+        risk,
+        delta: z.deltas.safety,
+        weight: risk / 100,
+      },
     }));
-    return [hub, ...postFeatures];
   });
-
-  return [...corridorFeatures, ...nodeFeatures];
 }
 
 export function addSourcesAndLayers(
@@ -393,6 +366,12 @@ export function addSourcesAndLayers(
       "circle-color": BRAND.steel, "circle-opacity": active.density ? 0.5 : 0,
       "circle-stroke-width": 1, "circle-stroke-color": BRAND.steel, "circle-stroke-opacity": active.density ? 0.3 : 0,
     },
+  });
+  // Invisible fat-circle hit surface so the density heatmap is clickable at any
+  // zoom (density-circles alone only appears above zoom 13).
+  m.addLayer({
+    id: "density-touch", type: "circle", source: "density",
+    paint: { "circle-radius": 38, "circle-color": "#000", "circle-opacity": 0 },
   });
 
   // --- Water & Sanitation (SDG 6) — drawn reticulation network ---
@@ -525,73 +504,32 @@ export function addSourcesAndLayers(
     paint: { "circle-radius": 20, "circle-color": "#000", "circle-opacity": 0 },
   });
 
-  // --- Safety & Security — drawn corridors + security posts ---
-  // High-risk transit corridors: soft glow under a risk-colored line.
+  // --- Safety & Security — risk heatmap ---
+  // Cool steel over secure wards, gold across watch corridors, terracotta/rose
+  // over at-risk zones.
   m.addLayer({
-    id: "safety-corridor-glow", type: "line", source: "safety",
-    filter: ["==", ["get", "kind"], "corridor"],
-    layout: { "line-cap": "round", "line-join": "round" },
+    id: "safety-heat", type: "heatmap", source: "safety",
     paint: {
-      "line-color": ["interpolate", ["linear"], ["get", "risk"], 20, BRAND.steel, 40, BRAND.gold, 60, BRAND.rose],
-      "line-width": ["interpolate", ["linear"], ["get", "risk"], 20, 6, 60, 14],
-      "line-blur": 6,
-      "line-opacity": active.safety ? 0.2 : 0,
+      "heatmap-weight": ["get", "weight"],
+      "heatmap-intensity": 1.3,
+      "heatmap-radius": 42,
+      "heatmap-opacity": active.safety ? 0.7 : 0,
+      "heatmap-color": [
+        "interpolate", ["linear"], ["heatmap-density"],
+        0, "rgba(178,58,46,0)",
+        0.15, "rgba(62,110,147,0.28)",
+        0.4, "rgba(224,168,46,0.55)",
+        0.7, "rgba(192,85,43,0.75)",
+        1, "rgba(178,58,46,0.9)",
+      ],
     },
   });
-  m.addLayer({
-    id: "safety-corridor", type: "line", source: "safety",
-    filter: ["==", ["get", "kind"], "corridor"],
-    layout: { "line-cap": "round", "line-join": "round" },
-    paint: {
-      "line-color": ["interpolate", ["linear"], ["get", "risk"], 20, BRAND.steel, 40, BRAND.gold, 60, BRAND.rose],
-      "line-width": ["interpolate", ["linear"], ["get", "risk"], 20, 2, 60, 4.5],
-      "line-opacity": active.safety ? 0.8 : 0,
-    },
-  });
-  // Zone hub risk halo (id kept for the animation + toggle hooks).
-  m.addLayer({
-    id: "safety-fill", type: "circle", source: "safety",
-    filter: ["==", ["get", "kind"], "hub"],
-    paint: {
-      "circle-radius": ["interpolate", ["linear"], ["get", "risk"], 20, 20, 60, 42],
-      "circle-color": ["interpolate", ["linear"], ["get", "risk"], 20, BRAND.steel, 40, BRAND.gold, 60, BRAND.rose],
-      "circle-blur": 0.9,
-      "circle-opacity": active.safety ? 0.2 : 0,
-    },
-  });
-  // Security posts — scattered lighting / patrol nodes.
-  m.addLayer({
-    id: "safety-post", type: "circle", source: "safety",
-    filter: ["==", ["get", "kind"], "post"],
-    paint: {
-      "circle-radius": ["interpolate", ["linear"], ["zoom"], 11, 2.5, 15, 5],
-      "circle-color": ["interpolate", ["linear"], ["get", "risk"], 20, BRAND.steel, 40, BRAND.gold, 60, BRAND.rose],
-      "circle-opacity": active.safety ? 0.65 : 0,
-      "circle-stroke-width": 1,
-      "circle-stroke-color": BRAND.bone,
-      "circle-stroke-opacity": active.safety ? 0.4 : 0,
-    },
-  });
-  m.addLayer({
-    id: "safety-core", type: "circle", source: "safety",
-    filter: ["==", ["get", "kind"], "hub"],
-    paint: {
-      "circle-radius": ["interpolate", ["linear"], ["get", "risk"], 20, 5, 60, 12],
-      "circle-color": ["interpolate", ["linear"], ["get", "risk"], 20, BRAND.steel, 40, BRAND.gold, 60, BRAND.rose],
-      "circle-opacity": active.safety ? 0.9 : 0,
-      "circle-stroke-width": 1.5,
-      "circle-stroke-color": BRAND.bone,
-      "circle-stroke-opacity": active.safety ? 0.6 : 0,
-    },
-  });
-  m.addLayer({
-    id: "safety-corridor-touch", type: "line", source: "safety",
-    filter: ["==", ["get", "kind"], "corridor"],
-    paint: { "line-color": "#000", "line-width": 18, "line-opacity": 0 },
-  });
+  // Heatmaps in Mapbox aren't hit-testable, so we stack an invisible fat-circle
+  // layer over the same scattered points. The circles overlap so any click
+  // inside a hot zone lands on a hit point that carries the zone's `zoneId`,
+  // which the popup hook uses to open the side panel.
   m.addLayer({
     id: "safety-touch", type: "circle", source: "safety",
-    filter: ["==", ["get", "kind"], "hub"],
-    paint: { "circle-radius": 22, "circle-color": "#000", "circle-opacity": 0 },
+    paint: { "circle-radius": 40, "circle-color": "#000", "circle-opacity": 0 },
   });
 }

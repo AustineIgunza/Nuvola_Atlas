@@ -60,11 +60,10 @@ export function useMapLayers(
         if (active.momentum && m.getLayer("momentum-glow")) {
           m.setPaintProperty("momentum-glow", "circle-opacity", 0.2 + Math.sin(t * 1.4) * 0.12);
         }
-        if (active.safety && m.getLayer("safety-fill")) {
-          m.setPaintProperty("safety-fill", "circle-opacity", 0.14 + Math.sin(t * 1.1) * 0.07);
-          if (m.getLayer("safety-corridor-glow")) {
-            m.setPaintProperty("safety-corridor-glow", "line-opacity", 0.15 + Math.sin(t * 1.25) * 0.1);
-          }
+        if (active.safety && m.getLayer("safety-heat")) {
+          // Gentle breath on the risk heatmap so at-risk zones read as *alive*.
+          m.setPaintProperty("safety-heat", "heatmap-opacity", 0.62 + Math.sin(t * 0.9) * 0.12);
+          m.setPaintProperty("safety-heat", "heatmap-radius", 40 + Math.sin(t * 0.7) * 6);
         }
       } catch {
         // layer may not exist during style swap
@@ -153,22 +152,9 @@ export function useMapLayers(
         m.setPaintProperty("momentum-core", "circle-opacity", activeLayers.momentum ? 0.92 : 0);
         m.setPaintProperty("momentum-core", "circle-stroke-opacity", activeLayers.momentum ? 0.6 : 0);
       }
-      if (m.getLayer("safety-corridor-glow")) {
-        m.setPaintProperty("safety-corridor-glow", "line-opacity", activeLayers.safety ? 0.2 : 0);
-      }
-      if (m.getLayer("safety-corridor")) {
-        m.setPaintProperty("safety-corridor", "line-opacity", activeLayers.safety ? 0.8 : 0);
-      }
-      if (m.getLayer("safety-fill")) {
-        m.setPaintProperty("safety-fill", "circle-opacity", activeLayers.safety ? 0.2 : 0);
-      }
-      if (m.getLayer("safety-post")) {
-        m.setPaintProperty("safety-post", "circle-opacity", activeLayers.safety ? 0.65 : 0);
-        m.setPaintProperty("safety-post", "circle-stroke-opacity", activeLayers.safety ? 0.4 : 0);
-      }
-      if (m.getLayer("safety-core")) {
-        m.setPaintProperty("safety-core", "circle-opacity", activeLayers.safety ? 0.9 : 0);
-        m.setPaintProperty("safety-core", "circle-stroke-opacity", activeLayers.safety ? 0.6 : 0);
+      if (m.getLayer("safety-heat")) {
+        m.setPaintProperty("safety-heat", "heatmap-opacity", activeLayers.safety ? 0.7 : 0);
+        m.setPaintProperty("safety-heat", "heatmap-radius", activeLayers.safety ? 42 : 0);
       }
     } catch {
       // layers may not exist during style swap
