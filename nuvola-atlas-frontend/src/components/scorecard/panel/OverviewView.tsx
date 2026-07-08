@@ -10,6 +10,7 @@ import Ring from "../Ring";
 import PillarBar from "../PillarBar";
 import ZoneRanking from "../ZoneRanking";
 import ActivityFeed from "../ActivityFeed";
+import ScoreHistoryChart from "./ScoreHistoryChart";
 import { Section, Chip, StatCell, SEVERITY_COLOR, IMPACT_COLOR, STATUS_STYLE } from "./bits";
 import type { PanelView } from "./panel-types";
 import type { Zone, PillarKey } from "@/types";
@@ -105,6 +106,9 @@ export default function OverviewView({ zone, onNavigate }: Props) {
           How this score is computed
         </div>
       </button>
+
+      {/* Score history — trend over selected range */}
+      <ScoreHistoryChart zoneId={zone.id} />
 
       {/* Pillars — each row drills into the pillar explainer */}
       <Section title="Pillars — tap to expand" className="px-1.5 py-1">

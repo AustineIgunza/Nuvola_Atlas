@@ -6,6 +6,9 @@ import type {
   HistoryPoint,
   ActivityEntry,
   PillarDef,
+  ZoneHistory,
+  ZoneHistoryPoint,
+  HistoryRange,
 } from "@/types";
 
 export const ZONES: Zone[] = [
@@ -788,6 +791,69 @@ export const HISTORY: HistoryPoint[] = [
   { month: "Apr '26", overallAvg: 68 },
   { month: "May '26", overallAvg: 69 },
 ];
+
+// Deterministic per-zone PRNG (mulberry32) so the generated history is
+// stable across renders — a Zone card that opens twice shouldn't jitter.
+function seededRandom(seed: number): () => number {
+  let s = seed >>> 0;
+  return () => {
+    s = (s + 0x6d2b79f5) >>> 0;
+    let t = s;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function hashZoneId(id: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < id.length; i++) {
+    h ^= id.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+function clamp(n: number, min = 0, max = 100): number {
+  return Math.max(min, Math.min(max, n));
+}
+
+const RANGE_CONFIG: Record<HistoryRange, { points: number; stepMs: number }> = {
+  day: { points: 24, stepMs: 60 * 60 * 1000 },
+  week: { points: 7, stepMs: 24 * 60 * 60 * 1000 },
+  month: { points: 30, stepMs: 24 * 60 * 60 * 1000 },
+};
+
+export function generateZoneHistory(zoneId: string, range: HistoryRange): ZoneHistory {
+  const zone = ZONES.find((z) => z.id === zoneId);
+  if (!zone) return { range, points: [] };
+
+  const { points: n, stepMs } = RANGE_CONFIG[range];
+  const rand = seededRandom(hashZoneId(zoneId));
+  const now = Date.now();
+
+  let social = zone.pillars.social;
+  let safety = zone.pillars.safety;
+  let density = zone.pillars.density;
+  let infra = zone.pillars.infra;
+
+  const points: ZoneHistoryPoint[] = [];
+  for (let i = n - 1; i >= 0; i--) {
+    social = clamp(social + Math.round((rand() - 0.5) * 4));
+    safety = clamp(safety + Math.round((rand() - 0.5) * 4));
+    density = clamp(density + Math.round((rand() - 0.5) * 4));
+    infra = clamp(infra + Math.round((rand() - 0.5) * 4));
+
+    const score = Math.round((social + safety + density + infra) / 4);
+    points.push({
+      t: new Date(now - i * stepMs).toISOString(),
+      score,
+      pillars: { social, safety, density, infra },
+    });
+  }
+
+  return { range, points };
+}
 
 export const ACTIVITIES: Record<string, ActivityEntry[]> = {
   westlands: [

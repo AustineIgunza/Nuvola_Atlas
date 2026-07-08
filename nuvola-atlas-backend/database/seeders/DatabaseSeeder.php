@@ -19,5 +19,12 @@ class DatabaseSeeder extends Seeder
             HistorySeeder::class,
             ActivitySeeder::class,
         ]);
+
+        // Backfill fake time-series only in non-prod so the trend chart renders
+        // on a fresh clone; prod fills the table naturally via the hourly
+        // atlas:recalculate-scores cron.
+        if (app()->environment(['local', 'testing', 'development'])) {
+            $this->call(ZoneScoreSnapshotSeeder::class);
+        }
     }
 }

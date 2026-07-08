@@ -7,6 +7,7 @@ import {
   HISTORY,
   ACTIVITIES,
   METHODOLOGY,
+  generateZoneHistory,
 } from "./fixtures";
 import type {
   Zone,
@@ -16,6 +17,8 @@ import type {
   HistoryPoint,
   ActivityEntry,
   PillarDef,
+  ZoneHistory,
+  HistoryRange,
 } from "@/types";
 
 // Mock state persists to localStorage so a page reload doesn't wipe a
@@ -118,6 +121,11 @@ export const mockApi = {
   getHistory: async (): Promise<HistoryPoint[]> => {
     await delay();
     return structuredClone(HISTORY);
+  },
+
+  getZoneHistory: async (id: string, range: HistoryRange = "week"): Promise<ZoneHistory> => {
+    await delay();
+    return generateZoneHistory(id, range);
   },
 
   getMethodology: async (): Promise<{ pillars: PillarDef[] }> => {

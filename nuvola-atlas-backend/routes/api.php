@@ -15,6 +15,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\VitalityController;
 use App\Http\Controllers\ZoneController;
+use App\Http\Controllers\ZoneHistoryController;
 use Illuminate\Support\Facades\Route;
 
 // Unversioned operational endpoints
@@ -32,6 +33,7 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
         Route::get('zones', [ZoneController::class, 'index']);
         Route::get('zones/{id}', [ZoneController::class, 'show']);
         Route::get('zones/{id}/layers', [ZoneController::class, 'layers']);
+        Route::get('zones/{id}/history', [ZoneHistoryController::class, 'show']);
 
         Route::get('projects', [ProjectController::class, 'index']);
         Route::get('projects/{id}', [ProjectController::class, 'show']);

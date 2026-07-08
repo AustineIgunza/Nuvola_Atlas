@@ -25,6 +25,7 @@ export function useLiveData(): void {
           queryClient.invalidateQueries({ queryKey: ["zones"] });
           if (event.zoneId) {
             queryClient.invalidateQueries({ queryKey: ["history", event.zoneId] });
+            queryClient.invalidateQueries({ queryKey: ["zoneHistory", event.zoneId] });
           }
           break;
         case "alerts":

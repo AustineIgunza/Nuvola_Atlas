@@ -7,6 +7,8 @@ import type {
   HistoryPoint,
   ActivityEntry,
   PillarDef,
+  ZoneHistory,
+  HistoryRange,
 } from "@/types";
 
 async function get<T>(path: string): Promise<T> {
@@ -48,6 +50,9 @@ export const remoteApi = {
   },
 
   getHistory: () => get<HistoryPoint[]>("/history"),
+
+  getZoneHistory: (id: string, range: HistoryRange = "week") =>
+    get<ZoneHistory>(`/zones/${id}/history?range=${range}`),
 
   getMethodology: () => get<{ pillars: PillarDef[] }>("/vitality/methodology"),
 

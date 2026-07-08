@@ -89,6 +89,19 @@ export interface HistoryPoint {
   overallAvg: number;
 }
 
+export type HistoryRange = "day" | "week" | "month";
+
+export interface ZoneHistoryPoint {
+  t: string;
+  score: number;
+  pillars: PillarScores;
+}
+
+export interface ZoneHistory {
+  range: HistoryRange;
+  points: ZoneHistoryPoint[];
+}
+
 export interface ActivityEntry {
   id: string;
   zoneId: string;

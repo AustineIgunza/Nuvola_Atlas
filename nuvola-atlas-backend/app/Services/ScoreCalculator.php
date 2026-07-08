@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Events\ZoneScoreUpdated;
 use App\Models\Zone;
+use App\Models\ZoneScoreSnapshot;
 
 class ScoreCalculator
 {
@@ -62,6 +63,16 @@ class ScoreCalculator
         $zone->score = $this->calculateScore($zone);
         $zone->last_sync_min = 0;
         $zone->save();
+
+        ZoneScoreSnapshot::create([
+            'zone_id' => $zone->id,
+            'captured_at' => now(),
+            'score' => $zone->score,
+            'pillar_social' => $zone->pillar_social,
+            'pillar_safety' => $zone->pillar_safety,
+            'pillar_density' => $zone->pillar_density,
+            'pillar_infra' => $zone->pillar_infra,
+        ]);
 
         if ($broadcast) {
             event(new ZoneScoreUpdated($zone));
