@@ -102,6 +102,18 @@ export interface ZoneHistory {
   points: ZoneHistoryPoint[];
 }
 
+export interface ZoneForecastPoint {
+  t: string;
+  score: number;
+  lower: number;
+  upper: number;
+}
+
+export interface ZoneForecast {
+  horizon: number;
+  points: ZoneForecastPoint[];
+}
+
 export interface ActivityEntry {
   id: string;
   zoneId: string;

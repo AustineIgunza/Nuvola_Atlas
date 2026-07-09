@@ -9,6 +9,7 @@ import type {
   PillarDef,
   ZoneHistory,
   HistoryRange,
+  ZoneForecast,
   ChatConversation,
   ChatMessage,
 } from "@/types";
@@ -55,6 +56,9 @@ export const remoteApi = {
 
   getZoneHistory: (id: string, range: HistoryRange = "week") =>
     get<ZoneHistory>(`/zones/${id}/history?range=${range}`),
+
+  getZoneForecast: (id: string, horizon = 14) =>
+    get<ZoneForecast>(`/zones/${id}/forecast?horizon=${horizon}`),
 
   listConversations: () => get<ChatConversation[]>(`/chat/conversations`),
   createConversation: async (data: { title?: string; zoneId?: string | null }): Promise<ChatConversation> => {

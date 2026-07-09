@@ -19,6 +19,8 @@ import type {
   PillarDef,
   ZoneHistory,
   HistoryRange,
+  ZoneForecast,
+  ZoneForecastPoint,
   ChatConversation,
   ChatMessage,
 } from "@/types";
@@ -132,6 +134,29 @@ export const mockApi = {
   getZoneHistory: async (id: string, range: HistoryRange = "week"): Promise<ZoneHistory> => {
     await delay();
     return generateZoneHistory(id, range);
+  },
+
+  getZoneForecast: async (id: string, horizon = 14): Promise<ZoneForecast> => {
+    await delay();
+    const zone = ZONES.find((z) => z.id === id);
+    const base = zone?.score ?? 65;
+    const now = new Date();
+    const points: ZoneForecastPoint[] = [];
+    for (let k = 1; k <= horizon; k++) {
+      // Small deterministic trend + widening band with horizon.
+      const trend = base + Math.sin(k / 3) * 1.5 + k * 0.15;
+      const band = 1.5 * Math.sqrt(k);
+      const clamp = (n: number) => Math.max(0, Math.min(100, n));
+      const d = new Date(now);
+      d.setDate(d.getDate() + k);
+      points.push({
+        t: d.toISOString().slice(0, 10),
+        score: Math.round(clamp(trend)),
+        lower: Math.round(clamp(trend - band)),
+        upper: Math.round(clamp(trend + band)),
+      });
+    }
+    return { horizon, points };
   },
 
   // Chat CRUD (send/stream is handled directly by useChatStream in mock mode

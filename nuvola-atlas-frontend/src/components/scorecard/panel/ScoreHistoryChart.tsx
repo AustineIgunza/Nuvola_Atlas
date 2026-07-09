@@ -4,12 +4,15 @@ import {
   AreaChart,
   CartesianGrid,
   Line,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import { TrendingUp } from "lucide-react";
 import { useZoneHistory } from "@/hooks/useZoneHistory";
+import { useZoneForecast } from "@/hooks/useZoneForecast";
 import { BRAND, PILLAR_COLORS, PILLAR_SHORT } from "@/lib/scoreColor";
 import type { HistoryRange, PillarKey } from "@/types";
 import { Section } from "./bits";
@@ -42,12 +45,14 @@ interface Props {
 export default function ScoreHistoryChart({ zoneId }: Props) {
   const [range, setRange] = useState<HistoryRange>("week");
   const [overlays, setOverlays] = useState<Set<PillarKey>>(new Set());
+  const [forecastOn, setForecastOn] = useState(false);
   const { data, isLoading } = useZoneHistory(zoneId, range);
+  const { data: forecast } = useZoneForecast(zoneId, 14, forecastOn);
   const reduceMotion = useMemo(prefersReducedMotion, []);
 
   const chartData = useMemo(() => {
     if (!data) return [];
-    return data.points.map((p) => ({
+    const historical = data.points.map((p) => ({
       t: p.t,
       label: formatTick(p.t, range),
       score: p.score,
@@ -55,10 +60,43 @@ export default function ScoreHistoryChart({ zoneId }: Props) {
       safety: p.pillars.safety,
       density: p.pillars.density,
       infra: p.pillars.infra,
+      forecast: undefined as number | undefined,
+      lower: undefined as number | undefined,
+      upper: undefined as number | undefined,
     }));
-  }, [data, range]);
+
+    if (!forecastOn || !forecast) return historical;
+
+    // Anchor: last historical point becomes the seed for the forecast line
+    // so the two segments connect visually.
+    const anchor = historical[historical.length - 1];
+    const projected = forecast.points.map((p, i) => ({
+      t: p.t,
+      label: formatTick(p.t, range === "day" ? "week" : range),
+      score: undefined as number | undefined,
+      social: undefined as number | undefined,
+      safety: undefined as number | undefined,
+      density: undefined as number | undefined,
+      infra: undefined as number | undefined,
+      forecast: p.score,
+      lower: p.lower,
+      upper: p.upper,
+      __anchor: i === 0 && anchor ? anchor.score : undefined,
+    }));
+
+    if (anchor) {
+      // Bridge the two segments by lifting the anchor's `forecast` value
+      // so Recharts draws a continuous line into the forecast area.
+      anchor.forecast = anchor.score;
+      anchor.lower = anchor.score;
+      anchor.upper = anchor.score;
+    }
+
+    return [...historical, ...projected];
+  }, [data, range, forecastOn, forecast]);
 
   const empty = !isLoading && chartData.length < 2;
+  const dividerLabel = data && data.points.length > 0 ? formatTick(data.points[data.points.length - 1].t, range) : null;
 
   const toggleOverlay = (k: PillarKey) => {
     setOverlays((prev) => {
@@ -73,21 +111,36 @@ export default function ScoreHistoryChart({ zoneId }: Props) {
     <Section
       title="Score history"
       action={
-        <div className="flex items-center gap-0.5 rounded-full bg-[rgba(255,255,255,0.04)] border border-border p-0.5">
-          {RANGES.map((r) => (
-            <button
-              key={r.key}
-              onClick={() => setRange(r.key)}
-              className={`px-2 py-0.5 rounded-full text-[9.5px] font-medium transition-colors ${
-                range === r.key
-                  ? "bg-[rgba(255,255,255,0.14)] text-ink-1"
-                  : "text-ink-4 hover:text-ink-2"
-              }`}
-              aria-pressed={range === r.key}
-            >
-              {r.label}
-            </button>
-          ))}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setForecastOn((v) => !v)}
+            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-medium transition-colors border ${
+              forecastOn
+                ? "text-ink-1 bg-[rgba(31,138,120,0.14)] border-[rgba(31,138,120,0.32)]"
+                : "text-ink-4 hover:text-ink-2 border-border"
+            }`}
+            aria-pressed={forecastOn}
+            title="Toggle 14-day forecast"
+          >
+            <TrendingUp size={9} />
+            Forecast
+          </button>
+          <div className="flex items-center gap-0.5 rounded-full bg-[rgba(255,255,255,0.04)] border border-border p-0.5">
+            {RANGES.map((r) => (
+              <button
+                key={r.key}
+                onClick={() => setRange(r.key)}
+                className={`px-2 py-0.5 rounded-full text-[9.5px] font-medium transition-colors ${
+                  range === r.key
+                    ? "bg-[rgba(255,255,255,0.14)] text-ink-1"
+                    : "text-ink-4 hover:text-ink-2"
+                }`}
+                aria-pressed={range === r.key}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
         </div>
       }
     >
@@ -105,6 +158,10 @@ export default function ScoreHistoryChart({ zoneId }: Props) {
                 <linearGradient id="scoreFill" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor={BRAND.teal} stopOpacity={0.35} />
                   <stop offset="100%" stopColor={BRAND.teal} stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="forecastBand" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={BRAND.gold} stopOpacity={0.22} />
+                  <stop offset="100%" stopColor={BRAND.gold} stopOpacity={0.05} />
                 </linearGradient>
               </defs>
               <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} />
@@ -153,6 +210,45 @@ export default function ScoreHistoryChart({ zoneId }: Props) {
                   isAnimationActive={!reduceMotion}
                 />
               ))}
+              {forecastOn && (
+                <>
+                  {dividerLabel && (
+                    <ReferenceLine
+                      x={dividerLabel}
+                      stroke="rgba(224,168,46,0.35)"
+                      strokeDasharray="2 2"
+                      label={{ value: "today", fill: BRAND.gold, fontSize: 8, position: "top" }}
+                    />
+                  )}
+                  <Area
+                    type="monotone"
+                    dataKey="upper"
+                    stroke="none"
+                    fill="url(#forecastBand)"
+                    isAnimationActive={!reduceMotion}
+                    connectNulls
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="lower"
+                    stroke="none"
+                    fill="rgba(11,34,53,0.85)"
+                    fillOpacity={1}
+                    isAnimationActive={!reduceMotion}
+                    connectNulls
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="forecast"
+                    stroke={BRAND.gold}
+                    strokeWidth={1.2}
+                    strokeDasharray="4 3"
+                    dot={false}
+                    isAnimationActive={!reduceMotion}
+                    connectNulls
+                  />
+                </>
+              )}
             </AreaChart>
           </ResponsiveContainer>
         )}
