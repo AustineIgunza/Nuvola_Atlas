@@ -123,3 +123,34 @@ export interface PillarDef {
   description: string;
   subMetrics: PillarSubMetric[];
 }
+
+export type ChatRole = "user" | "assistant" | "system";
+export type ChatIntent =
+  | "trend"
+  | "comparison"
+  | "diagnostic"
+  | "summary"
+  | "distribution"
+  | "composition"
+  | "methodology"
+  | "unrelated";
+
+export interface ChatMessage {
+  id: string;
+  role: ChatRole;
+  content: string;
+  intent?: ChatIntent;
+  sql?: string;
+  resultRows?: Array<Record<string, unknown>>;
+  followups?: string[];
+  createdAt: string;
+  streaming?: boolean;
+}
+
+export interface ChatConversation {
+  id: string;
+  title: string | null;
+  zoneId: string | null;
+  updatedAt: string;
+  createdAt: string;
+}

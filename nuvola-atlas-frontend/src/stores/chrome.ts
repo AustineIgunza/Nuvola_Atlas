@@ -12,6 +12,7 @@ interface ChromeState {
   panelOpen: boolean;
   searchOpen: boolean;
   methodOpen: boolean;
+  chatOpen: boolean;
   sidebarCollapsed: boolean;
   // Cross-page "quick view" project overlay — set when the user picks a
   // project result from SearchModal so the current page doesn't have to
@@ -26,6 +27,9 @@ interface ChromeState {
   closeSearch: () => void;
   openMethod: () => void;
   closeMethod: () => void;
+  toggleChat: () => void;
+  openChat: () => void;
+  closeChat: () => void;
   toggleSidebar: () => void;
   openQuickView: (projectId: string) => void;
   closeQuickView: () => void;
@@ -36,6 +40,7 @@ export const useChromeStore = create<ChromeState>((set) => ({
   panelOpen: false,
   searchOpen: false,
   methodOpen: false,
+  chatOpen: false,
   sidebarCollapsed: false,
   quickViewProjectId: null,
   autoRefresh: loadAutoRefresh(),
@@ -47,6 +52,9 @@ export const useChromeStore = create<ChromeState>((set) => ({
   closeSearch: () => set({ searchOpen: false }),
   openMethod: () => set({ methodOpen: true }),
   closeMethod: () => set({ methodOpen: false }),
+  toggleChat: () => set((s) => ({ chatOpen: !s.chatOpen })),
+  openChat: () => set({ chatOpen: true }),
+  closeChat: () => set({ chatOpen: false }),
   toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
   openQuickView: (projectId) => set({ quickViewProjectId: projectId }),
   closeQuickView: () => set({ quickViewProjectId: null }),

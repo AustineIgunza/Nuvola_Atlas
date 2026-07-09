@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Bell, Settings, Layers, Check, Sun, Moon } from "lucide-react";
+import { Search, Bell, Settings, Layers, Check, Sun, Moon, Sparkles } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { springSettle } from "@/lib/motion";
 import { useUIStore } from "@/stores/ui";
+import { useChromeStore } from "@/stores/chrome";
 import { useThemeStore } from "@/stores/theme";
 import {
   BASEMAP_STYLES,
@@ -37,6 +38,8 @@ export default function TopBar() {
   const location = useLocation();
   const navigate = useNavigate();
   const openSearch = useUIStore((s) => s.openSearch);
+  const chatOpen = useChromeStore((s) => s.chatOpen);
+  const toggleChat = useChromeStore((s) => s.toggleChat);
   const autoRefresh = useUIStore((s) => s.autoRefresh);
   const setAutoRefresh = useUIStore((s) => s.setAutoRefresh);
   const isAtlas = location.pathname === "/atlas";
@@ -191,6 +194,26 @@ export default function TopBar() {
       </div>
 
       <div className="flex items-center gap-1">
+        {/* Ask Navuuna (RAG chat) — only on the Atlas route where the panel
+             has a home. On other routes it would just be dead UI. */}
+        {isAtlas && (
+          <motion.button
+            onClick={toggleChat}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.92 }}
+            className={cn(
+              "w-9 h-9 flex items-center justify-center rounded-control transition-colors",
+              chatOpen
+                ? "text-ink-1 bg-[rgba(31,138,120,0.14)]"
+                : "text-ink-3 hover:text-ink-2 hover:bg-[rgba(255,255,255,0.05)]"
+            )}
+            aria-label={chatOpen ? "Close Navuuna assistant" : "Open Navuuna assistant"}
+            aria-pressed={chatOpen}
+          >
+            <Sparkles size={16} />
+          </motion.button>
+        )}
+
         {/* Search button */}
         <motion.button
           onClick={openSearch}

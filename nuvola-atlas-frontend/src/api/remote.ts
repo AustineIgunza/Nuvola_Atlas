@@ -9,6 +9,8 @@ import type {
   PillarDef,
   ZoneHistory,
   HistoryRange,
+  ChatConversation,
+  ChatMessage,
 } from "@/types";
 
 async function get<T>(path: string): Promise<T> {
@@ -53,6 +55,25 @@ export const remoteApi = {
 
   getZoneHistory: (id: string, range: HistoryRange = "week") =>
     get<ZoneHistory>(`/zones/${id}/history?range=${range}`),
+
+  listConversations: () => get<ChatConversation[]>(`/chat/conversations`),
+  createConversation: async (data: { title?: string; zoneId?: string | null }): Promise<ChatConversation> => {
+    const res = await fetch(`${BASE}/chat/conversations`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders() },
+      body: JSON.stringify(data),
+    });
+    return handleResponse<ChatConversation>(res);
+  },
+  deleteConversation: async (id: string): Promise<{ ok: true }> => {
+    const res = await fetch(`${BASE}/chat/conversations/${id}`, {
+      method: "DELETE",
+      headers: authHeaders(),
+    });
+    if (!res.ok) throw new Error(`Delete failed (${res.status}).`);
+    return { ok: true as const };
+  },
+  getConversationMessages: (id: string) => get<ChatMessage[]>(`/chat/conversations/${id}/messages`),
 
   getMethodology: () => get<{ pillars: PillarDef[] }>("/vitality/methodology"),
 

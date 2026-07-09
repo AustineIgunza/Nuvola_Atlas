@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\ZoneLayer;
 use App\Observers\AuditableObserver;
 use App\Observers\ZoneLayerObserver;
+use App\Services\Chat\SqlGuard;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -21,7 +22,14 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        // SqlGuard's allowlist + limits come from config/ai.php. Bind
+        // once here so the pipeline services can resolve it via the
+        // container without re-reading config on every request.
+        $this->app->singleton(SqlGuard::class, fn () => new SqlGuard(
+            allowedTables: config('ai.allowed_tables', []),
+            defaultLimit: (int) config('ai.chat.max_result_rows', 200),
+            hardLimit: (int) config('ai.chat.hard_limit', 1000),
+        ));
     }
 
     public function boot(): void
@@ -60,6 +68,15 @@ class AppServiceProvider extends ServiceProvider
         // real user fat-fingering a password or reset code.
         RateLimiter::for('auth', function (Request $request) {
             return Limit::perMinutes(10, 10)->by($request->ip());
+        });
+
+        // Chat throttle — every LLM call costs money. Default 10/min per
+        // user (or per IP for anonymous, though the chat routes are all
+        // behind auth:sanctum so that fallback only matters if middleware
+        // ordering changes). Configurable via AI_CHAT_RATE_LIMIT.
+        RateLimiter::for('chat', function (Request $request) {
+            return Limit::perMinute((int) config('ai.chat.rate_limit_per_minute', 10))
+                ->by($request->user()?->id ?: $request->ip());
         });
 
         // Role gates — controllers/blade can call `Gate::allows('edit-internal')`

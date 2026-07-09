@@ -8,6 +8,7 @@ use App\Http\Controllers\AdminMetricsController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AlertController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\ProjectController;
@@ -59,6 +60,16 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
     Route::middleware(['auth:sanctum', 'partner.context'])->group(function () {
         Route::get('auth/me', [AuthController::class, 'me']);
         Route::post('auth/sign-out', [AuthController::class, 'signOut']);
+
+        // RAG chatbot — throttled per user via the 'chat' limiter (see
+        // AppServiceProvider). Streaming send endpoint uses SSE and cannot
+        // be HTTP-cached (that's why chat routes live outside the
+        // http.cache:300 block above).
+        Route::get('chat/conversations', [ChatController::class, 'index'])->middleware('throttle:api');
+        Route::post('chat/conversations', [ChatController::class, 'store'])->middleware('throttle:api');
+        Route::delete('chat/conversations/{id}', [ChatController::class, 'destroy'])->middleware('throttle:api');
+        Route::get('chat/conversations/{id}/messages', [ChatController::class, 'messages'])->middleware('throttle:api');
+        Route::post('chat/conversations/{id}/messages', [ChatController::class, 'send'])->middleware('throttle:chat');
 
         // Email-2FA self-service: any authenticated user can enrol; admins
         // are *required* to enrol before they can reach /admin/* (see

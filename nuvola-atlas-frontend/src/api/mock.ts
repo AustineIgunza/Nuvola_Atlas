@@ -19,6 +19,8 @@ import type {
   PillarDef,
   ZoneHistory,
   HistoryRange,
+  ChatConversation,
+  ChatMessage,
 } from "@/types";
 
 // Mock state persists to localStorage so a page reload doesn't wipe a
@@ -48,6 +50,10 @@ function save<T>(key: string, value: T[]): void {
 
 let alerts = load<typeof ALERTS[number]>(ALERTS_KEY, ALERTS);
 let reports = load<typeof REPORTS[number]>(REPORTS_KEY, REPORTS);
+
+const CHAT_CONVS_KEY = "nuvola_mock_chat_convs_v1";
+let chatConversations = load<ChatConversation>(CHAT_CONVS_KEY, []);
+const chatMessages: Record<string, ChatMessage[]> = {};
 
 export const mockApi = {
   getZones: async (): Promise<Zone[]> => {
@@ -126,6 +132,38 @@ export const mockApi = {
   getZoneHistory: async (id: string, range: HistoryRange = "week"): Promise<ZoneHistory> => {
     await delay();
     return generateZoneHistory(id, range);
+  },
+
+  // Chat CRUD (send/stream is handled directly by useChatStream in mock mode
+  // — no over-the-wire simulation needed here.)
+  listConversations: async (): Promise<ChatConversation[]> => {
+    await delay();
+    return structuredClone(chatConversations);
+  },
+  createConversation: async (data: { title?: string; zoneId?: string | null }): Promise<ChatConversation> => {
+    await delay();
+    const c: ChatConversation = {
+      id: crypto.randomUUID(),
+      title: data.title ?? null,
+      zoneId: data.zoneId ?? null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    chatConversations = [c, ...chatConversations];
+    save(CHAT_CONVS_KEY, chatConversations);
+    chatMessages[c.id] = [];
+    return c;
+  },
+  deleteConversation: async (id: string): Promise<{ ok: true }> => {
+    await delay();
+    chatConversations = chatConversations.filter((c) => c.id !== id);
+    save(CHAT_CONVS_KEY, chatConversations);
+    delete chatMessages[id];
+    return { ok: true as const };
+  },
+  getConversationMessages: async (id: string): Promise<ChatMessage[]> => {
+    await delay();
+    return structuredClone(chatMessages[id] ?? []);
   },
 
   getMethodology: async (): Promise<{ pillars: PillarDef[] }> => {

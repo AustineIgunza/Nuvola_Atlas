@@ -99,6 +99,30 @@ return [
             'sslmode' => env('DB_SSLMODE', 'prefer'),
         ],
 
+        // Read-only connection for the RAG chat pipeline. Uses a
+        // `nuvola_chat_ro` role that has SELECT on the allowlisted tables
+        // only (see 2026_07_09_000001_create_chat_readonly_role migration).
+        // Belt-and-suspenders on top of the SqlGuard so that even if a
+        // guard rewrite misses something, the DB refuses the write.
+        //
+        // In `testing` env the password env var is unset and Laravel falls
+        // back to the primary DB_USERNAME/DB_PASSWORD via the fallbacks
+        // below, which is fine because phpunit runs isolated.
+        'pgsql_chat' => [
+            'driver' => 'pgsql',
+            'url' => env('DB_URL'),
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '5432'),
+            'database' => env('DB_DATABASE', 'laravel'),
+            'username' => env('DB_CHAT_RO_USER', env('DB_USERNAME', 'root')),
+            'password' => env('DB_CHAT_RO_PASSWORD', env('DB_PASSWORD', '')),
+            'charset' => env('DB_CHARSET', 'utf8'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => env('DB_SSLMODE', 'prefer'),
+        ],
+
         'sqlsrv' => [
             'driver' => 'sqlsrv',
             'url' => env('DB_URL'),
