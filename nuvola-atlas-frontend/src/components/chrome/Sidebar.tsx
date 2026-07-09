@@ -131,22 +131,22 @@ export default function Sidebar() {
                 whileTap={{ scale: 0.97 }}
                 transition={springSettle}
                 className={cn(
-                  "w-full flex items-center gap-3 h-10 px-3 rounded-control text-[13px] font-medium transition-colors relative overflow-hidden",
+                  "w-full flex items-center gap-3 h-10 px-3 rounded-control text-[13.5px] transition-colors relative overflow-hidden",
                   active
-                    ? "text-accent"
-                    : "text-ink-3 hover:text-ink-2",
+                    ? "text-accent font-bold"
+                    : "text-ink-2 hover:text-ink-1 font-semibold",
                 )}
               >
                 {active && (
                   <motion.div
                     layoutId="nav-active"
-                    className="absolute inset-0 bg-[rgba(192,85,43,0.12)] rounded-control nav-glow"
+                    className="absolute inset-0 bg-[rgba(192,85,43,0.14)] rounded-control nav-glow"
                     transition={springSettle}
                   />
                 )}
-                <Icon size={17} className="shrink-0 relative z-10" />
+                <Icon size={17} strokeWidth={active ? 2.4 : 2} className="shrink-0 relative z-10" />
                 {(!collapsed || isMobile) && (
-                  <span className="relative z-10">{label}</span>
+                  <span className="relative z-10 tracking-[-0.005em]">{label}</span>
                 )}
               </motion.button>
             );

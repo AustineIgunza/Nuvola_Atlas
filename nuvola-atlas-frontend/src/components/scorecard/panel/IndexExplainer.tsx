@@ -90,8 +90,9 @@ export default function IndexExplainer({ zone, onNavigate }: Props) {
           })}
         </div>
         <p className="mt-2 text-[9.5px] text-ink-4 leading-[1.5]">
-          The four pillars combine into the composite; each pillar aggregates weighted sub-metrics
-          from live public feeds.
+          The four pillars combine into the composite readiness score; each pillar synthesizes sub-metrics
+          from live public feeds. The composite methodology is proprietary — pillar definitions and
+          data sources are open.
         </p>
       </Section>
 

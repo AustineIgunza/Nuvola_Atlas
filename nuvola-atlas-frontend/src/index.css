@@ -388,6 +388,25 @@ html[data-theme="light"] .nav-glow {
   box-shadow: 0 0 16px rgba(192, 85, 43, 0.18), inset 0 0 12px rgba(192, 85, 43, 0.06);
 }
 
+/* Recharts tooltip: components pass an inline dark navy background that's
+   invisible on a light theme. Force a bone-toned card in light mode via
+   attribute selector. Recharts renders the container div with class
+   `recharts-default-tooltip` / `recharts-tooltip-wrapper`. */
+html[data-theme="light"] .recharts-default-tooltip {
+  background: rgba(244, 239, 230, 0.97) !important;
+  border-color: rgba(26, 26, 26, 0.12) !important;
+  color: #1a1a1a !important;
+}
+html[data-theme="light"] .recharts-default-tooltip .recharts-tooltip-label {
+  color: rgba(26, 26, 26, 0.75) !important;
+}
+
+/* Chat panel + scorecard export dropdown use a hardcoded navy backdrop
+   (rgba(15,26,38,x)) that only reads on a dark surface. Flip to bone. */
+html[data-theme="light"] .bg-\[rgba\(15\,26\,38\,0\.94\)\] {
+  background-color: rgba(244, 239, 230, 0.97);
+}
+
 /* Scrollbar tweak for light */
 html[data-theme="light"] ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.12); }
 html[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.22); }

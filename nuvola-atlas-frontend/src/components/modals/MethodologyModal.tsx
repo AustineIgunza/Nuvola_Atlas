@@ -61,7 +61,7 @@ export default function MethodologyModal() {
               transition={{ delay: 0.15 }}
               className="text-[13px] text-ink-3 mb-4 leading-relaxed"
             >
-              The UE Vitality Index produces a single 0-100 readiness score per sub-county, built from four equally-weighted pillars.
+              The UE Vitality Index produces a single 0-100 readiness score per sub-county, built from four pillars.
               Each pillar combines several sub-metrics sourced from Kenyan government data, international indices, and ground-truth
               verification carried on the Asase layer — Navuuna's live infrastructure map.
             </motion.p>
@@ -75,11 +75,15 @@ export default function MethodologyModal() {
               <div className="text-[10px] font-semibold text-ink-4 uppercase tracking-[0.08em] mb-1.5">
                 Freedom Index — the analytical core
               </div>
-              <div className="font-mono text-[13px] text-ink-1 tracking-[-0.01em]">
-                F = Σ (Wellbeing + Safety + Participation) / Population Density
-              </div>
-              <p className="text-[11.5px] text-ink-4 mt-1.5 leading-relaxed">
-                The Vitality Score is the Freedom Index made operational: verified ground truth in, one comparable readiness signal out.
+              <p className="text-[12px] text-ink-2 leading-relaxed">
+                The Vitality Score operationalizes Amartya Sen's <em>Development as Freedom</em>: readiness as the expansion of
+                real freedoms — economic opportunity, safety, social wellbeing, and environmental security. Verified
+                ground-truth in, one comparable readiness signal out.
+              </p>
+              <p className="text-[11px] text-ink-4 mt-2 leading-relaxed">
+                The precise weighting and combination logic across pillars is proprietary to Navuuna and validated
+                against publicly documented data feeds. Pillar definitions and data sources are open; the composite
+                methodology is not.
               </p>
             </motion.div>
 

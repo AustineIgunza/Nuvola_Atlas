@@ -113,9 +113,6 @@ export default function PillarExplainer({ zone, pillarKey, onNavigate }: Props) 
                   <span className="flex-1 min-w-0 text-[11px] text-ink-2 font-medium truncate">
                     {sm.label}
                   </span>
-                  <span className="text-[9px] text-ink-4 shrink-0">
-                    ({Math.round(sm.weight * 100)}%)
-                  </span>
                   <span className="text-[11.5px] font-semibold tabular-nums shrink-0" style={{ color }}>
                     {sm.score}
                   </span>
@@ -145,11 +142,7 @@ export default function PillarExplainer({ zone, pillarKey, onNavigate }: Props) 
                           {methodDesc ?? sm.detail}
                         </p>
                         <p className="text-[10px] text-ink-4 leading-[1.5]">
-                          Carries{" "}
-                          <span className="text-ink-3 font-medium">
-                            {Math.round(sm.weight * 100)}%
-                          </span>{" "}
-                          of the pillar score · reading{" "}
+                          Current reading{" "}
                           <span className="font-medium" style={{ color: sl.color }}>
                             {sm.score} — {sl.text.toLowerCase()}
                           </span>

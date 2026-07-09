@@ -117,10 +117,10 @@ export default function TopBar() {
                   whileTap={{ scale: 0.95 }}
                   onClick={() => selectViewMode(mode)}
                   className={cn(
-                    "relative px-3 h-7 rounded-chip text-[12px] font-medium transition-colors",
+                    "relative px-3 h-7 rounded-chip text-[12.5px] transition-colors",
                     mode === activeMode
-                      ? "text-ink-1"
-                      : "text-ink-4 hover:text-ink-3",
+                      ? "text-ink-1 font-semibold"
+                      : "text-ink-3 hover:text-ink-2 font-medium",
                   )}
                 >
                   {mode === activeMode && (
