@@ -10,12 +10,13 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { X } from "lucide-react";
+import { AlertTriangle, Droplets, HardHat, X } from "lucide-react";
 import AppShell from "@/components/chrome/AppShell";
 import { api } from "@/api";
 import { useZoneHistory } from "@/hooks/useZoneHistory";
+import { waterProfile } from "@/lib/waterSanitation";
 import { BRAND, PILLAR_COLORS, PILLAR_SHORT, scoreColor } from "@/lib/scoreColor";
-import type { HistoryRange, PillarKey, Zone } from "@/types";
+import type { AlertItem, AlertSeverity, HistoryRange, PillarKey, Project, Zone } from "@/types";
 
 const MAX_ZONES = 3;
 const RANGES: { key: HistoryRange; label: string }[] = [
@@ -28,6 +29,8 @@ const PILLAR_KEYS: PillarKey[] = ["social", "safety", "density", "infra"];
 
 export default function ComparePage() {
   const { data: zones = [] } = useQuery({ queryKey: ["zones"], queryFn: api.getZones });
+  const { data: projects = [] } = useQuery({ queryKey: ["projects"], queryFn: api.getProjects });
+  const { data: alerts = [] } = useQuery({ queryKey: ["alerts"], queryFn: api.getAlerts });
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [range, setRange] = useState<HistoryRange>("week");
 
@@ -71,8 +74,12 @@ export default function ComparePage() {
           ) : (
             <>
               <ScoreGrid zones={selected} />
+              <DeltaGrid zones={selected} />
               <PillarGrid zones={selected} />
+              <WaterGrid zones={selected} />
               <TrendCard zones={selected} range={range} onRange={setRange} />
+              <ProjectsGrid zones={selected} projects={projects} />
+              <AlertsGrid zones={selected} alerts={alerts} />
             </>
           )}
         </div>
@@ -241,6 +248,223 @@ function TrendCard({
         </div>
       </div>
       <ComparisonChart zones={zones} range={range} />
+    </div>
+  );
+}
+
+function DeltaGrid({ zones }: { zones: Zone[] }) {
+  return (
+    <div className="mt-3 rounded-card border border-border p-3 bg-[rgba(255,255,255,0.02)]">
+      <div className="text-[10px] text-ink-4 uppercase tracking-[0.08em] mb-2">Quarter-over-quarter change</div>
+      <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${zones.length}, minmax(0, 1fr))` }}>
+        {zones.map((z, i) => {
+          const total = z.deltas.social + z.deltas.safety + z.deltas.density + z.deltas.infra;
+          const avg = Math.round(total / 4);
+          const color = avg >= 0 ? BRAND.teal : BRAND.rose;
+          return (
+            <div key={z.id} className="rounded-control bg-[rgba(255,255,255,0.03)] p-2.5">
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: SERIES_COLORS[i] }} />
+                <span className="text-[10.5px] text-ink-3 truncate">{z.name}</span>
+                <span className="ml-auto text-[11px] font-semibold tabular-nums" style={{ color }}>
+                  {avg >= 0 ? "▲" : "▼"} {Math.abs(avg)}
+                </span>
+              </div>
+              <div className="mt-1.5 grid grid-cols-4 gap-1 text-[9px]">
+                {PILLAR_KEYS.map((k) => {
+                  const d = z.deltas[k];
+                  const c = d >= 0 ? BRAND.teal : BRAND.rose;
+                  return (
+                    <div key={k} className="rounded-chip bg-[rgba(255,255,255,0.02)] py-1 text-center">
+                      <div className="text-ink-4 uppercase tracking-[0.05em]">{PILLAR_SHORT[k]}</div>
+                      <div className="tabular-nums font-medium" style={{ color: c }}>
+                        {d >= 0 ? "+" : ""}{d}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function WaterGrid({ zones }: { zones: Zone[] }) {
+  return (
+    <div className="mt-3 rounded-card border border-border p-3 bg-[rgba(255,255,255,0.02)]">
+      <div className="flex items-center gap-1.5 mb-2">
+        <Droplets size={12} style={{ color: BRAND.teal }} />
+        <div className="text-[10px] text-ink-4 uppercase tracking-[0.08em]">Water &amp; Sanitation · SDG 6</div>
+      </div>
+      <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${zones.length}, minmax(0, 1fr))` }}>
+        {zones.map((z, i) => {
+          const wp = waterProfile(z);
+          const accent = wp.opportunity ? BRAND.teal : BRAND.steel;
+          return (
+            <div key={z.id} className="rounded-control p-2.5 border" style={{ background: `${accent}0F`, borderColor: `${accent}33` }}>
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: SERIES_COLORS[i] }} />
+                <span className="text-[10.5px] text-ink-2 font-medium truncate">{z.name}</span>
+              </div>
+              <div className="grid grid-cols-3 gap-1 mb-1.5">
+                <StatCell value={`${wp.accessPct}%`} label="Access" />
+                <StatCell value={`${wp.sharedPointPct}%`} label="Shared" />
+                <StatCell value={`${wp.waitMin}m`} label="Queue" />
+              </div>
+              <div className="text-[9px] text-ink-3 leading-tight">
+                <span className="font-semibold px-1.5 py-0.5 rounded-full mr-1" style={{ background: accent, color: BRAND.bone }}>
+                  {wp.solutionTag}
+                </span>
+                {wp.contextLabel}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function StatCell({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="rounded-chip bg-[rgba(255,255,255,0.04)] py-1 text-center">
+      <div className="text-[11px] font-semibold tabular-nums text-ink-1">{value}</div>
+      <div className="text-[8px] text-ink-4 uppercase tracking-[0.05em]">{label}</div>
+    </div>
+  );
+}
+
+function ProjectsGrid({ zones, projects }: { zones: Zone[]; projects: Project[] }) {
+  return (
+    <div className="mt-3 rounded-card border border-border p-3 bg-[rgba(255,255,255,0.02)]">
+      <div className="flex items-center gap-1.5 mb-2">
+        <HardHat size={12} style={{ color: BRAND.terracotta }} />
+        <div className="text-[10px] text-ink-4 uppercase tracking-[0.08em]">Infrastructure projects</div>
+      </div>
+      <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${zones.length}, minmax(0, 1fr))` }}>
+        {zones.map((z, i) => {
+          const zoneProjects = projects.filter((p) => p.zoneId === z.id);
+          const active = zoneProjects.filter((p) => p.status === "active").length;
+          const stalled = zoneProjects.filter((p) => p.status === "stalled").length;
+          const planned = zoneProjects.filter((p) => p.status === "planned").length;
+          return (
+            <div key={z.id} className="rounded-control bg-[rgba(255,255,255,0.03)] p-2.5">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: SERIES_COLORS[i] }} />
+                <span className="text-[10.5px] text-ink-2 font-medium truncate">{z.name}</span>
+                <span className="ml-auto text-[11px] font-semibold tabular-nums text-ink-1">
+                  {zoneProjects.length}
+                </span>
+              </div>
+              <div className="flex gap-1 mb-1.5 text-[9px]">
+                <StatusPill color={BRAND.teal} label="Active" n={active} />
+                <StatusPill color={BRAND.rose} label="Stalled" n={stalled} />
+                <StatusPill color={BRAND.steel} label="Planned" n={planned} />
+              </div>
+              {zoneProjects.length === 0 ? (
+                <div className="text-[9.5px] text-ink-4 italic">No tracked projects.</div>
+              ) : (
+                <ul className="space-y-1">
+                  {zoneProjects.slice(0, 3).map((p) => (
+                    <li key={p.id} className="text-[10px]">
+                      <div className="flex items-center gap-1.5">
+                        <span className="flex-1 min-w-0 truncate text-ink-2">{p.name}</span>
+                        <span className="tabular-nums text-ink-3 shrink-0">{p.progress}%</span>
+                      </div>
+                      <div className="h-[2px] rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden mt-0.5">
+                        <div
+                          className="h-full rounded-full"
+                          style={{
+                            width: `${p.progress}%`,
+                            background: p.status === "stalled" ? BRAND.rose : BRAND.terracotta,
+                          }}
+                        />
+                      </div>
+                    </li>
+                  ))}
+                  {zoneProjects.length > 3 && (
+                    <li className="text-[9px] text-ink-4">+ {zoneProjects.length - 3} more</li>
+                  )}
+                </ul>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function StatusPill({ color, label, n }: { color: string; label: string; n: number }) {
+  return (
+    <span
+      className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-chip font-semibold"
+      style={{ background: `${color}18`, color }}
+    >
+      {n} <span className="text-ink-4 font-normal">{label}</span>
+    </span>
+  );
+}
+
+function AlertsGrid({ zones, alerts }: { zones: Zone[]; alerts: AlertItem[] }) {
+  const severityColor: Record<AlertSeverity, string> = {
+    high: BRAND.rose,
+    medium: BRAND.gold,
+    low: BRAND.steel,
+  };
+  return (
+    <div className="mt-3 rounded-card border border-border p-3 bg-[rgba(255,255,255,0.02)]">
+      <div className="flex items-center gap-1.5 mb-2">
+        <AlertTriangle size={12} style={{ color: BRAND.gold }} />
+        <div className="text-[10px] text-ink-4 uppercase tracking-[0.08em]">Active alerts</div>
+      </div>
+      <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${zones.length}, minmax(0, 1fr))` }}>
+        {zones.map((z, i) => {
+          const zoneAlerts = alerts.filter((a) => a.zoneId === z.id);
+          const bySeverity: Record<AlertSeverity, number> = {
+            high: zoneAlerts.filter((a) => a.severity === "high").length,
+            medium: zoneAlerts.filter((a) => a.severity === "medium").length,
+            low: zoneAlerts.filter((a) => a.severity === "low").length,
+          };
+          return (
+            <div key={z.id} className="rounded-control bg-[rgba(255,255,255,0.03)] p-2.5">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: SERIES_COLORS[i] }} />
+                <span className="text-[10.5px] text-ink-2 font-medium truncate">{z.name}</span>
+                <span className="ml-auto text-[11px] font-semibold tabular-nums text-ink-1">
+                  {zoneAlerts.length}
+                </span>
+              </div>
+              <div className="flex gap-1 mb-1.5 text-[9px]">
+                {(["high", "medium", "low"] as AlertSeverity[]).map((s) => (
+                  <StatusPill key={s} color={severityColor[s]} label={s} n={bySeverity[s]} />
+                ))}
+              </div>
+              {zoneAlerts.length === 0 ? (
+                <div className="text-[9.5px] text-ink-4 italic">No active alerts.</div>
+              ) : (
+                <ul className="space-y-0.5">
+                  {zoneAlerts.slice(0, 3).map((a) => (
+                    <li key={a.id} className="text-[10px] flex items-start gap-1">
+                      <span
+                        className="w-1 h-1 rounded-full mt-1.5 shrink-0"
+                        style={{ background: severityColor[a.severity] }}
+                      />
+                      <span className="text-ink-2 leading-snug truncate">{a.title}</span>
+                    </li>
+                  ))}
+                  {zoneAlerts.length > 3 && (
+                    <li className="text-[9px] text-ink-4">+ {zoneAlerts.length - 3} more</li>
+                  )}
+                </ul>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
