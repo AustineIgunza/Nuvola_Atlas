@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Map, BarChart3, HardHat, FileText, Bell, LogOut, Shield,
+  Map, BarChart3, HardHat, FileText, Bell, LogOut, Shield, GitCompareArrows,
   ChevronRight, Info, Menu, X,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
@@ -17,6 +17,7 @@ import { useState, useEffect } from "react";
 const NAV = [
   { path: "/atlas", label: "Atlas", icon: Map, requiresAdmin: false },
   { path: "/vitality", label: "Vitality", icon: BarChart3, requiresAdmin: false },
+  { path: "/compare", label: "Compare", icon: GitCompareArrows, requiresAdmin: false },
   { path: "/infrastructure", label: "Infrastructure", icon: HardHat, requiresAdmin: false },
   { path: "/reports", label: "Reports", icon: FileText, requiresAdmin: false },
   { path: "/alerts", label: "Alerts", icon: Bell, requiresAdmin: false },

@@ -7,6 +7,7 @@ import SignInPage from "@/pages/SignInPage";
 const SignUpPage = lazy(() => import("@/pages/SignUpPage"));
 const AtlasPage = lazy(() => import("@/pages/AtlasPage"));
 const VitalityPage = lazy(() => import("@/pages/VitalityPage"));
+const ComparePage = lazy(() => import("@/pages/ComparePage"));
 const InfraPage = lazy(() => import("@/pages/InfraPage"));
 const ReportsPage = lazy(() => import("@/pages/ReportsPage"));
 const AlertsPage = lazy(() => import("@/pages/AlertsPage"));
@@ -47,6 +48,7 @@ export default function App() {
         <Route path="/sign-up" element={<SignUpPage />} />
         <Route path="/atlas" element={<RequireAuth><AtlasPage /></RequireAuth>} />
         <Route path="/vitality" element={<RequireAuth><VitalityPage /></RequireAuth>} />
+        <Route path="/compare" element={<RequireAuth><ComparePage /></RequireAuth>} />
         <Route path="/infrastructure/:projectId?" element={<RequireAuth><InfraPage /></RequireAuth>} />
         <Route path="/reports" element={<RequireAuth><ReportsPage /></RequireAuth>} />
         <Route path="/alerts" element={<RequireAuth><AlertsPage /></RequireAuth>} />
