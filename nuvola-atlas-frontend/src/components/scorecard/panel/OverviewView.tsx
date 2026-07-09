@@ -1,7 +1,8 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronRight, Droplets, Info } from "lucide-react";
+import { ChevronRight, Droplets, Info, Download, ChevronDown } from "lucide-react";
+import { BASE, USE_MOCK, authHeaders } from "@/api/client";
 import { api } from "@/api";
 import { BRAND } from "@/lib/scoreColor";
 import { waterProfile } from "@/lib/waterSanitation";
@@ -45,9 +46,21 @@ export default function OverviewView({ zone, onNavigate }: Props) {
     { source: "NEMA ESIA Portal", fresh: true, age: "3 days" },
   ];
 
-  const handleExport = useCallback(() => {
-    if (exporting) return;
-    setExporting(true);
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
+  const exportMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!exportMenuOpen) return;
+    const onClick = (e: MouseEvent) => {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(e.target as Node)) {
+        setExportMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, [exportMenuOpen]);
+
+  const clientTxt = useCallback(() => {
     const content = [
       `NAVUUNA ATLAS — Zone Report`,
       `Zone: ${zone.name}`,
@@ -66,14 +79,38 @@ export default function OverviewView({ zone, onNavigate }: Props) {
       `Generated: ${new Date().toLocaleString()}`,
     ].join("\n");
     const blob = new Blob([content], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${zone.id}-vitality-report.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-    setExporting(false);
-  }, [zone, wp, exporting]);
+    triggerDownload(blob, `${zone.id}-vitality-report.txt`);
+  }, [zone, wp]);
+
+  const serverExport = useCallback(async (format: "txt" | "pdf" | "docx") => {
+    const res = await fetch(`${BASE}/zones/${zone.id}/export?format=${format}`, {
+      headers: authHeaders(),
+    });
+    if (!res.ok) throw new Error(`Export failed (${res.status})`);
+    const blob = await res.blob();
+    triggerDownload(blob, `${zone.id}-vitality-report.${format}`);
+  }, [zone.id]);
+
+  const handleExport = useCallback(
+    async (format: "txt" | "pdf" | "docx") => {
+      if (exporting) return;
+      setExportMenuOpen(false);
+      setExporting(true);
+      try {
+        // TXT works client-side even in mock/offline mode — the other two
+        // formats need the server-generated document. In mock mode we fall
+        // back to the client TXT for all three so the UI still demonstrates.
+        if (USE_MOCK || format === "txt") {
+          clientTxt();
+        } else {
+          await serverExport(format);
+        }
+      } finally {
+        setExporting(false);
+      }
+    },
+    [exporting, clientTxt, serverExport],
+  );
 
   return (
     <div className="space-y-3">
@@ -298,13 +335,41 @@ export default function OverviewView({ zone, onNavigate }: Props) {
         >
           Open full report
         </button>
-        <button
-          onClick={handleExport}
-          className="flex-1 h-8 rounded-control bg-[rgba(255,255,255,0.06)] border border-border text-ink-2 text-[11px] font-medium hover:bg-[rgba(255,255,255,0.1)] transition-colors"
-        >
-          {exporting ? "Exporting…" : "Export summary"}
-        </button>
+        <div className="relative flex-1" ref={exportMenuRef}>
+          <button
+            onClick={() => setExportMenuOpen((v) => !v)}
+            disabled={exporting}
+            className="w-full h-8 rounded-control bg-[rgba(255,255,255,0.06)] border border-border text-ink-2 text-[11px] font-medium hover:bg-[rgba(255,255,255,0.1)] transition-colors inline-flex items-center justify-center gap-1.5"
+          >
+            <Download size={12} />
+            {exporting ? "Exporting…" : "Export"}
+            <ChevronDown size={11} className="opacity-70" />
+          </button>
+          {exportMenuOpen && (
+            <div className="absolute bottom-9 right-0 w-40 rounded-card border border-border bg-[rgba(15,26,38,0.94)] backdrop-blur-md shadow-modal p-1 z-40">
+              {(["pdf", "docx", "txt"] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => handleExport(f)}
+                  className="w-full text-left px-2.5 py-1.5 rounded-chip text-[10.5px] text-ink-2 hover:bg-[rgba(255,255,255,0.06)] transition-colors flex items-center justify-between"
+                >
+                  <span>{f === "pdf" ? "PDF" : f === "docx" ? "Word (DOCX)" : "Plain text"}</span>
+                  <span className="text-[8.5px] text-ink-4 uppercase">.{f}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
+}
+
+function triggerDownload(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 }
