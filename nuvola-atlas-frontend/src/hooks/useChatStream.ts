@@ -1,5 +1,5 @@
 import { useCallback, useRef } from "react";
-import { BASE, USE_MOCK, authHeaders } from "@/api/client";
+import { BASE, USE_MOCK_CHAT, authHeaders } from "@/api/client";
 import { useChatStore } from "@/stores/chat";
 import type { ChatMessage } from "@/types";
 
@@ -67,7 +67,7 @@ export function useChatStream() {
       // Mock mode fakes the whole stream with a typewriter effect so the
       // UI is testable without a backend + AI Gateway key. Swaps out
       // transparently in production via VITE_USE_REMOTE_API.
-      if (USE_MOCK) {
+      if (USE_MOCK_CHAT) {
         await runMockStream(conversationId, assistantId, prompt);
         setStreaming(false);
         return;

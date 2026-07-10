@@ -7,6 +7,15 @@ const remoteFlag = String(import.meta.env.VITE_USE_REMOTE_API ?? "")
   .toLowerCase();
 export const USE_MOCK = !(remoteFlag === "true" || remoteFlag === "1");
 
+// Chat has its own gate on top of USE_MOCK. The rest of the API can be
+// pointing at real Postgres while chat still uses the client-side mock —
+// useful while Vercel AI Gateway billing is being provisioned. Set
+// VITE_USE_REMOTE_CHAT=true to route chat through the real backend.
+const remoteChatFlag = String(import.meta.env.VITE_USE_REMOTE_CHAT ?? "")
+  .trim()
+  .toLowerCase();
+export const USE_MOCK_CHAT = USE_MOCK || !(remoteChatFlag === "true" || remoteChatFlag === "1");
+
 export function delay(min = 250, max = 600): Promise<void> {
   const ms = Math.floor(Math.random() * (max - min) + min);
   return new Promise((r) => setTimeout(r, ms));
