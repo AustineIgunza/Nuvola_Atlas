@@ -12,6 +12,8 @@ import PillarBar from "../PillarBar";
 import ZoneRanking from "../ZoneRanking";
 import ActivityFeed from "../ActivityFeed";
 import ScoreHistoryChart from "./ScoreHistoryChart";
+import IndicatorAvailabilityChip from "./IndicatorAvailabilityChip";
+import DaystarIndicatorPanel from "./DaystarIndicatorPanel";
 import { Section, Chip, StatCell, SEVERITY_COLOR, IMPACT_COLOR, STATUS_STYLE } from "./bits";
 import type { PanelView } from "./panel-types";
 import type { Zone, PillarKey } from "@/types";
@@ -125,14 +127,17 @@ export default function OverviewView({ zone, onNavigate }: Props) {
             <div className="text-[10px] font-medium text-ink-4 uppercase tracking-[0.1em]">
               UE Vitality Index
             </div>
-            <div
-              className="mt-1 inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium"
-              style={{
-                background: totalDelta >= 0 ? "rgba(31,138,120,0.12)" : "rgba(211,64,46,0.12)",
-                color: totalDelta >= 0 ? BRAND.teal : BRAND.rose,
-              }}
-            >
-              {totalDelta >= 0 ? "▲" : "▼"} {Math.abs(totalDelta)} pts this quarter
+            <div className="mt-1 flex flex-wrap items-center gap-1.5">
+              <span
+                className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium"
+                style={{
+                  background: totalDelta >= 0 ? "rgba(31,138,120,0.12)" : "rgba(211,64,46,0.12)",
+                  color: totalDelta >= 0 ? BRAND.teal : BRAND.rose,
+                }}
+              >
+                {totalDelta >= 0 ? "▲" : "▼"} {Math.abs(totalDelta)} pts this quarter
+              </span>
+              <IndicatorAvailabilityChip zoneId={zone.id} />
             </div>
             <p className="text-[10px] text-ink-4 mt-1">Last sync {zone.lastSyncMin} min ago</p>
           </div>
@@ -162,6 +167,9 @@ export default function OverviewView({ zone, onNavigate }: Props) {
           </button>
         ))}
       </Section>
+
+      {/* Daystar indicator ledger — 12-indicator delivery + verification state */}
+      <DaystarIndicatorPanel zoneId={zone.id} />
 
       {/* Water & Sanitation — part of the vitality read; opens the SDG 6 explainer */}
       <button

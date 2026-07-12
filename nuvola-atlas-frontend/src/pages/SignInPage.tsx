@@ -278,6 +278,18 @@ export default function SignInPage() {
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
+          transition={{ delay: 0.48 }}
+          className="text-[11px] text-ink-4 mt-2 text-center"
+        >
+          Just exploring?{" "}
+          <Link to="/public" className="text-ink-2 hover:text-accent hover:underline font-medium">
+            Open the public preview
+          </Link>
+        </motion.p>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
           className="text-[11px] text-ink-4 mt-4 text-center"
         >

@@ -1,0 +1,58 @@
+# fly.toml — Navuuna Atlas staging
+# Region: ams (Amsterdam) — closest available Fly region to Nairobi for pilot demos.
+# Prod cutover will move to Forge+DO per PHASES.md.
+app = "navuuna-atlas-staging"
+primary_region = "ams"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  APP_ENV = "staging"
+  APP_DEBUG = "true"
+  APP_NAME = "Navuuna"
+  LOG_CHANNEL = "stderr"
+  LOG_LEVEL = "warning"
+  SESSION_DRIVER = "database"
+  CACHE_STORE = "database"
+  QUEUE_CONNECTION = "sync"
+  BROADCAST_CONNECTION = "log"
+  FILESYSTEM_DISK = "local"
+  DB_CONNECTION = "pgsql"
+  DB_HOST = "db.qmghreeopcjmhlqpobzt.supabase.co"
+  DB_PORT = "5432"
+  DB_DATABASE = "postgres"
+  DB_USERNAME = "postgres"
+  DB_SSLMODE = "require"
+  BCRYPT_ROUNDS = "12"
+  MAIL_MAILER = "log"
+  AI_GATEWAY_URL = "https://ai-gateway.vercel.sh/v1"
+  AI_MODEL = "anthropic/claude-sonnet-4-6"
+  AI_GATEWAY_TIMEOUT = "45"
+  AI_CHAT_RATE_LIMIT = "10"
+  AI_CHAT_CONTEXT = "6"
+  SANCTUM_TOKEN_EXPIRATION = "480"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 250
+    soft_limit = 200
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "20s"
+    method = "get"
+    path = "/api/health"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

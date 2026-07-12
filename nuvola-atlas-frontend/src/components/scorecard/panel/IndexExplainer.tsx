@@ -3,6 +3,7 @@ import { ChevronRight } from "lucide-react";
 import { api } from "@/api";
 import { BRAND, PILLAR_COLORS, PILLAR_LABELS, PILLAR_GLYPHS } from "@/lib/scoreColor";
 import Ring from "../Ring";
+import DaystarIndicatorPanel from "./DaystarIndicatorPanel";
 import { Section, Chip, scoreBand } from "./bits";
 import type { PanelView } from "./panel-types";
 import type { Zone, PillarKey } from "@/types";
@@ -110,6 +111,8 @@ export default function IndexExplainer({ zone, onNavigate }: Props) {
           ))}
         </div>
       </Section>
+
+      <DaystarIndicatorPanel zoneId={zone.id} showAttribution />
 
       <Section title="Data pipeline">
         <p className="text-[10.5px] text-ink-3 leading-[1.6]">

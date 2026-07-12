@@ -1,0 +1,42 @@
+[project]
+name = "nuvola-atlas-ingestion"
+version = "0.1.0"
+description = "Navuuna data ingestion microservice — normalises Daystar University indicator feeds and forwards them to the Laravel API."
+requires-python = ">=3.13,<3.15"
+readme = "README.md"
+authors = [
+    { name = "Devyan Jethwa", email = "devyan.jethwa@strathmore.edu" },
+]
+dependencies = [
+    "fastapi>=0.115,<0.120",
+    "uvicorn[standard]>=0.32,<0.35",
+    "pydantic>=2.9,<3",
+    "pydantic-settings>=2.5,<3",
+    "httpx>=0.27,<0.30",
+    "python-dateutil>=2.9,<3",
+    "sentry-sdk[fastapi]>=2.17,<3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.7,<0.10",
+    "mypy>=1.13,<2",
+    "pytest>=8.3,<9",
+    "pytest-asyncio>=0.24,<0.26",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "SIM", "RUF"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

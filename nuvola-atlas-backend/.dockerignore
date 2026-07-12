@@ -3,6 +3,8 @@
 .idea
 .vscode
 .env
+.env.*
+!.env.example
 .env.backup
 .env.production
 node_modules
@@ -17,3 +19,8 @@ storage/framework/views/*
 Thumbs.db
 .DS_Store
 docker-compose*.yml
+.vercel
+.vercel/*
+vercel.json.old-frontend-shim
+.phpunit.cache
+phpunit.xml
