@@ -27,7 +27,10 @@
 
   @media (max-width: 767px) {
     :root {
-      --mobile-nav-h: calc(3.5rem + env(safe-area-inset-bottom));
+      /* Mobile chrome is now a floating right-edge vertical pill, not a
+         full-width bottom bar. Legacy variable retained so any page still
+         reading it just falls back to the safe-area inset. */
+      --mobile-nav-h: env(safe-area-inset-bottom);
     }
   }
 

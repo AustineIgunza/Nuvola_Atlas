@@ -32,7 +32,11 @@ export default function AppShell({ children }: Props) {
     <div className="min-h-screen relative">
       <Sidebar />
       <div className={`flex flex-col min-w-0 min-h-screen ${inset}`}>
-        <main className="flex-1 overflow-y-auto pb-[var(--mobile-nav-h)] md:pb-0">{children}</main>
+        {/* Mobile chrome is now a floating right-edge vertical pill instead
+            of a full-width bottom bar. Content pads right on <md so the
+            pill never sits over active content. Safe-area handled by
+            MobileTabBar itself. */}
+        <main className="flex-1 overflow-y-auto pr-16 md:pr-0">{children}</main>
       </div>
       <MobileTabBar />
       <SearchModal />

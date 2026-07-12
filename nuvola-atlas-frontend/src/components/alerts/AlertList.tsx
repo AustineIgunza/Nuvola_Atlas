@@ -7,16 +7,13 @@ import { springSettle, staggerContainer } from "@/lib/motion";
 import DetailPopup from "@/components/common/DetailPopup";
 import AlertCard from "./AlertCard";
 import AlertDetail from "./AlertDetail";
+import { useT } from "@/lib/i18n/use-t";
 import type { AlertSeverity } from "@/types";
 
-const FILTERS: { label: string; value: AlertSeverity | "all" }[] = [
-  { label: "All", value: "all" },
-  { label: "High", value: "high" },
-  { label: "Medium", value: "medium" },
-  { label: "Low", value: "low" },
-];
+const FILTER_VALUES: (AlertSeverity | "all")[] = ["all", "high", "medium", "low"];
 
 export default function AlertList() {
+  const t = useT();
   const [filter, setFilter] = useState<AlertSeverity | "all">("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const queryClient = useQueryClient();
@@ -39,8 +36,15 @@ export default function AlertList() {
 
   const filtered = alerts?.filter((a) => filter === "all" || a.severity === filter) ?? [];
   const selectedAlert = alerts?.find((a) => a.id === selectedId);
-  function zoneName(id: string | null) { return id ? (zones?.find((z) => z.id === id)?.name ?? id) : "System-wide"; }
+  function zoneName(id: string | null) { return id ? (zones?.find((z) => z.id === id)?.name ?? id) : t("alerts.systemWide"); }
   function projectName(id: string) { return projects?.find((p) => p.id === id)?.name ?? id; }
+
+  function labelFor(v: AlertSeverity | "all"): string {
+    if (v === "all") return t("alerts.filter.all");
+    if (v === "high") return t("alerts.severity.high");
+    if (v === "medium") return t("alerts.severity.medium");
+    return t("alerts.severity.low");
+  }
 
   if (isLoading) {
     return (
@@ -53,8 +57,8 @@ export default function AlertList() {
   if (isError) {
     return (
       <div className="glass-strong rounded-card p-8 text-center">
-        <p className="text-danger text-[13px] mb-2">Failed to load alerts</p>
-        <button onClick={() => queryClient.invalidateQueries({ queryKey: ["alerts"] })} className="text-accent text-[12px] hover:underline">Retry</button>
+        <p className="text-danger text-[13px] mb-2">{t("alerts.loadFailed")}</p>
+        <button onClick={() => queryClient.invalidateQueries({ queryKey: ["alerts"] })} className="text-accent text-[12px] hover:underline">{t("common.retry")}</button>
       </div>
     );
   }
@@ -69,20 +73,20 @@ export default function AlertList() {
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
           <div className="flex items-center gap-1.5 flex-wrap relative">
-            {FILTERS.map((f) => (
+            {FILTER_VALUES.map((v) => (
               <motion.button
-                key={f.value}
-                onClick={() => setFilter(f.value)}
+                key={v}
+                onClick={() => setFilter(v)}
                 whileTap={{ scale: 0.93 }}
                 className={cn(
                   "relative px-3.5 h-8 rounded-chip text-[11px] font-medium transition-colors",
-                  filter === f.value ? "text-white" : "text-ink-3 hover:text-ink-2",
+                  filter === v ? "text-white" : "text-ink-3 hover:text-ink-2",
                 )}
               >
-                {filter === f.value && (
+                {filter === v && (
                   <motion.div layoutId="alert-filter" className="absolute inset-0 bg-accent rounded-chip glow-accent" transition={springSettle} />
                 )}
-                <span className="relative z-10">{f.label}</span>
+                <span className="relative z-10">{labelFor(v)}</span>
               </motion.button>
             ))}
           </div>
@@ -92,7 +96,7 @@ export default function AlertList() {
             onClick={() => markAll.mutate()}
             className="h-9 px-4 rounded-control bg-[rgba(255,255,255,0.06)] border border-border text-ink-3 text-[12px] font-medium hover:bg-[rgba(255,255,255,0.1)] transition-colors self-start"
           >
-            Mark all read
+            {t("alerts.markAllRead")}
           </motion.button>
         </div>
 

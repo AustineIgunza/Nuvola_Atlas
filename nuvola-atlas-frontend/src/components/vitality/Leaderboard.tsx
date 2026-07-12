@@ -8,19 +8,14 @@ import { api } from "@/api";
 import { scoreColor, PILLAR_COLORS } from "@/lib/scoreColor";
 import { springSettle, staggerContainer, staggerItem, modalBackdrop, modalContent } from "@/lib/motion";
 import { useUIStore } from "@/stores/ui";
+import { useT } from "@/lib/i18n/use-t";
 import Sparkline from "./Sparkline";
 import type { PillarKey, Zone } from "@/types";
 
 type SortKey = "score" | PillarKey;
 
-const PILLAR_LABEL: Record<PillarKey, string> = {
-  social: "Social Wellbeing",
-  safety: "Safety & Security",
-  density: "Density & Scaling",
-  infra: "Infrastructure",
-};
-
 export default function Leaderboard() {
+  const t = useT();
   const navigate = useNavigate();
   const setSelectedZone = useUIStore((s) => s.setSelectedZone);
   const [sortBy, setSortBy] = useState<SortKey>("score");
@@ -58,11 +53,11 @@ export default function Leaderboard() {
   }
 
   const headers: { key: SortKey; label: string }[] = [
-    { key: "score", label: "Overall" },
-    { key: "social", label: "Social" },
-    { key: "safety", label: "Safety" },
-    { key: "density", label: "Density" },
-    { key: "infra", label: "Infra" },
+    { key: "score", label: t("vitality.overall") },
+    { key: "social", label: t("pillar.social.short") },
+    { key: "safety", label: t("pillar.safety.short") },
+    { key: "density", label: t("pillar.density.short") },
+    { key: "infra", label: t("pillar.infra.short") },
   ];
 
   function fakeSparkline(score: number): number[] {
@@ -92,7 +87,7 @@ export default function Leaderboard() {
             transition={{ delay: 0.1, ...springSettle }}
             className="text-[18px] font-semibold text-ink-1 tracking-[-0.02em]"
           >
-            Vitality Leaderboard
+            {t("vitality.leaderboard")}
           </motion.h2>
           <motion.button
             initial={{ opacity: 0, scale: 0.9 }}
@@ -104,7 +99,7 @@ export default function Leaderboard() {
             className="flex items-center gap-1.5 h-9 px-4 rounded-control bg-[rgba(255,255,255,0.06)] border border-border text-ink-3 text-[12px] font-medium hover:bg-[rgba(255,255,255,0.1)] transition-colors self-start"
           >
             <Download size={13} />
-            Export CSV
+            {t("common.exportCsv")}
           </motion.button>
         </div>
 
@@ -116,7 +111,7 @@ export default function Leaderboard() {
           type="text"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          placeholder="Filter by name..."
+          placeholder={t("vitality.filterByName")}
           className="w-full h-10 px-4 mb-5 rounded-control bg-[rgba(255,255,255,0.04)] border border-border text-ink-2 text-[13px] placeholder:text-ink-4 focus:border-accent transition-all"
         />
 
@@ -157,7 +152,7 @@ export default function Leaderboard() {
             <thead>
               <tr className="border-b border-border">
                 <th className="text-left py-2.5 px-2 text-ink-4 font-medium w-10">#</th>
-                <th className="text-left py-2.5 px-2 text-ink-4 font-medium">Sub-county</th>
+                <th className="text-left py-2.5 px-2 text-ink-4 font-medium">{t("vitality.subCounty")}</th>
                 {headers.map((h) => (
                   <th
                     key={h.key}
@@ -171,7 +166,7 @@ export default function Leaderboard() {
                     </span>
                   </th>
                 ))}
-                <th className="text-right py-2.5 px-2 text-ink-4 font-medium w-24 hidden lg:table-cell">Trend</th>
+                <th className="text-right py-2.5 px-2 text-ink-4 font-medium w-24 hidden lg:table-cell">{t("vitality.trend")}</th>
               </tr>
             </thead>
             <motion.tbody variants={staggerContainer} initial="hidden" animate="visible">
@@ -300,7 +295,7 @@ export default function Leaderboard() {
                   {(["social", "safety", "density", "infra"] as PillarKey[]).map((key) => (
                     <div key={key}>
                       <div className="flex items-center justify-between text-[12px] mb-1.5">
-                        <span className="text-ink-3 font-medium">{PILLAR_LABEL[key]}</span>
+                        <span className="text-ink-3 font-medium">{t(`pillar.${key}.long` as const)}</span>
                         <span className="tabular-nums text-ink-1 font-semibold">{popupZone.pillars[key]}</span>
                       </div>
                       <div className="h-1.5 rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">

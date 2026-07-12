@@ -23,6 +23,9 @@ export const en = {
   "common.optional": "Optional",
   "common.required": "Required",
   "common.copied": "Copied",
+  "common.exportCsv": "Export CSV",
+  "common.export": "Export",
+  "common.more": "More",
 
   // ── Navigation ───────────────────────────────────────────────────────────
   "nav.investor": "Portfolio",
@@ -220,6 +223,8 @@ export const en = {
   "alerts.filter.all": "All",
   "alerts.filter.unread": "Unread only",
   "alerts.empty": "No alerts to show.",
+  "alerts.systemWide": "System-wide",
+  "alerts.loadFailed": "Failed to load alerts",
 
   // ── Vitality methodology page ───────────────────────────────────────────
   "vitality.title": "The UE Vitality Index",
@@ -232,6 +237,11 @@ export const en = {
   "vitality.rules.item2": "Pillar score = simple average of the pillar's non-null indicators.",
   "vitality.rules.item3": "Composite = simple average of pillars that have at least one non-null indicator.",
   "vitality.rules.item4": "Missing indicators are excluded from the average — never treated as zero.",
+  "vitality.leaderboard": "Vitality Leaderboard",
+  "vitality.overall": "Overall",
+  "vitality.subCounty": "Sub-county",
+  "vitality.trend": "Trend",
+  "vitality.filterByName": "Filter by name...",
 
   // ── Investor dashboard ──────────────────────────────────────────────────
   "investor.title": "Investor Dashboard",

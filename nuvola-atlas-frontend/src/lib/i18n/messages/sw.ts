@@ -26,6 +26,9 @@ export const sw: Partial<Record<MessageKey, string>> = {
   "common.optional": "Si lazima",
   "common.required": "Lazima",
   "common.copied": "Imenakiliwa",
+  "common.exportCsv": "Hamisha CSV",
+  "common.export": "Hamisha",
+  "common.more": "Zaidi",
 
   // Navigation
   "nav.investor": "Kikundi",
@@ -223,6 +226,8 @@ export const sw: Partial<Record<MessageKey, string>> = {
   "alerts.filter.all": "Zote",
   "alerts.filter.unread": "Zisizosomwa pekee",
   "alerts.empty": "Hakuna arifa za kuonyesha.",
+  "alerts.systemWide": "Mfumo mzima",
+  "alerts.loadFailed": "Imeshindwa kupakia arifa",
 
   // Vitality methodology page
   "vitality.title": "Kielelezo cha Uhai cha UE",
@@ -235,6 +240,11 @@ export const sw: Partial<Record<MessageKey, string>> = {
   "vitality.rules.item2": "Alama ya nguzo = wastani wa viashirio visivyo tupu vya nguzo.",
   "vitality.rules.item3": "Jumla = wastani wa nguzo zenye kiashiria kimoja au zaidi kisichokuwa tupu.",
   "vitality.rules.item4": "Viashirio vinavyokosekana huondolewa kutoka kwenye wastani — havichukuliwi kama sifuri.",
+  "vitality.leaderboard": "Ubao wa Uongozi wa Uhai",
+  "vitality.overall": "Jumla",
+  "vitality.subCounty": "Wilaya ndogo",
+  "vitality.trend": "Mwelekeo",
+  "vitality.filterByName": "Chuja kwa jina...",
 
   // Investor dashboard
   "investor.title": "Dashibodi ya Mwekezaji",
