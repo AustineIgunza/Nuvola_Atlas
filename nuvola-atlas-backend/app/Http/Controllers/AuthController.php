@@ -70,8 +70,16 @@ class AuthController extends Controller
 
         // Triggers SendEmailVerificationNotification when the user implements
         // MustVerifyEmail. In dev the mail goes to log; in prod use a real
-        // mailer (configured via MAIL_* env vars).
-        event(new Registered($user));
+        // mailer (configured via MAIL_* env vars). Wrapped in a try/catch so
+        // a misconfigured mailer (or the SendEmailVerificationNotification
+        // referencing a route that isn't wired yet in some environments)
+        // cannot break registration itself — the user's account is already
+        // saved and they can trigger a resend from their profile page.
+        try {
+            event(new Registered($user));
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         $token = $user->createToken('api')->plainTextToken;
         $expiresAt = now()->addMinutes(config('sanctum.expiration', 480))->toIso8601String();

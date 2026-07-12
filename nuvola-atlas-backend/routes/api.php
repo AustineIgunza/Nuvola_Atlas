@@ -14,6 +14,7 @@ use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TwoFactorController;
+use App\Http\Controllers\VerifyEmailController;
 use App\Http\Controllers\VitalityController;
 use App\Http\Controllers\ZoneController;
 use App\Http\Controllers\ZoneExportController;
@@ -56,6 +57,14 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
         Route::post('auth/register', [AuthController::class, 'register']);
         Route::post('auth/forgot-password', [AuthController::class, 'forgotPassword']);
         Route::post('auth/reset-password', [AuthController::class, 'resetPassword']);
+
+        // Email verification landing. The name "verification.verify" is what
+        // Laravel's SendEmailVerificationNotification requires when it builds
+        // the signed URL — without this route existing the notification
+        // throws "Route [verification.verify] not defined".
+        Route::get('auth/email/verify/{id}/{hash}', VerifyEmailController::class)
+            ->middleware('signed')
+            ->name('verification.verify');
         // Email-2FA sign-in challenge verification — not authed because the
         // user doesn't yet have a session at this stage.
         Route::post('auth/2fa/verify', [TwoFactorController::class, 'verify']);
