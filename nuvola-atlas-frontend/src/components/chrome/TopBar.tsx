@@ -2,12 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Bell, Settings, Layers, Check, Sun, Moon, Sparkles } from "lucide-react";
+import { Search, Bell, Settings, Layers, Check, Sun, Moon, Sparkles, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { springSettle } from "@/lib/motion";
 import { useUIStore } from "@/stores/ui";
 import { useChromeStore } from "@/stores/chrome";
 import { useThemeStore } from "@/stores/theme";
+import { usePrefsStore } from "@/stores/prefs";
+import { LOCALES } from "@/lib/i18n/locales";
+import { useT } from "@/lib/i18n/use-t";
 import {
   BASEMAP_STYLES,
   MAP_STYLES,
@@ -35,6 +38,7 @@ function modeForStyle(style: string): ViewMode {
 }
 
 export default function TopBar() {
+  const t = useT();
   const location = useLocation();
   const navigate = useNavigate();
   const openSearch = useUIStore((s) => s.openSearch);
@@ -54,6 +58,8 @@ export default function TopBar() {
   const settingsRef = useRef<HTMLDivElement>(null);
   const theme = useThemeStore((s) => s.theme);
   const setTheme = useThemeStore((s) => s.setTheme);
+  const locale = usePrefsStore((s) => s.locale);
+  const setLocale = usePrefsStore((s) => s.setLocale);
 
   // Theme follows basemap: if the user is on the "Map" basemap, swap to the
   // theme-appropriate variant when theme flips. Leave Satellite / Terrain
@@ -271,7 +277,7 @@ export default function TopBar() {
                 transition={{ duration: 0.15 }}
                 className="absolute right-0 top-11 w-64 glass-strong rounded-card border border-border p-3 shadow-modal z-50"
               >
-                <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.1em] mb-2">Appearance</div>
+                <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.1em] mb-2">{t("topbar.appearance")}</div>
 
                 {/* Theme segmented control */}
                 <div className="flex items-center gap-1 p-0.5 rounded-control bg-[rgba(255,255,255,0.04)] mb-3">
@@ -296,16 +302,37 @@ export default function TopBar() {
                       )}
                       <span className="relative z-10 flex items-center gap-1.5">
                         {mode === "light" ? <Sun size={13} /> : <Moon size={13} />}
-                        {mode === "light" ? "Light" : "Dark"}
+                        {mode === "light" ? t("theme.light") : t("theme.dark")}
                       </span>
                     </button>
                   ))}
                 </div>
 
-                <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.1em] mb-2">Preferences</div>
+                {/* Language */}
+                <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.1em] mb-2">{t("topbar.language")}</div>
+                <div className="flex items-center gap-1 p-0.5 rounded-control bg-[rgba(255,255,255,0.04)] mb-3">
+                  {LOCALES.map((l) => (
+                    <button
+                      key={l.code}
+                      onClick={() => setLocale(l.code)}
+                      className={cn(
+                        "flex-1 flex items-center justify-center gap-1.5 h-8 rounded-chip text-[12px] font-medium transition-colors",
+                        locale === l.code
+                          ? "bg-[rgba(255,255,255,0.10)] text-ink-1"
+                          : "text-ink-4 hover:text-ink-3",
+                      )}
+                      aria-pressed={locale === l.code}
+                    >
+                      <span aria-hidden>{l.flag}</span>
+                      <span>{l.name}</span>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.1em] mb-2">{t("topbar.preferences")}</div>
                 <div className="text-[12px] text-ink-3 space-y-2">
                   <label className="flex items-center justify-between cursor-pointer">
-                    <span>Reduced motion</span>
+                    <span>{t("topbar.reducedMotion")}</span>
                     <input
                       type="checkbox"
                       className="accent-accent"
@@ -313,7 +340,7 @@ export default function TopBar() {
                     />
                   </label>
                   <label className="flex items-center justify-between cursor-pointer">
-                    <span>Auto-refresh</span>
+                    <span>{t("topbar.autoRefresh")}</span>
                     <input
                       type="checkbox"
                       checked={autoRefresh}
@@ -322,6 +349,14 @@ export default function TopBar() {
                     />
                   </label>
                 </div>
+
+                <button
+                  onClick={() => { setShowSettings(false); navigate("/settings"); }}
+                  className="mt-3 w-full flex items-center justify-between gap-2 px-2 h-8 rounded-control bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.08)] text-[12px] text-ink-2 transition-colors"
+                >
+                  <span>{t("topbar.openFullSettings")}</span>
+                  <ChevronRight size={13} />
+                </button>
               </motion.div>
             )}
           </AnimatePresence>

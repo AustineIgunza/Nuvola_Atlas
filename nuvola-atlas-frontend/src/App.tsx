@@ -11,7 +11,10 @@ const ComparePage = lazy(() => import("@/pages/ComparePage"));
 const InfraPage = lazy(() => import("@/pages/InfraPage"));
 const ReportsPage = lazy(() => import("@/pages/ReportsPage"));
 const AlertsPage = lazy(() => import("@/pages/AlertsPage"));
+const AssistantPage = lazy(() => import("@/pages/AssistantPage"));
+const SettingsPage = lazy(() => import("@/pages/SettingsPage"));
 const AdminPage = lazy(() => import("@/pages/AdminPage"));
+const PublicPortalPage = lazy(() => import("@/pages/PublicPortalPage"));
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((s) => s.user);
@@ -46,12 +49,15 @@ export default function App() {
       <Routes location={location} key={location.pathname}>
         <Route path="/sign-in" element={<SignInPage />} />
         <Route path="/sign-up" element={<SignUpPage />} />
+        <Route path="/public" element={<PublicPortalPage />} />
         <Route path="/atlas" element={<RequireAuth><AtlasPage /></RequireAuth>} />
         <Route path="/vitality" element={<RequireAuth><VitalityPage /></RequireAuth>} />
         <Route path="/compare" element={<RequireAuth><ComparePage /></RequireAuth>} />
         <Route path="/infrastructure/:projectId?" element={<RequireAuth><InfraPage /></RequireAuth>} />
         <Route path="/reports" element={<RequireAuth><ReportsPage /></RequireAuth>} />
         <Route path="/alerts" element={<RequireAuth><AlertsPage /></RequireAuth>} />
+        <Route path="/assistant" element={<RequireAuth><AssistantPage /></RequireAuth>} />
+        <Route path="/settings" element={<RequireAuth><SettingsPage /></RequireAuth>} />
         <Route path="/admin" element={<RequireAdmin><AdminPage /></RequireAdmin>} />
         <Route path="*" element={<Navigate to="/atlas" replace />} />
       </Routes>

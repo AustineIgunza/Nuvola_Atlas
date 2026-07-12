@@ -252,6 +252,16 @@ export const mockApi = {
     };
   },
 
+  // Mock password change. Mirrors sign-in leniency: any non-empty current
+  // password is accepted (real backend enforces bcrypt match). Enforces the
+  // 8-char minimum client-side so the UX matches production.
+  changePassword: async (currentPassword: string, newPassword: string): Promise<{ ok: true }> => {
+    await delay();
+    if (!currentPassword) throw new Error("Enter your current password.");
+    if (newPassword.length < 8) throw new Error("Use at least 8 characters.");
+    return { ok: true as const };
+  },
+
   // Mock verify accepts any 6-digit code for any mock challenge token.
   verifyTwoFactor: async (challenge_token: string, code: string) => {
     await delay();

@@ -81,6 +81,15 @@ export const remoteApi = {
 
   getMethodology: () => get<{ pillars: PillarDef[] }>("/vitality/methodology"),
 
+  changePassword: async (currentPassword: string, newPassword: string): Promise<{ ok: true }> => {
+    const res = await fetch(`${BASE}/auth/change-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders() },
+      body: JSON.stringify({ current_password: currentPassword, password: newPassword, password_confirmation: newPassword }),
+    });
+    return handleResponse<{ ok: true }>(res);
+  },
+
   register: async (name: string, email: string, password: string, password_confirmation: string) => {
     const res = await fetch(`${BASE}/auth/register`, {
       method: "POST",

@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Map, BarChart3, HardHat, FileText, Bell, LogOut, Shield, GitCompareArrows,
-  ChevronRight, Info, Menu, X,
+  ChevronRight, Info, Menu, X, Sparkles, Settings as SettingsIcon,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { springSettle, staggerContainer, staggerItem, panelSlideLeft } from "@/lib/motion";
@@ -12,19 +12,29 @@ import { useAuthStore, hasRoleAtLeast } from "@/stores/auth";
 import { api } from "@/api";
 import { scoreColor } from "@/lib/scoreColor";
 import { Emblem, Wordmark } from "@/components/brand/Brand";
+import { useT } from "@/lib/i18n/use-t";
+import type { MessageKey } from "@/lib/i18n/translate";
 import { useState, useEffect } from "react";
 
-const NAV = [
-  { path: "/atlas", label: "Atlas", icon: Map, requiresAdmin: false },
-  { path: "/vitality", label: "Vitality", icon: BarChart3, requiresAdmin: false },
-  { path: "/compare", label: "Compare", icon: GitCompareArrows, requiresAdmin: false },
-  { path: "/infrastructure", label: "Infrastructure", icon: HardHat, requiresAdmin: false },
-  { path: "/reports", label: "Reports", icon: FileText, requiresAdmin: false },
-  { path: "/alerts", label: "Alerts", icon: Bell, requiresAdmin: false },
-  { path: "/admin", label: "Admin", icon: Shield, requiresAdmin: true },
-] as const;
+const NAV: ReadonlyArray<{
+  path: string;
+  labelKey: MessageKey;
+  icon: typeof Map;
+  requiresAdmin: boolean;
+}> = [
+  { path: "/atlas", labelKey: "nav.atlas", icon: Map, requiresAdmin: false },
+  { path: "/vitality", labelKey: "nav.vitality", icon: BarChart3, requiresAdmin: false },
+  { path: "/compare", labelKey: "nav.compare", icon: GitCompareArrows, requiresAdmin: false },
+  { path: "/infrastructure", labelKey: "nav.infrastructure", icon: HardHat, requiresAdmin: false },
+  { path: "/reports", labelKey: "nav.reports", icon: FileText, requiresAdmin: false },
+  { path: "/alerts", labelKey: "nav.alerts", icon: Bell, requiresAdmin: false },
+  { path: "/assistant", labelKey: "nav.assistant", icon: Sparkles, requiresAdmin: false },
+  { path: "/settings", labelKey: "nav.settings", icon: SettingsIcon, requiresAdmin: false },
+  { path: "/admin", labelKey: "nav.admin", icon: Shield, requiresAdmin: true },
+];
 
 export default function Sidebar() {
+  const t = useT();
   const location = useLocation();
   const navigate = useNavigate();
   const signOut = useAuthStore((s) => s.signOut);
@@ -120,8 +130,9 @@ export default function Sidebar() {
           animate="visible"
           className="space-y-1"
         >
-          {NAV.filter((item) => !item.requiresAdmin || isAdmin).map(({ path, label, icon: Icon }) => {
+          {NAV.filter((item) => !item.requiresAdmin || isAdmin).map(({ path, labelKey, icon: Icon }) => {
             const active = location.pathname.startsWith(path);
+            const label = t(labelKey);
             return (
               <motion.button
                 key={path}
@@ -164,7 +175,7 @@ export default function Sidebar() {
               className="mt-4 pt-4 border-t border-border overflow-hidden"
             >
               <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.08em] px-3 mb-2">
-                Asase · Data Layers
+                {t("sidebar.dataLayers")}
               </div>
               {([
                 { key: "vitality" as const, label: "Vitality Zones" },
@@ -211,7 +222,7 @@ export default function Sidebar() {
               className="mt-4 pt-4 border-t border-border overflow-hidden"
             >
               <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.08em] px-3 mb-2">
-                Sub-counties
+                {t("sidebar.subcounties")}
               </div>
               <motion.div
                 variants={staggerContainer}
@@ -259,7 +270,7 @@ export default function Sidebar() {
             className="w-full flex items-center gap-3 h-8 px-3 rounded-control text-[12px] text-ink-4 hover:text-ink-3 transition-colors"
           >
             <Info size={14} />
-            How the score is computed
+            {t("sidebar.howComputed")}
           </motion.button>
         )}
         <motion.button
@@ -269,7 +280,7 @@ export default function Sidebar() {
           className="w-full flex items-center gap-3 h-8 px-3 rounded-control text-[12px] text-ink-4 hover:text-danger transition-colors"
         >
           <LogOut size={14} className="shrink-0" />
-          {(!collapsed || isMobile) && "Sign out"}
+          {(!collapsed || isMobile) && t("nav.signOut")}
         </motion.button>
         {!isMobile && (
           <motion.button
