@@ -10,11 +10,12 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { AlertTriangle, Droplets, HardHat, X } from "lucide-react";
+import { AlertTriangle, Droplets, HardHat, RefreshCcw, X } from "lucide-react";
 import AppShell from "@/components/chrome/AppShell";
 import CompareAssistant from "@/components/chat/CompareAssistant";
 import { api } from "@/api";
 import { useAtlasStore } from "@/stores/atlas";
+import { useChatStore } from "@/stores/chat";
 import { useZoneHistory } from "@/hooks/useZoneHistory";
 import { waterProfile } from "@/lib/waterSanitation";
 import { BRAND, PILLAR_COLORS, PILLAR_SHORT, scoreColor } from "@/lib/scoreColor";
@@ -57,18 +58,39 @@ export default function ComparePage() {
     setSelectedIds(selectedIds.filter((s) => s !== id));
   };
 
+  // Reset the whole compare surface: no zones, no active conversation.
+  // The Assistant panel drops back to its starter prompts, and the grids
+  // re-collapse to the "Pick a zone" empty state.
+  const setChatActive = useChatStore((s) => s.setActive);
+  const startNewComparison = () => {
+    setSelectedIds([]);
+    setRange("week");
+    setChatActive(null);
+  };
+
   return (
     <AppShell>
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-[1400px] mx-auto p-4 sm:p-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
           <div className="min-w-0">
-            <header className="mb-5">
-              <div className="text-[10px] font-medium text-ink-4 uppercase tracking-[0.12em]">Compare</div>
-              <h1 className="text-[22px] font-semibold text-ink-1 leading-tight">Side-by-side zone comparison</h1>
-              <p className="mt-1.5 text-[12px] text-ink-3 max-w-[68ch]">
-                Pick up to {MAX_ZONES} Nairobi sub-counties to compare their Vitality Score, pillar
-                breakdown, and score history side by side.
-              </p>
+            <header className="mb-5 flex items-start gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="text-[10px] font-medium text-ink-4 uppercase tracking-[0.12em]">Compare</div>
+                <h1 className="text-[22px] font-semibold text-ink-1 leading-tight">Side-by-side zone comparison</h1>
+                <p className="mt-1.5 text-[12px] text-ink-3 max-w-[68ch]">
+                  Pick up to {MAX_ZONES} Nairobi sub-counties to compare their Vitality Score, pillar
+                  breakdown, and score history side by side.
+                </p>
+              </div>
+              <button
+                onClick={startNewComparison}
+                className="shrink-0 inline-flex items-center gap-1.5 px-3 h-8 rounded-control bg-[rgba(255,255,255,0.04)] border border-border text-[11.5px] font-semibold text-ink-2 hover:text-ink-1 hover:bg-[rgba(255,255,255,0.08)] transition-colors btn-press"
+                aria-label="Start a new comparison and reset the assistant"
+                title="Clears the picked zones and starts a fresh assistant chat"
+              >
+                <RefreshCcw size={12} />
+                New comparison
+              </button>
             </header>
 
             <ZonePicker
