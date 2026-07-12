@@ -1,20 +1,23 @@
-import { lazy, Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuthStore, hasRoleAtLeast } from "@/stores/auth";
+import { lazyWithRetry, markAppLoaded } from "@/lib/lazyWithRetry";
 import SignInPage from "@/pages/SignInPage";
 
-const SignUpPage = lazy(() => import("@/pages/SignUpPage"));
-const AtlasPage = lazy(() => import("@/pages/AtlasPage"));
-const VitalityPage = lazy(() => import("@/pages/VitalityPage"));
-const ComparePage = lazy(() => import("@/pages/ComparePage"));
-const InfraPage = lazy(() => import("@/pages/InfraPage"));
-const ReportsPage = lazy(() => import("@/pages/ReportsPage"));
-const AlertsPage = lazy(() => import("@/pages/AlertsPage"));
-const AssistantPage = lazy(() => import("@/pages/AssistantPage"));
-const SettingsPage = lazy(() => import("@/pages/SettingsPage"));
-const AdminPage = lazy(() => import("@/pages/AdminPage"));
-const PublicPortalPage = lazy(() => import("@/pages/PublicPortalPage"));
+// lazyWithRetry survives Vercel deploys that change chunk file hashes —
+// see the file for the reload-recovery details.
+const SignUpPage = lazyWithRetry(() => import("@/pages/SignUpPage"));
+const AtlasPage = lazyWithRetry(() => import("@/pages/AtlasPage"));
+const VitalityPage = lazyWithRetry(() => import("@/pages/VitalityPage"));
+const ComparePage = lazyWithRetry(() => import("@/pages/ComparePage"));
+const InfraPage = lazyWithRetry(() => import("@/pages/InfraPage"));
+const ReportsPage = lazyWithRetry(() => import("@/pages/ReportsPage"));
+const AlertsPage = lazyWithRetry(() => import("@/pages/AlertsPage"));
+const AssistantPage = lazyWithRetry(() => import("@/pages/AssistantPage"));
+const SettingsPage = lazyWithRetry(() => import("@/pages/SettingsPage"));
+const AdminPage = lazyWithRetry(() => import("@/pages/AdminPage"));
+const PublicPortalPage = lazyWithRetry(() => import("@/pages/PublicPortalPage"));
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((s) => s.user);
@@ -43,6 +46,13 @@ function LoadingFallback() {
 
 export default function App() {
   const location = useLocation();
+
+  // Once the app renders successfully, clear the "already tried a reload"
+  // guard so a genuinely stale chunk after the *next* deploy is allowed
+  // to trigger another self-heal reload.
+  useEffect(() => {
+    markAppLoaded();
+  }, []);
 
   return (
     <Suspense fallback={<LoadingFallback />}>

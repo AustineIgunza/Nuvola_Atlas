@@ -1,20 +1,38 @@
 import { create } from "zustand";
 
-export type AuthRole = "viewer" | "partner" | "editor" | "admin";
+export type AuthRole = "viewer" | "partner" | "investor" | "editor" | "admin";
 
 export interface AuthUser {
   name: string;
   email: string;
   role?: AuthRole;
   email_verified?: boolean;
+  // Firm scoping — set when role is "investor". Every firm has a
+  // watchlist of zone ids the investor is currently tracking. Not
+  // used for viewer/partner/editor/admin roles.
+  firm?: {
+    id: string;
+    name: string;
+    tier: "basic" | "deal" | "sovereign";
+    watchlist: string[];
+  };
 }
 
 const ROLE_RANK: Record<AuthRole, number> = {
   viewer: 1,
   partner: 2,
-  editor: 3,
-  admin: 4,
+  investor: 3,
+  editor: 4,
+  admin: 5,
 };
+
+// Convenience checks so components don't have to remember the rank order.
+export function isInvestor(user: AuthUser | null): boolean {
+  return user?.role === "investor";
+}
+export function isAdmin(user: AuthUser | null): boolean {
+  return user?.role === "admin";
+}
 
 export function hasRoleAtLeast(user: AuthUser | null, required: AuthRole): boolean {
   if (!user?.role) return false;
