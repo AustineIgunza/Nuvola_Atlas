@@ -8,19 +8,18 @@ import { api } from "@/api";
 import { formatDate, formatBytes } from "@/lib/format";
 import { springSettle, staggerContainer, staggerItem } from "@/lib/motion";
 import { STATUS_STYLES } from "./reports.constants";
+import { useT } from "@/lib/i18n/use-t";
 import DetailPopup from "@/components/common/DetailPopup";
 import ReportDetail from "./ReportDetail";
 import NewReportModal from "./NewReportModal";
 import type { Report, ReportStatus } from "@/types";
 
-const FILTERS: { label: string; value: ReportStatus | "all" }[] = [
-  { label: "All", value: "all" },
-  { label: "Published", value: "published" },
-  { label: "Review", value: "review" },
-  { label: "Draft", value: "draft" },
-];
+// Filter labels resolved inside the component via useT so language flips
+// take effect on the next render.
+const FILTER_VALUES: (ReportStatus | "all")[] = ["all", "published", "review", "draft"];
 
 export default function ReportsTable() {
+  const t = useT();
   const [searchParams, setSearchParams] = useSearchParams();
   const zoneParam = searchParams.get("zone");
   const [filter, setFilter] = useState<ReportStatus | "all">("all");
@@ -90,28 +89,35 @@ export default function ReportsTable() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
           <div className="flex items-center gap-1.5 flex-wrap relative">
-            {FILTERS.map((f) => (
-              <motion.button
-                key={f.value}
-                onClick={() => setFilter(f.value)}
-                whileTap={{ scale: 0.93 }}
-                className={cn(
-                  "relative px-3.5 h-8 rounded-chip text-[11px] font-medium transition-colors",
-                  filter === f.value
-                    ? "text-white"
-                    : "text-ink-3 hover:text-ink-2",
-                )}
-              >
-                {filter === f.value && (
-                  <motion.div
-                    layoutId="report-filter"
-                    className="absolute inset-0 bg-accent rounded-chip glow-accent"
-                    transition={springSettle}
-                  />
-                )}
-                <span className="relative z-10">{f.label}</span>
-              </motion.button>
-            ))}
+            {FILTER_VALUES.map((v) => {
+              const label = v === "all"
+                ? t("alerts.filter.all")
+                : v === "published"
+                ? t("reports.status.published")
+                : v === "review"
+                ? t("reports.status.review")
+                : t("reports.status.draft");
+              return (
+                <motion.button
+                  key={v}
+                  onClick={() => setFilter(v)}
+                  whileTap={{ scale: 0.93 }}
+                  className={cn(
+                    "relative px-3.5 h-8 rounded-chip text-[11px] font-medium transition-colors",
+                    filter === v ? "text-white" : "text-ink-3 hover:text-ink-2",
+                  )}
+                >
+                  {filter === v && (
+                    <motion.div
+                      layoutId="report-filter"
+                      className="absolute inset-0 bg-accent rounded-chip glow-accent"
+                      transition={springSettle}
+                    />
+                  )}
+                  <span className="relative z-10">{label}</span>
+                </motion.button>
+              );
+            })}
           </div>
           <div className="flex items-center gap-2 self-start">
             {zoneParam && (
@@ -133,7 +139,7 @@ export default function ReportsTable() {
               className="flex items-center gap-1.5 h-9 px-4 rounded-control bg-accent text-white text-[12px] font-medium hover:brightness-110 transition-all btn-glow"
             >
               <Plus size={14} />
-              New report
+              {t("reports.new")}
             </motion.button>
           </div>
         </div>

@@ -31,6 +31,7 @@ interface ChromeState {
   openChat: () => void;
   closeChat: () => void;
   toggleSidebar: () => void;
+  setSidebarCollapsed: (collapsed: boolean) => void;
   openQuickView: (projectId: string) => void;
   closeQuickView: () => void;
   setAutoRefresh: (on: boolean) => void;
@@ -56,6 +57,7 @@ export const useChromeStore = create<ChromeState>((set) => ({
   openChat: () => set({ chatOpen: true }),
   closeChat: () => set({ chatOpen: false }),
   toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
+  setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
   openQuickView: (projectId) => set({ quickViewProjectId: projectId }),
   closeQuickView: () => set({ quickViewProjectId: null }),
   setAutoRefresh: (on) => {

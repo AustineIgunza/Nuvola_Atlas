@@ -10,13 +10,15 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { AlertTriangle, Droplets, HardHat, RefreshCcw, X } from "lucide-react";
+import { AlertTriangle, Droplets, HardHat, RefreshCcw, TrendingUp, X } from "lucide-react";
 import AppShell from "@/components/chrome/AppShell";
 import CompareAssistant from "@/components/chat/CompareAssistant";
 import { api } from "@/api";
 import { useAtlasStore } from "@/stores/atlas";
 import { useChatStore } from "@/stores/chat";
+import { useChromeStore } from "@/stores/chrome";
 import { useZoneHistory } from "@/hooks/useZoneHistory";
+import { useZoneForecast } from "@/hooks/useZoneForecast";
 import { waterProfile } from "@/lib/waterSanitation";
 import { BRAND, PILLAR_COLORS, PILLAR_SHORT, scoreColor } from "@/lib/scoreColor";
 import type { AlertItem, AlertSeverity, HistoryRange, PillarKey, Project, Zone } from "@/types";
@@ -49,6 +51,18 @@ export default function ComparePage() {
     setCompareZoneIds(selectedIds);
     return () => setCompareZoneIds([]);
   }, [selectedIds, setCompareZoneIds]);
+
+  // Auto-collapse the sidebar when the user opens the Compare page — the
+  // comparison grid is dense and needs the horizontal real estate. Restore
+  // the previous state on unmount so users don't get stuck in collapsed mode.
+  useEffect(() => {
+    const chrome = useChromeStore.getState();
+    const wasCollapsed = chrome.sidebarCollapsed;
+    if (!wasCollapsed) chrome.setSidebarCollapsed(true);
+    return () => {
+      if (!wasCollapsed) chrome.setSidebarCollapsed(false);
+    };
+  }, []);
 
   const addZone = (id: string) => {
     if (selectedIds.includes(id) || selectedIds.length >= MAX_ZONES) return;
@@ -265,26 +279,75 @@ function TrendCard({
   range: HistoryRange;
   onRange: (r: HistoryRange) => void;
 }) {
+  const [forecastOn, setForecastOn] = useState(false);
+  const [pillarOverlay, setPillarOverlay] = useState<PillarKey | null>(null);
+
   return (
     <div className="mt-3 rounded-card border border-border p-3 bg-[rgba(255,255,255,0.02)]">
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex flex-wrap items-center gap-2 mb-2">
         <div className="text-[10px] text-ink-4 uppercase tracking-[0.08em]">Score history</div>
-        <div className="flex items-center gap-0.5 rounded-full bg-[rgba(255,255,255,0.04)] border border-border p-0.5">
-          {RANGES.map((r) => (
-            <button
-              key={r.key}
-              onClick={() => onRange(r.key)}
-              className={`px-2 py-0.5 rounded-full text-[9.5px] font-medium transition-colors ${
-                range === r.key ? "bg-[rgba(255,255,255,0.14)] text-ink-1" : "text-ink-4 hover:text-ink-2"
-              }`}
-              aria-pressed={range === r.key}
-            >
-              {r.label}
-            </button>
-          ))}
+        <div className="ml-auto flex items-center gap-1.5 flex-wrap">
+          <button
+            onClick={() => setForecastOn((v) => !v)}
+            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-medium transition-colors border ${
+              forecastOn
+                ? "text-ink-1 bg-[rgba(31,138,120,0.14)] border-[rgba(31,138,120,0.32)]"
+                : "text-ink-4 hover:text-ink-2 border-border"
+            }`}
+            aria-pressed={forecastOn}
+            title="Toggle 14-day forecast"
+          >
+            <TrendingUp size={9} /> Forecast
+          </button>
+          <div className="flex items-center gap-0.5 rounded-full bg-[rgba(255,255,255,0.04)] border border-border p-0.5">
+            {RANGES.map((r) => (
+              <button
+                key={r.key}
+                onClick={() => onRange(r.key)}
+                className={`px-2 py-0.5 rounded-full text-[9.5px] font-medium transition-colors ${
+                  range === r.key ? "bg-[rgba(255,255,255,0.14)] text-ink-1" : "text-ink-4 hover:text-ink-2"
+                }`}
+                aria-pressed={range === r.key}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
-      <ComparisonChart zones={zones} range={range} />
+      <ComparisonChart zones={zones} range={range} forecastOn={forecastOn} pillarOverlay={pillarOverlay} />
+      <div className="mt-2 flex flex-wrap items-center gap-1">
+        <span className="text-[9px] text-ink-4 uppercase tracking-[0.08em] mr-1">Pillar overlay</span>
+        <button
+          onClick={() => setPillarOverlay(null)}
+          className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9.5px] font-medium transition-colors border ${
+            pillarOverlay === null
+              ? "text-ink-1 bg-[rgba(255,255,255,0.08)] border-border"
+              : "text-ink-4 border-border hover:text-ink-2"
+          }`}
+        >
+          Score
+        </button>
+        {PILLAR_KEYS.map((k) => {
+          const on = pillarOverlay === k;
+          return (
+            <button
+              key={k}
+              onClick={() => setPillarOverlay(k)}
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9.5px] font-medium transition-colors border"
+              style={{
+                borderColor: on ? PILLAR_COLORS[k] : "rgba(255,255,255,0.08)",
+                color: on ? PILLAR_COLORS[k] : "rgba(255,255,255,0.55)",
+                background: on ? `${PILLAR_COLORS[k]}18` : "transparent",
+              }}
+              aria-pressed={on}
+            >
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: PILLAR_COLORS[k] }} />
+              {PILLAR_SHORT[k]}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -506,28 +569,78 @@ function AlertsGrid({ zones, alerts }: { zones: Zone[]; alerts: AlertItem[] }) {
   );
 }
 
-function ComparisonChart({ zones, range }: { zones: Zone[]; range: HistoryRange }) {
+function ComparisonChart({
+  zones, range, forecastOn = false, pillarOverlay = null,
+}: {
+  zones: Zone[];
+  range: HistoryRange;
+  forecastOn?: boolean;
+  pillarOverlay?: PillarKey | null;
+}) {
   // Rules of hooks: always call the hook MAX_ZONES times regardless of how
   // many zones are actually selected. Missing zones pass null and the hook
   // returns { data: undefined } thanks to the enabled flag.
   const s1 = useZoneHistory(zones[0]?.id ?? null, range);
   const s2 = useZoneHistory(zones[1]?.id ?? null, range);
   const s3 = useZoneHistory(zones[2]?.id ?? null, range);
+  // Same hook-order rule for the forecast — always three calls.
+  const f1 = useZoneForecast(zones[0]?.id ?? null, 14, forecastOn);
+  const f2 = useZoneForecast(zones[1]?.id ?? null, 14, forecastOn);
+  const f3 = useZoneForecast(zones[2]?.id ?? null, 14, forecastOn);
   const series = [s1, s2, s3].slice(0, zones.length);
+  const forecasts = [f1, f2, f3].slice(0, zones.length);
   const ready = series.every((s) => s.data);
+
+  // Series key — either the composite score, or one pillar-name field per point.
+  const seriesKey = pillarOverlay ?? "score";
 
   const merged = useMemo(() => {
     if (!ready) return [];
     const anchor = series[0].data!;
-    return anchor.points.map((p, idx) => {
-      const row: Record<string, unknown> = { label: formatTick(p.t, range) };
+    const historical = anchor.points.map((p, idx) => {
+      const row: Record<string, unknown> = { label: formatTick(p.t, range), phase: "history" };
       series.forEach((s, i) => {
-        row[`score${i}`] = s.data!.points[idx]?.score;
+        const point = s.data!.points[idx];
+        if (!point) return;
+        row[`v${i}`] = pillarOverlay ? point.pillars[pillarOverlay] : point.score;
       });
       return row;
     });
+
+    if (!forecastOn) return historical;
+    // Forecast is composite-score-only in the current data contract, so
+    // pillar-overlay + forecast doesn't add a projected line — just the
+    // historical pillar shows. That's a fine trade-off for a v1.
+    if (pillarOverlay) return historical;
+
+    const projected: Record<string, unknown>[] = [];
+    const anchorPointCount = anchor.points.length;
+    const maxForecastLen = Math.max(...forecasts.map((f) => f.data?.points.length ?? 0));
+    for (let idx = 0; idx < maxForecastLen; idx++) {
+      const row: Record<string, unknown> = { label: "+" + (idx + 1) + (range === "day" ? "h" : "d"), phase: "forecast" };
+      forecasts.forEach((f, i) => {
+        const point = f.data?.points[idx];
+        if (!point) return;
+        row[`f${i}`] = point.score;
+        row[`fLower${i}`] = point.lower;
+        row[`fUpper${i}`] = point.upper;
+      });
+      // Anchor the first forecast point on the last historical point per
+      // series so the two segments connect visually.
+      if (idx === 0 && historical.length > 0) {
+        const lastRow = historical[anchorPointCount - 1];
+        series.forEach((_s, i) => {
+          if (row[`f${i}`] === undefined) return;
+          if (lastRow && lastRow[`v${i}`] !== undefined) {
+            (lastRow as Record<string, unknown>)[`f${i}`] = lastRow[`v${i}`];
+          }
+        });
+      }
+      projected.push(row);
+    }
+    return [...historical, ...projected];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [s1.data, s2.data, s3.data, range, ready]);
+  }, [s1.data, s2.data, s3.data, f1.data, f2.data, f3.data, range, ready, forecastOn, pillarOverlay]);
 
   if (!ready) {
     return <div className="h-[220px] rounded-control bg-[rgba(255,255,255,0.03)] animate-pulse" />;
@@ -558,26 +671,48 @@ function ComparisonChart({ zones, range }: { zones: Zone[]; range: HistoryRange 
             contentStyle={{ background: "rgba(11,34,53,0.94)", border: `1px solid ${BRAND.navyRaised}`, borderRadius: 6, fontSize: 11 }}
             labelStyle={{ color: "rgba(255,255,255,0.7)" }}
             formatter={(value: unknown, key: unknown) => {
-              const i = Number(String(key).replace("score", ""));
-              return [String(value), zones[i]?.name ?? key];
+              const k = String(key);
+              const suffix = pillarOverlay ? " · " + PILLAR_SHORT[pillarOverlay] : "";
+              if (k.startsWith("f")) {
+                const i = Number(k.replace(/^f/, ""));
+                return [String(value), (zones[i]?.name ?? key) + " (forecast)"];
+              }
+              const i = Number(k.replace("v", ""));
+              return [String(value), (zones[i]?.name ?? key) + suffix];
             }}
           />
           <Legend
             iconType="circle"
             wrapperStyle={{ fontSize: 10, color: "rgba(255,255,255,0.7)" }}
             formatter={(_v, entry) => {
-              const i = Number(String(entry.dataKey).replace("score", ""));
+              const k = String(entry.dataKey);
+              const i = Number(k.replace(/^[vf]/, ""));
               return zones[i]?.name ?? "";
             }}
           />
           {zones.map((_z, i) => (
             <Line
-              key={i}
+              key={`v${i}`}
               type="monotone"
-              dataKey={`score${i}`}
-              stroke={SERIES_COLORS[i]}
+              dataKey={`v${i}`}
+              stroke={pillarOverlay ? PILLAR_COLORS[pillarOverlay] : SERIES_COLORS[i]}
               strokeWidth={1.6}
+              strokeOpacity={pillarOverlay ? 0.35 + (i * 0.25) : 1}
               dot={false}
+              connectNulls
+            />
+          ))}
+          {forecastOn && !pillarOverlay && zones.map((_z, i) => (
+            <Line
+              key={`f${i}`}
+              type="monotone"
+              dataKey={`f${i}`}
+              stroke={SERIES_COLORS[i]}
+              strokeWidth={1.2}
+              strokeDasharray="4 3"
+              dot={false}
+              connectNulls
+              legendType="none"
             />
           ))}
         </LineChart>

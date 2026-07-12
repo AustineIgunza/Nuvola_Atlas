@@ -1,24 +1,34 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertTriangle, Info, ShieldAlert, X } from "lucide-react";
 import { useAuthStore } from "@/stores/auth";
 import { announcementsApi, visibleAnnouncements, type Announcement } from "@/api/announcements";
 import { useT } from "@/lib/i18n/use-t";
 
+// How long a banner stays on screen before it auto-dismisses. Critical
+// announcements skip auto-dismiss — the user must acknowledge.
+const AUTO_DISMISS_MS: Record<Announcement["severity"], number | null> = {
+  info: 8000,
+  warning: 12000,
+  critical: null,
+};
+
 /**
  * Global announcements strip. Shows above the main content on every route
  * once a user is signed in. Auto-updates as announcements are added or
- * dismissed elsewhere (e.g., in an admin surface).
+ * dismissed elsewhere (e.g., in an admin surface). Non-critical banners
+ * auto-dismiss on a timer so they don't pile up.
  */
 export default function AnnouncementsBanner() {
   const user = useAuthStore((s) => s.user);
   const t = useT();
   const [visible, setVisible] = useState<Announcement[]>([]);
+  // Track already-timed banners so a re-render doesn't stack multiple timers.
+  const timersRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     const refresh = () => setVisible(visibleAnnouncements(user));
     refresh();
-    // Refresh when tab regains focus (someone might have dismissed elsewhere)
     window.addEventListener("focus", refresh);
     window.addEventListener("storage", refresh);
     return () => {
@@ -27,12 +37,27 @@ export default function AnnouncementsBanner() {
     };
   }, [user]);
 
-  if (!user || visible.length === 0) return null;
-
   const dismiss = (id: string) => {
     announcementsApi.dismiss(id);
     setVisible((prev) => prev.filter((a) => a.id !== id));
+    timersRef.current.delete(id);
   };
+
+  // Set an auto-dismiss timer for each visible non-critical banner.
+  useEffect(() => {
+    visible.slice(0, 2).forEach((a) => {
+      if (timersRef.current.has(a.id)) return;
+      const ms = AUTO_DISMISS_MS[a.severity];
+      if (ms === null) return;
+      timersRef.current.add(a.id);
+      window.setTimeout(() => {
+        setVisible((prev) => prev.filter((x) => x.id !== a.id));
+        timersRef.current.delete(a.id);
+      }, ms);
+    });
+  }, [visible]);
+
+  if (!user || visible.length === 0) return null;
 
   return (
     <div className="fixed top-3 right-3 z-40 max-w-[400px] w-[calc(100vw-24px)] sm:w-auto space-y-2 pointer-events-none">

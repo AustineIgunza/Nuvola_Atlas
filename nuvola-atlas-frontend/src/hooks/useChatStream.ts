@@ -3,7 +3,32 @@ import { BASE, USE_MOCK_CHAT, authHeaders } from "@/api/client";
 import { useChatStore } from "@/stores/chat";
 import { useAtlasStore } from "@/stores/atlas";
 import { ZONES } from "@/api/fixtures";
+import { translate } from "@/lib/i18n/translate";
+import { usePrefsStore } from "@/stores/prefs";
 import type { ChatMessage, Zone } from "@/types";
+
+/**
+ * Resolve pillar labels against the currently-active locale. We do this at
+ * message-build time (not at module load) so language switches take effect
+ * on the very next chat turn.
+ */
+function pillarLabels(): Record<"social" | "safety" | "density" | "infra", string> {
+  const locale = usePrefsStore.getState().locale;
+  return {
+    social: translate(locale, "pillar.social.long"),
+    safety: translate(locale, "pillar.safety.long"),
+    density: translate(locale, "pillar.density.long"),
+    infra: translate(locale, "pillar.infra.long"),
+  };
+}
+
+function localeTag(): string {
+  const locale = usePrefsStore.getState().locale;
+  if (locale === "sw") {
+    return "Kiswahili · maelezo ya kina bado yako Kiingereza wakati LLM ya kweli inasubiri kuingia mtandaoni.";
+  }
+  return "";
+}
 
 type StreamEventName =
   | "intent"
@@ -228,6 +253,8 @@ interface MockAnswer {
   followups: string[];
 }
 
+// Preserved as an English fallback but every runtime call site should
+// route through pillarLabels() so labels follow the active locale.
 const PILLAR_LABELS: Record<"social" | "safety" | "density" | "infra", string> = {
   social: "Social Wellbeing",
   safety: "Safety & Security",
@@ -357,12 +384,13 @@ function buildComparisonAnswer(zones: Zone[]): MockAnswer {
   const [top, ...rest] = sorted;
   const overallGaps = rest.map((z) => `${top.score - z.score} pt${top.score - z.score === 1 ? "" : "s"} ahead of ${z.name}`);
 
+  const labels = pillarLabels();
   const pillarKeys = ["social", "safety", "density", "infra"] as const;
   const pillarLines = pillarKeys.map((k) => {
     const ranked = [...zones].sort((a, b) => b.pillars[k] - a.pillars[k]);
     const values = ranked.map((z) => `${z.name} ${z.pillars[k]}`).join(", ");
     const spread = ranked[0].pillars[k] - ranked[ranked.length - 1].pillars[k];
-    return `• ${PILLAR_LABELS[k]}: ${values} — spread of ${spread} pt${spread === 1 ? "" : "s"}.`;
+    return `• ${labels[k]}: ${values} — spread of ${spread} pt${spread === 1 ? "" : "s"}.`;
   });
 
   const widestSpread = pillarKeys
@@ -373,15 +401,18 @@ function buildComparisonAnswer(zones: Zone[]): MockAnswer {
     .sort((a, b) => b.spread - a.spread)[0];
 
   const opener = `${top.name} leads overall at ${top.score}, ${overallGaps.join(" and ")}.`;
-  const closing = `The four pillars split the story: ${PILLAR_LABELS[widestSpread.key]} is where these zones diverge most (${widestSpread.spread} pt spread), so if you're prioritising, that's the pillar to interrogate first.`;
-  const answer = `${opener}\n\n${pillarLines.join("\n")}\n\n${closing}`;
+  const closing = `The four pillars split the story: ${labels[widestSpread.key]} is where these zones diverge most (${widestSpread.spread} pt spread), so if you're prioritising, that's the pillar to interrogate first.`;
+  const tag = localeTag();
+  const answer = tag
+    ? `${tag}\n\n${opener}\n\n${pillarLines.join("\n")}\n\n${closing}`
+    : `${opener}\n\n${pillarLines.join("\n")}\n\n${closing}`;
 
   return {
     sql: `SELECT name, score, pillar_social, pillar_safety, pillar_density, pillar_infra FROM zones WHERE id IN (${idList}) ORDER BY score DESC`,
     rows,
     answer,
     followups: [
-      `Why is ${top.name}'s ${PILLAR_LABELS[widestSpread.key]} pillar stronger?`,
+      `Why is ${top.name}'s ${labels[widestSpread.key]} pillar stronger?`,
       `Which infrastructure projects are active in ${sorted[sorted.length - 1].name}?`,
       `How has the gap between ${top.name} and ${sorted[sorted.length - 1].name} moved this quarter?`,
     ],
@@ -401,9 +432,10 @@ function buildCompositionAnswer(zones: Zone[]): MockAnswer {
       ],
     };
   }
+  const labels = pillarLabels();
   const entries = (["social", "safety", "density", "infra"] as const).map((k) => ({
     key: k,
-    label: PILLAR_LABELS[k],
+    label: labels[k],
     value: z.pillars[k],
     delta: z.deltas[k],
   }));
@@ -533,8 +565,9 @@ function buildDiagnosticText(zones: Zone[]): string {
     return "Every zone in Nairobi is roughly stable this quarter — the softest moves are inside noise. Ask about a specific pillar to go deeper.";
   }
   const [z] = zones;
+  const labels = pillarLabels();
   const entries = (["social", "safety", "density", "infra"] as const).map((k) => ({
-    label: PILLAR_LABELS[k],
+    label: labels[k],
     key: k,
     value: z.pillars[k],
     d: z.deltas[k],

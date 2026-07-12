@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { cn } from "@/lib/cn";
-import { PILLAR_COLORS, PILLAR_SHORT, PILLAR_GLYPHS } from "@/lib/scoreColor";
+import { PILLAR_COLORS, PILLAR_GLYPHS } from "@/lib/scoreColor";
+import { useT } from "@/lib/i18n/use-t";
 import type { PillarKey } from "@/types";
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
 
 export default function PillarBar({ pillarKey, score, delta, index }: Props) {
   const color = PILLAR_COLORS[pillarKey];
+  const t = useT();
 
   return (
     <div className="py-1.5">
@@ -23,7 +25,7 @@ export default function PillarBar({ pillarKey, score, delta, index }: Props) {
           {PILLAR_GLYPHS[pillarKey]}
         </div>
         <span className="flex-1 min-w-0 text-[11px] text-ink-2 font-medium truncate">
-          {PILLAR_SHORT[pillarKey]}
+          {t(`pillar.${pillarKey}.short` as const)}
         </span>
         <span className="tabular-nums text-[13px] font-semibold shrink-0" style={{ color }}>
           {score}
