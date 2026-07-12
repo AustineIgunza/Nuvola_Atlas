@@ -54,6 +54,15 @@ export default function SignInPage() {
         { ...res.user, role: res.user.role as AuthRole | undefined },
         res.token,
       );
+      // Investors: seed their firm's watchlist into the local store so
+      // the ★ chips render pre-populated across the app. Non-investors
+      // never touch the watchlist store, so this branch is inert for them.
+      const firm = (res.user as { firm?: { watchlist?: string[] } }).firm;
+      const firmWatchlist = firm && Array.isArray(firm.watchlist) ? firm.watchlist : [];
+      if (firmWatchlist.length > 0) {
+        const { useWatchlistStore } = await import("@/stores/watchlist");
+        useWatchlistStore.getState().hydrate(firmWatchlist);
+      }
       // Investors land on their own dashboard; everyone else lands on the atlas.
       const landing = res.user.role === "investor" ? "/investor" : "/atlas";
       navigate(landing, { replace: true });

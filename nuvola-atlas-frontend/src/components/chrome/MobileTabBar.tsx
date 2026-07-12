@@ -1,28 +1,70 @@
+import { useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Map, BarChart3, HardHat, FileText, Bell } from "lucide-react";
+import {
+  Map, BarChart3, HardHat, FileText, Bell, Briefcase, Sparkles, Shield,
+  type LucideIcon,
+} from "lucide-react";
 import { cn } from "@/lib/cn";
 import { springSettle } from "@/lib/motion";
 import { api } from "@/api";
+import { useAuthStore, hasRoleAtLeast, isInvestor } from "@/stores/auth";
+import { useT } from "@/lib/i18n/use-t";
+import type { MessageKey } from "@/lib/i18n/translate";
 
-const TABS = [
-  { path: "/atlas", label: "Atlas", icon: Map },
-  { path: "/vitality", label: "Vitality", icon: BarChart3 },
-  { path: "/infrastructure", label: "Infra", icon: HardHat },
-  { path: "/reports", label: "Reports", icon: FileText },
-  { path: "/alerts", label: "Alerts", icon: Bell },
-] as const;
+interface Tab {
+  path: string;
+  labelKey: MessageKey;
+  icon: LucideIcon;
+}
 
+/**
+ * Role-aware mobile bottom nav. Five slots — chosen per role so the
+ * primary flows for each audience are always one tap away:
+ *   viewer/partner/editor  → Atlas, Vitality, Infra, Alerts, Assistant
+ *   investor              → Portfolio, Atlas, Compare, Alerts, Assistant
+ *   admin                 → Atlas, Compare, Alerts, Assistant, Admin
+ */
 export default function MobileTabBar() {
   const location = useLocation();
   const navigate = useNavigate();
+  const t = useT();
+  const user = useAuthStore((s) => s.user);
 
   const { data: alerts } = useQuery({
     queryKey: ["alerts"],
     queryFn: api.getAlerts,
   });
   const unread = alerts?.filter((a) => !a.read).length ?? 0;
+
+  const tabs: Tab[] = useMemo(() => {
+    if (isInvestor(user)) {
+      return [
+        { path: "/investor", labelKey: "nav.investor", icon: Briefcase },
+        { path: "/atlas", labelKey: "nav.atlas", icon: Map },
+        { path: "/compare", labelKey: "nav.compare", icon: BarChart3 },
+        { path: "/alerts", labelKey: "nav.alerts", icon: Bell },
+        { path: "/assistant", labelKey: "nav.assistant", icon: Sparkles },
+      ];
+    }
+    if (hasRoleAtLeast(user, "admin")) {
+      return [
+        { path: "/atlas", labelKey: "nav.atlas", icon: Map },
+        { path: "/compare", labelKey: "nav.compare", icon: BarChart3 },
+        { path: "/alerts", labelKey: "nav.alerts", icon: Bell },
+        { path: "/assistant", labelKey: "nav.assistant", icon: Sparkles },
+        { path: "/admin", labelKey: "nav.admin", icon: Shield },
+      ];
+    }
+    return [
+      { path: "/atlas", labelKey: "nav.atlas", icon: Map },
+      { path: "/vitality", labelKey: "nav.vitality", icon: BarChart3 },
+      { path: "/infrastructure", labelKey: "nav.infrastructure", icon: HardHat },
+      { path: "/alerts", labelKey: "nav.alerts", icon: Bell },
+      { path: "/assistant", labelKey: "nav.assistant", icon: Sparkles },
+    ];
+  }, [user]);
 
   return (
     <nav
@@ -31,9 +73,10 @@ export default function MobileTabBar() {
       style={{ height: "calc(3.5rem + env(safe-area-inset-bottom))" }}
     >
       <ul className="grid grid-cols-5 h-14 px-1">
-        {TABS.map(({ path, label, icon: Icon }) => {
+        {tabs.map(({ path, labelKey, icon: Icon }) => {
           const active = location.pathname.startsWith(path);
           const showBadge = path === "/alerts" && unread > 0;
+          const label = t(labelKey);
           return (
             <li key={path} className="flex">
               <motion.button
@@ -55,7 +98,7 @@ export default function MobileTabBar() {
                     </span>
                   )}
                 </span>
-                <span className={cn("text-[10px] font-medium tracking-tight", active && "font-semibold")}>
+                <span className={cn("text-[10px] font-medium tracking-tight truncate max-w-full px-0.5", active && "font-semibold")}>
                   {label}
                 </span>
                 {active && (

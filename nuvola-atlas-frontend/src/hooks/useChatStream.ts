@@ -240,10 +240,11 @@ function mockAnswerFor(intent: string, prompt: string, compareZones: Zone[], con
   //   1. Any zone names explicitly mentioned in the prompt.
   //   2. The compare picker zones (Compare page).
   //   3. The conversation's seeded zone (Ask-about-X chip).
-  // We fall through so a prompt like "compare Kibra and Mathare" while the
-  // conversation was seeded for Westlands does the right thing.
+  //   4. Intent-appropriate fallback so the assistant never dead-ends
+  //      with a "pick a zone" boilerplate — it just picks the zone the
+  //      user probably meant.
   const mentioned = ZONES.filter((z) => prompt.toLowerCase().includes(z.name.toLowerCase())).slice(0, 3);
-  const promptZones =
+  const explicitZones =
     mentioned.length > 0
       ? mentioned
       : compareZones.length > 0
@@ -251,6 +252,9 @@ function mockAnswerFor(intent: string, prompt: string, compareZones: Zone[], con
       : convZone
       ? [convZone]
       : [];
+
+  const promptZones =
+    explicitZones.length > 0 ? explicitZones : fallbackZonesForIntent(intent);
 
   const genericFollowups = [
     "Which of the four pillars is driving that gap?",
@@ -291,6 +295,39 @@ function mockAnswerFor(intent: string, prompt: string, compareZones: Zone[], con
     answer: buildSummaryText(promptZones),
     followups: genericFollowups,
   };
+}
+
+/**
+ * Pick a reasonable zone (or two) when the user hasn't named one and
+ * there's no compare/conversation context. Intent-aware:
+ *   - diagnostic → the zone with the biggest recent drop (interesting)
+ *   - trend → the highest-scoring zone (something readable to trend)
+ *   - composition → the median-scoring zone
+ *   - comparison → the top-mover paired with the biggest laggard
+ *   - anything else → the highest-scoring zone
+ * This is why the assistant now answers questions like "why did safety
+ * drop somewhere?" without demanding the user pick a zone first.
+ */
+function fallbackZonesForIntent(intent: string): Zone[] {
+  const sortedByScore = [...ZONES].sort((a, b) => b.score - a.score);
+  if (intent === "comparison") {
+    return [sortedByScore[0], sortedByScore[sortedByScore.length - 1]];
+  }
+  if (intent === "diagnostic") {
+    const worstMover = [...ZONES].sort((a, b) => {
+      const totalA = a.deltas.social + a.deltas.safety + a.deltas.density + a.deltas.infra;
+      const totalB = b.deltas.social + b.deltas.safety + b.deltas.density + b.deltas.infra;
+      return totalA - totalB;
+    })[0];
+    return [worstMover];
+  }
+  if (intent === "trend") {
+    return [sortedByScore[0]];
+  }
+  if (intent === "composition") {
+    return [sortedByScore[Math.floor(sortedByScore.length / 2)]];
+  }
+  return [sortedByScore[0]];
 }
 
 function buildComparisonAnswer(zones: Zone[]): MockAnswer {
@@ -490,8 +527,10 @@ function buildFakeTrend(anchor: number): Array<Record<string, unknown>> {
 }
 
 function buildDiagnosticText(zones: Zone[]): string {
+  // Fallback resolver always returns at least one zone, so this length
+  // check is defensive only — kept for typescript's benefit.
   if (zones.length === 0) {
-    return "Pick a zone or mention one by name — 'why did Kibra's safety score drop?' or 'what's dragging Kasarani down?' — and I'll walk through which pillar moved and what likely drove it.";
+    return "Every zone in Nairobi is roughly stable this quarter — the softest moves are inside noise. Ask about a specific pillar to go deeper.";
   }
   const [z] = zones;
   const entries = (["social", "safety", "density", "infra"] as const).map((k) => ({

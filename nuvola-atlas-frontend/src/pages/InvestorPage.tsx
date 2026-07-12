@@ -301,18 +301,19 @@ function PortfolioRow({
   return (
     <button
       onClick={onOpen}
-      className="w-full flex items-center gap-3 rounded-control border border-border bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.05)] transition-colors px-3 py-2.5 text-left"
+      className="w-full flex items-center gap-2 sm:gap-3 rounded-control border border-border bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.05)] transition-colors px-2.5 sm:px-3 py-2.5 text-left"
     >
       <span className="w-6 h-6 rounded-full grid place-items-center text-[10.5px] font-semibold text-ink-1 bg-[rgba(255,255,255,0.06)] shrink-0">
         {rank}
       </span>
       <div className="flex-1 min-w-0">
         <div className="text-[12.5px] font-semibold text-ink-1 truncate">{zone.name}</div>
-        <div className="text-[10px] text-ink-4 tracking-[0.02em]">
+        <div className="text-[9.5px] text-ink-4 tracking-[0.02em] truncate">
           {projectCount} projects · {activeProjects} active
         </div>
       </div>
-      <div className="flex gap-2 shrink-0">
+      {/* Pillar quartet — hide on mobile to keep the row scannable */}
+      <div className="hidden sm:flex gap-2 shrink-0">
         {PILLAR_KEYS.map((k) => (
           <div key={k} className="flex flex-col items-center">
             <span className="text-[11.5px] font-semibold tabular-nums" style={{ color: PILLAR_COLORS[k] }}>
@@ -322,13 +323,13 @@ function PortfolioRow({
           </div>
         ))}
       </div>
-      <div className="w-14 text-right">
-        <div className="text-[16px] font-semibold tabular-nums" style={{ color: scoreColor(zone.score) }}>
+      <div className="w-12 sm:w-14 text-right shrink-0">
+        <div className="text-[15px] sm:text-[16px] font-semibold tabular-nums" style={{ color: scoreColor(zone.score) }}>
           {investorScore}
         </div>
         <div className="text-[8.5px] text-ink-4">lens</div>
       </div>
-      <ArrowRight size={13} className="text-ink-4 shrink-0" />
+      <ArrowRight size={13} className="text-ink-4 shrink-0 hidden sm:block" />
     </button>
   );
 }

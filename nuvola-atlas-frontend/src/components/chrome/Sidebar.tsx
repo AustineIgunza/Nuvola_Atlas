@@ -14,6 +14,7 @@ import { api } from "@/api";
 import { scoreColor } from "@/lib/scoreColor";
 import { Emblem, Wordmark } from "@/components/brand/Brand";
 import { LAYER_META } from "@/components/map/atlas-map.constants";
+import WatchlistStar from "@/components/investor/WatchlistStar";
 import { useT } from "@/lib/i18n/use-t";
 import type { MessageKey } from "@/lib/i18n/translate";
 import { useState, useEffect } from "react";
@@ -152,8 +153,9 @@ export default function Sidebar() {
         >
           {NAV.filter((item) => {
             if (item.requiresAdmin && !isAdmin) return false;
-            // showFor: "investor" — hide from viewers, show to investors + admins
-            if (item.showFor === "investor" && !isInvestor(user) && !isAdmin) return false;
+            // Portfolio is only for investors — admins have their own console
+            // and should not see the investor Portfolio button in their sidebar.
+            if (item.showFor === "investor" && !isInvestor(user)) return false;
             return true;
           }).map(({ path, labelKey, icon: Icon }) => {
             const active = location.pathname.startsWith(path);
@@ -319,8 +321,9 @@ export default function Sidebar() {
                       animate={selectedZoneId === z.id ? { scale: [1, 1.3, 1] } : {}}
                       transition={{ duration: 0.4 }}
                     />
-                    <span className="truncate">{z.name}</span>
-                    <span className="ml-auto tabular-nums text-ink-4">{z.score}</span>
+                    <span className="truncate flex-1 text-left">{z.name}</span>
+                    <WatchlistStar zoneId={z.id} size={11} />
+                    <span className="tabular-nums text-ink-4 w-6 text-right">{z.score}</span>
                   </motion.button>
                 ))}
               </motion.div>

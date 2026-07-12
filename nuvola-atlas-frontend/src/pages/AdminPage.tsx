@@ -11,6 +11,7 @@ import ApiKeysTable from "@/components/admin/ApiKeysTable";
 import FirmsTable from "@/components/admin/FirmsTable";
 import DataFeedsMatrix from "@/components/admin/DataFeedsMatrix";
 import MethodologyEditor from "@/components/admin/MethodologyEditor";
+import AnnouncementsManager from "@/components/admin/AnnouncementsManager";
 import TwoFactorSetup from "@/components/admin/TwoFactorSetup";
 import { adminApi } from "@/api/admin";
 import { api } from "@/api";
@@ -172,6 +173,7 @@ export default function AdminPage() {
         {tab === "firms" && <FirmsTable />}
         {tab === "data" && <DataFeedsMatrix />}
         {tab === "methodology" && <MethodologyEditor />}
+        {tab === "announcements" && <AnnouncementsManager />}
         {tab === "api-keys" && <ApiKeysTable />}
       </div>
     </AppShell>

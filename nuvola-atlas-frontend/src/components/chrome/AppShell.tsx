@@ -3,6 +3,7 @@ import Sidebar from "./Sidebar";
 import SearchModal from "./SearchModal";
 import MobileTabBar from "./MobileTabBar";
 import ProjectQuickView from "./ProjectQuickView";
+import AnnouncementsBanner from "./AnnouncementsBanner";
 import MethodologyModal from "@/components/modals/MethodologyModal";
 import { useLiveData } from "@/hooks/useLiveData";
 import { useChromeStore } from "@/stores/chrome";
@@ -37,6 +38,7 @@ export default function AppShell({ children }: Props) {
       <SearchModal />
       <MethodologyModal />
       <ProjectQuickView />
+      <AnnouncementsBanner />
     </div>
   );
 }

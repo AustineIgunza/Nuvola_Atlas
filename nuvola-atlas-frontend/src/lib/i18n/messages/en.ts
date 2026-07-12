@@ -123,6 +123,152 @@ export const en = {
   // ── Sign-in / auth ───────────────────────────────────────────────────────
   "auth.signIn": "Sign in",
   "auth.signOut": "Sign out",
+
+  // ── Pillar labels (short + long) ─────────────────────────────────────────
+  "pillar.social.short": "Social",
+  "pillar.safety.short": "Safety",
+  "pillar.density.short": "Density",
+  "pillar.infra.short": "Infra",
+  "pillar.social.long": "Social Wellbeing & Human Capital",
+  "pillar.safety.long": "Safety & Security",
+  "pillar.density.long": "Density & Scaling Dynamics",
+  "pillar.infra.long": "Infrastructure & Environmental Safeguards",
+
+  // ── Map layer labels ────────────────────────────────────────────────────
+  "layer.vitality": "Vitality Zones",
+  "layer.roads": "Road Progress",
+  "layer.energy": "Smart Grid Status",
+  "layer.density": "Density",
+  "layer.water": "Water & Sanitation",
+  "layer.momentum": "Project Momentum",
+  "layer.safety": "Safety & Security",
+
+  // ── Vitality bands + scorecard chrome ───────────────────────────────────
+  "band.strong": "Strong",
+  "band.moderate": "Moderate",
+  "band.atRisk": "At Risk",
+  "band.strong.note": "Ready to absorb new projects",
+  "band.moderate.note": "Ready with targeted safeguards",
+  "band.atRisk.note": "Readiness gaps need closing first",
+  "scorecard.overview": "Overview",
+  "scorecard.pillars": "Pillars — tap to expand",
+  "scorecard.projects": "Infrastructure",
+  "scorecard.alerts": "Active alerts",
+  "scorecard.trend": "Score history",
+  "scorecard.dataSources": "Data Sources",
+  "scorecard.askAbout": "Ask about {zone}",
+  "scorecard.reopenTab": "Re-open scorecard",
+  "scorecard.lastSync": "Last sync {min} min ago",
+
+  // ── Compare page ────────────────────────────────────────────────────────
+  "compare.kicker": "Compare",
+  "compare.title": "Side-by-side zone comparison",
+  "compare.subtitle": "Pick up to {max} Nairobi sub-counties to compare their Vitality Score, pillar breakdown, and score history side by side.",
+  "compare.pick": "Pick a zone above to start.",
+  "compare.newButton": "New comparison",
+  "compare.newButton.short": "New",
+  "compare.add": "Add zone{plural} to compare",
+  "compare.range.day": "Day",
+  "compare.range.week": "Week",
+  "compare.range.month": "Month",
+  "compare.pillarBreakdown": "Pillar breakdown",
+  "compare.deltas": "Quarter-over-quarter change",
+  "compare.water": "Water & Sanitation · SDG 6",
+  "compare.infra": "Infrastructure projects",
+  "compare.alerts": "Active alerts",
+  "compare.history": "Score history",
+  "compare.assistant.header": "Assistant",
+  "compare.assistant.hint": "Ask about the compared zones",
+
+  // ── Atlas map + legend ──────────────────────────────────────────────────
+  "atlas.legend.title": "Vitality Score",
+  "atlas.legend.strong": "70–100 Strong",
+  "atlas.legend.moderate": "55–69 Moderate",
+  "atlas.legend.atRisk": "0–54 At Risk",
+  "atlas.resetView": "Reset view to Nairobi",
+  "atlas.viewMode.map": "Map",
+  "atlas.viewMode.satellite": "Satellite",
+  "atlas.viewMode.terrain": "Terrain",
+  "atlas.liveFeed": "Live",
+
+  // ── Public portal ───────────────────────────────────────────────────────
+  "public.title": "Nairobi County — Public Atlas",
+  "public.subtitle": "A read-only community view of infrastructure delivery in your ward.",
+  "public.signIn": "Sign in for full access",
+  "public.methodology": "About the methodology",
+  "public.footer": "Built by the Navuuna student team at Strathmore University.",
+
+  // ── Reports page ────────────────────────────────────────────────────────
+  "reports.title": "Reports",
+  "reports.subtitle": "Published research and periodic summaries by zone and pillar.",
+  "reports.new": "New report",
+  "reports.empty": "No reports match your filter.",
+  "reports.status.published": "Published",
+  "reports.status.review": "In review",
+  "reports.status.draft": "Draft",
+  "reports.download.pdf": "Download PDF",
+  "reports.download.docx": "Download DOCX",
+  "reports.download.txt": "Download TXT",
+
+  // ── Alerts page ─────────────────────────────────────────────────────────
+  "alerts.title": "Alerts",
+  "alerts.subtitle": "Active issues surfaced by monitoring feeds across Nairobi.",
+  "alerts.markAllRead": "Mark all read",
+  "alerts.severity.high": "High",
+  "alerts.severity.medium": "Medium",
+  "alerts.severity.low": "Low",
+  "alerts.filter.all": "All",
+  "alerts.filter.unread": "Unread only",
+  "alerts.empty": "No alerts to show.",
+
+  // ── Vitality methodology page ───────────────────────────────────────────
+  "vitality.title": "The UE Vitality Index",
+  "vitality.subtitle": "How Navuuna scores every sub-county from 0 to 100 across four pillars.",
+  "vitality.pillars.title": "The four pillars",
+  "vitality.compose.title": "How the composite is built",
+  "vitality.compose.body": "Each pillar averages its non-null indicators. The composite averages the four pillars — a fully-missing pillar is skipped, never zero-biased.",
+  "vitality.rules.title": "Rules",
+  "vitality.rules.item1": "Every indicator is a 0–100 normalized value or NULL (\"Awaiting data\").",
+  "vitality.rules.item2": "Pillar score = simple average of the pillar's non-null indicators.",
+  "vitality.rules.item3": "Composite = simple average of pillars that have at least one non-null indicator.",
+  "vitality.rules.item4": "Missing indicators are excluded from the average — never treated as zero.",
+
+  // ── Investor dashboard ──────────────────────────────────────────────────
+  "investor.title": "Investor Dashboard",
+  "investor.subtitle": "Your firm's Nairobi portfolio at a glance. Watchlisted zones roll up here.",
+  "investor.download": "Download brief",
+  "investor.kpi.portfolio": "Portfolio avg",
+  "investor.kpi.watchlisted": "Watchlisted",
+  "investor.kpi.projects": "Active projects",
+  "investor.kpi.alerts": "Alerts",
+  "investor.kpi.vsCounty": "vs. county",
+  "investor.portfolio.title": "Portfolio ranking",
+  "investor.portfolio.hint": "Capital-allocation lens — weights Safety × Infra",
+  "investor.portfolio.empty": "No zones on your watchlist yet.",
+  "investor.opps.title": "Top opportunities",
+  "investor.opps.hint.basic": "Ranked by Vitality — safest positions",
+  "investor.opps.hint.sovereign": "Ranked by quarter-over-quarter momentum",
+  "investor.opps.hint.deal": "Ranked by capital-allocation lens — zones you don't yet watch",
+  "investor.opps.watch": "Watch this zone",
+  "investor.opps.opportunity": "Opportunity",
+  "investor.activity.title": "Deal-relevant activity",
+  "investor.activity.hint": "Alerts on watchlisted zones — sorted by severity",
+  "investor.activity.empty": "No open alerts on your watchlist.",
+  "investor.thesis": "Thesis",
+
+  // ── Watchlist chip ──────────────────────────────────────────────────────
+  "watchlist.add": "Add to watchlist",
+  "watchlist.remove": "Remove from watchlist",
+  "watchlist.watching": "Watching",
+
+  // ── Announcements ───────────────────────────────────────────────────────
+  "announce.dismiss": "Dismiss",
+
+  // ── Assistant answers boilerplate (frequent phrases) ────────────────────
+  "assistant.county.avg": "county average",
+  "assistant.rank": "rank",
+  "assistant.strongest": "Strongest",
+  "assistant.weakest": "Weakest",
 } as const;
 
 export type MessageKey = keyof typeof en;
