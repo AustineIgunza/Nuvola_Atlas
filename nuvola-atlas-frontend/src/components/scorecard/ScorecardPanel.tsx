@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { X, ChevronLeft, ChevronUp } from "lucide-react";
+import { X, ChevronLeft, ChevronUp, Sparkles } from "lucide-react";
 import { useUIStore } from "@/stores/ui";
 import { springSettle, modalBackdrop, panelSlideUp } from "@/lib/motion";
 import { BRAND, PILLAR_LABELS } from "@/lib/scoreColor";
@@ -71,6 +72,7 @@ export default function ScorecardPanel({ zone }: Props) {
   const closePanel = useUIStore((s) => s.closePanel);
   const openPanel = useUIStore((s) => s.openPanel);
   const reduced = useReducedMotion();
+  const navigate = useNavigate();
 
   const [stack, setStack] = useState<PanelView[]>([{ type: "overview" }]);
   const view = stack[stack.length - 1];
@@ -109,6 +111,27 @@ export default function ScorecardPanel({ zone }: Props) {
   if (!zone) return null;
   const meta = headerMeta(view, zone);
   const bodyKey = `${zone.id}:${viewKeyOf(view)}`;
+
+  const askAboutZone = () => {
+    const prompt = `Tell me about ${zone.name} — what's driving the Vitality score and where are the biggest gaps across the four pillars?`;
+    navigate(`/assistant?ask=${encodeURIComponent(prompt)}`);
+  };
+
+  const askCta = (
+    <button
+      onClick={askAboutZone}
+      className="mx-3 mt-2.5 mb-1 flex items-center gap-2 rounded-control px-2.5 py-1.5 border transition-colors btn-press"
+      style={{
+        background: `${BRAND.teal}18`,
+        borderColor: `${BRAND.teal}55`,
+        color: BRAND.teal,
+      }}
+      aria-label={`Ask assistant about ${zone.name}`}
+    >
+      <Sparkles size={13} />
+      <span className="text-[11.5px] font-semibold">Ask about {zone.name}</span>
+    </button>
+  );
 
   const header = (
     <div className="flex items-center gap-2 px-3.5 pt-3 pb-2.5 border-b border-border shrink-0">
@@ -179,6 +202,7 @@ export default function ScorecardPanel({ zone }: Props) {
               style={{ background: `linear-gradient(90deg, ${BRAND.gold}, ${BRAND.teal})` }}
             />
             {header}
+            {askCta}
             <div className="flex-1 overflow-y-auto p-3">{body}</div>
           </motion.aside>
         )}
@@ -215,6 +239,7 @@ export default function ScorecardPanel({ zone }: Props) {
               <div className="relative shrink-0">
                 <div className="absolute left-1/2 -translate-x-1/2 top-1.5 w-9 h-1 rounded-full bg-[rgba(255,255,255,0.18)]" />
                 {header}
+                {askCta}
               </div>
               <div className="flex-1 overflow-y-auto p-3.5">{body}</div>
             </motion.div>

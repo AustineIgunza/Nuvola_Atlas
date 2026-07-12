@@ -12,9 +12,20 @@ import { useAuthStore, hasRoleAtLeast } from "@/stores/auth";
 import { api } from "@/api";
 import { scoreColor } from "@/lib/scoreColor";
 import { Emblem, Wordmark } from "@/components/brand/Brand";
+import { LAYER_META } from "@/components/map/atlas-map.constants";
 import { useT } from "@/lib/i18n/use-t";
 import type { MessageKey } from "@/lib/i18n/translate";
 import { useState, useEffect } from "react";
+
+function formatSyncAge(minutes: number): string {
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hr = Math.floor(minutes / 60);
+  if (hr < 24) return `${hr}h ago`;
+  const day = Math.floor(hr / 24);
+  if (day < 30) return `${day}d ago`;
+  return `${Math.floor(day / 30)}mo ago`;
+}
 
 const NAV: ReadonlyArray<{
   path: string;
@@ -183,36 +194,79 @@ export default function Sidebar() {
               <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.08em] px-3 mb-2">
                 {t("sidebar.dataLayers")}
               </div>
-              {([
-                { key: "vitality" as const, label: "Vitality Zones" },
-                { key: "roads" as const, label: "Roads" },
-                { key: "energy" as const, label: "Energy & Grid" },
-                { key: "density" as const, label: "Density" },
-                { key: "water" as const, label: "Water & Sanitation" },
-                { key: "momentum" as const, label: "Project Momentum" },
-                { key: "safety" as const, label: "Safety & Security" },
-              ]).map(({ key, label }) => (
-                <motion.button
-                  key={key}
-                  onClick={() => toggleLayer(key)}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full flex items-center justify-between h-9 px-3 rounded-chip text-[12px] text-ink-3 hover:text-ink-2 transition-colors"
-                >
-                  {label}
-                  <div
-                    className="toggle-track"
-                    data-on={activeLayers[key]}
-                    style={{
-                      background: activeLayers[key] ? "#C0552B" : "rgba(244,239,230,0.14)",
-                    }}
-                    role="switch"
-                    aria-checked={activeLayers[key]}
-                    aria-label={`Toggle ${label} layer`}
-                  >
-                    <div className="toggle-thumb" />
-                  </div>
-                </motion.button>
-              ))}
+              <div className="space-y-1.5">
+                {LAYER_META.map((layer) => {
+                  const on = activeLayers[layer.key];
+                  return (
+                    <div
+                      key={layer.key}
+                      className={cn(
+                        "mx-1 rounded-card border p-2.5 transition-colors",
+                        on
+                          ? "bg-[rgba(192,85,43,0.10)] border-[rgba(192,85,43,0.35)]"
+                          : "bg-[rgba(255,255,255,0.02)] border-border hover:bg-[rgba(255,255,255,0.04)]",
+                      )}
+                    >
+                      <div className="flex items-start gap-2">
+                        <span
+                          className={cn(
+                            "w-2 h-2 rounded-full mt-1 shrink-0",
+                            on && "pulse-glow",
+                          )}
+                          style={{
+                            background: layer.color,
+                            boxShadow: on ? `0 0 8px ${layer.color}` : undefined,
+                            opacity: on ? 1 : 0.55,
+                          }}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="text-[12px] font-semibold text-ink-1 leading-tight">
+                            {layer.label}
+                          </div>
+                          <p className="mt-0.5 text-[10.5px] leading-snug text-ink-3">
+                            {layer.description}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => toggleLayer(layer.key)}
+                          className="toggle-track shrink-0 mt-0.5"
+                          data-on={on}
+                          style={{
+                            background: on ? "#C0552B" : "rgba(244,239,230,0.14)",
+                          }}
+                          role="switch"
+                          aria-checked={on}
+                          aria-label={`Toggle ${layer.label} layer`}
+                        >
+                          <div className="toggle-thumb" />
+                        </button>
+                      </div>
+                      <div className="mt-2 flex flex-wrap items-center gap-1">
+                        {layer.sdg && (
+                          <span
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-semibold"
+                            style={{
+                              background: `${layer.color}22`,
+                              color: layer.color,
+                            }}
+                          >
+                            {layer.sdg}
+                          </span>
+                        )}
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] text-ink-3 bg-[rgba(255,255,255,0.04)]">
+                          {layer.features} features
+                        </span>
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] text-ink-4 bg-[rgba(255,255,255,0.02)]">
+                          {formatSyncAge(layer.lastSyncMin)}
+                        </span>
+                      </div>
+                      <div className="mt-1 text-[9px] text-ink-4 truncate">
+                        {layer.source}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -351,10 +405,10 @@ export default function Sidebar() {
     );
   }
 
-  // Desktop: persistent sidebar. Floats slightly off the edges with rounded
-  // corners and a full border so it reads as a panel instead of a chromed
-  // rail — matches the sidepanel / card language used on Compare and
-  // Assistant. Height accounts for the top/bottom margin.
+  // Desktop: a sticky column with a bit of margin, rounded corners, a full
+  // border and a soft shadow — reads as a floating card without needing to
+  // be fixed-positioned. Fixed positioning left a solid strip visible
+  // behind the sidebar's translucency, which broke the "floating" look.
   return (
     <motion.aside
       animate={{ width: collapsed ? 64 : 244 }}

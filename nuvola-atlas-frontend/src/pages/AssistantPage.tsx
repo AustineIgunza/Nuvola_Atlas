@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MessageCircle, Plus, Send, Sparkles, Trash2 } from "lucide-react";
 import AppShell from "@/components/chrome/AppShell";
@@ -28,12 +29,31 @@ export default function AssistantPage() {
   const { send } = useChatStream();
   const [prompt, setPrompt] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const messages = activeConversationId ? messagesByConv[activeConversationId] ?? [] : [];
 
   useEffect(() => {
     api.listConversations().then(setConversations).catch(() => { /* offline is ok */ });
   }, [setConversations]);
+
+  // Deep-link entry: /assistant?ask=<prompt> opens a fresh conversation and
+  // fires the question immediately, so the "Ask about Kibra" chip on the
+  // scorecard drops the user straight into the answer.
+  useEffect(() => {
+    const seed = searchParams.get("ask");
+    if (!seed) return;
+    (async () => {
+      const c = await api.createConversation({ title: seed.slice(0, 60) });
+      addConversation(c);
+      setActive(c.id);
+      // Strip the query param before sending so a page reload doesn't
+      // duplicate the message.
+      setSearchParams({}, { replace: true });
+      await send(c.id, seed);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!listRef.current) return;
