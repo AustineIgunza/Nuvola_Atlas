@@ -157,12 +157,24 @@ function parseFrame(frame: string): ServerEvent | null {
 
 async function runMockStream(convId: string, msgId: string, prompt: string) {
   const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+  // Zone context — three sources, in order of specificity:
+  //   1. Any zone name found in the prompt itself.
+  //   2. The zone this conversation was seeded with (createConversation
+  //      carries zoneId when the "Ask about X" chip on the scorecard fires).
+  //   3. The compareZoneIds mirrored from the Compare page.
+  const chat = useChatStore.getState();
+  const activeConv = chat.conversations.find((c) => c.id === convId);
+  const conversationZone = activeConv?.zoneId
+    ? ZONES.find((z) => z.id === activeConv.zoneId) ?? null
+    : null;
+
   const compareIds = useAtlasStore.getState().compareZoneIds;
   const compareZones = compareIds
     .map((id) => ZONES.find((z) => z.id === id))
     .filter((z): z is Zone => Boolean(z));
-  const intent = pickMockIntent(prompt, compareZones);
-  const mockData = mockAnswerFor(intent, prompt, compareZones);
+
+  const intent = pickMockIntent(prompt, compareZones, conversationZone);
+  const mockData = mockAnswerFor(intent, prompt, compareZones, conversationZone);
 
   await wait(250);
   applyEvent(convId, msgId, { name: "intent", data: { intent } });
@@ -186,18 +198,23 @@ async function runMockStream(convId: string, msgId: string, prompt: string) {
   applyEvent(convId, msgId, { name: "done", data: { message_id: msgId } });
 }
 
-function pickMockIntent(prompt: string, compareZones: Zone[]): string {
+function pickMockIntent(prompt: string, compareZones: Zone[], convZone: Zone | null): string {
   const p = prompt.toLowerCase();
   if (/compare|vs\b|versus|between|side by side|side-by-side/.test(p)) return "comparison";
-  if (/why|dropped|fell|rose|caused/.test(p)) return "diagnostic";
-  if (/trend|over time|history|last month|last year|last week/.test(p)) return "trend";
+  if (/why|dropped|fell|rose|caused|gap|weakness|dragging/.test(p)) return "diagnostic";
+  if (/trend|over time|history|last month|last year|last week|last quarter|movement/.test(p)) return "trend";
   if (/top|best|worst|leaderboard|ranked|which zones/.test(p)) return "distribution";
-  if (/pillar|breakdown|composition|make up/.test(p)) return "composition";
-  if (/how does|methodology|explain the score/.test(p)) return "methodology";
+  if (/pillar|breakdown|composition|make up|four pillars/.test(p)) return "composition";
+  if (/how does.+score|methodology|explain the score|what does .* mean/.test(p)) return "methodology";
+  if (/tell me about|about|overview|what is going on|whats going on|status/.test(p) && convZone) {
+    return "composition";
+  }
   // If two or more zones are on the compare page and the prompt didn't
-  // signal a specific intent, treat it as a comparison — that's almost
-  // always what the user actually wants in that context.
+  // signal a specific intent, treat it as a comparison.
   if (compareZones.length >= 2) return "comparison";
+  // If the conversation is scoped to a single zone (from the "Ask about X"
+  // chip), a bare prompt is almost always about that zone.
+  if (convZone) return "composition";
   return "summary";
 }
 
@@ -218,14 +235,22 @@ const PILLAR_LABELS: Record<"social" | "safety" | "density" | "infra", string> =
   infra: "Infrastructure & Environment",
 };
 
-function mockAnswerFor(intent: string, prompt: string, compareZones: Zone[]): MockAnswer {
-  // Pull zone names out of the prompt itself as a fallback — lets someone on
-  // the Atlas page type "compare Westlands and Kasarani" and still get a
-  // proper pillar walk-through even without compare context set.
+function mockAnswerFor(intent: string, prompt: string, compareZones: Zone[], convZone: Zone | null): MockAnswer {
+  // Zone candidates, in priority order:
+  //   1. Any zone names explicitly mentioned in the prompt.
+  //   2. The compare picker zones (Compare page).
+  //   3. The conversation's seeded zone (Ask-about-X chip).
+  // We fall through so a prompt like "compare Kibra and Mathare" while the
+  // conversation was seeded for Westlands does the right thing.
+  const mentioned = ZONES.filter((z) => prompt.toLowerCase().includes(z.name.toLowerCase())).slice(0, 3);
   const promptZones =
-    compareZones.length > 0
+    mentioned.length > 0
+      ? mentioned
+      : compareZones.length > 0
       ? compareZones
-      : ZONES.filter((z) => prompt.toLowerCase().includes(z.name.toLowerCase())).slice(0, 3);
+      : convZone
+      ? [convZone]
+      : [];
 
   const genericFollowups = [
     "Which of the four pillars is driving that gap?",
@@ -330,34 +355,92 @@ function buildCompositionAnswer(zones: Zone[]): MockAnswer {
   const [z] = zones;
   if (!z) {
     return {
-      answer: "Pick a zone above and I'll break down its four pillars.",
-      followups: ["Which zones lead on Vitality?", "Explain the four pillars"],
+      answer:
+        "Pick a zone or mention one by name and I'll break down its four Vitality pillars — Social Wellbeing, Safety & Security, Density & Scaling, and Infrastructure & Environment.",
+      followups: [
+        "Tell me about Westlands",
+        "Which zones lead on Vitality?",
+        "Explain the four pillars",
+      ],
     };
   }
   const entries = (["social", "safety", "density", "infra"] as const).map((k) => ({
     key: k,
     label: PILLAR_LABELS[k],
     value: z.pillars[k],
+    delta: z.deltas[k],
   }));
   const sorted = [...entries].sort((a, b) => b.value - a.value);
   const strong = sorted[0];
   const weak = sorted[sorted.length - 1];
-  const answer =
-    `${z.name} scores ${z.score} overall. Its strongest pillar is ${strong.label} at ${strong.value}, while ${weak.label} pulls the average down at ${weak.value}. The pillars in order: ` +
-    sorted.map((e) => `${e.label} ${e.value}`).join(", ") +
-    ".";
+
+  // County-wide average for context — makes the answer feel grounded
+  // instead of "here are four numbers in a vacuum".
+  const countyAvg = Math.round(
+    ZONES.reduce((a, zn) => a + zn.score, 0) / ZONES.length,
+  );
+  const vsCounty = z.score - countyAvg;
+  const rankAbove = ZONES.filter((zn) => zn.score > z.score).length + 1;
+
+  const bandName = z.score >= 70 ? "Strong" : z.score >= 55 ? "Moderate" : "At Risk";
+
+  const opener = `**${z.name}** scores **${z.score}/100** overall — that's ${vsCounty >= 0 ? `+${vsCounty}` : vsCounty} vs. the Nairobi average (${countyAvg}) and puts it at rank #${rankAbove} of the 17 sub-counties. Readiness band: **${bandName}**.`;
+
+  const pillarLine = (e: (typeof sorted)[number]) => {
+    const arrow = e.delta > 0 ? "▲" : e.delta < 0 ? "▼" : "◆";
+    const deltaTxt = e.delta === 0 ? "flat" : `${e.delta > 0 ? "+" : ""}${e.delta} this quarter`;
+    return `• **${e.label}** — ${e.value}/100 ${arrow} (${deltaTxt})`;
+  };
+
+  const pillarBreakdown = sorted.map(pillarLine).join("\n");
+
+  // Interpretation — name the strongest and weakest, and what that
+  // usually means for planning / investment. This is what makes the
+  // answer land instead of just repeating the numbers.
+  const strongExplain = strongInterpretation(strong.key, z);
+  const weakExplain = weakInterpretation(weak.key, z);
+
+  const closing =
+    `**Strongest — ${strong.label}.** ${strongExplain}\n\n` +
+    `**Weakest — ${weak.label}.** ${weakExplain}`;
+
+  const answer = `${opener}\n\n${pillarBreakdown}\n\n${closing}`;
+
   return {
-    sql: `SELECT pillar_social, pillar_safety, pillar_density, pillar_infra FROM zones WHERE id = '${z.id}'`,
-    rows: [
-      { name: z.name, social: z.pillars.social, safety: z.pillars.safety, density: z.pillars.density, infra: z.pillars.infra },
-    ],
     answer,
     followups: [
       `Why is ${weak.label} the weak point in ${z.name}?`,
       `Compare ${z.name} to the county average`,
-      `Show me the score trend for ${z.name}`,
+      `Which infrastructure projects are behind ${z.name}'s score?`,
+      `Show me ${z.name}'s trend over the last 30 days`,
     ],
   };
+}
+
+function strongInterpretation(key: "social" | "safety" | "density" | "infra", z: Zone): string {
+  switch (key) {
+    case "social":
+      return `${z.name} has above-average access to healthcare, education, and connectivity — a workforce and community that can absorb new infrastructure without training gaps.`;
+    case "safety":
+      return `Physical and legal safety are the anchor here. Low incident density along transit corridors, and rule-of-law indicators that make long-horizon contracts defensible.`;
+    case "density":
+      return `${z.name} still has headroom for growth — the density-to-capacity ratio hasn't tipped into over-saturation, so new development doesn't fight land costs.`;
+    case "infra":
+      return `Infrastructure and environmental safeguards are already documented — ESIA transparency, resource sovereignty, and lifecycle mandates are on paper and defensible.`;
+  }
+}
+
+function weakInterpretation(key: "social" | "safety" | "density" | "infra", z: Zone): string {
+  switch (key) {
+    case "social":
+      return `This is the pillar to fund alongside any new project in ${z.name} — healthcare access, digital connectivity, or education-capacity gaps will otherwise leak into operational risk in year 2–3.`;
+    case "safety":
+      return `Safety needs closing before the next round of investment. It usually shows up as physical-security incidents or rule-of-law drift; the alerts feed is where a diagnostic reveals which one.`;
+    case "density":
+      return `${z.name} is over-saturated relative to its current infrastructure — new capital tends to lose margin to land costs and permit friction. Fund density-lifting projects (transit, water mains) first.`;
+    case "infra":
+      return `The paper trail is thin — ESIAs, waste mandates, or sovereign-immunity carve-outs are missing or non-public. Budget legal + policy work into any project brief here.`;
+  }
 }
 
 function buildDistributionAnswer(): MockAnswer {
@@ -408,19 +491,45 @@ function buildFakeTrend(anchor: number): Array<Record<string, unknown>> {
 
 function buildDiagnosticText(zones: Zone[]): string {
   if (zones.length === 0) {
-    return "I'd want a specific zone to diagnose. Pick one from the compare picker and I can walk through which pillar moved and what likely drove it.";
+    return "Pick a zone or mention one by name — 'why did Kibra's safety score drop?' or 'what's dragging Kasarani down?' — and I'll walk through which pillar moved and what likely drove it.";
   }
   const [z] = zones;
-  const deltas = (["social", "safety", "density", "infra"] as const).map((k) => ({
+  const entries = (["social", "safety", "density", "infra"] as const).map((k) => ({
     label: PILLAR_LABELS[k],
+    key: k,
+    value: z.pillars[k],
     d: z.deltas[k],
   }));
-  const worst = [...deltas].sort((a, b) => a.d - b.d)[0];
-  const best = [...deltas].sort((a, b) => b.d - a.d)[0];
-  if (worst.d < 0) {
-    return `${z.name}'s ${worst.label} pillar moved ${worst.d} over the quarter — the softest of the four. ${best.label} went the other way (${best.d >= 0 ? "+" : ""}${best.d}), so the net Vitality Score is only mildly affected. If you're looking for a cause, the alerts feed usually points at the specific project or incident behind a drop of this size.`;
+  const worstMove = [...entries].sort((a, b) => a.d - b.d)[0];
+  const bestMove = [...entries].sort((a, b) => b.d - a.d)[0];
+  const weakest = [...entries].sort((a, b) => a.value - b.value)[0];
+
+  if (worstMove.d < 0) {
+    return (
+      `**${z.name}** — the specific pillar to look at is **${worstMove.label}**, which moved ${worstMove.d} this quarter. ` +
+      `The best mover was ${bestMove.label} at ${bestMove.d >= 0 ? "+" : ""}${bestMove.d}, so the net Vitality Score of ${z.score} is only mildly affected by the drop. ` +
+      `\n\n**Likely cause.** ${diagnosticCause(worstMove.key, z.name)} ` +
+      `The alerts feed for ${z.name} usually names the exact project or incident behind a move this size — worth checking before you commit to a diagnosis.` +
+      `\n\nOn the standing weak side, **${weakest.label}** at ${weakest.value}/100 is the pillar that structurally holds ${z.name} back, regardless of quarter-over-quarter movement.`
+    );
   }
-  return `${z.name} did not drop on any of the four pillars — the softest move was ${worst.label} at ${worst.d >= 0 ? "+" : ""}${worst.d}. The strongest gain was ${best.label} at ${best.d >= 0 ? "+" : ""}${best.d}. Growth is broad-based rather than driven by a single pillar.`;
+  return (
+    `**${z.name}** did not drop on any of the four pillars this quarter — the softest move was ${worstMove.label} at ${worstMove.d >= 0 ? "+" : ""}${worstMove.d}, and the strongest was ${bestMove.label} at ${bestMove.d >= 0 ? "+" : ""}${bestMove.d}. Growth is broad-based, not driven by a single pillar. ` +
+    `\n\nOn the standing weak side, **${weakest.label}** at ${weakest.value}/100 is the pillar that keeps the composite from climbing further — ${weakInterpretation(weakest.key, z)}`
+  );
+}
+
+function diagnosticCause(pillar: "social" | "safety" | "density" | "infra", zoneName: string): string {
+  switch (pillar) {
+    case "social":
+      return `Drops on Social Wellbeing typically track a workforce or health-service disruption — clinic closures, teacher-strike days, or a mobile-broadband coverage regression.`;
+    case "safety":
+      return `Safety drops of this magnitude almost always track a physical-security incident cluster (a set of vandalism or crime reports) or a rule-of-law event flagged by NPS. Around ${zoneName} specifically, transit-corridor incidents are the usual cause.`;
+    case "density":
+      return `Density drops read as either a population-pressure spike (housing shortage widening) or a corridor congestion event — the AM/PM peak transit times are the tell.`;
+    case "infra":
+      return `Infrastructure drops mean an ESIA has expired or been pulled, a resource-sovereignty carve-out has been renegotiated, or waste/lifecycle mandate enforcement has slipped.`;
+  }
 }
 
 function buildSummaryText(zones: Zone[]): string {

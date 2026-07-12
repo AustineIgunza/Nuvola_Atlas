@@ -114,7 +114,12 @@ export default function ScorecardPanel({ zone }: Props) {
 
   const askAboutZone = () => {
     const prompt = `Tell me about ${zone.name} — what's driving the Vitality score and where are the biggest gaps across the four pillars?`;
-    navigate(`/assistant?ask=${encodeURIComponent(prompt)}`);
+    // Pass the zone id so the seeded conversation carries context;
+    // follow-up prompts in the same conversation then default to this
+    // zone even if the user types a bare "and what about safety?".
+    navigate(
+      `/assistant?ask=${encodeURIComponent(prompt)}&zone=${encodeURIComponent(zone.id)}`,
+    );
   };
 
   const askCta = (

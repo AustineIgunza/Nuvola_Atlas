@@ -39,17 +39,24 @@ export default function AssistantPage() {
     api.listConversations().then(setConversations).catch(() => { /* offline is ok */ });
   }, [setConversations]);
 
-  // Deep-link entry: /assistant?ask=<prompt> opens a fresh conversation and
-  // fires the question immediately, so the "Ask about Kibra" chip on the
-  // scorecard drops the user straight into the answer.
+  // Deep-link entry: /assistant?ask=<prompt>[&zone=<id>] opens a fresh
+  // conversation and fires the question immediately, so the "Ask about
+  // Kibra" chip on the scorecard drops the user straight into an answer.
+  // The zone param seeds the conversation's zoneId so follow-up questions
+  // in the same conversation stay scoped to that zone even when the user
+  // types a bare prompt like "and what about safety?".
   useEffect(() => {
     const seed = searchParams.get("ask");
     if (!seed) return;
+    const zoneId = searchParams.get("zone") ?? null;
     (async () => {
-      const c = await api.createConversation({ title: seed.slice(0, 60) });
+      const c = await api.createConversation({
+        title: seed.slice(0, 60),
+        zoneId,
+      });
       addConversation(c);
       setActive(c.id);
-      // Strip the query param before sending so a page reload doesn't
+      // Strip the query params before sending so a page reload doesn't
       // duplicate the message.
       setSearchParams({}, { replace: true });
       await send(c.id, seed);
