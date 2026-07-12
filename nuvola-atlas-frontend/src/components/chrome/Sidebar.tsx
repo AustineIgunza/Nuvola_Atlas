@@ -87,7 +87,7 @@ export default function Sidebar() {
   const sidebarContent = (
     <>
       {/* Brand */}
-      <div className="flex items-center gap-3 px-4 h-14 border-b border-border shrink-0">
+      <div className="flex items-start gap-3 px-4 py-2.5 border-b border-border shrink-0">
         <Link
           to="/atlas"
           onClick={() => { setSelectedZone(null); setMobileOpen(false); }}
@@ -102,13 +102,19 @@ export default function Sidebar() {
             <Emblem size={28} />
           </motion.div>
           {(!collapsed || isMobile) && (
-            <motion.span
+            <motion.div
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
               transition={springSettle}
+              className="min-w-0 flex flex-col leading-tight"
             >
               <Wordmark className="text-[17px]" />
-            </motion.span>
+              {/* Brand tagline — kept in English so it reads the same across
+                  locales; changing it means changing the pitch deck too. */}
+              <span className="text-[9.5px] font-medium text-ink-4 tracking-[0.06em] mt-0.5 whitespace-nowrap">
+                Making Africa Investment Green
+              </span>
+            </motion.div>
           )}
         </Link>
         {isMobile && (
@@ -345,12 +351,16 @@ export default function Sidebar() {
     );
   }
 
-  // Desktop: persistent sidebar
+  // Desktop: persistent sidebar. Floats slightly off the edges with rounded
+  // corners and a full border so it reads as a panel instead of a chromed
+  // rail — matches the sidepanel / card language used on Compare and
+  // Assistant. Height accounts for the top/bottom margin.
   return (
     <motion.aside
-      animate={{ width: collapsed ? 56 : 240 }}
+      animate={{ width: collapsed ? 64 : 244 }}
       transition={springSettle}
-      className="glass-strong flex flex-col h-screen sticky top-0 overflow-hidden shrink-0"
+      className="glass-strong flex flex-col sticky top-2 overflow-hidden shrink-0 my-2 ml-2 rounded-card border border-border shadow-chrome"
+      style={{ height: "calc(100vh - 1rem)" }}
     >
       {sidebarContent}
     </motion.aside>

@@ -39,7 +39,7 @@ export default function AtlasPage() {
     <AppShell>
       <div
         className="flex overflow-hidden relative"
-        style={{ height: "calc(100dvh - 3.5rem - var(--mobile-nav-h))" }}
+        style={{ height: "calc(100dvh - var(--mobile-nav-h))" }}
       >
         {/* Map area — explicit dimensions */}
         <div className="flex-1 relative min-w-0" style={{ minHeight: 0 }}>

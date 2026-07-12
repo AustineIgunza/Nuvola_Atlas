@@ -11,6 +11,7 @@ import { useMapStyle } from "@/hooks/useMapStyle";
 import { useMapPopups } from "@/hooks/useMapPopups";
 import { LAYER_META, NAIROBI, INITIAL_ZOOM } from "./atlas-map.constants";
 import MapFallback from "./MapFallback";
+import ViewModePill from "./ViewModePill";
 import type { Zone } from "@/types";
 
 interface Props {
@@ -46,12 +47,18 @@ export default function AtlasMap({ zones }: Props) {
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
       <div ref={containerRef} style={{ position: "absolute", inset: 0 }} />
 
-      {/* Layer toggles — offset left on mobile to clear the hamburger button */}
+      {/* Layer toggles — offset left on mobile to clear the hamburger button.
+          When the scorecard is open on desktop the right edge of the chip
+          strip clamps so the pills don't tuck behind the panel. */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, ...springSettle }}
-        className="absolute top-3 left-14 md:left-3 z-10 flex gap-1.5 sm:gap-2 flex-wrap max-w-[calc(100%-5rem)] md:max-w-[calc(100%-6rem)]"
+        className={`absolute top-3 left-14 md:left-3 z-10 flex gap-1.5 sm:gap-2 flex-wrap transition-[max-width,right] duration-300 ${
+          panelOpen
+            ? "max-w-[calc(100%-5rem)] md:max-w-[calc(100%-6rem)] lg:max-w-[calc(100%-380px-4rem)] xl:max-w-[calc(100%-420px-4rem)]"
+            : "max-w-[calc(100%-5rem)] md:max-w-[calc(100%-6rem)]"
+        }`}
       >
         {LAYER_META.map((l) => {
           const on = activeLayers[l.key];
@@ -105,6 +112,10 @@ export default function AtlasMap({ zones }: Props) {
       >
         <Compass size={16} />
       </motion.button>
+
+      {/* Basemap picker — floats below the compass so all view controls
+          cluster together and both slide left when the scorecard opens. */}
+      <ViewModePill panelOpen={panelOpen} />
 
       {/* Legend — pushed up on mobile to clear the scorecard pull-up tab.
           The scorecard panel floats on the right, so the legend stays put. */}

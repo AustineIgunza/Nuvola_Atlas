@@ -3,7 +3,7 @@
   "installCommand": "cd nuvola-atlas-frontend && npm ci --no-audit --no-fund",
   "buildCommand": "cd nuvola-atlas-frontend && npm run build",
   "outputDirectory": "nuvola-atlas-frontend/dist",
-  "framework": null,
+  "framework": "vite",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ],

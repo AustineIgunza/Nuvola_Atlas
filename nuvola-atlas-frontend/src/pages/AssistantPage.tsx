@@ -77,7 +77,7 @@ export default function AssistantPage() {
     <AppShell>
       <div
         className="flex-1 flex overflow-hidden"
-        style={{ height: "calc(100dvh - 3.5rem - var(--mobile-nav-h))" }}
+        style={{ height: "calc(100dvh - var(--mobile-nav-h))" }}
       >
         <HistoryRail
           t={t}
