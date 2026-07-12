@@ -257,8 +257,44 @@ export function useMapPopups(
     m.on("mouseleave", "grid-touch", clearPointer);
     m.on("mouseenter", "roads-touch", setPointer);
     m.on("mouseleave", "roads-touch", clearPointer);
-    m.on("mouseenter", "momentum-touch", setPointer);
-    m.on("mouseleave", "momentum-touch", clearPointer);
+    // Momentum layer hover preview — a tiny non-interactive card that names
+    // the project + shows progress. Doesn't replace the on-click detail
+    // popup; it's just so you can find the marker you want to click.
+    const momentumHoverPopup = new mapboxgl.Popup({
+      offset: 12,
+      className: "atlas-popup atlas-popup--hover",
+      closeButton: false,
+      closeOnClick: false,
+      closeOnMove: true,
+    });
+    const openMomentumHover = (e: mapboxgl.MapMouseEvent & { features?: mapboxgl.MapboxGeoJSONFeature[] }) => {
+      if (!useUIStore.getState().activeLayers.momentum) return;
+      const p = e.features?.[0]?.properties;
+      if (!p) return;
+      const stalled = p.status === "stalled";
+      const barColor = stalled ? BRAND.rose : BRAND.gold;
+      momentumHoverPopup
+        .setLngLat(e.lngLat)
+        .setHTML(`
+          <div style="font-family:'Poppins',-apple-system,sans-serif;font-size:11px;padding:2px 4px;color:${BRAND.navy};">
+            <div style="font-weight:600;">${p.name}</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:3px;color:${BRAND.inkSoft};">
+              <span style="width:6px;height:6px;border-radius:999px;background:${barColor};"></span>
+              <span><span style="color:${BRAND.navy};font-weight:600;">${p.progress}%</span> · ${p.status}</span>
+            </div>
+          </div>
+        `)
+        .addTo(m);
+      setPointer();
+    };
+    const closeMomentumHover = () => {
+      momentumHoverPopup.remove();
+      clearPointer();
+    };
+    m.on("mouseenter", "momentum-touch", openMomentumHover);
+    m.on("mouseleave", "momentum-touch", closeMomentumHover);
+    m.on("mouseenter", "momentum-core", openMomentumHover);
+    m.on("mouseleave", "momentum-core", closeMomentumHover);
     m.on("mouseenter", "water-main-touch", setPointer);
     m.on("mouseleave", "water-main-touch", clearPointer);
     m.on("mouseenter", "water-touch", setPointer);

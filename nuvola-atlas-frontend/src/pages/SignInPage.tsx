@@ -54,7 +54,9 @@ export default function SignInPage() {
         { ...res.user, role: res.user.role as AuthRole | undefined },
         res.token,
       );
-      navigate("/atlas", { replace: true });
+      // Investors land on their own dashboard; everyone else lands on the atlas.
+      const landing = res.user.role === "investor" ? "/investor" : "/atlas";
+      navigate(landing, { replace: true });
     } catch {
       setError("Sign-in failed");
     } finally {

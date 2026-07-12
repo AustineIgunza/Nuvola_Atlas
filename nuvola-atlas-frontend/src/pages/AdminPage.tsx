@@ -8,6 +8,9 @@ import MetricCard from "@/components/admin/MetricCard";
 import AuditTable from "@/components/admin/AuditTable";
 import UsersTable from "@/components/admin/UsersTable";
 import ApiKeysTable from "@/components/admin/ApiKeysTable";
+import FirmsTable from "@/components/admin/FirmsTable";
+import DataFeedsMatrix from "@/components/admin/DataFeedsMatrix";
+import MethodologyEditor from "@/components/admin/MethodologyEditor";
 import TwoFactorSetup from "@/components/admin/TwoFactorSetup";
 import { adminApi } from "@/api/admin";
 import { api } from "@/api";
@@ -166,6 +169,9 @@ export default function AdminPage() {
 
         {tab === "audit" && <AuditTable />}
         {tab === "users" && <UsersTable />}
+        {tab === "firms" && <FirmsTable />}
+        {tab === "data" && <DataFeedsMatrix />}
+        {tab === "methodology" && <MethodologyEditor />}
         {tab === "api-keys" && <ApiKeysTable />}
       </div>
     </AppShell>

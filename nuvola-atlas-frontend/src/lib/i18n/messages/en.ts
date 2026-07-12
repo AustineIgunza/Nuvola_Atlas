@@ -25,6 +25,7 @@ export const en = {
   "common.copied": "Copied",
 
   // ── Navigation ───────────────────────────────────────────────────────────
+  "nav.investor": "Portfolio",
   "nav.atlas": "Atlas",
   "nav.vitality": "Vitality",
   "nav.compare": "Compare",

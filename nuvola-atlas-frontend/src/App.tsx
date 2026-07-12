@@ -1,7 +1,7 @@
 import { Suspense, useEffect } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useAuthStore, hasRoleAtLeast } from "@/stores/auth";
+import { useAuthStore, hasRoleAtLeast, isInvestor } from "@/stores/auth";
 import { lazyWithRetry, markAppLoaded } from "@/lib/lazyWithRetry";
 import SignInPage from "@/pages/SignInPage";
 
@@ -17,6 +17,7 @@ const AlertsPage = lazyWithRetry(() => import("@/pages/AlertsPage"));
 const AssistantPage = lazyWithRetry(() => import("@/pages/AssistantPage"));
 const SettingsPage = lazyWithRetry(() => import("@/pages/SettingsPage"));
 const AdminPage = lazyWithRetry(() => import("@/pages/AdminPage"));
+const InvestorPage = lazyWithRetry(() => import("@/pages/InvestorPage"));
 const PublicPortalPage = lazyWithRetry(() => import("@/pages/PublicPortalPage"));
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -29,6 +30,17 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((s) => s.user);
   if (!user) return <Navigate to="/sign-in" replace />;
   if (!hasRoleAtLeast(user, "admin")) return <Navigate to="/atlas" replace />;
+  return <>{children}</>;
+}
+
+function RequireInvestor({ children }: { children: React.ReactNode }) {
+  const user = useAuthStore((s) => s.user);
+  if (!user) return <Navigate to="/sign-in" replace />;
+  // Investors + admin both get through — admins can view the investor
+  // dashboard for support / demo purposes.
+  if (!isInvestor(user) && !hasRoleAtLeast(user, "admin")) {
+    return <Navigate to="/atlas" replace />;
+  }
   return <>{children}</>;
 }
 
@@ -68,6 +80,7 @@ export default function App() {
         <Route path="/alerts" element={<RequireAuth><AlertsPage /></RequireAuth>} />
         <Route path="/assistant" element={<RequireAuth><AssistantPage /></RequireAuth>} />
         <Route path="/settings" element={<RequireAuth><SettingsPage /></RequireAuth>} />
+        <Route path="/investor" element={<RequireInvestor><InvestorPage /></RequireInvestor>} />
         <Route path="/admin" element={<RequireAdmin><AdminPage /></RequireAdmin>} />
         <Route path="*" element={<Navigate to="/atlas" replace />} />
       </Routes>

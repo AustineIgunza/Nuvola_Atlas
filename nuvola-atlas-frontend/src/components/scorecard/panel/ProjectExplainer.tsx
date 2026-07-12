@@ -129,7 +129,7 @@ export default function ProjectExplainer({ projectId, onNavigate }: Props) {
       <LayerHintButton layer="momentum" label="Project Momentum" />
 
       <button
-        onClick={() => navigate("/infrastructure")}
+        onClick={() => navigate(`/infrastructure/${projectId}`)}
         className="w-full h-8 rounded-control bg-[rgba(255,255,255,0.04)] border border-border text-[10.5px] font-medium text-ink-3 hover:bg-[rgba(255,255,255,0.08)] transition-colors flex items-center justify-center gap-1.5"
       >
         <ExternalLink size={11} className="shrink-0" />

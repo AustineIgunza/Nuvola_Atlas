@@ -3,12 +3,13 @@ import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Map, BarChart3, HardHat, FileText, Bell, LogOut, Shield, GitCompareArrows,
-  ChevronRight, Info, Menu, X, Sparkles, Settings as SettingsIcon,
+  ChevronRight, Info, Menu, X, Sparkles, Settings as SettingsIcon, Briefcase,
+  Building2,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { springSettle, staggerContainer, staggerItem, panelSlideLeft } from "@/lib/motion";
 import { useUIStore } from "@/stores/ui";
-import { useAuthStore, hasRoleAtLeast } from "@/stores/auth";
+import { useAuthStore, hasRoleAtLeast, isInvestor } from "@/stores/auth";
 import { api } from "@/api";
 import { scoreColor } from "@/lib/scoreColor";
 import { Emblem, Wordmark } from "@/components/brand/Brand";
@@ -32,7 +33,9 @@ const NAV: ReadonlyArray<{
   labelKey: MessageKey;
   icon: typeof Map;
   requiresAdmin: boolean;
+  showFor?: "investor";
 }> = [
+  { path: "/investor", labelKey: "nav.investor", icon: Briefcase, requiresAdmin: false, showFor: "investor" },
   { path: "/atlas", labelKey: "nav.atlas", icon: Map, requiresAdmin: false },
   { path: "/vitality", labelKey: "nav.vitality", icon: BarChart3, requiresAdmin: false },
   { path: "/compare", labelKey: "nav.compare", icon: GitCompareArrows, requiresAdmin: false },
@@ -147,7 +150,12 @@ export default function Sidebar() {
           animate="visible"
           className="space-y-1"
         >
-          {NAV.filter((item) => !item.requiresAdmin || isAdmin).map(({ path, labelKey, icon: Icon }) => {
+          {NAV.filter((item) => {
+            if (item.requiresAdmin && !isAdmin) return false;
+            // showFor: "investor" — hide from viewers, show to investors + admins
+            if (item.showFor === "investor" && !isInvestor(user) && !isAdmin) return false;
+            return true;
+          }).map(({ path, labelKey, icon: Icon }) => {
             const active = location.pathname.startsWith(path);
             const label = t(labelKey);
             return (
@@ -323,6 +331,26 @@ export default function Sidebar() {
 
       {/* Footer */}
       <div className="px-2 py-2 border-t border-border space-y-0.5 shrink-0">
+        {/* Role + firm badge so scope is always visible. Shows: */}
+        {/*   Investor · Acumen East Africa · deal */}
+        {/*   Administrator */}
+        {/*   Viewer  (etc.)                          */}
+        {(!collapsed || isMobile) && user && (
+          <div className="px-3 py-2 rounded-control bg-[rgba(255,255,255,0.03)] mb-1">
+            <div className="flex items-center gap-1.5 text-[9.5px] font-medium text-ink-4 uppercase tracking-[0.08em]">
+              <Building2 size={9} />
+              {user.role ?? "viewer"}
+              {user.firm && (
+                <span className="ml-auto px-1.5 py-0.5 rounded-full text-[8px] font-bold" style={{ background: "rgba(31,138,120,0.15)", color: "rgb(31,138,120)" }}>
+                  {user.firm.tier}
+                </span>
+              )}
+            </div>
+            <div className="text-[10.5px] font-semibold text-ink-1 leading-tight truncate mt-0.5">
+              {user.firm?.name ?? user.name}
+            </div>
+          </div>
+        )}
         {(!collapsed || isMobile) && (
           <motion.button
             onClick={openMethod}

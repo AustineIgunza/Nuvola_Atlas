@@ -28,6 +28,7 @@ export const sw: Partial<Record<MessageKey, string>> = {
   "common.copied": "Imenakiliwa",
 
   // Navigation
+  "nav.investor": "Kikundi",
   "nav.atlas": "Ramani",
   "nav.vitality": "Uhai",
   "nav.compare": "Linganisha",

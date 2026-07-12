@@ -9,6 +9,7 @@ import {
   METHODOLOGY,
   generateZoneHistory,
 } from "./fixtures";
+import { firmFromEmail, firmSliceFor } from "./firms";
 import type {
   Zone,
   Project,
@@ -216,6 +217,15 @@ export const mockApi = {
   //   editor@*  → editor
   //   partner@* → partner
   //   anything else → viewer
+  //
+  // Investor logins (new — 2026-07-12) resolve to their firm via firmFromEmail:
+  //   investor+acumen@navuuna.dev         → Acumen East Africa (deal tier)
+  //   investor-lead+acumen@navuuna.dev    → same firm, lead role_within_firm
+  //   investor+andela@navuuna.dev         → Andela Ventures (basic tier)
+  //   investor+gcf@navuuna.dev            → GCF Nairobi Corridor (sovereign, all 17 zones)
+  // AuthUser.firm carries id / name / tier / watchlist so the /investor
+  // page renders the right portfolio without another network call.
+  //
   // Password is not checked in mock — sign-in succeeds for any value.
   signIn: async (email: string, _password: string) => {
     await delay();
@@ -236,19 +246,36 @@ export const mockApi = {
       };
     }
 
-    const role: "admin" | "editor" | "partner" | "viewer" =
-      isAdmin
+    const firm = firmFromEmail(email);
+    const role: "admin" | "editor" | "partner" | "investor" | "viewer" =
+      firm
+        ? "investor"
+        : isAdmin
         ? "admin"
         : lc.startsWith("editor@")
         ? "editor"
         : lc.startsWith("partner@")
         ? "partner"
         : "viewer";
-    const inferredName =
-      role === "admin" ? "Mock Admin" : role === "editor" ? "Mock Editor" : role === "partner" ? "Mock Partner" : "Mock Viewer";
+    const inferredName = firm
+      ? `${firm.name} · ${lc.startsWith("investor-lead+") ? "Lead" : lc.startsWith("investor-analyst+") ? "Analyst" : "Viewer"}`
+      : role === "admin"
+      ? "Mock Admin"
+      : role === "editor"
+      ? "Mock Editor"
+      : role === "partner"
+      ? "Mock Partner"
+      : "Mock Viewer";
+
     return {
       token: "mock-token",
-      user: { name: inferredName, email, role, email_verified: true },
+      user: {
+        name: inferredName,
+        email,
+        role,
+        email_verified: true,
+        ...(firm ? { firm: firmSliceFor(firm) } : {}),
+      },
     };
   },
 

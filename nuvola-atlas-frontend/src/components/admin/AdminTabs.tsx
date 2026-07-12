@@ -1,12 +1,15 @@
 import { motion } from "framer-motion";
 import { cn } from "@/lib/cn";
 
-export type AdminTab = "overview" | "audit" | "users" | "api-keys";
+export type AdminTab = "overview" | "audit" | "users" | "api-keys" | "firms" | "data" | "methodology";
 
 const TABS: { id: AdminTab; label: string }[] = [
   { id: "overview", label: "Overview" },
   { id: "audit", label: "Audit log" },
   { id: "users", label: "Users" },
+  { id: "firms", label: "Firms" },
+  { id: "data", label: "Data feeds" },
+  { id: "methodology", label: "Methodology" },
   { id: "api-keys", label: "API keys" },
 ];
 
