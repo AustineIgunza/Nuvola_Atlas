@@ -194,6 +194,69 @@ export const en = {
   "atlas.viewMode.terrain": "Terrain",
   "atlas.liveFeed": "Live",
 
+  // ── Project status ──────────────────────────────────────────────────────
+  "project.status.active": "Active",
+  "project.status.stalled": "Stalled",
+  "project.status.planned": "Planned",
+  "project.progress": "% complete",
+  "project.eta": "ETA",
+  "project.budget": "Budget",
+  "project.agency": "Agency",
+  "project.milestones": "Milestones",
+
+  // ── Layer hint ──────────────────────────────────────────────────────────
+  "layerHint.active": "{label} layer is on the map",
+  "layerHint.show": "Show {label} layer on the Atlas",
+
+  // ── Explainer views ─────────────────────────────────────────────────────
+  "explain.rank": "Ranked #{rank} of {total} Nairobi sub-counties",
+  "explain.compositeReadiness": "Composite readiness",
+  "explain.whatIndex": "What the index measures",
+  "explain.howComputed": "How it's computed — tap a pillar",
+  "explain.bands": "Score bands",
+  "explain.dataPipeline": "Data pipeline",
+  "explain.dataFreshness": "Data source freshness",
+  "explain.subMetrics": "Sub-metrics — tap to expand",
+  "explain.relatedAlerts": "Related alerts",
+  "explain.relatedProjects": "Related projects",
+
+  // ── Alert explainer ─────────────────────────────────────────────────────
+  "alert.affectedInfra": "Affected infrastructure",
+  "alert.recommendedActions": "Recommended actions",
+  "alert.impact": "Impact level",
+  "alert.severity": "Severity",
+
+  // ── Investor personal notes ─────────────────────────────────────────────
+  "notes.title": "Your notes on {zone}",
+  "notes.placeholder": "Private thesis, meeting notes, follow-ups. Visible only to you.",
+  "notes.saved": "Saved locally.",
+  "notes.private": "Private note",
+  "notes.empty": "No notes yet — start typing.",
+
+  // ── Impersonation ───────────────────────────────────────────────────────
+  "impersonate.button": "View as user",
+  "impersonate.title": "Impersonate {name}",
+  "impersonate.reason": "Reason (required — logged to audit trail)",
+  "impersonate.start": "Start session",
+  "impersonate.active": "Impersonating {name}",
+  "impersonate.end": "End impersonation",
+  "impersonate.subtitle": "Every action taken during this session is recorded to the audit trail with your admin ID and this reason.",
+
+  // ── Content CMS ─────────────────────────────────────────────────────────
+  "cms.title": "Content Management",
+  "cms.subtitle": "Editorial copy shown on public + methodology surfaces. Every save creates a revision.",
+  "cms.pick": "Pick a block to edit",
+  "cms.blocks.methodology": "Methodology · Overview",
+  "cms.blocks.social": "Pillar · Social Wellbeing",
+  "cms.blocks.safety": "Pillar · Safety & Security",
+  "cms.blocks.density": "Pillar · Density & Scaling",
+  "cms.blocks.infra": "Pillar · Infrastructure & Environment",
+  "cms.blocks.public": "Public Portal · Intro",
+  "cms.editorLabel": "Body (Markdown)",
+  "cms.publish": "Publish",
+  "cms.savedRevision": "Revision saved.",
+  "cms.revisions": "Revision history ({count})",
+
   // ── Public portal ───────────────────────────────────────────────────────
   "public.title": "Nairobi County — Public Atlas",
   "public.subtitle": "A read-only community view of infrastructure delivery in your ward.",

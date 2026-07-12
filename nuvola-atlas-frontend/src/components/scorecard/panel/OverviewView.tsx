@@ -15,6 +15,7 @@ import ScoreHistoryChart from "./ScoreHistoryChart";
 import IndicatorAvailabilityChip from "./IndicatorAvailabilityChip";
 import DaystarIndicatorPanel from "./DaystarIndicatorPanel";
 import { Section, Chip, StatCell, SEVERITY_COLOR, IMPACT_COLOR, STATUS_STYLE } from "./bits";
+import ZoneNotesCard from "@/components/investor/ZoneNotesCard";
 import type { PanelView } from "./panel-types";
 import type { Zone, PillarKey } from "@/types";
 
@@ -148,6 +149,11 @@ export default function OverviewView({ zone, onNavigate }: Props) {
           How this score is computed
         </div>
       </button>
+
+      {/* Investor private notes — only rendered when the signed-in user
+          is an investor. Non-investors see nothing. Notes are scoped to
+          the user's firm and persist locally. */}
+      <ZoneNotesCard zoneId={zone.id} zoneName={zone.name} />
 
       {/* Score history — trend over selected range */}
       <ScoreHistoryChart zoneId={zone.id} />

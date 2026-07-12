@@ -3,7 +3,7 @@ import { cn } from "@/lib/cn";
 
 export type AdminTab =
   | "overview" | "audit" | "users" | "api-keys" | "firms" | "data"
-  | "methodology" | "announcements" | "health";
+  | "methodology" | "announcements" | "health" | "content";
 
 const TABS: { id: AdminTab; label: string }[] = [
   { id: "overview", label: "Overview" },
@@ -13,6 +13,7 @@ const TABS: { id: AdminTab; label: string }[] = [
   { id: "firms", label: "Firms" },
   { id: "data", label: "Data feeds" },
   { id: "methodology", label: "Methodology" },
+  { id: "content", label: "Content" },
   { id: "announcements", label: "Announcements" },
   { id: "api-keys", label: "API keys" },
 ];

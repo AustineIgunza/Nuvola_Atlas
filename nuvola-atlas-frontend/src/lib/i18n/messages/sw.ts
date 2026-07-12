@@ -197,6 +197,69 @@ export const sw: Partial<Record<MessageKey, string>> = {
   "atlas.viewMode.terrain": "Ardhi",
   "atlas.liveFeed": "Moja kwa Moja",
 
+  // Project status
+  "project.status.active": "Inaendelea",
+  "project.status.stalled": "Imesimama",
+  "project.status.planned": "Imepangwa",
+  "project.progress": "% imekamilika",
+  "project.eta": "ETA",
+  "project.budget": "Bajeti",
+  "project.agency": "Wakala",
+  "project.milestones": "Hatua muhimu",
+
+  // Layer hint
+  "layerHint.active": "Tabaka la {label} liko kwenye ramani",
+  "layerHint.show": "Onyesha tabaka la {label} kwenye Ramani",
+
+  // Explainer views
+  "explain.rank": "Nafasi #{rank} kati ya wilaya {total} za Nairobi",
+  "explain.compositeReadiness": "Utayari wa jumla",
+  "explain.whatIndex": "Kile kielelezo kinapima",
+  "explain.howComputed": "Inavyokokotolewa — bofya nguzo",
+  "explain.bands": "Vipimo vya alama",
+  "explain.dataPipeline": "Bomba la data",
+  "explain.dataFreshness": "Uchakachuaji wa vyanzo",
+  "explain.subMetrics": "Vipimo vidogo — bofya kupanua",
+  "explain.relatedAlerts": "Arifa zinazohusiana",
+  "explain.relatedProjects": "Miradi inayohusiana",
+
+  // Alert explainer
+  "alert.affectedInfra": "Miundombinu iliyoathirika",
+  "alert.recommendedActions": "Hatua zinazopendekezwa",
+  "alert.impact": "Kiwango cha athari",
+  "alert.severity": "Uzito",
+
+  // Investor personal notes
+  "notes.title": "Maandishi yako kuhusu {zone}",
+  "notes.placeholder": "Nia ya kibinafsi, maelezo ya mikutano, ufuatiliaji. Yanaonekana kwako pekee.",
+  "notes.saved": "Imehifadhiwa hapa.",
+  "notes.private": "Andiko la kibinafsi",
+  "notes.empty": "Bado hakuna maandishi — anza kuandika.",
+
+  // Impersonation
+  "impersonate.button": "Ingia kama mtumiaji",
+  "impersonate.title": "Iga {name}",
+  "impersonate.reason": "Sababu (lazima — imeandikwa kwenye kumbukumbu)",
+  "impersonate.start": "Anza kikao",
+  "impersonate.active": "Unaiga {name}",
+  "impersonate.end": "Maliza kuiga",
+  "impersonate.subtitle": "Kila kitendo katika kikao hiki kinakumbukwa na kitambulisho chako cha msimamizi na sababu hii.",
+
+  // Content CMS
+  "cms.title": "Usimamizi wa Maudhui",
+  "cms.subtitle": "Maandishi ya uhariri yanayoonyeshwa kwenye kurasa za umma na mbinu. Kila kuhifadhi hutengeneza toleo.",
+  "cms.pick": "Chagua kizuizi cha kuhariri",
+  "cms.blocks.methodology": "Mbinu · Muhtasari",
+  "cms.blocks.social": "Nguzo · Ustawi wa Jamii",
+  "cms.blocks.safety": "Nguzo · Usalama",
+  "cms.blocks.density": "Nguzo · Msongamano",
+  "cms.blocks.infra": "Nguzo · Miundombinu",
+  "cms.blocks.public": "Ukurasa wa Umma · Utangulizi",
+  "cms.editorLabel": "Mwili (Markdown)",
+  "cms.publish": "Chapisha",
+  "cms.savedRevision": "Toleo limehifadhiwa.",
+  "cms.revisions": "Historia ya matoleo ({count})",
+
   // Public portal
   "public.title": "Kaunti ya Nairobi — Ramani ya Umma",
   "public.subtitle": "Mwonekano wa jamii wa utoaji wa miundombinu katika kata yako.",

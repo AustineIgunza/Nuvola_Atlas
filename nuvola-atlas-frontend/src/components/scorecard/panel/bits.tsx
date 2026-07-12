@@ -3,6 +3,9 @@ import { Layers } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useUIStore } from "@/stores/ui";
 import { BRAND } from "@/lib/scoreColor";
+import { translate } from "@/lib/i18n/translate";
+import { usePrefsStore } from "@/stores/prefs";
+import { useT } from "@/lib/i18n/use-t";
 import type { AlertSeverity, ProjectStatus } from "@/types";
 
 /** Shared color coding for the scorecard panel and its explainer views. */
@@ -19,17 +22,34 @@ export const IMPACT_COLOR: Record<string, string> = {
   minor: BRAND.steel,
 };
 
+export const STATUS_COLOR: Record<ProjectStatus, string> = {
+  active: BRAND.teal,
+  stalled: BRAND.rose,
+  planned: BRAND.steel,
+};
+
+/**
+ * STATUS_STYLE — deprecated in favour of statusLabel(t) + STATUS_COLOR.
+ * Kept for backwards compat while the drill-in components migrate.
+ */
 export const STATUS_STYLE: Record<ProjectStatus, { label: string; color: string }> = {
   active: { label: "Active", color: BRAND.teal },
   stalled: { label: "Stalled", color: BRAND.rose },
   planned: { label: "Planned", color: BRAND.steel },
 };
 
+export function statusLabel(t: ReturnType<typeof useT>, status: ProjectStatus): string {
+  if (status === "active") return t("project.status.active");
+  if (status === "stalled") return t("project.status.stalled");
+  return t("project.status.planned");
+}
+
 /** Score band shared with the map legend / marker colors (70/55 thresholds). */
 export function scoreBand(score: number): { label: string; color: string } {
-  if (score >= 70) return { label: "Strong", color: BRAND.teal };
-  if (score >= 55) return { label: "Moderate", color: BRAND.gold };
-  return { label: "At Risk", color: BRAND.terracotta };
+  const locale = usePrefsStore.getState().locale;
+  if (score >= 70) return { label: translate(locale, "band.strong"), color: BRAND.teal };
+  if (score >= 55) return { label: translate(locale, "band.moderate"), color: BRAND.gold };
+  return { label: translate(locale, "band.atRisk"), color: BRAND.terracotta };
 }
 
 export function Section({
@@ -82,6 +102,7 @@ type LayerKey = "vitality" | "roads" | "energy" | "density" | "water" | "momentu
 
 /** "See it on the Atlas" — enables the related map layer if it's off. */
 export function LayerHintButton({ layer, label }: { layer: LayerKey; label: string }) {
+  const t = useT();
   const active = useUIStore((s) => s.activeLayers[layer]);
   const toggleLayer = useUIStore((s) => s.toggleLayer);
   return (
@@ -97,7 +118,7 @@ export function LayerHintButton({ layer, label }: { layer: LayerKey; label: stri
       )}
     >
       <Layers size={12} className="shrink-0" style={{ color: BRAND.teal }} />
-      {active ? `${label} layer is on the map` : `Show ${label} layer on the Atlas`}
+      {active ? t("layerHint.active", { label }) : t("layerHint.show", { label })}
     </button>
   );
 }

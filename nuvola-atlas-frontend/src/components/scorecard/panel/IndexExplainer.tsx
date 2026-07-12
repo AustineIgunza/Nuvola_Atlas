@@ -1,20 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight } from "lucide-react";
 import { api } from "@/api";
-import { BRAND, PILLAR_COLORS, PILLAR_LABELS, PILLAR_GLYPHS } from "@/lib/scoreColor";
+import { BRAND, PILLAR_COLORS, PILLAR_GLYPHS } from "@/lib/scoreColor";
 import Ring from "../Ring";
 import DaystarIndicatorPanel from "./DaystarIndicatorPanel";
 import { Section, Chip, scoreBand } from "./bits";
+import { useT } from "@/lib/i18n/use-t";
 import type { PanelView } from "./panel-types";
 import type { Zone, PillarKey } from "@/types";
 
 const PILLAR_KEYS: PillarKey[] = ["social", "safety", "density", "infra"];
-
-const BANDS = [
-  { range: "70–100", label: "Strong", color: BRAND.teal, note: "Ready to absorb new projects" },
-  { range: "55–69", label: "Moderate", color: BRAND.gold, note: "Ready with targeted safeguards" },
-  { range: "0–54", label: "At Risk", color: BRAND.terracotta, note: "Readiness gaps need closing first" },
-];
 
 interface Props {
   zone: Zone;
@@ -22,11 +17,18 @@ interface Props {
 }
 
 export default function IndexExplainer({ zone, onNavigate }: Props) {
+  const t = useT();
   const { data: allZones } = useQuery({ queryKey: ["zones"], queryFn: api.getZones });
   const band = scoreBand(zone.score);
 
   const sorted = [...(allZones ?? [])].sort((a, b) => b.score - a.score);
   const rank = sorted.findIndex((z) => z.id === zone.id) + 1;
+
+  const BANDS = [
+    { range: "70–100", label: t("band.strong"), color: BRAND.teal, note: t("band.strong.note") },
+    { range: "55–69", label: t("band.moderate"), color: BRAND.gold, note: t("band.moderate.note") },
+    { range: "0–54", label: t("band.atRisk"), color: BRAND.terracotta, note: t("band.atRisk.note") },
+  ];
 
   return (
     <div className="space-y-3">
@@ -35,22 +37,21 @@ export default function IndexExplainer({ zone, onNavigate }: Props) {
           <Ring score={zone.score} size={84} />
           <div className="min-w-0">
             <div className="text-[10px] font-medium text-ink-4 uppercase tracking-[0.1em]">
-              Composite readiness
+              {t("explain.compositeReadiness")}
             </div>
             <div className="mt-1">
               <Chip color={band.color}>{band.label}</Chip>
             </div>
             {rank > 0 && (
               <p className="text-[10.5px] text-ink-3 mt-1.5 tabular-nums">
-                Ranked <span className="font-semibold text-accent">#{rank}</span> of {sorted.length}{" "}
-                Nairobi sub-counties
+                {t("explain.rank", { rank, total: sorted.length })}
               </p>
             )}
           </div>
         </div>
       </Section>
 
-      <Section title="What the index measures">
+      <Section title={t("explain.whatIndex")}>
         <p className="text-[11px] text-ink-2 leading-[1.6]">
           The UE Vitality Index turns fused infrastructure and social data into a single 0–100
           readiness score for each sub-county — how ready a locality is to absorb, operate, and
@@ -63,7 +64,7 @@ export default function IndexExplainer({ zone, onNavigate }: Props) {
         </p>
       </Section>
 
-      <Section title="How it's computed — tap a pillar">
+      <Section title={t("explain.howComputed")}>
         <div className="space-y-1.5">
           {PILLAR_KEYS.map((key) => {
             const color = PILLAR_COLORS[key];
@@ -80,7 +81,7 @@ export default function IndexExplainer({ zone, onNavigate }: Props) {
                   {PILLAR_GLYPHS[key]}
                 </div>
                 <span className="flex-1 min-w-0 text-[10.5px] text-ink-2 font-medium truncate">
-                  {PILLAR_LABELS[key]}
+                  {t(`pillar.${key}.long` as const)}
                 </span>
                 <span className="text-[12px] font-semibold tabular-nums shrink-0" style={{ color }}>
                   {zone.pillars[key]}
@@ -97,7 +98,7 @@ export default function IndexExplainer({ zone, onNavigate }: Props) {
         </p>
       </Section>
 
-      <Section title="Score bands">
+      <Section title={t("explain.bands")}>
         <div className="space-y-1.5">
           {BANDS.map((b) => (
             <div key={b.label} className="flex items-center gap-2 text-[10.5px]">
@@ -114,7 +115,7 @@ export default function IndexExplainer({ zone, onNavigate }: Props) {
 
       <DaystarIndicatorPanel zoneId={zone.id} showAttribution />
 
-      <Section title="Data pipeline">
+      <Section title={t("explain.dataPipeline")}>
         <p className="text-[10.5px] text-ink-3 leading-[1.6]">
           Scores refresh as KNBS, KURA, KPLC, NPS, and NEMA feeds sync into the Atlas. {zone.name}{" "}
           last synced <span className="text-ink-2 font-medium">{zone.lastSyncMin} min ago</span>.
