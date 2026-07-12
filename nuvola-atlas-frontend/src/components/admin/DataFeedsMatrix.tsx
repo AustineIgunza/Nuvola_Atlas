@@ -77,11 +77,15 @@ export default function DataFeedsMatrix() {
         <div className="text-[10.5px] font-medium text-ink-4 uppercase tracking-[0.1em] mb-2">
           Zone × indicator delivery matrix
         </div>
-        <div className="overflow-x-auto rounded-card border border-border bg-[rgba(255,255,255,0.02)]">
+        <div className="overflow-x-auto rounded-card border border-border bg-[rgba(255,255,255,0.02)] max-w-full">
+          {/* On mobile the swipe hint helps users find that the matrix scrolls sideways */}
+          <div className="sm:hidden text-[9px] text-ink-4 uppercase tracking-[0.08em] px-2.5 pt-1.5">
+            Swipe horizontally →
+          </div>
           <table className="w-full text-[10.5px]">
             <thead>
               <tr className="text-ink-4">
-                <th className="text-left px-2.5 py-1.5 font-medium sticky left-0 bg-[rgba(255,255,255,0.03)] z-10 min-w-[140px]">
+                <th className="text-left px-2.5 py-1.5 font-medium sticky left-0 z-10 min-w-[110px] sm:min-w-[140px] bg-atlas-base shadow-[2px_0_6px_rgba(0,0,0,0.4)]">
                   Zone
                 </th>
                 {INDICATORS.map((ind) => (
@@ -89,7 +93,7 @@ export default function DataFeedsMatrix() {
                     {ind.label.split(" ").slice(0, 2).join(" ")}
                   </th>
                 ))}
-                <th className="text-right px-2.5 py-1.5 font-medium">Delivered</th>
+                <th className="text-right px-2.5 py-1.5 font-medium min-w-[70px]">Delivered</th>
               </tr>
             </thead>
             <tbody>
@@ -97,7 +101,7 @@ export default function DataFeedsMatrix() {
                 const summary = zoneIndicatorSummary(z.id);
                 return (
                   <tr key={z.id} className="border-t border-border">
-                    <td className="text-left px-2.5 py-1.5 text-ink-1 font-medium sticky left-0 bg-[rgba(255,255,255,0.02)] z-10 truncate">
+                    <td className="text-left px-2.5 py-1.5 text-ink-1 font-medium sticky left-0 z-10 truncate bg-atlas-base shadow-[2px_0_6px_rgba(0,0,0,0.4)]">
                       {z.name}
                     </td>
                     {summary.states.map((s) => {

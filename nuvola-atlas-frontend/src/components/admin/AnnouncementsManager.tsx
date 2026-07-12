@@ -147,8 +147,8 @@ function ComposeModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-      <div className="w-full max-w-[520px] rounded-modal glass-strong border border-border shadow-modal p-5 space-y-3">
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-2 sm:p-4">
+      <div className="w-full max-w-[520px] max-h-[92vh] overflow-y-auto rounded-modal glass-strong border border-border shadow-modal p-4 sm:p-5 space-y-3">
         <div className="flex items-center gap-2 mb-1">
           <h3 className="text-[15px] font-semibold text-ink-1 flex-1">New announcement</h3>
           <button onClick={onClose} className="text-ink-4 hover:text-ink-2" aria-label="Close">
@@ -177,7 +177,7 @@ function ComposeModal({
           />
         </label>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label className="block">
             <span className="block text-[10px] text-ink-4 uppercase tracking-[0.08em] mb-1">Severity</span>
             <select

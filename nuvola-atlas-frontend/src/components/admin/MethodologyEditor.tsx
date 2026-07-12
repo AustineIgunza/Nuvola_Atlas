@@ -164,8 +164,8 @@ export default function MethodologyEditor() {
           </span>
         </div>
 
-        <div className="max-h-[520px] overflow-y-auto">
-          <table className="w-full text-[11px]">
+        <div className="max-h-[520px] overflow-x-auto overflow-y-auto">
+          <table className="w-full text-[10.5px] sm:text-[11px] min-w-[420px]">
             <thead>
               <tr className="text-ink-4 text-left">
                 <th className="px-2 py-1.5 font-medium">Zone</th>

@@ -78,28 +78,31 @@ export default function AdminPage() {
 
   return (
     <AppShell>
-      <div className="max-w-[1100px] mx-auto px-4 md:px-6 py-6 space-y-6">
-        <header className="flex items-start justify-between gap-3">
-          <div>
+      {/* pb-24 leaves room above the mobile bottom nav so the bottom
+          of the last section isn't hidden. sm+ collapses back to py-6. */}
+      <div className="max-w-[1100px] mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 pb-24 md:pb-6 space-y-5 sm:space-y-6">
+        <header className="flex items-start justify-between gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
+          <div className="min-w-0 flex-1">
             <motion.h1
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={springSettle}
-              className="text-[20px] font-semibold tracking-[-0.02em] text-ink-1"
+              className="text-[18px] sm:text-[20px] font-semibold tracking-[-0.02em] text-ink-1"
             >
               Admin
             </motion.h1>
-            <p className="text-[12px] text-ink-4 mt-1">
+            <p className="text-[11px] sm:text-[12px] text-ink-4 mt-1 leading-snug">
               Operational view of the Atlas instance — counters refresh every 30 s.
             </p>
           </div>
           <button
             onClick={() => setTwoFactorMode(true)}
-            className="flex items-center gap-1.5 px-3 h-8 rounded-control bg-[rgba(255,255,255,0.06)] text-[12px] text-ink-2 hover:text-ink-1"
+            className="shrink-0 inline-flex items-center gap-1.5 px-2.5 sm:px-3 h-8 rounded-control bg-[rgba(255,255,255,0.06)] text-[11.5px] sm:text-[12px] text-ink-2 hover:text-ink-1"
             title="Enrol your account in TOTP — required for /admin/* in production"
           >
             <Shield size={13} />
-            Set up 2FA
+            <span className="hidden sm:inline">Set up 2FA</span>
+            <span className="sm:hidden">2FA</span>
           </button>
         </header>
 
@@ -108,14 +111,14 @@ export default function AdminPage() {
         {tab === "overview" && (
           <section className="space-y-4">
             {isLoading || !metrics ? (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
                 {Array.from({ length: 8 }).map((_, i) => (
                   <div key={i} className="glass rounded-control p-4 h-[88px] animate-pulse" />
                 ))}
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
                   <MetricCard label="Users" value={metrics.users_total} />
                   <MetricCard label="Partners" value={metrics.partners_total} />
                   <MetricCard label="Reports" value={metrics.reports_total} />
