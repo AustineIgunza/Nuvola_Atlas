@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   CartesianGrid,
@@ -12,7 +12,9 @@ import {
 } from "recharts";
 import { AlertTriangle, Droplets, HardHat, X } from "lucide-react";
 import AppShell from "@/components/chrome/AppShell";
+import CompareAssistant from "@/components/chat/CompareAssistant";
 import { api } from "@/api";
+import { useAtlasStore } from "@/stores/atlas";
 import { useZoneHistory } from "@/hooks/useZoneHistory";
 import { waterProfile } from "@/lib/waterSanitation";
 import { BRAND, PILLAR_COLORS, PILLAR_SHORT, scoreColor } from "@/lib/scoreColor";
@@ -39,6 +41,14 @@ export default function ComparePage() {
     [selectedIds, zones],
   );
 
+  // Mirror the picked zones into the atlas store so the Assistant panel (and
+  // the mock chat stream) can craft answers scoped to what's on screen.
+  const setCompareZoneIds = useAtlasStore((s) => s.setCompareZoneIds);
+  useEffect(() => {
+    setCompareZoneIds(selectedIds);
+    return () => setCompareZoneIds([]);
+  }, [selectedIds, setCompareZoneIds]);
+
   const addZone = (id: string) => {
     if (selectedIds.includes(id) || selectedIds.length >= MAX_ZONES) return;
     setSelectedIds([...selectedIds, id]);
@@ -50,38 +60,42 @@ export default function ComparePage() {
   return (
     <AppShell>
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-[1100px] mx-auto p-4 sm:p-6">
-          <header className="mb-5">
-            <div className="text-[10px] font-medium text-ink-4 uppercase tracking-[0.12em]">Compare</div>
-            <h1 className="text-[22px] font-semibold text-ink-1 leading-tight">Side-by-side zone comparison</h1>
-            <p className="mt-1.5 text-[12px] text-ink-3 max-w-[68ch]">
-              Pick up to {MAX_ZONES} Nairobi sub-counties to compare their Vitality Score, pillar
-              breakdown, and score history side by side.
-            </p>
-          </header>
+        <div className="max-w-[1400px] mx-auto p-4 sm:p-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="min-w-0">
+            <header className="mb-5">
+              <div className="text-[10px] font-medium text-ink-4 uppercase tracking-[0.12em]">Compare</div>
+              <h1 className="text-[22px] font-semibold text-ink-1 leading-tight">Side-by-side zone comparison</h1>
+              <p className="mt-1.5 text-[12px] text-ink-3 max-w-[68ch]">
+                Pick up to {MAX_ZONES} Nairobi sub-counties to compare their Vitality Score, pillar
+                breakdown, and score history side by side.
+              </p>
+            </header>
 
-          <ZonePicker
-            zones={zones}
-            selectedIds={selectedIds}
-            onAdd={addZone}
-            onRemove={removeZone}
-          />
+            <ZonePicker
+              zones={zones}
+              selectedIds={selectedIds}
+              onAdd={addZone}
+              onRemove={removeZone}
+            />
 
-          {selected.length === 0 ? (
-            <div className="mt-6 rounded-card border border-border p-8 text-center text-[12px] text-ink-4">
-              Pick a zone above to start.
-            </div>
-          ) : (
-            <>
-              <ScoreGrid zones={selected} />
-              <DeltaGrid zones={selected} />
-              <PillarGrid zones={selected} />
-              <WaterGrid zones={selected} />
-              <TrendCard zones={selected} range={range} onRange={setRange} />
-              <ProjectsGrid zones={selected} projects={projects} />
-              <AlertsGrid zones={selected} alerts={alerts} />
-            </>
-          )}
+            {selected.length === 0 ? (
+              <div className="mt-6 rounded-card border border-border p-8 text-center text-[12px] text-ink-4">
+                Pick a zone above to start.
+              </div>
+            ) : (
+              <>
+                <ScoreGrid zones={selected} />
+                <DeltaGrid zones={selected} />
+                <PillarGrid zones={selected} />
+                <WaterGrid zones={selected} />
+                <TrendCard zones={selected} range={range} onRange={setRange} />
+                <ProjectsGrid zones={selected} projects={projects} />
+                <AlertsGrid zones={selected} alerts={alerts} />
+              </>
+            )}
+          </div>
+
+          <CompareAssistant zones={selected} />
         </div>
       </div>
     </AppShell>

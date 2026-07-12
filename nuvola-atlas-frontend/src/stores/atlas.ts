@@ -18,11 +18,16 @@ interface AtlasState {
   activeLayers: LayerState;
   scrubMonthIdx: number;
   mapStyle: string;
+  // Compare-mode context: the zone ids currently on the Compare page, mirrored
+  // here so the Assistant panel (and mock chat stream) can craft answers
+  // scoped to what the user is actually comparing.
+  compareZoneIds: string[];
 
   setSelectedZone: (id: string | null) => void;
   toggleLayer: (key: keyof LayerState) => void;
   setScrubMonth: (idx: number) => void;
   setMapStyle: (style: string) => void;
+  setCompareZoneIds: (ids: string[]) => void;
 }
 
 export const useAtlasStore = create<AtlasState>((set) => ({
@@ -31,6 +36,7 @@ export const useAtlasStore = create<AtlasState>((set) => ({
   activeLayers: { vitality: true, roads: false, energy: false, density: false, water: false, momentum: false, safety: false },
   scrubMonthIdx: 11,
   mapStyle: defaultStyleForTheme(useThemeStore.getState().theme),
+  compareZoneIds: [],
 
   setSelectedZone: (id) => {
     set({ selectedZoneId: id });
@@ -44,4 +50,5 @@ export const useAtlasStore = create<AtlasState>((set) => ({
     })),
   setScrubMonth: (idx) => set({ scrubMonthIdx: idx }),
   setMapStyle: (style) => set({ mapStyle: style }),
+  setCompareZoneIds: (ids) => set({ compareZoneIds: ids }),
 }));
