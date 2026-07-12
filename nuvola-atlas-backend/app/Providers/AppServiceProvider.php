@@ -66,8 +66,17 @@ class AppServiceProvider extends ServiceProvider
         // /forgot-password, /reset-password, and /auth/2fa/verify well below
         // a useful guess rate (60/hr ceiling) while leaving headroom for a
         // real user fat-fingering a password or reset code.
+        // Auth throttle. Keyed by (email + IP) when the request carries an
+        // email, so mobile carrier NAT and shared Wi-Fi don't lock out
+        // every user behind the same egress IP. Falls back to IP-only for
+        // requests without an email (2FA verify). Ceiling is 20 attempts
+        // per 10 minutes — well below a useful guess rate but generous
+        // enough that a real user fat-fingering three times doesn't burn
+        // the demo.
         RateLimiter::for('auth', function (Request $request) {
-            return Limit::perMinutes(10, 10)->by($request->ip());
+            $email = strtolower((string) $request->input('email', ''));
+            $key = $email !== '' ? $email.'|'.$request->ip() : $request->ip();
+            return Limit::perMinutes(10, 20)->by($key);
         });
 
         // Chat throttle — every LLM call costs money. Default 10/min per

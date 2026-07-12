@@ -84,12 +84,13 @@ export default function ComparePage() {
               </div>
               <button
                 onClick={startNewComparison}
-                className="shrink-0 inline-flex items-center gap-1.5 px-3 h-8 rounded-control bg-[rgba(255,255,255,0.04)] border border-border text-[11.5px] font-semibold text-ink-2 hover:text-ink-1 hover:bg-[rgba(255,255,255,0.08)] transition-colors btn-press"
+                className="shrink-0 inline-flex items-center gap-1.5 px-2.5 sm:px-3 h-8 rounded-control bg-[rgba(255,255,255,0.04)] border border-border text-[11.5px] font-semibold text-ink-2 hover:text-ink-1 hover:bg-[rgba(255,255,255,0.08)] transition-colors btn-press"
                 aria-label="Start a new comparison and reset the assistant"
                 title="Clears the picked zones and starts a fresh assistant chat"
               >
                 <RefreshCcw size={12} />
-                New comparison
+                <span className="hidden sm:inline">New comparison</span>
+                <span className="sm:hidden">New</span>
               </button>
             </header>
 

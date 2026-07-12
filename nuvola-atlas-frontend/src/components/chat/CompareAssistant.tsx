@@ -64,8 +64,11 @@ export default function CompareAssistant({ zones }: Props) {
 
   return (
     <aside
-      className="rounded-card border border-border bg-[rgba(255,255,255,0.02)] flex flex-col overflow-hidden lg:sticky lg:top-4"
-      style={{ maxHeight: "calc(100dvh - 8rem)" }}
+      // Mobile: bounded natural height so the assistant doesn't monopolise
+      // the screen when stacked under the comparison content. Desktop:
+      // sticky column that hugs the viewport as the user scrolls.
+      className="rounded-card border border-border bg-[rgba(255,255,255,0.02)] flex flex-col overflow-hidden max-h-[60vh] lg:max-h-none lg:sticky lg:top-4"
+      style={{ height: undefined }}
       aria-label="Comparison assistant"
     >
       <div className="h-[2.5px] shrink-0" style={{ background: `linear-gradient(90deg, ${BRAND.teal}, ${BRAND.gold})` }} />
