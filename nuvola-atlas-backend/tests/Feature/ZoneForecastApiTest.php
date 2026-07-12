@@ -8,26 +8,24 @@ use App\Models\Zone;
 use App\Models\ZoneScoreSnapshot;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
+use Tests\Support\IndicatorSeeding;
 use Tests\TestCase;
 
 class ZoneForecastApiTest extends TestCase
 {
     private function seedZone(): Zone
     {
-        $zone = Zone::create([
+        $zone = Zone::create(array_merge([
             'id' => 'westlands',
             'name' => 'Westlands',
             'score' => 76,
-            'pillar_social' => 82,
-            'pillar_safety' => 71,
-            'pillar_density' => 64,
-            'pillar_infra' => 80,
-            'delta_social' => 3,
-            'delta_safety' => -1,
-            'delta_density' => 2,
-            'delta_infra' => 4,
             'last_sync_min' => 4,
-        ]);
+        ], IndicatorSeeding::fromPillars([
+            'social' => 82,
+            'safety' => 71,
+            'density' => 64,
+            'infra' => 80,
+        ])));
         DB::statement(
             "UPDATE zones SET centroid = ST_MakePoint(36.8048, -1.2673)::geography WHERE id = ?",
             ['westlands']
@@ -38,16 +36,18 @@ class ZoneForecastApiTest extends TestCase
     private function seedHistory(string $zoneId, int $days = 30): void
     {
         $now = CarbonImmutable::now();
+        $indicators = IndicatorSeeding::fromPillars([
+            'social' => 80,
+            'safety' => 71,
+            'density' => 65,
+            'infra' => 78,
+        ]);
         for ($i = 0; $i < $days; $i++) {
-            ZoneScoreSnapshot::create([
+            ZoneScoreSnapshot::create(array_merge([
                 'zone_id' => $zoneId,
                 'captured_at' => $now->subDays($i)->setTime(12, 0),
                 'score' => 70 + ($i % 6),
-                'pillar_social' => 80,
-                'pillar_safety' => 71,
-                'pillar_density' => 65,
-                'pillar_infra' => 78,
-            ]);
+            ], $indicators));
         }
     }
 
@@ -104,18 +104,22 @@ class ZoneForecastApiTest extends TestCase
     {
         $this->seedZone();
         // Only 2 snapshots — under the "need >= 3" gate.
-        ZoneScoreSnapshot::create([
+        $earlyIndicators = IndicatorSeeding::fromPillars([
+            'social' => 80, 'safety' => 71, 'density' => 65, 'infra' => 78,
+        ]);
+        $lateIndicators = IndicatorSeeding::fromPillars([
+            'social' => 82, 'safety' => 71, 'density' => 64, 'infra' => 80,
+        ]);
+        ZoneScoreSnapshot::create(array_merge([
             'zone_id' => 'westlands',
             'captured_at' => now()->subDay(),
-            'score' => 74, 'pillar_social' => 80, 'pillar_safety' => 71,
-            'pillar_density' => 65, 'pillar_infra' => 78,
-        ]);
-        ZoneScoreSnapshot::create([
+            'score' => 74,
+        ], $earlyIndicators));
+        ZoneScoreSnapshot::create(array_merge([
             'zone_id' => 'westlands',
             'captured_at' => now(),
-            'score' => 76, 'pillar_social' => 82, 'pillar_safety' => 71,
-            'pillar_density' => 64, 'pillar_infra' => 80,
-        ]);
+            'score' => 76,
+        ], $lateIndicators));
 
         $r = $this->getJson('/api/v1/zones/westlands/forecast?horizon=5');
         $r->assertOk();

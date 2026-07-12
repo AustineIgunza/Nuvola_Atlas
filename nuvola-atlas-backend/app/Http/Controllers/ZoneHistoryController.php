@@ -6,7 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\ZoneHistoryResource;
 use App\Models\Zone;
-use App\Models\ZoneScoreSnapshot;
+use App\Services\ScoreCalculator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -43,31 +43,53 @@ class ZoneHistoryController extends Controller
      */
     private function fetchAggregated(string $zoneId, int $hours, string $bucket): array
     {
-        // 'hour' bucket for range=day returns raw hourly rows (up to 24);
-        // 'day' bucket for week/month averages the pillar values per calendar
-        // day so the client always gets a compact, chart-ready series.
-        $rows = DB::table('zone_score_snapshots')
+        // Aggregate the 13 indicator columns per bucket, then compute the four
+        // pillar averages in PHP via ScoreCalculator so the chart-ready wire
+        // format matches the live Zones endpoint.
+        $calc = new ScoreCalculator();
+        $indicatorAggregates = [];
+        foreach (ScoreCalculator::pillars() as $pillar => $indicators) {
+            foreach ($indicators as $slug) {
+                $indicatorAggregates[] = 'indicator_' . $slug;
+            }
+        }
+
+        $query = DB::table('zone_score_snapshots')
             ->where('zone_id', $zoneId)
             ->where('captured_at', '>=', now()->subHours($hours))
             ->selectRaw("date_trunc(?, captured_at) as bucket", [$bucket])
-            ->selectRaw('AVG(score)::int as score')
-            ->selectRaw('AVG(pillar_social)::int as pillar_social')
-            ->selectRaw('AVG(pillar_safety)::int as pillar_safety')
-            ->selectRaw('AVG(pillar_density)::int as pillar_density')
-            ->selectRaw('AVG(pillar_infra)::int as pillar_infra')
+            ->selectRaw('AVG(score)::int as score');
+
+        foreach ($indicatorAggregates as $col) {
+            $query->selectRaw("AVG({$col})::int as {$col}");
+        }
+
+        $rows = $query
             ->groupBy('bucket')
             ->orderBy('bucket')
             ->get();
 
-        return $rows->map(fn ($row) => [
-            't' => (string) $row->bucket,
-            'score' => (int) $row->score,
-            'pillars' => [
-                'social' => (int) $row->pillar_social,
-                'safety' => (int) $row->pillar_safety,
-                'density' => (int) $row->pillar_density,
-                'infra' => (int) $row->pillar_infra,
-            ],
-        ])->all();
+        return $rows->map(function ($row) use ($calc) {
+            $values = [];
+            foreach (ScoreCalculator::pillars() as $indicators) {
+                foreach ($indicators as $slug) {
+                    $col = 'indicator_' . $slug;
+                    $values[$slug] = isset($row->$col) ? (int) $row->$col : null;
+                }
+            }
+
+            $pillars = $calc->pillarScoresFromValues($values);
+
+            return [
+                't' => (string) $row->bucket,
+                'score' => (int) $row->score,
+                'pillars' => [
+                    'social' => $pillars['social'],
+                    'safety' => $pillars['safety'],
+                    'density' => $pillars['density'],
+                    'infra' => $pillars['infra'],
+                ],
+            ];
+        })->all();
     }
 }

@@ -8,19 +8,33 @@ use App\Models\Zone;
 use App\Models\ZoneLayer;
 use App\Services\ScoreCalculator;
 use Illuminate\Support\Facades\DB;
+use Tests\Support\IndicatorSeeding;
 use Tests\TestCase;
 
 class ScoreRecalculationTest extends TestCase
 {
     private function createTestZone(string $id = 'test-zone'): Zone
     {
+        // Same pillar averages the pre-migration test used (80/70/60/75)
+        // — set every indicator in a pillar to that pillar's target so the
+        // averages come out identical, and the numeric assertions below stay
+        // meaningful across the schema swap.
+        $indicators = IndicatorSeeding::fromPillars([
+            'social' => 80,
+            'safety' => 70,
+            'density' => 60,
+            'infra' => 75,
+        ]);
+
+        $indicatorCols = implode(', ', array_keys($indicators));
+        $indicatorPlaceholders = implode(', ', array_fill(0, count($indicators), '?'));
+
         DB::statement(
-            "INSERT INTO zones (id, name, score, pillar_social, pillar_safety, pillar_density, pillar_infra,
-             delta_social, delta_safety, delta_density, delta_infra, last_sync_min,
+            "INSERT INTO zones (id, name, score, {$indicatorCols}, last_sync_min,
              centroid, created_at, updated_at)
-             VALUES (?, ?, 0, 80, 70, 60, 75, 0, 0, 0, 0, 99,
+             VALUES (?, ?, 0, {$indicatorPlaceholders}, 99,
              ST_GeogFromText('POINT(36.82 -1.29)'), now(), now())",
-            [$id, 'Test Zone']
+            array_merge([$id, 'Test Zone'], array_values($indicators))
         );
 
         return Zone::find($id);
@@ -38,7 +52,7 @@ class ScoreRecalculationTest extends TestCase
         $this->assertSame(0, $zone->last_sync_min);
     }
 
-    public function test_artisan_command_uses_weighted_scoring(): void
+    public function test_artisan_command_recomputes_indicator_average(): void
     {
         $this->createTestZone();
 
@@ -46,8 +60,8 @@ class ScoreRecalculationTest extends TestCase
             ->assertSuccessful();
 
         $zone = Zone::find('test-zone');
-        // Weighted: (80*3 + 70*3 + 60*2 + 75*5) / 13 = (240+210+120+375)/13 â‰ˆ 72.7 â†’ 73
-        $this->assertSame(73, $zone->score);
+        // Simple average of the 4 pillars: (80 + 70 + 60 + 75) / 4 = 71.25 → 71
+        $this->assertSame(71, $zone->score);
     }
 
     public function test_zone_layer_observer_dispatches_recalculation(): void
@@ -66,13 +80,16 @@ class ScoreRecalculationTest extends TestCase
         $this->assertGreaterThan(0, $zone->score);
     }
 
-    public function test_methodology_endpoint_includes_weights(): void
+    public function test_methodology_endpoint_exposes_weights(): void
     {
         $response = $this->getJson('/api/v1/vitality/methodology');
 
+        // Post-July-2026 the composite is a simple average of the four pillars,
+        // so weights are all 0.25 — the endpoint still exposes them so the
+        // client's compat contract holds.
         $response->assertOk()
             ->assertJsonStructure(['pillars', 'weights'])
-            ->assertJsonPath('weights.social', fn ($v) => $v > 0)
-            ->assertJsonPath('weights.infra', fn ($v) => $v > 0);
+            ->assertJsonPath('weights.social', 0.25)
+            ->assertJsonPath('weights.infra', 0.25);
     }
 }

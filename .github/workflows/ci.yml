@@ -19,13 +19,6 @@ jobs:
     name: Backend — phpunit + smoke checks
     runs-on: ubuntu-latest
 
-    # TEMPORARY: informational only while the phpunit suite catches up with
-    # the pillars → indicators migration and the accompanying model/service
-    # changes. Failures here still surface in the log for anyone to see, but
-    # they no longer gate merges or Vercel deploys. Remove this line once
-    # the phpunit suite is updated to match the new schema.
-    continue-on-error: true
-
     # Skip when the PR doesn't touch the backend or shared infra. Push events
     # to main always run so the protection on main stays meaningful.
     if: |

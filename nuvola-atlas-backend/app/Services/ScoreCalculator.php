@@ -25,6 +25,26 @@ use App\Models\ZoneScoreSnapshot;
 class ScoreCalculator
 {
     /**
+     * Pillar weights the API surfaces on /vitality/methodology.
+     *
+     * Post-July-2026 the composite is a simple average of the four pillars,
+     * so the weights are all equal — 0.25 each. This method is kept so the
+     * API response shape (`{weights: {social, safety, density, infra}}`)
+     * stays backwards compatible with clients that already read it.
+     *
+     * @return array{social: float, safety: float, density: float, infra: float}
+     */
+    public function getWeights(): array
+    {
+        return [
+            'social' => 0.25,
+            'safety' => 0.25,
+            'density' => 0.25,
+            'infra' => 0.25,
+        ];
+    }
+
+    /**
      * Slug groupings driving the scoring math. Matches config/methodology.php
      * one-for-one. Duplicated here so the calculator does not depend on
      * loading config in tight loops (~17 zones × hourly cron).
@@ -49,10 +69,29 @@ class ScoreCalculator
      */
     public function pillarScores(Zone $zone): array
     {
+        $values = [];
+        foreach (self::pillars() as $indicators) {
+            foreach ($indicators as $slug) {
+                $values[$slug] = $this->indicator($zone, $slug);
+            }
+        }
+        return $this->pillarScoresFromValues($values);
+    }
+
+    /**
+     * Same as `pillarScores`, but takes a plain indicator-slug → value map.
+     * Useful when aggregating snapshot rows (ZoneHistoryController averages
+     * indicator columns per bucket and only needs the pillar math).
+     *
+     * @param array<string, ?int> $values slug (without "indicator_" prefix) → 0-100 value or null
+     * @return array{social: ?int, safety: ?int, density: ?int, infra: ?int}
+     */
+    public function pillarScoresFromValues(array $values): array
+    {
         $result = [];
         foreach (self::pillars() as $pillar => $indicators) {
             $result[$pillar] = $this->average(
-                array_map(fn (string $ind) => $this->indicator($zone, $ind), $indicators)
+                array_map(fn (string $ind) => $values[$ind] ?? null, $indicators)
             );
         }
         return $result;

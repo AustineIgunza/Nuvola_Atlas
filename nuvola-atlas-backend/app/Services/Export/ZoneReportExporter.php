@@ -7,6 +7,7 @@ namespace App\Services\Export;
 use App\Models\Alert;
 use App\Models\Project;
 use App\Models\Zone;
+use App\Services\ScoreCalculator;
 use Dompdf\Dompdf;
 use Dompdf\Options as DompdfOptions;
 use InvalidArgumentException;
@@ -65,10 +66,18 @@ class ZoneReportExporter
         $projects = Project::where('zone_id', $zone->id)->get();
         $alerts = Alert::where('zone_id', $zone->id)->get();
 
+        // Pillars are derived from indicators — no longer stored on the row.
+        // Deltas were dropped in the pillars → indicators migration; the
+        // quarter-over-quarter view will land again on a snapshot-diff.
+        $calc = new ScoreCalculator();
+        $pillars = $calc->pillarScores($zone);
+
         return [
             'zone' => $zone,
             'projects' => $projects,
             'alerts' => $alerts,
+            'pillars' => $pillars,
+            'deltas' => ['social' => 0, 'safety' => 0, 'density' => 0, 'infra' => 0],
             'generatedAt' => now()->toRfc7231String(),
         ];
     }
@@ -76,22 +85,24 @@ class ZoneReportExporter
     private function buildText(array $data): string
     {
         $z = $data['zone'];
+        $p = $data['pillars'];
+        $d = $data['deltas'];
         $lines = [
             'NAVUUNA ATLAS — Zone Vitality Report',
             "Zone: {$z->name}",
             "Vitality Score: {$z->score}/100",
             '',
             'Pillar Scores:',
-            "  Social Wellbeing:    {$z->pillar_social}",
-            "  Safety & Security:   {$z->pillar_safety}",
-            "  Density & Scaling:   {$z->pillar_density}",
-            "  Infrastructure/Env:  {$z->pillar_infra}",
+            "  Social Wellbeing:    " . $this->fmtScore($p['social']),
+            "  Safety & Security:   " . $this->fmtScore($p['safety']),
+            "  Density & Scaling:   " . $this->fmtScore($p['density']),
+            "  Infrastructure/Env:  " . $this->fmtScore($p['infra']),
             '',
             'Deltas (quarter-over-quarter):',
-            "  Social:   " . $this->signed($z->delta_social),
-            "  Safety:   " . $this->signed($z->delta_safety),
-            "  Density:  " . $this->signed($z->delta_density),
-            "  Infra:    " . $this->signed($z->delta_infra),
+            "  Social:   " . $this->signed($d['social']),
+            "  Safety:   " . $this->signed($d['safety']),
+            "  Density:  " . $this->signed($d['density']),
+            "  Infra:    " . $this->signed($d['infra']),
             '',
             'Infrastructure projects: ' . count($data['projects']),
         ];
@@ -128,6 +139,8 @@ class ZoneReportExporter
     private function buildHtml(array $data): string
     {
         $z = $data['zone'];
+        $p = $data['pillars'];
+        $d = $data['deltas'];
         $projects = $data['projects'];
         $alerts = $data['alerts'];
         $g = htmlspecialchars((string) $data['generatedAt']);
@@ -182,10 +195,10 @@ class ZoneReportExporter
 
   <h2>Pillar Scores</h2>
   <table class="pillars">
-    <tr><td width="60%">Social Wellbeing &amp; Human Capital</td><td><strong>{$z->pillar_social}</strong></td><td>{$this->signed($z->delta_social)}</td></tr>
-    <tr><td>Safety &amp; Security</td><td><strong>{$z->pillar_safety}</strong></td><td>{$this->signed($z->delta_safety)}</td></tr>
-    <tr><td>Density &amp; Scaling Dynamics</td><td><strong>{$z->pillar_density}</strong></td><td>{$this->signed($z->delta_density)}</td></tr>
-    <tr><td>Infrastructure &amp; Environmental Safeguards</td><td><strong>{$z->pillar_infra}</strong></td><td>{$this->signed($z->delta_infra)}</td></tr>
+    <tr><td width="60%">Social Wellbeing &amp; Human Capital</td><td><strong>{$this->fmtScore($p['social'])}</strong></td><td>{$this->signed($d['social'])}</td></tr>
+    <tr><td>Safety &amp; Security</td><td><strong>{$this->fmtScore($p['safety'])}</strong></td><td>{$this->signed($d['safety'])}</td></tr>
+    <tr><td>Density &amp; Scaling Dynamics</td><td><strong>{$this->fmtScore($p['density'])}</strong></td><td>{$this->signed($d['density'])}</td></tr>
+    <tr><td>Infrastructure &amp; Environmental Safeguards</td><td><strong>{$this->fmtScore($p['infra'])}</strong></td><td>{$this->signed($d['infra'])}</td></tr>
   </table>
 
   <h2>Infrastructure Projects</h2>
@@ -209,6 +222,8 @@ HTML;
     private function buildDocx(array $data): string
     {
         $z = $data['zone'];
+        $p = $data['pillars'];
+        $d = $data['deltas'];
         $phpWord = new PhpWord();
         $section = $phpWord->addSection();
 
@@ -226,16 +241,16 @@ HTML;
         $section->addTextBreak(1);
         $section->addTitle('Pillar Scores', 2);
         $pillars = [
-            ['Social Wellbeing & Human Capital', $z->pillar_social, $z->delta_social],
-            ['Safety & Security', $z->pillar_safety, $z->delta_safety],
-            ['Density & Scaling Dynamics', $z->pillar_density, $z->delta_density],
-            ['Infrastructure & Environmental Safeguards', $z->pillar_infra, $z->delta_infra],
+            ['Social Wellbeing & Human Capital', $p['social'], $d['social']],
+            ['Safety & Security', $p['safety'], $d['safety']],
+            ['Density & Scaling Dynamics', $p['density'], $d['density']],
+            ['Infrastructure & Environmental Safeguards', $p['infra'], $d['infra']],
         ];
         $table = $section->addTable(['borderSize' => 4, 'borderColor' => 'DDDDDD', 'cellMargin' => 80]);
         foreach ($pillars as [$label, $val, $delta]) {
             $table->addRow();
             $table->addCell(6000)->addText($label);
-            $table->addCell(1200)->addText((string) $val, ['bold' => true]);
+            $table->addCell(1200)->addText($this->fmtScore($val), ['bold' => true]);
             $table->addCell(1200)->addText($this->signed($delta));
         }
 
@@ -272,5 +287,14 @@ HTML;
     {
         if ($n > 0) return "+{$n}";
         return (string) $n;
+    }
+
+    /**
+     * Render a pillar score for the report. Null means the pillar has no
+     * indicators yet — shown as "—" so the report doesn't lie with a "0".
+     */
+    private function fmtScore(?int $n): string
+    {
+        return $n === null ? '—' : (string) $n;
     }
 }

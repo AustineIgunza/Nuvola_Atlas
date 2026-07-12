@@ -8,26 +8,24 @@ use App\Models\Zone;
 use App\Models\ZoneScoreSnapshot;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
+use Tests\Support\IndicatorSeeding;
 use Tests\TestCase;
 
 class ZoneHistoryApiTest extends TestCase
 {
     private function seedZone(string $id = 'westlands', string $name = 'Westlands'): Zone
     {
-        $zone = Zone::create([
+        $zone = Zone::create(array_merge([
             'id' => $id,
             'name' => $name,
             'score' => 76,
-            'pillar_social' => 82,
-            'pillar_safety' => 71,
-            'pillar_density' => 64,
-            'pillar_infra' => 80,
-            'delta_social' => 3,
-            'delta_safety' => -1,
-            'delta_density' => 2,
-            'delta_infra' => 4,
             'last_sync_min' => 4,
-        ]);
+        ], IndicatorSeeding::fromPillars([
+            'social' => 82,
+            'safety' => 71,
+            'density' => 64,
+            'infra' => 80,
+        ])));
 
         DB::statement(
             "UPDATE zones SET centroid = ST_MakePoint(36.8048, -1.2673)::geography WHERE id = ?",
@@ -43,15 +41,21 @@ class ZoneHistoryApiTest extends TestCase
         $stepHours = max(1, (int) floor($hoursBack / $count));
 
         for ($i = 0; $i < $count; $i++) {
-            ZoneScoreSnapshot::create([
+            // Snapshots carry the same 13 indicator columns as zones. Vary
+            // each pillar's indicators by a small offset so we get a bit of
+            // curve on the trend charts.
+            $indicators = IndicatorSeeding::fromPillars([
+                'social' => 80 + ($i % 3),
+                'safety' => 70 + ($i % 4),
+                'density' => 65 + ($i % 3),
+                'infra' => 78 + ($i % 5),
+            ]);
+
+            ZoneScoreSnapshot::create(array_merge([
                 'zone_id' => $zoneId,
                 'captured_at' => $now->subHours($i * $stepHours),
                 'score' => 70 + ($i % 5),
-                'pillar_social' => 80 + ($i % 3),
-                'pillar_safety' => 70 + ($i % 4),
-                'pillar_density' => 65 + ($i % 3),
-                'pillar_infra' => 78 + ($i % 5),
-            ]);
+            ], $indicators));
         }
     }
 

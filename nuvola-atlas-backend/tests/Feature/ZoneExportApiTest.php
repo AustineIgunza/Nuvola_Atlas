@@ -6,26 +6,24 @@ namespace Tests\Feature;
 
 use App\Models\Zone;
 use Illuminate\Support\Facades\DB;
+use Tests\Support\IndicatorSeeding;
 use Tests\TestCase;
 
 class ZoneExportApiTest extends TestCase
 {
     private function seedZone(): Zone
     {
-        $zone = Zone::create([
+        $zone = Zone::create(array_merge([
             'id' => 'westlands',
             'name' => 'Westlands',
             'score' => 76,
-            'pillar_social' => 82,
-            'pillar_safety' => 71,
-            'pillar_density' => 64,
-            'pillar_infra' => 80,
-            'delta_social' => 3,
-            'delta_safety' => -1,
-            'delta_density' => 2,
-            'delta_infra' => 4,
             'last_sync_min' => 4,
-        ]);
+        ], IndicatorSeeding::fromPillars([
+            'social' => 82,
+            'safety' => 71,
+            'density' => 64,
+            'infra' => 80,
+        ])));
         DB::statement(
             "UPDATE zones SET centroid = ST_MakePoint(36.8048, -1.2673)::geography WHERE id = ?",
             ['westlands']

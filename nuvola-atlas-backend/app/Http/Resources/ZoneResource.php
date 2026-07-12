@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Services\ScoreCalculator;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -9,21 +10,30 @@ class ZoneResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        // Pillars are derived from indicators on the fly — the storage swap
+        // (pillars → 13 indicators) means the pillar columns no longer exist.
+        // Deltas are still stubbed until a v2 snapshot-diff pipeline lands;
+        // returning zeros keeps the wire format intact for the frontend.
+        $calc = new ScoreCalculator();
+        /** @var \App\Models\Zone $zone */
+        $zone = $this->resource;
+        $pillars = $calc->pillarScores($zone);
+
         return [
             'id' => $this->id,
             'name' => $this->name,
             'score' => $this->score,
             'pillars' => [
-                'social' => $this->pillar_social,
-                'safety' => $this->pillar_safety,
-                'density' => $this->pillar_density,
-                'infra' => $this->pillar_infra,
+                'social' => $pillars['social'],
+                'safety' => $pillars['safety'],
+                'density' => $pillars['density'],
+                'infra' => $pillars['infra'],
             ],
             'deltas' => [
-                'social' => $this->delta_social,
-                'safety' => $this->delta_safety,
-                'density' => $this->delta_density,
-                'infra' => $this->delta_infra,
+                'social' => 0,
+                'safety' => 0,
+                'density' => 0,
+                'infra' => 0,
             ],
             'centroid' => [(float) $this->lon, (float) $this->lat],
             'lastSyncMin' => $this->last_sync_min,

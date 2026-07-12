@@ -8,26 +8,26 @@ use App\Models\Activity;
 use App\Models\Zone;
 use App\Models\ZoneLayer;
 use Illuminate\Support\Facades\DB;
+use Tests\Support\IndicatorSeeding;
 use Tests\TestCase;
 
 class ZoneApiTest extends TestCase
 {
     private function seedZone(string $id = 'westlands', string $name = 'Westlands'): Zone
     {
-        $zone = Zone::create([
+        // Pillar scores of 82/71/64/80 map to setting every indicator in a
+        // pillar to that value. Deltas dropped in the migration.
+        $zone = Zone::create(array_merge([
             'id' => $id,
             'name' => $name,
             'score' => 76,
-            'pillar_social' => 82,
-            'pillar_safety' => 71,
-            'pillar_density' => 64,
-            'pillar_infra' => 80,
-            'delta_social' => 3,
-            'delta_safety' => -1,
-            'delta_density' => 2,
-            'delta_infra' => 4,
             'last_sync_min' => 4,
-        ]);
+        ], IndicatorSeeding::fromPillars([
+            'social' => 82,
+            'safety' => 71,
+            'density' => 64,
+            'infra' => 80,
+        ])));
 
         DB::statement(
             "UPDATE zones SET centroid = ST_MakePoint(36.8048, -1.2673)::geography WHERE id = ?",

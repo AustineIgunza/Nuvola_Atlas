@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Cache;
  */
 class SchemaCatalog
 {
-    private const CACHE_KEY = 'chat.schema-catalog.v1';
+    private const CACHE_KEY = 'chat.schema-catalog.v2';
 
     public function forPrompt(): string
     {
@@ -31,11 +31,25 @@ Current Vitality Score per Nairobi sub-county (17 zones).
 - id (string PK, e.g. "westlands", "kibra")
 - name (string)
 - score (int 0-100)                     ← overall Vitality Score
-- pillar_social, pillar_safety, pillar_density, pillar_infra (int 0-100)
-- delta_social, delta_safety, delta_density, delta_infra (int, quarter-over-quarter change)
 - centroid geography(Point,4326)
 - last_sync_min (int, minutes since last data refresh)
 - created_at, updated_at
+
+  13 indicator columns (each smallint 0-100, nullable when awaiting data —
+  NULL is NOT zero, exclude nulls from averages):
+  Social pillar:   indicator_healthcare_access, indicator_education_access,
+                   indicator_digital_connectivity
+  Safety pillar:   indicator_crime_rates, indicator_emergency_response_access,
+                   indicator_disaster_exposure
+  Density pillar:  indicator_population_density, indicator_congestion,
+                   indicator_housing_pressure
+  Infra pillar:    indicator_road_quality, indicator_energy_reliability,
+                   indicator_food_risk, indicator_waste_management
+
+  Pillar score = AVG of the pillar's non-null indicators.
+  Composite score = AVG of the pillars that have at least one non-null indicator.
+  Deltas were removed in July 2026; do not select delta_* — those columns
+  don't exist.
 
 ## zone_score_snapshots
 Time-series of vitality scores, one row per zone per hourly recalc.
@@ -43,7 +57,7 @@ Time-series of vitality scores, one row per zone per hourly recalc.
 - zone_id (FK zones.id)
 - captured_at (timestamp)
 - score (smallint 0-100)
-- pillar_social, pillar_safety, pillar_density, pillar_infra (smallint 0-100)
+- Same 13 indicator_* columns as zones (nullable smallint 0-100).
 
 ## zone_layers
 GeoJSON infrastructure layers (roads, water, safety, density) per zone.
