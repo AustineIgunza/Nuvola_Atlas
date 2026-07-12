@@ -47,17 +47,18 @@ export default function AtlasMap({ zones }: Props) {
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
       <div ref={containerRef} style={{ position: "absolute", inset: 0 }} />
 
-      {/* Layer toggles — offset left on mobile to clear the hamburger button.
-          When the scorecard is open on desktop the right edge of the chip
-          strip clamps so the pills don't tuck behind the panel. */}
+      {/* Layer toggles — mobile keeps them at left-14 (past the hamburger).
+          Desktop shifts them to left-[260px] so they clear the floating
+          sidebar. When the scorecard is open, the right edge of the strip
+          clamps so the pills don't tuck behind the panel either. */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, ...springSettle }}
-        className={`absolute top-3 left-14 md:left-3 z-10 flex gap-1.5 sm:gap-2 flex-wrap transition-[max-width,right] duration-300 ${
+        className={`absolute top-3 left-14 md:left-[260px] z-10 flex gap-1.5 sm:gap-2 flex-wrap transition-[max-width,right] duration-300 ${
           panelOpen
-            ? "max-w-[calc(100%-5rem)] md:max-w-[calc(100%-6rem)] lg:max-w-[calc(100%-380px-4rem)] xl:max-w-[calc(100%-420px-4rem)]"
-            : "max-w-[calc(100%-5rem)] md:max-w-[calc(100%-6rem)]"
+            ? "max-w-[calc(100%-5rem)] md:max-w-[calc(100%-260px-1rem)] lg:max-w-[calc(100%-260px-380px-2rem)] xl:max-w-[calc(100%-260px-420px-2rem)]"
+            : "max-w-[calc(100%-5rem)] md:max-w-[calc(100%-260px-1rem)]"
         }`}
       >
         {LAYER_META.map((l) => {

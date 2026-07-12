@@ -405,16 +405,16 @@ export default function Sidebar() {
     );
   }
 
-  // Desktop: a sticky column with a bit of margin, rounded corners, a full
-  // border and a soft shadow — reads as a floating card without needing to
-  // be fixed-positioned. Fixed positioning left a solid strip visible
-  // behind the sidebar's translucency, which broke the "floating" look.
+  // Desktop: a truly floating panel over whatever is behind it. Same
+  // language as the Vitality Scorecard — fixed-positioned card with rounded
+  // corners, border, and soft shadow. AppShell removes its left padding on
+  // /atlas so the map extends full-width under the sidebar, and pads on
+  // every other route so text content clears the panel.
   return (
     <motion.aside
       animate={{ width: collapsed ? 64 : 244 }}
       transition={springSettle}
-      className="glass-strong flex flex-col sticky top-2 overflow-hidden shrink-0 my-2 ml-2 rounded-card border border-border shadow-chrome"
-      style={{ height: "calc(100vh - 1rem)" }}
+      className="hidden md:flex glass-strong flex-col fixed top-3 left-3 bottom-3 z-30 overflow-hidden rounded-modal border border-border shadow-modal"
     >
       {sidebarContent}
     </motion.aside>
