@@ -48,7 +48,7 @@ Khillon & Devyan
 DETAILED EXPLANATIONS
 Last updated: 2026-07-12
 Current HEAD: 92626c3
-Active phase: Phase B — Real Data Ingestion (in flight); Phase E — Admin Suite (design signed off); Phase F — Investor Suite (design signed off)
+Active phase: Phase B — blocked on Daystar delivery (ingestion scaffold complete on our side; external data delivery has not started); Phase E — Admin Suite (design signed off, build pending); Phase F — Investor Suite (design signed off, build pending)
 Critical Rules for Code IDE
 * Read this file before every session. Do not redo completed items ([x]).
 * Do not skip incomplete items unless explicitly told to.
@@ -497,7 +497,7 @@ Frontend
 * [ ] Austine: Sidebar footer badge shows role + firm ("Investor · Acumen") so scope is always visible.
 Master Project Completion Summary
 * [ ] Phase A Complete: Master application infrastructure configured and active on production environments. (Staging on Fly.io complete; production Forge + DO deploy still open.)
-* [x] Phase A Complete: Data processing engines cleanly deployed with live system validation trackers reporting green. (Ingestion scaffold shipped; end-to-end telemetry sweep pending.)
+* [ ] Phase A Complete: Data processing engines cleanly deployed with live system validation trackers reporting green. (Ingestion scaffold shipped; end-to-end telemetry sweep pending — still needs Daystar delivery to close.)
 * [x] Core calculation files thoroughly refactored to handle new 13-indicator configurations.
 * [ ] Phase B Complete: Static mock parameters in fixtures.ts fully decoupled from production routing channels. (Blocked on Daystar delivery.)
 * [ ] Phase C Complete: Security patterns, system database scaling layers, and performance configurations verified.
