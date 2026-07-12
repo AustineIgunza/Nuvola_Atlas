@@ -109,7 +109,9 @@ export function useMapLayers(
       }
       if (m.getLayer("density-heat")) {
         m.setPaintProperty("density-heat", "heatmap-opacity", activeLayers.density ? 0.65 : 0);
-        m.setPaintProperty("density-heat", "heatmap-radius", activeLayers.density ? 35 : 0);
+        // Mapbox rejects heatmap-radius < 1 ("0 is less than the minimum value 1").
+        // Opacity 0 already hides the layer, so 1 is a safe "off" radius.
+        m.setPaintProperty("density-heat", "heatmap-radius", activeLayers.density ? 35 : 1);
       }
       if (m.getLayer("density-circles")) {
         m.setPaintProperty("density-circles", "circle-opacity", activeLayers.density ? 0.5 : 0);
@@ -154,7 +156,8 @@ export function useMapLayers(
       }
       if (m.getLayer("safety-heat")) {
         m.setPaintProperty("safety-heat", "heatmap-opacity", activeLayers.safety ? 0.7 : 0);
-        m.setPaintProperty("safety-heat", "heatmap-radius", activeLayers.safety ? 42 : 0);
+        // Same rule as density-heat above — 1 is the minimum, not 0.
+        m.setPaintProperty("safety-heat", "heatmap-radius", activeLayers.safety ? 42 : 1);
       }
     } catch {
       // layers may not exist during style swap
