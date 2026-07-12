@@ -19,9 +19,25 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => explode(',', env('CORS_ALLOWED_ORIGINS', 'http://localhost:5173')),
+    // Exact origins from env (comma-separated). Empty entries dropped so a
+    // trailing comma or blank env doesn't silently allow the empty string.
+    'allowed_origins' => array_values(array_filter(
+        array_map('trim', explode(',', env('CORS_ALLOWED_ORIGINS', 'http://localhost:5173'))),
+        fn (string $o) => $o !== ''
+    )),
 
-    'allowed_origins_patterns' => [],
+    // Preview / branch deploys on Vercel get URLs like
+    // `https://navuuna-git-<branch>-<team>.vercel.app`. Allow any Vercel
+    // subdomain by default so preview links keep working without editing
+    // env every time. Override with CORS_ALLOWED_ORIGIN_PATTERNS to lock
+    // this down before production.
+    'allowed_origins_patterns' => array_values(array_filter(
+        array_map(
+            'trim',
+            explode(',', env('CORS_ALLOWED_ORIGIN_PATTERNS', '#^https://[a-z0-9-]+\.vercel\.app$#'))
+        ),
+        fn (string $p) => $p !== ''
+    )),
 
     'allowed_headers' => ['*'],
 
