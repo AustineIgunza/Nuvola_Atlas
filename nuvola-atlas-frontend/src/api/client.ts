@@ -1,7 +1,11 @@
 export const BASE = import.meta.env.VITE_API_BASE ?? "/api/v1";
-// Default to mock so local dev works without Khillon's backend running.
-// Set VITE_USE_REMOTE_API=true on Vercel production (only). Previews stay
-// mock so partners can review UI even when the API is down.
+// Default to MOCK EVERYWHERE — local dev, Vercel previews, Vercel prod.
+// The mock is the demo-safe default: it does not depend on the Laravel
+// backend being up, does not depend on the ingestion pipeline having
+// delivered data, and does not depend on any per-environment secret.
+//
+// To hit the real API instead (once staging has seeded data), set
+// VITE_USE_REMOTE_API=true on that Vercel environment and redeploy.
 const remoteFlag = String(import.meta.env.VITE_USE_REMOTE_API ?? "")
   .trim()
   .toLowerCase();

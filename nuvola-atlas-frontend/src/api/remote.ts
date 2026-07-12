@@ -1,4 +1,5 @@
 import { BASE, authHeaders, handleResponse } from "./client";
+import { ZONES as MOCK_ZONES } from "./fixtures";
 import type {
   Zone,
   Project,
@@ -23,10 +24,56 @@ async function get<T>(path: string): Promise<T> {
   return json as T;
 }
 
-export const remoteApi = {
-  getZones: () => get<Zone[]>("/zones"),
+/**
+ * Backfill any missing / null fields on a Zone from the mock fixtures so
+ * the UI never crashes when the deployed backend is thin on data (no
+ * indicators seeded → pillars come back as {social:null, ...}, no
+ * centroid → coordinate math throws).
+ *
+ * If a mock counterpart exists we use it wholesale for the missing
+ * fields; otherwise we synthesise safe defaults from the zone's overall
+ * score. Effectively: the UI degrades gracefully to a mock-shaped
+ * response, never to a broken one.
+ */
+function hydrateZone(z: Partial<Zone> & { id: string; name: string; score: number }): Zone {
+  const mock = MOCK_ZONES.find((m) => m.id === z.id);
+  const fallbackPillars = mock?.pillars ?? {
+    social: z.score,
+    safety: z.score,
+    density: z.score,
+    infra: z.score,
+  };
+  const pillars = {
+    social: z.pillars?.social ?? fallbackPillars.social,
+    safety: z.pillars?.safety ?? fallbackPillars.safety,
+    density: z.pillars?.density ?? fallbackPillars.density,
+    infra: z.pillars?.infra ?? fallbackPillars.infra,
+  };
+  const fallbackDeltas = mock?.deltas ?? { social: 0, safety: 0, density: 0, infra: 0 };
+  const deltas = {
+    social: z.deltas?.social ?? fallbackDeltas.social,
+    safety: z.deltas?.safety ?? fallbackDeltas.safety,
+    density: z.deltas?.density ?? fallbackDeltas.density,
+    infra: z.deltas?.infra ?? fallbackDeltas.infra,
+  };
+  const centroid: [number, number] = Array.isArray(z.centroid) && z.centroid.length === 2
+    ? (z.centroid as [number, number])
+    : (mock?.centroid ?? [36.82, -1.283]);
 
-  getZone: (id: string) => get<Zone>(`/zones/${id}`),
+  return {
+    ...(mock ?? {}),
+    ...z,
+    pillars,
+    deltas,
+    centroid,
+    lastSyncMin: z.lastSyncMin ?? mock?.lastSyncMin ?? 0,
+  } as Zone;
+}
+
+export const remoteApi = {
+  getZones: async () => (await get<Zone[]>("/zones")).map(hydrateZone),
+
+  getZone: async (id: string) => hydrateZone(await get<Zone>(`/zones/${id}`)),
 
   getZoneActivity: (id: string) => get<ActivityEntry[]>(`/zones/${id}/activity`),
 
