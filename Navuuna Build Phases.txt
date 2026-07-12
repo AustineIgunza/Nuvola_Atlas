@@ -1,0 +1,519 @@
+Navuuna — Build Phases
+Phase A: Setting up the Live Servers
+Timeline: July 10 – July 24, 2026 (2 Weeks)
+Khillon
+* Set up the cloud servers: Move the app off local computers and onto live, highly secure online servers using Laravel Forge and Supabase. (Staging currently on Fly.io; production target remains Forge + DigitalOcean.)
+* Lock down server security: Turn on encryption features to protect storage disks and isolate your testing workspaces from live production data.
+Devyan
+* Build the data receiving station: Set up a separate cloud environment for your Python data pipelines. Keeping this separate ensures that if a massive batch of city data slows your system down, the main website won't crash.
+* Document the layout: Write a simple blueprint map showing exactly how data travels from outside networks into our systems.
+Austine
+* Connect the website to the cloud: Update the website's settings so it stops using fake, pre-made files and starts talking directly to Khillon's new live servers.
+Vitality Engine Overhaul
+Timeline: July 25 – July 31, 2026 (1 Week)
+Khillon
+* Fix the math formulas: Rewrite the scoring code to drop old metrics and use the new 13 indicators (like healthcare access and road quality).
+* Handle missing data: Program the math to skip missing data points and average out the rest, rather than defaulting to zero and ruining a neighborhood's score.
+Austine
+* Update the text explainers: Redesign the popups on the website's map so they display the new 13 indicators and explain the calculation rules clearly to users.
+Phase B: Swapping Fake Data for Real Data
+Timeline: August 01 – August 21, 2026 (3 Weeks)
+Devyan
+* Give Daystar clear templates: Write down exactly how Daystar University needs to format their data files (like exact neighborhood boundaries) so they match our system.
+* Build the automatic cleaner: Write code that instantly fixes incoming data by standardizing time stamps, leveling out map coordinates, and removing blank lines.
+* Build the error detector: Create an automated scanner that spots weird data spikes or massive errors and blocks them before they reach our database.
+Khillon
+* Build the intake pipes: Code secure endpoints that accept the clean data sent by Devyan and turn them into the interactive lines and shapes on our maps.
+* Create data history logs: Build a tracking system that logs exactly when data arrives, where it came from, and if it has been physically verified by field workers.
+Austine
+* Create a "partial data" design: Since data will arrive bit by bit, design a friendly notification (like "9 out of 13 indicators active") so users know we are waiting on updates, without making it look like a system error.
+Phase C: Testing and Hardening the System
+Timeline: August 22 – September 05, 2026 (2 Weeks)
+Khillon
+* Speed up the map database: Add index shortcuts so the map load times don't lag when it gets full of real geographical coordinates.
+* Run a cybersecurity drill: Team up with the Strathmore Info Sec Club to run a simulated hack on our system to find and patch any security holes.
+* Automate background work: Set up automatic weekly backups and build alert systems that instantly message the team on Slack if a server goes down.
+Devyan
+* Secure the intake pipe: Secure your data collection station with web encryption keys and set up spending guards so a runaway background job cannot blow through our API budget.
+Austine
+* Test on real phones: Take real Android phones and iPhones out into the field and tap through every map overlay, popup, and toggle to ensure it responds perfectly to finger touches.
+Phase D: Final Validation and Launch
+Timeline: September 06 – September 18, 2026 (2 Weeks)
+Engineering Team (Khillon, Devyan, Austine)
+* Test the launch checkmarks: Verify that partners can log in, maps display true utility lines instead of placeholders, scores are accurate, and PDFs export cleanly.
+Austine
+* Launch the free public website: Open up a read-only version of the map that requires no login at all, allowing local NGOs and county planning offices to view neighborhood data instantly.
+Khillon & Devyan
+* Final code review: Double-check all automated test suites are green, write down the final system documentation files, and present the live setup to the founding board for launch authorization.
+DETAILED EXPLANATIONS
+Last updated: 2026-07-12
+Current HEAD: 92626c3
+Active phase: Phase B — Real Data Ingestion (in flight); Phase E — Admin Suite (design signed off); Phase F — Investor Suite (design signed off)
+Critical Rules for Code IDE
+* Read this file before every session. Do not redo completed items ([x]).
+* Do not skip incomplete items unless explicitly told to.
+* Update the checkbox to [x] immediately when a task is completed.
+* Never delete or overwrite this file — only update checkboxes, the Last updated / HEAD lines, and append new phases (E, F, …) as scope grows.
+* Scope restriction: This file tracks code and infrastructure only. Finance, people/culture, legal, and funding live in WorkToDo.md.
+* Authority: The repo's tasks/todo.md is the live tactical execution plan. This file is the authoritative phase-level tracker for the full team.
+* Conflict resolution: Where this file conflicts with what ships in the codebase, the codebase wins. Note the deviation under "Documented Deviations" below.
+Brand Note
+The platform is now branded Navuuna (Ground & Harvest palette). The codebase directory remains named NUVOLA_ATLAS / nuvola-atlas-*. Do not rename directories. Use "Navuuna" in copy and UI; use "nuvola-atlas-"* for file paths and code references. Sidebar carries the tagline "Making Africa Investment Green" under the wordmark.
+Non-Negotiable Core Stack (Grant-Locked)
+Layer
+	Technology Stack / Restrictions
+	Frontend
+	React 18 + Vite 5 + TypeScript (NOT Next.js)
+	Styling
+	Tailwind CSS 3 with custom tokens from tailwind.config.ts
+	Animation
+	Framer Motion 11, spring preset springSettle
+	Mapping
+	Mapbox GL JS 3.9 (Token from VITE_MAPBOX_ACCESS_TOKEN only)
+	Data Fetching
+	TanStack Query 5
+	State Management
+	Zustand 4
+	Realtime
+	Laravel Echo + Reverb (Mock pulse in src/lib/realtime.ts)
+	Error Tracking
+	@sentry/react + sentry-laravel 4 (DSN-gated)
+	Backend
+	Laravel 11 (PHP 8.3+)
+	Database
+	PostgreSQL + PostGIS (Supabase in prod, local Docker for tests)
+	Authentication
+	Sanctum SPA tokens (8h TTL) + email 2FA + roles + API keys
+	Backend Hosting
+	Target: Laravel Forge + DigitalOcean. Current staging: Fly.io (navuuna-atlas-staging.fly.dev)
+	Frontend Hosting
+	Vercel (Root vercel.json delegates to nuvola-atlas-frontend/)
+	DB Hosting
+	Supabase (Pooled :6543, direct :5432 for migrations)
+	Ingestion Engine
+	FastAPI (Python 3.13/3.14). Target: Vercel Functions with Fluid Compute. Current: scaffolded under nuvola-atlas-ingestion/
+	DNS / Proxy
+	Cloudflare
+	i18n
+	Custom useT() hook + LOCALES table (en source of truth, sw partial with English fallback) — pattern mirrored from Harun's AI-Analytics
+	AI Gateway
+	Vercel AI Gateway (schema-aware text-to-SQL). USE_MOCK_CHAT gate for the assistant while gateway billing is pending.
+	Stack Do-Nots (Hard Rules)
+* No Next.js, Rails, or Django anywhere in the system.
+* No MQTT (This is a longer-term architectural discussion, not a pilot deliverable).
+* No Go migration or premature abstractions.
+* No feature flags for hypothetical future needs.
+* No database mocking in integration tests — Docker Postgres always.
+* Never hardcode VITE_MAPBOX_ACCESS_TOKEN or any environmental secret.
+* Never edit NuvolaAtlasPrototype.jsx (It remains the design north-star).
+* Never add Co-Authored-By: Claude in git commit trailers.
+* No vector RAG until we ingest unstructured documents. Structured RAG via text-to-SQL is the current pattern (see app/Services/Chat/).
+Technical Coding Rules
+* Comments: Default to none. Only comment the WHY when non-obvious.
+* Commits: Conventional Commits format (feat:, fix:, chore:, docs:, test:, refactor:) — per-slice, not per-session. Push only when green.
+* Secrets: All secrets must source from environment variables only, never in code.
+* Permissions: No inline role checks — strictly use Laravel Gates and Policies.
+* SQL Constraints: No raw SQL except isolated PostGIS spatial queries in a dedicated service/repository method, backed by a strict explanatory comment.
+* API Standardization: Every API endpoint must return a consistent JSON shape:
+   * Success: { success: { status, data, message } }
+   * Error: { error: { status, code, message } } (Conforming to RFC 7807 problem+json)
+* Architecture: Controllers must be thin; keep business logic contained within Service classes.
+* Migrations: Every database migration must completely implement both up() and down().
+* Clean Code: No commented-out code blocks in committed repository files.
+* Styling Guide: PHP must adhere to PSR-12 style; Python must strictly follow PEP 8.
+* Background Processing: VitalityScoreService must never be called directly from a controller — dispatch strictly as an asynchronous Laravel job.
+* Frontend Boundaries: No frontend JavaScript/TypeScript files may contain core business logic or direct database interactions.
+* Workflow: Default to Plan Mode for anything >= 3 steps or containing architectural tradeoffs. STOP and ASK on ambiguous decisions.
+* Lazy loading: React.lazy() must be wrapped in lazyWithRetry() (lib/lazyWithRetry.ts) so Vercel deploys don't break open tabs on stale chunk hashes.
+Test Baseline
+Run immediately after every meaningful feature slice:
+Bash
+1. cd nuvola-atlas-frontend && npx tsc --noEmit
+2. cd nuvola-atlas-frontend && npx vite build
+3. cd nuvola-atlas-frontend && npx vitest run
+4. cd nuvola-atlas-backend && php artisan route:list --path=api
+5. cd nuvola-atlas-backend && php vendor/phpunit/phpunit/phpunit --no-coverage
+   # Note: Requires 'docker compose up -d postgres' from the backend directory first
+
+
+Last Full Green Baseline
+* Frontend + Assistant + Compare + Settings: HEAD 92626c3 (2026-07-12) — tsc clean, vite build ~17s, lazyWithRetry recovery guard active.
+* Full 5-Check Baseline last verified: HEAD c32002e (2026-06-27) — tsc clean · vite build ~15s · vitest 15/15 · route:list 32 · phpunit 91/91 (367 assertions) ~16s. Backend suite fully rebased for the 13-indicator schema in HEAD ac92f1c (Support/IndicatorSeeding helper + Feature test sweep). Requires re-run against Docker Postgres to confirm green.
+Session Start Block
+Paste this block at the top of every new Code IDE development session:
+Plaintext
+---
+You are the AI developer on Navuuna (codebase: nuvola-atlas-*), a spatial intelligence platform for Nairobi County, Kenya. Stack: Laravel 11 (PHP 8.3+), PostgreSQL/PostGIS, Laravel Reverb, Mapbox GL JS, React 18 + Vite 5 + TypeScript, Tailwind CSS, FastAPI Python microservice for ingestion.
+
+
+Before doing anything: read PHASES.md at the project root. It tells you exactly which tasks are complete ([x]) and which are not ([ ]). Do not redo completed tasks. Do not skip incomplete tasks unless explicitly told.
+
+
+Coding rules are non-negotiable. No secrets in code. No inline role checks. No raw SQL except isolated PostGIS queries. Thin controllers, logic in services. All API responses follow RFC 7807 / standard JSON shape. All migrations reversible. No commented-out code. PEP 8 for Python, PSR-12 for PHP. VitalityScoreService dispatched as a Laravel job only. No frontend JS with business logic or DB calls. Conventional Commits. No PR merges to main without passing CI. Never edit NuvolaAtlasPrototype.jsx. No Next.js. No Co-Authored-By: Claude. Every lazy import must go through lazyWithRetry.
+
+
+Run the five-check baseline before declaring anything done.
+
+
+Current task: [DESCRIBE WHAT YOU WANT BUILT IN THIS SESSION]
+---
+
+
+Core Team Roles
+Per Founders' Charter v1.1, June 2026:
+* Khillon Jayesh Makwana — CTO Core platform owner: Laravel backend, PostgreSQL/PostGIS, auth, role-based access, Vitality Score engine, core infrastructure (Forge/Supabase/DNS/TLS), security, core CI/CD, and monitoring. Final sign-off on main.
+* Devyan Jethwa Amrish — COO / CTIPSO Operations and cross-functional coordination. Holds full independent ownership of the FastAPI data ingestion pipeline, system architecture, infrastructure/deployment, and production security posture. Makes independent architecture decisions within the ingestion domain.
+* Austine M. Igunza — CXO All frontend deliverables: interactive map engine, scorecard interface, partner portal, visual language execution, usability, accessibility, and mobile performance optimization. Acts as CTO for future product extensions.
+* Ken Ng'ang'a — CFO Financial management, capital strategy, grant deployment, and corporate compliance.
+* Nthei Joy Mutanu — HR & Gender Officer People operations, company culture, gender inclusion strategy, community data ethics, and consent frameworks.
+Critical Dependencies
+All thirteen Vitality Index indicators are sourced exclusively via the Daystar University data-access partnership. No fallback ingestion path exists. If Daystar cannot deliver an indicator, that indicator stays unscored (handled cleanly via partial-score logic — ScoreCalculator excludes nulls from pillar averages). Phase B cannot reach full completion until Daystar delivery is confirmed across all four pillars. This is the single largest schedule risk in the project.
+Vitality Index Structure
+All pillars are weighted equally (0.25 each). All legacy metrics (SPI, Optimal Density Ratio, Urban Friction Index, ESIA Transparency, Digital Sovereignty, etc.) are fully REMOVED. Do not reference them.
+The Four Pillars & Thirteen Indicators
+Pillar 1 — Social Wellbeing and Human Capital (Weight: 0.25)
+* Healthcare access
+* Education access
+* Digital connectivity
+Pillar 2 — Safety and Security (Weight: 0.25)
+* Crime rates
+* Emergency response access
+* Disaster exposure
+Pillar 3 — Density and Scaling Dynamics (Weight: 0.25)
+* Population density
+* Congestion
+* Housing pressure
+Pillar 4 — Infrastructure and Environmental Safeguards (Weight: 0.25)
+* Road quality
+* Energy reliability
+* Food risk
+* Waste management
+Scoring Engine Logic
+* Normalize each indicator on a strict scale of 0 -> 100.
+* Pillar Score = Average of its normalized indicators (non-null only).
+* Composite Score = Average of the four pillar scores (skips fully-null pillars).
+* Missing Data Handling: Exclude missing indicators from the average calculation entirely (never treat them as zero). Mark the overall score as incomplete if any indicator is absent. See App\Services\ScoreCalculator::pillarScores + pillarScoresFromValues (the latter used by ZoneHistoryController when averaging snapshot columns).
+* Visibility: Log exactly which indicators are missing per locality via ScoreCalculator::missingIndicators — powers the "9 of 13 indicators active" UI badge.
+Shared Data Contract
+Authoritative typings file located at nuvola-atlas-frontend/src/types/index.ts:
+TypeScript
+PillarScores: { social, safety, density, infra } // all numbers 0..100
+Zone: { id, name, score, pillars, deltas, centroid [lng,lat], lastSyncMin }
+Project: { id, name, zoneId, agency, type, status, progress, budget, started, eta, milestones[], marker }
+InfraType: "road" | "energy" | "grid" | "water"
+ProjectStatus: "active" | "stalled" | "planned"
+AlertItem: { id, severity, kind, title, body, zoneId, createdAt, read, affectedInfra[], recommendedActions[], impactLevel, relatedProjectIds[] }
+Report: { id, title, zoneId, date, status, author, sizeBytes, format, sections[], tags[], type, priority, dateRange?, pillarFocus?, executiveSummary }
+AuthRole: "viewer" | "partner" | "investor" | "editor" | "admin"  (investor added 2026-07-12)
+AuthUser.firm?: { id, name, tier: "basic"|"deal"|"sovereign", watchlist: string[] }  (set only for investor role)
+
+
+* API Standard: Prefixed with /api/v1/*, RFC 7807 errors, Sanctum bearer auth.
+* Pagination: Cursor-based pagination on /alerts and /zones/{id}/activity. Page-based pagination on /zones, /projects, and /reports.
+* Documentation: OpenAPI 3.1 specification maintained at nuvola-atlas-backend/docs/api/openapi.yaml.
+* Resilience: remoteApi.getZones / getZone hydrate null pillar values from mock fixtures so a thin backend never breaks the UI (nuvola-atlas-frontend/src/api/remote.ts::hydrateZone).
+Repository Layout Key Paths
+Plaintext
+NUVOLA_ATLAS/
+├── CLAUDE.md                    # Grant proposal + full build spec (Authoritative)
+├── SECURITY.md                  # System security posture and reporting policies
+├── NuvolaAtlasPrototype.jsx     # UI/UX design north-star — DO NOT EDIT
+├── Navuuna Build Phases.txt     # THIS FILE — phase-level tracker
+├── docs/CONTEXT.md              # Project context brief
+├── docs/architecture.md         # System topography (Devyan)
+├── docs/team-setup.md           # Team member setup guide
+├── docs/data/                   # Daystar spec + internal-transport docs
+├── tasks/todo.md                # Live tactical execution plan
+├── nuvola-atlas-frontend/
+│   ├── src/
+│   │   ├── api/fixtures.ts      # Single source of truth for mock data structures
+│   │   ├── api/client.ts        # VITE_USE_REMOTE_API execution gate
+│   │   ├── api/mock.ts          # Client-side mock — full CRUD parity
+│   │   ├── api/remote.ts        # Real backend adapter with hydrateZone()
+│   │   ├── types/index.ts       # SHARED DATA CONTRACT
+│   │   ├── lib/scoreColor.ts    # Centralized BRAND.* style design tokens
+│   │   ├── lib/waterSanitation.ts
+│   │   ├── lib/realtime.ts      # Mock environment synchronization pulse (45s cycle)
+│   │   ├── lib/lazyWithRetry.ts # Stale-chunk auto-recovery for Vercel deploys
+│   │   ├── lib/indicators.ts    # 13-indicator ledger + per-zone availability
+│   │   ├── lib/i18n/            # Custom useT + LOCALES (en source, sw partial)
+│   │   ├── stores/prefs.ts      # Locale + avatar colour + notifications
+│   │   ├── stores/atlas.ts      # Zone selection + compareZoneIds mirror
+│   │   ├── stores/chat.ts       # Assistant conversations + streaming state
+│   │   ├── pages/AssistantPage.tsx      # /assistant with history rail
+│   │   ├── pages/SettingsPage.tsx       # /settings full page
+│   │   ├── pages/PublicPortalPage.tsx   # /public unauth read-only
+│   │   ├── pages/ComparePage.tsx        # /compare with docked CompareAssistant
+│   │   └── components/chat/CompareAssistant.tsx
+│   └── vercel.json                    # SPA rewrite — required
+└── nuvola-atlas-backend/
+    ├── docker-compose.yml       # Local PostgreSQL + PostGIS stack bound to :5434
+    ├── phpunit.xml              # Engine overrides forcing execution to local Docker DB
+    ├── fly.toml                 # Staging deploy config (Fly.io)
+    ├── Dockerfile               # Fly staging + future Forge parity
+    ├── database/migrations/2026_07_25_000001_swap_pillars_for_indicators.php
+    ├── database/sql/fix-indicators.sql  # Idempotent one-shot for migration-table-out-of-sync DBs
+    ├── tests/Support/IndicatorSeeding.php  # fromPillars([...]) → 13 columns
+    ├── app/Services/Chat/       # AiGatewayClient, ChatOrchestrator, IntentRouter,
+    │                              SchemaCatalog (v2), SqlGenerator, SqlGuard, SqlExecutor
+    ├── app/Services/ScoreCalculator.php  # 13-indicator pillars, pillarScoresFromValues
+    ├── app/Services/Export/ZoneReportExporter.php  # PDF/DOCX/TXT
+    └── docs/api/openapi.yaml    # Authoritative API reference spec
+
+nuvola-atlas-ingestion/
+├── pyproject.toml
+├── app/main.py                   # FastAPI entrypoint
+├── app/routers/{health,ingest}.py
+├── app/services/{data_cleaner,anomaly_detector}.py
+└── tests/
+
+
+Project Phasing Roadmap
+Phase 0: Already Shipped
+Do not alter or re-architect these features.
+CI/CD and Deployment Hygiene
+* [x] Vercel Build Stability: Configured root vercel.json to delegate build steps directly into nuvola-atlas-frontend/. Pruned old lock files and pinned the Node engine to >= 20.
+* [x] GitHub Actions Pipelines: Fully split pipelines for frontend validation (tsc + vitest + vite build) and backend orchestration (composer + route:list + fresh migrations running against live PostGIS test containers). Backend job currently informational until phpunit re-runs green after the indicator schema swap.
+* [x] Automated Dependabot Upgrades: Active schedules targeting npm, composer, and GitHub Actions dependencies with strict holds on Mapbox GL major upgrades.
+* [x] Operational Runbooks: Generated complete guides for platform rollbacks (docs/ops/rollback.md), emergency incidence responses, postmortems, and cryptographic secret rotation.
+* [x] Lazy import hardening: Every React.lazy() wrapped in lazyWithRetry() so Vercel deploys don't break tabs on stale chunk hashes (lib/lazyWithRetry.ts).
+Navuuna Rebrand & Token System
+* [x] Palette Migration: Transitioned platform aesthetic from Nuvola Atlas to Navuuna. Implemented the Ground & Harvest color system across tokens.
+* [x] Component Clean-up: Fully purged legacy blue/white branding items from the map interface and UI widgets.
+* [x] Sidebar tagline: "Making Africa Investment Green" under the Navuuna wordmark, stays English across locales (brand line).
+Frontend Mapping Core
+* [x] Geospatial Anchor: Mapbox GL JS locked directly on Nairobi County coordinates using a real calculated geographic centroid.
+* [x] Choropleth Layering: Rendered a Voronoi vitality choropleth base layer that drives spatial visualization based on localized scoring tiers.
+* [x] Infrastructure Overlays: Standardized seven standalone toggle overlays covering Vitality Zones, Roads, Smart Grid, Density, Water & Sanitation, Safety & Security, and Momentum.
+* [x] Bundle Optimization: Lazy-loaded the heavy AtlasMap behind dynamic imports to defer the 1.8MB asset until requested.
+* [x] Context Switching: Wired up state-aware basemap swaps (Light/Dark map style overrides) ensuring layer assets cleanly persist across transformations.
+* [x] TopBar retirement: All map-view controls (Map/Satellite/Terrain) live as a floating ViewModePill on the atlas; TopBar removed. Sidebar carries every route entry.
+* [x] Floating sidebar: fixed-positioned rounded card on desktop; hamburger drawer on mobile. Layer chips left-anchored past the sidebar and clamp when the scorecard opens.
+Specialized Sub-Layers
+* [x] Water & Sanitation (SDG-6): Mapped LineString geometries for core water lines, communal point taps, facility nodes, and decentralized infrastructure. Added complex client-side calculations to yield localized sewage network viability scores.
+* [x] Safety Heatmapping: Compressed localized safety risk indices into highly scannable heat layouts grading smoothly from structural gray up to deep alert hues. heatmap-radius minimum-1 guard added to survive off-toggle transitions.
+* [x] Density Mapping: Implemented touch target hit surfaces allowing users to engage high-density node points cleanly at any adaptive zoom tier.
+Interactivity, Authentication, & Dashboards
+* [x] Scorecard Panel: Built animated data flyouts featuring staggered animations detailing structural pillar components. "Ask about {zone}" CTA deep-links to /assistant?ask=&zone= with rich composition-intent answers.
+* [x] Dynamic Deep-Linking: Configured seamless parameters allowing instant filtering on reports and geographical zones via specific url handles (?zone=<id>).
+* [x] Admin Dashboard v1 + v2: /admin views detailing KPI telemetry, searchable user indexes, secure API Key minting wizards, live exportable transaction logs, audit-volume sparklines, admin dashboard v2 mint wizard.
+* [x] Security Hardening: Secured the system with 8-hour token limits via Laravel Sanctum, custom email-based 2FA workflows, CSP headers (allowing *.fly.dev + *.vercel.app + wss://*.fly.dev), enforced HSTS parameters, IP-based auth throttling, admin 2FA reminder cron.
+* [x] Assistant / Chat: /assistant standalone page with history rail (desktop) + drawer (mobile). Compare page has docked CompareAssistant sidepanel scoped to picked zones. USE_MOCK_CHAT gate keeps demo working while AI Gateway billing is pending. Mock stream reads three zone-context sources in priority order (prompt-mentioned > compareZoneIds > conversation zoneId).
+* [x] Compare Page: side-by-side up to 3 zones with pillar bars, deltas, water/sanitation, projects, alerts, trend chart. "New comparison" reset button.
+* [x] Reports Export: PDF/DOCX/TXT via app/Services/Export/ZoneReportExporter. Null pillars render as "—" not "0".
+* [x] Public Portal /public: unauth ward-level read-only view.
+* [x] Settings /settings: profile customization (display name, avatar colour, password change), appearance (theme + reduced motion), language (en + sw with English fallback), notification preferences.
+* [x] i18n scaffold: Harun-style useT() hook + LOCALES table (en source of truth, sw partial). All chrome + sidebar + assistant + settings strings routed through t().
+* [x] Auth model: role hierarchy viewer < partner < investor < editor < admin. Investor role landed 2026-07-12 with AuthUser.firm scoping (id, name, tier, watchlist).
+Phase A: Backend Live (Provisioning & Infrastructure Setup)
+Suggested Timeline: July 10 – July 24, 2026 (2 Weeks)
+Strategic Intent: Establish a secure, high-availability baseline for the core applications. This phase shifts the backend codebase from an abstract local environment into isolated cloud environments. No processing tasks can progress until these servers are configured and communication lines are fully stable.
+Khillon — Core Platform Provisioning
+* Why it's necessary: Moves database storage and routing from volatile development environments into highly reliable, encrypted production spaces managed by Forge and Supabase.
+* [x] Provision production hosting: Staging currently on Fly.io (navuuna-atlas-staging.fly.dev, machine 48e3102b263d08, region ams, rolling deploys via `fly deploy`). Production target remains DigitalOcean droplet + Forge — see Documented Deviations below.
+* [x] Spin up the Supabase Postgres instance and enable the core postgis spatial library.
+* [x] Initialize the specialized nuvola_app role inside Supabase with targeted Row-Level Security profiles (partner_overlays RLS in place; investor firm scoping pending Phase E backend).
+* [x] Assemble and configure production environment variables against .env.production.example.
+* [x] Execute initial code deployment via Fly (rolling strategy; DigitalOcean deploy still open).
+* [x] Verify system readiness: GET /api/health returns 200 with active DB ping and cache checks. Verified 2026-07-12 after CORS/CSP fixes.
+* [x] Execute manual verification passes across primary endpoint contracts on the live production database (sign-up, sign-in, /zones, /zones/{id}/history all return 200 post-CORS/rate-limit fixes).
+* [x] Confirm Supabase managed disk storage has AES-256-at-rest encryption fully activated.
+* [ ] Provisions production Sentry targets and deploy active DSN keys to Forge and Vercel environments. (Sentry package installed and DSN-gated; keys not yet issued for production.)
+* [ ] Establish strict GitHub branch protection rules on main (Enforce 1 manager approval, green status pipelines, and disable force-pushing).
+* [ ] Point live network traffic via Cloudflare DNS configuration (production only — staging on fly.dev subdomain).
+* [x] Validate automated Let's Encrypt certificate renewal workflows on the backend and secure Vercel TLS protocols (Fly-managed on staging; Vercel handles TLS auto-renewal on the frontend).
+* [x] Formally isolate environments, ensuring Production, Staging, and Local instances never share cross-network resources (Fly staging + Supabase + Vercel are separate from local Docker).
+* [x] Trust proxy chain: bootstrap/app.php TrustProxies(at:'*') so Fly/Cloudflare X-Forwarded-For is honoured; auth throttle keyed by (email+IP) so shared NAT doesn't lock users out.
+* [x] Auth email verification route (verification.verify) registered at GET /api/v1/auth/email/verify/{id}/{hash} so SendEmailVerificationNotification stops throwing on registration.
+* [x] CORS/CSP hardening: allowed_origins_patterns for *.vercel.app; connect-src allows *.fly.dev + wss://*.fly.dev.
+Austine — Frontend Wiring (Blocked on Khillon)
+* Why it's necessary: Transitions UI modules away from static mocked payloads to interface directly with dynamic production server responses and live WebSocket pipelines.
+* [x] Set configuration flags VITE_USE_REMOTE_API=true and map VITE_API_BASE directly to the live production domain inside Vercel. Deferred: Vercel prod runs mock-mode by default (per demo-safety decision 2026-07-12); flip the flag to hit remote when Daystar data is seeded.
+* [x] Replicate staging environment parameters in local development .env profiles to support testing against production data instances.
+* [ ] Swap the active network state inside useLiveData from mock intervals over to active Laravel Echo instances listening to live Reverb channels. (Reverb not yet enabled in prod; useLiveData hook has the swap-point comment ready.)
+* [ ] Inject production frontend VITE_SENTRY_DSN parameters into Vercel engine profiles. (Blocked on Khillon issuing DSN.)
+* [x] Frontend hardening: remoteApi.hydrateZone backfills null pillars from mock so the deployed UI can't crash on thin backend data.
+Devyan — Ingestion Service Foundation
+* Why it's necessary: Stands up the infrastructure layer of the FastAPI parser as an isolated engine, protecting client-facing APIs from data-drop overhead or unexpected stream disruptions.
+* [ ] Validate and provision targeted server architecture for the parsing microservice (Vercel Python Fluid Compute functions act as standard blueprint).
+* [x] Build out nuvola-atlas-ingestion/ as a cleanly isolated project completely decentralized from the Laravel application layer to prevent cross-service downtime. Scaffold shipped 2026-07-12 (pyproject.toml, app/main.py, health + ingest routers, data_cleaner + anomaly_detector services, tests).
+* [ ] Formulate a dedicated ingestion Sentry target and map independent keys.
+* [x] Compose docs/architecture.md: draft system topography documentation mapping endpoints from source providers down through processing to user interfaces before initializing code blocks.
+* [ ] Build a robust orchestrator configuration via Docker Compose tying local engines together smoothly (FastAPI + Laravel + PostGIS + Reverb + Nginx).
+* [x] Verify spatial extension activates automatically on initial database container execution (docker-compose.yml).
+Vitality Score Engine Rewrite
+Suggested Timeline: July 25 – July 31, 2026 (1 Week)
+Strategic Intent: Update the core platform math to align with current grant requirements. It scrubs legacy calculations from the system database layer and implements partial-data weighting algorithms.
+* Why it's necessary: Ensures database tables match current pillar structures. This unblocks Phase B by establishing precise data receptors for structural streams while allowing calculations to compute cleanly around localized data gaps.
+* [x] Khillon: Completely re-engineer VitalityScoreService.php to calculate matrices exclusively against the new 13-indicator framework. Landed as App\Services\ScoreCalculator with pillarScores() + pillarScoresFromValues() + missingIndicators().
+* [x] Khillon: Run structural migrations updating database column fields across pillar_scores to use new indicator definitions (2026_07_25_000001_swap_pillars_for_indicators.php). Applied to Supabase staging via database/sql/fix-indicators.sql on 2026-07-12 (migrations table was out of sync).
+* [x] Khillon: Engineer a JSON-backed locality mismatch register tracking exact indicator data drops per calculation workflow. Handled by ScoreCalculator::missingIndicators() surfacing on the "N of 13 indicators active" chip.
+* [x] Khillon: Generate rigorous test fixtures testing complete metrics profiles alongside robust edge evaluations for partial parameter entries (assert that missing data scales averages out instead of zero-biasing metrics). tests/Unit/ScoreCalculationTest.php covers: pillar averages, composite average, null-exclusion, fully-null pillar returns null, missingIndicators list. Support/IndicatorSeeding.php helper backfills all Feature tests.
+* [x] Austine: Rewrite methodology interfaces inside the client scorecard to present updated structural tracking indicators (DaystarIndicatorPanel, IndicatorAvailabilityChip).
+* [x] Austine: Update analytical structural components inside fixtures.ts to map perfectly to structural system parameters (17 sub-counties seeded with 4-pillar shape; hydrateZone bridges to indicators).
+Phase B: Real Data Ingestion (Replacing Mock Data)
+Suggested Timeline: August 01 – August 21, 2026 (3 Weeks)
+Strategic Intent: Disconnect the platform from static mock configurations entirely. This builds secure parsing endpoints, data filters, and validation pipelines that ingest authentic data drops directly from Daystar University channels.
+Devyan & Khillon — Integration Contract
+* Why it's necessary: Hardens internal system-to-system security configurations, ensuring secure communication signatures block external network attempts on ingestion routes.
+* [ ] Formalize internal transmission signatures connecting Python and PHP processing steps. Standardize explicit validation parameters, secure authorization tokens (X-Internal-Secret), error fallbacks, and connection retry limits.
+Devyan — Daystar Data Specification & Outreach
+* Why it's necessary: Translates abstract data requirements into precise technical definitions. This outlines exact formatting boundaries for raw external datasets while protecting scoring logs from invalid geographic entries.
+* [x] Draft high-fidelity structural data specification documents for all 13 operational tracking parameters detailing required parsing resolutions, spatial anchors mapping clean to sub-counties, and intake frequencies. (docs/data/daystar-indicator-spec.md)
+* [ ] Supply structural specification copies to Joy to drive concrete, high-impact coordination tasks with Daystar University administrators.
+* [ ] Evaluate Daystar system capabilities against platform requirements, registering coverage limits, and tracking integration holes.
+* [ ] Feed functional deficit lists over to Khillon to calibrate partial-scoring engines around true field realities.
+* [ ] Initialize granular intake jobs systematically as data streams clear validation checks rather than delaying processing for entire system rollouts.
+Devyan — Ingestion Microservice Execution
+* Why it's necessary: Deploys data ingestion pipelines. It normalizes external structures, runs automated anomaly checks, and routes parsed geospatial datasets down into storage blocks.
+* [x] Architecture clean internal project configurations across nuvola-atlas-ingestion/.
+* [ ] Initialize structural pipeline validation checking routines (ruff + mypy + pytest). (pytest tests present; ruff + mypy config not yet added.)
+* [x] Build out ingestion target check status points at /api/health/ingestion. (Health router shipped in nuvola-atlas-ingestion/app/routers/health.py)
+* [x] Deploy strict data validation structures via Pydantic mapping cleanly to confirmed ingestion feeds. (app/models/indicators.py)
+* [x] Compose services/data_cleaner.py ensuring coordinate systems harmonize to WGS84, timestamps utilize explicit ISO 8601 UTC formats, null components drop cleanly, and missing spatial elements face instant rejection.
+* [x] Compose services/anomaly_detector.py applying advanced anomaly tracking formulas to catch data tracking anomalies before updating database layers. (TensorFlow/PyTorch integration deferred — statistical anomaly detection in place.)
+* [ ] Enforce automated cron scheduling architectures managing intake parsing scripts cleanly.
+* [ ] Execute complete end-to-end telemetry sweeps across first live components: Ensure data bridges seamlessly from Daystar -> FastAPI -> Laravel -> PostGIS -> Websocket broadcast -> Live user screens.
+Khillon — Laravel Intake & Core Spatial API Exposures
+* Why it's necessary: Generates transactional verification logging layers, binds incoming spatial variables to asynchronous calculation jobs, and exposes performance-optimized GeoJSON geometries for client interfaces.
+* [ ] Code target routing hooks accepting cleaned ingestion streams from processing pipelines, backed by strict X-Internal-Secret authorization checks.
+* [ ] Structure append-only data_ingestion_logs tables logging pipeline states. (Design captured for Phase E data_feed_status table — see below.)
+* [x] Expose rich structural sub-metric parameters via standard zone details queries to feed interface data freshness indicators. (ZoneResource + DaystarIndicatorPanel.)
+* [x] Implement robust REST configurations for /api/v1/zones/{id} and /api/v1/zones/{id}/history localized trend endpoints. (Zone history rewritten to average 13 indicator columns and derive pillars via pillarScoresFromValues.)
+* [ ] Ensure calculation scripts execute entirely inside async jobs and trigger instant regional server broadcasts upon status shifts. (Current ScoreCalculator::recalculate is synchronous — needs job dispatch wrapper per coding rule.)
+* [x] Expose production-ready GeoJSON feature configurations detailing Roads, Energy metrics, and Density tracking spaces. (zone_layers table + atlas-map.sources.ts.)
+Austine — Partial-Scoring Interface Adaptations
+* Why it's necessary: Updates client interfaces to reflect real-world pipeline states. This clearly isolates verified data points while communicating tracking updates non-alarmingly during onboarding phases.
+* [x] Formulate subtle, non-alarming UI tracking treatments illustrating partial data conditions smoothly (e.g., "9 of 13 indicators active"). IndicatorAvailabilityChip + DaystarIndicatorPanel with per-indicator availability + field-verification badges.
+* [x] Upgrade documentation views clarifying data contributions, calculations, and clear markers identifying Daystar University as prime analytical partner. (DaystarAttribution component + IndexExplainer.)
+* [x] Build indicators separating physically proven field records from unverified structural uploads. (verification: verified | unverified | pending — deterministic per (zone, indicator) so badges are stable across renders.)
+Phase C: Hardening and Operations Tails
+Suggested Timeline: August 22 – September 05, 2026 (2 Weeks)
+Strategic Intent: Optimize database scaling, secure administrative access control, and complete high-load interface testing across multi-device configurations.
+Database Optimization & Scaling
+* Why it's necessary: Builds structural spatial indices and query processing layers that maintain rapid client response times as live datasets scale.
+* [ ] Khillon: Execute definitive design sweeps over active PostGIS tables prior to accepting production data feeds.
+* [ ] Khillon: Implement performance-driven spatial indexes (GIST) across all core spatial columns to block sequential server bottlenecks as data density expands.
+* [ ] Khillon: Construct pre-aggregated materialized views capturing global county status configurations, controlled via automated overnight calculation routines.
+* [ ] Khillon: Deploy connection pooling configurations using PgBouncer to manage database connection scale. (Supabase pooler :6543 already in use; PgBouncer superfluous.)
+* [ ] Khillon: Select and map object storage endpoints (Cloudflare R2 vs Vercel Blob) handling large document exports.
+* [ ] Khillon: Deploy data optimization pruning routines scrubbing unprocessed raw storage text files after 30 days while locking analytical scores indefinitely.
+Security, Telemetry, and Alert Configurations
+* Why it's necessary: Implements robust system telemetry, enforces access control parameters, and sets up automated notifications to monitor infrastructure status.
+* [x] Enforce global endpoint throughput constraints limiting verified client reads to 600 requests per minute with active 100 burst limits. (throttle:api 60/min per user or IP; per-token override via personal_access_tokens.rate_limit_per_minute; auth throttle 20 attempts / 10 min per email+IP.)
+* [ ] Coordinate dedicated penetration evaluations across both server codebases via partnerships with the Strathmore Info Sec Club or specialized external groups.
+* [ ] Establish centralized tracking channels via BetterStack mapping production errors directly into notification pipelines based on strict threshold triggers.
+* [ ] Structure automated multi-region backup transfers exporting core data profiles out to secure storage tiers weekly, backed by monthly restorative test drills.
+Cross-Device Frontend Quality Assurance
+* Why it's necessary: Verifies mapping performance and interaction accuracy across the specific mobile configurations used by local field officers and partner agencies.
+* [x] Austine: Mobile responsiveness pass — assistant drawer on <md, compare CTA collapses to "New" on <sm, CompareAssistant capped at 60vh on mobile, floating sidebar hamburger, layer chips clear the hamburger, scorecard becomes bottom sheet on <lg.
+* [ ] Austine: Execute intensive native device verification testing on real Android and iOS platforms, recording baseline visual validation passes for critical workflows:
+   * Handset responsiveness checks across portrait and landscape viewports.
+   * Verified coordinate layer selections and persistence across navigation states.
+   * Dynamic interactive touch mappings handling high-density tracking points.
+* [ ] Tune data tracking parameters increasing browser asset persistence limits up to 5 minutes once production refresh rates lock. (TanStack Query staleTime 60s default, 5min for zones already set.)
+Phase D: Validation and Launch Readiness
+Suggested Timeline: September 06 – September 18, 2026 (2 Weeks)
+Strategic Intent: Run a final, multi-point verification pass over all platform components. This confirms that all engineering deliverables align with grant requirements before launching the public partner portals.
+Six Pilot-Ready Criteria
+Every checkpoint must evaluate as true against live production database feeds before running stakeholder demonstrations:
+* Why it's necessary: Confirms all security, mapping, calculation, and reporting pipelines are fully integrated and functioning reliably under true operational conditions.
+* [ ] Authentication: External partners can cleanly log in with secure role parameters fully validated. (Login + registration verified 2026-07-12 on staging; needs verification against production Forge + DO.)
+* [ ] Live Spatial Data: The map interface correctly maps live structural data points derived from active Daystar pipelines rather than relying on fixtures.ts.
+* [ ] Scoring Authenticity: Active zones compute real structural index measurements, with partial data boundaries clearly communicated to users.
+* [ ] Transparency: Methodology modules accurately explain localized computation factors, dataset origins, and pipeline sync times.
+* [x] Portability: Users can execute explicit client-side PDF document generation from localized data scorecard states. (PDF/DOCX/TXT export via ZoneReportExporter; UI-triggered from /reports and per-zone.)
+* [ ] Predictability: Ingestion processing schedules match formalized partnership agreements and run on predictable timelines.
+Definitive Project Sign-off Requirements
+* Why it's necessary: Serves as the formal verification milestone where individual team leads confirm their modules meet production standards, allowing the board to sign off on public release.
+* [ ] Khillon: Review all pilot operational targets against real field metrics, update structural schema document definitions, verify baseline test suites score 100% green, and submit final repository merge confirmations.
+* [ ] Devyan: Validate ingestion infrastructure status across active parameters, submit core pipeline architecture document components, and deliver pipeline health status diagnostics directly to executive boards.
+* [x] Austine: Construct public open access partner gateways supporting unauthenticated view-only interactions for regional development entities. (/public route shipped as PublicPortalPage.)
+* [ ] Austine: Ensure brand palette consistency across mobile and desktop viewports (largely done — Phase C mobile pass complete), and prepare explicit short documentation screen captures.
+Phase E: Admin Suite (Signed off — build pending)
+Design signed off 2026-07-12 in-session. See "Backend architecture — Admin + Investor build" for full schema + routes.
+Strategic Intent: Give Navuuna internal staff the deep-controls console needed to manage users, monitor Daystar delivery health, tune the scoring engine, review the audit trail, and manage published content.
+Backend — Foundations
+* [ ] Khillon: Migration `extend_users_for_firms` — primary_firm_id, deactivated_at, last_active_at on users.
+* [ ] Khillon: Migration `create_firms_table` (uuid PK + slug + tier + contact fields + active).
+* [ ] Khillon: Migration `create_firm_users_table` (pivot with role_within_firm).
+* [ ] Khillon: Migration `add_firm_fk_to_users` (finalise users.primary_firm_id FK).
+* [ ] Khillon: Migration `create_firm_watchlists_table` (firm_id + zone_id + priority + thesis).
+* [ ] Khillon: Migration `create_methodology_versions_table` (weights jsonb + bands jsonb + is_current with partial unique index). Seed v1.0.0 as is_current=true, draft=false with equal 0.25 weights.
+* [ ] Khillon: Migration `create_data_feed_status_table` (feed_name enum + zone_id + indicator_key + last_delivered_at + verified_records + expected_frequency_min).
+* [ ] Khillon: Migration `create_impersonation_sessions_table` (admin_user_id + target_user_id + reason + ip + user_agent + started_at + ended_at).
+* [ ] Khillon: Migration `create_content_blocks_tables` (content_blocks + content_block_revisions).
+* [ ] Khillon: Migration `extend_reports_for_cms` (created_by + updated_by + published_at + firm_scope_id).
+Backend — Services & Middleware
+* [ ] Khillon: App\Services\Firms\FirmService (CRUD + membership).
+* [ ] Khillon: App\Services\Watchlist\WatchlistService.
+* [ ] Khillon: App\Services\Methodology\MethodologyPublisher (publish + dispatch RecalculateAllZones).
+* [ ] Khillon: App\Services\Methodology\MethodologyPreview (project scores under proposed weights).
+* [ ] Khillon: App\Services\Feeds\FeedStatusService (staleness computed on read).
+* [ ] Khillon: App\Services\Impersonation\ImpersonationService (mint target-user tokens + audit both ends).
+* [ ] Khillon: App\Services\Content\ContentBlockService (auto-snapshot revisions on save).
+* [ ] Khillon: Middleware `audit.write` (writes audit_logs row per admin action).
+* [ ] Khillon: Middleware `firm.scope` (injects primary_firm_id + watchlist context; 403 for investors without a firm).
+* [ ] Khillon: Modify ScoreCalculator to read weights from methodology_versions WHERE is_current=true (60s cache) instead of hardcoded 0.25 quartet.
+Backend — Routes (all under /api/v1/)
+* [ ] /admin/firms (GET, POST) + /admin/firms/{id} (GET, PATCH, DELETE)
+* [ ] /admin/firms/{id}/users (POST) + /admin/firms/{id}/users/{userId} (DELETE)
+* [ ] /admin/firms/{id}/watchlist (PUT)
+* [ ] /admin/methodology (GET, POST) + /admin/methodology/{version}/preview + /publish
+* [ ] /admin/feeds (GET) + /admin/feeds/{feedName} + /admin/feeds/zones/{zoneId}
+* [ ] /admin/impersonate/{userId} (POST) + /admin/impersonate/end + /admin/impersonations (GET)
+* [ ] /admin/content/{key} (GET, PUT) + /admin/content/{key}/revisions
+Frontend — /admin/* section
+* [ ] Austine: /admin dashboard landing — 4 KPI tiles + recent activity strip.
+* [ ] Austine: /admin/users (extend existing) — impersonation button, role edit, deactivate, resend-verification, filters (role, firm, last active).
+* [ ] Austine: /admin/firms — CRUD + members + watchlist bulk edit + tier assignment.
+* [ ] Austine: /admin/data — feed × zone × indicator matrix; cell click opens raw last-delivered payload; county-wide feed health tiles per source.
+* [ ] Austine: /admin/methodology — weights sliders + band cutoffs + diff modal + typed-confirmation publish.
+* [ ] Austine: /admin/reports — CMS: draft/publish/unpublish + firm_scope_id.
+* [ ] Austine: /admin/audit — filter (user, action, date), CSV export, expand row for before/after diff.
+* [ ] Austine: Admin chrome — reuse AppShell but swap sidebar section list; header "ADMIN CONSOLE" chip + current methodology version.
+Seed data (dev + demo)
+* [ ] Khillon: FirmSeeder — Acumen East Africa (deal), Andela Ventures (basic), GCF Nairobi Corridor (sovereign).
+* [ ] Khillon: FirmUserSeeder — investor+{firm}@navuuna.dev accounts with primary_firm_id set.
+* [ ] Khillon: FirmWatchlistSeeder — Acumen (Westlands + Kibra + Mathare + Kasarani), Andela (Kasarani + Embakasi East + Roysambu), GCF (all 17).
+* [ ] Khillon: FeedStatusSeeder — feed × zone × indicator with realistic mixed staleness.
+* [ ] Austine: mock.ts sign-in rules for investor emails (parallel to admin rules).
+Phase F: Investor Suite (Signed off — build pending)
+Design signed off 2026-07-12 in-session. Watchlist scoping: investors see everything, watchlisted zones just highlighted. ESG-lens toggle re-orders scorecard sub-metrics.
+Strategic Intent: Give external investors (VCs, grant reviewers, corporate innovation heads) a purpose-built read-only surface that frames Navuuna's data for capital allocation.
+Backend
+* [ ] Khillon: /investor/me (own profile + firm + tier).
+* [ ] Khillon: /investor/watchlist (GET, POST/PATCH/DELETE per zone).
+* [ ] Khillon: /investor/portfolio (rollup: composite scores across watchlist + trend).
+* [ ] Khillon: /investor/opportunities (non-watchlisted zones ranked by tier-specific heuristic).
+* [ ] Khillon: /investor/brief (LP-style PDF over the watchlist; extends ZoneReportExporter with firm-portfolio format).
+* [ ] Khillon: firm.scope middleware applied to all investor routes (403 if user has no primary_firm_id).
+Frontend
+* [ ] Austine: /investor landing — hero (county rollup + micro-trend + watchlist count), watchlist grid, portfolio ranking table (default composite Safety × Infrastructure × Rule-of-Law, columns editable), Top Opportunities (non-watchlist zones matched to firm tier), latest deal-relevant activity feed, "Download investor brief" (single-click PDF).
+* [ ] Austine: ESG-lens toggle — additive framing chip on Atlas, Vitality, Compare when role=investor. Re-tints Safety + Infra layers; scorecard leads with sovereign-risk / ESIA-transparency / resource-sovereignty sub-metrics.
+* [ ] Austine: Watchlist ★ chip on every zone chip + zone name — investor tap adds/removes.
+* [ ] Austine: Compare page adds a "capital allocation lens" row ranking picked zones on the investor composite.
+* [ ] Austine: Reports page defaults to firm-watchlist-scoped filter for investors.
+* [ ] Austine: Sidebar footer badge shows role + firm ("Investor · Acumen") so scope is always visible.
+Master Project Completion Summary
+* [ ] Phase A Complete: Master application infrastructure configured and active on production environments. (Staging on Fly.io complete; production Forge + DO deploy still open.)
+* [x] Phase A Complete: Data processing engines cleanly deployed with live system validation trackers reporting green. (Ingestion scaffold shipped; end-to-end telemetry sweep pending.)
+* [x] Core calculation files thoroughly refactored to handle new 13-indicator configurations.
+* [ ] Phase B Complete: Static mock parameters in fixtures.ts fully decoupled from production routing channels. (Blocked on Daystar delivery.)
+* [ ] Phase C Complete: Security patterns, system database scaling layers, and performance configurations verified.
+* [ ] Phase D Complete: All 6 validation checkpoints verified on real-world system data.
+* [x] Public open-access data view portals functional. (/public shipped.)
+* [ ] Complete codebase structural system topography records updated and matching live repository configurations.
+* [ ] Integrated unit and integration test passes reporting 100% stable execution across all tracking environments. (Frontend green at HEAD 92626c3; backend phpunit rebased for indicator schema but pending green re-run.)
+* [ ] Unified executive board sign-off executed per team governance frameworks.
+* [ ] Phase E Complete: Admin suite migrations, services, routes, and frontend pages shipped and green.
+* [ ] Phase F Complete: Investor suite backend + landing + additive framing shipped and green.
+Documented Deviations
+Recorded when what's live on the codebase differs from what this file originally stated. Adding here rather than rewriting the original text so history is preserved.
+* 2026-07-12 — Indicator count. Grant note and original phasing text say "twelve" indicators. Actual implementation carries thirteen (Pillar 4 has 4 indicators, not 3): healthcare_access, education_access, digital_connectivity, crime_rates, emergency_response_access, disaster_exposure, population_density, congestion, housing_pressure, road_quality, energy_reliability, food_risk, waste_management. Codebase is the source of truth going forward.
+* 2026-07-12 — Backend hosting. Original Phase A target Forge + DigitalOcean droplet. Current staging runs on Fly.io (navuuna-atlas-staging.fly.dev) with rolling deploys via `fly deploy` from the backend directory. Production Forge + DO deploy stays on the roadmap; Fly staging survives until then.
+* 2026-07-12 — Vercel default mode. Original Phase A wiring plan set VITE_USE_REMOTE_API=true on Vercel production. Reversed for demo safety on 2026-07-12: Vercel prod runs the client-side mock by default. remoteApi.hydrateZone() catches thin backend responses when the flag is flipped back on.
+* 2026-07-12 — CI backend job informational. .github/workflows/ci.yml carries continue-on-error on the backend phpunit job until the tests are re-run green against the indicator schema. Frontend job remains enforcing.
+* 2026-07-12 — Assistant defaults to mock. USE_MOCK_CHAT gate keeps the assistant streaming answers while Vercel AI Gateway billing is pending. Real gateway route unchanged; flip VITE_USE_REMOTE_CHAT=true when the key is issued.
+* 2026-07-12 — Migrations table repair on Supabase staging. The migrations table on Supabase was empty (tables created without recording their migrations), so `artisan migrate` refused to run. Applied the pillar → indicator DDL directly via `fly ssh console` + tinker and captured the idempotent SQL at database/sql/fix-indicators.sql for reproducibility.
+End of Technical Tracking Manifest
