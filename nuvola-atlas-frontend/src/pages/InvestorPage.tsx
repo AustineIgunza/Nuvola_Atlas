@@ -7,6 +7,7 @@ import {
   AlertTriangle, Layers, Compass,
 } from "lucide-react";
 import AppShell from "@/components/chrome/AppShell";
+import DealPipelineBoard from "@/components/investor/DealPipelineBoard";
 import { api } from "@/api";
 import { useAuthStore } from "@/stores/auth";
 import { BRAND, PILLAR_COLORS, PILLAR_SHORT, scoreColor } from "@/lib/scoreColor";
@@ -241,6 +242,8 @@ export default function InvestorPage() {
               </ul>
             )}
           </section>
+
+          <DealPipelineBoard />
 
           <FirmThesisCard firm={firm} />
         </div>
