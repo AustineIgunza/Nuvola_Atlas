@@ -7,6 +7,7 @@ import { modalBackdrop, panelSlideLeft } from "@/lib/motion";
 import ResultChart from "@/components/chat/ResultChart";
 import { api } from "@/api";
 import { useChatStore } from "@/stores/chat";
+import { useChromeStore } from "@/stores/chrome";
 import { useChatStream } from "@/hooks/useChatStream";
 import { useT } from "@/lib/i18n/use-t";
 import { BRAND } from "@/lib/scoreColor";
@@ -38,6 +39,19 @@ export default function AssistantPage() {
   useEffect(() => {
     api.listConversations().then(setConversations).catch(() => { /* offline is ok */ });
   }, [setConversations]);
+
+  // Auto-collapse the sidebar while on the Assistant page — the chat area
+  // benefits from the extra horizontal room (long answers, wide tables from
+  // ResultChart). Restore the previous state on unmount so the user isn't
+  // left stuck in collapsed mode after leaving. Mirrors the Compare page.
+  useEffect(() => {
+    const chrome = useChromeStore.getState();
+    const wasCollapsed = chrome.sidebarCollapsed;
+    if (!wasCollapsed) chrome.setSidebarCollapsed(true);
+    return () => {
+      if (!wasCollapsed) chrome.setSidebarCollapsed(false);
+    };
+  }, []);
 
   // Deep-link entry: /assistant?ask=<prompt>[&zone=<id>] opens a fresh
   // conversation and fires the question immediately, so the "Ask about

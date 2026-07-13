@@ -695,9 +695,9 @@ function ComparisonChart({
               key={`v${i}`}
               type="monotone"
               dataKey={`v${i}`}
-              stroke={pillarOverlay ? PILLAR_COLORS[pillarOverlay] : SERIES_COLORS[i]}
+              stroke={SERIES_COLORS[i]}
               strokeWidth={1.6}
-              strokeOpacity={pillarOverlay ? 0.35 + (i * 0.25) : 1}
+              strokeDasharray={pillarOverlay ? "5 3" : undefined}
               dot={false}
               connectNulls
             />

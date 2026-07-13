@@ -4,7 +4,8 @@ import { AlertTriangle, Shield, ExternalLink, Calendar, MapPin } from "lucide-re
 import { useUIStore } from "@/stores/ui";
 import { formatRelative, formatDate } from "@/lib/format";
 import { springSettle } from "@/lib/motion";
-import { SEVERITY_COLORS, IMPACT_STYLES, KIND_LABELS } from "./alerts.constants";
+import { useT } from "@/lib/i18n/use-t";
+import { SEVERITY_COLORS, IMPACT_STYLES, KIND_LABEL_KEYS } from "./alerts.constants";
 import type { AlertItem } from "@/types";
 
 interface Props {
@@ -14,10 +15,16 @@ interface Props {
 }
 
 export default function AlertDetail({ alert: a, zoneName, projectName }: Props) {
+  const t = useT();
   const navigate = useNavigate();
   const openQuickView = useUIStore((s) => s.openQuickView);
   const impact = IMPACT_STYLES[a.impactLevel] ?? IMPACT_STYLES.moderate;
   const sevColor = SEVERITY_COLORS[a.severity];
+  const severityLabel = t(
+    a.severity === "high" ? "alerts.severity.high" :
+    a.severity === "medium" ? "alerts.severity.medium" : "alerts.severity.low",
+  );
+  const kindKey = KIND_LABEL_KEYS[a.kind];
 
   return (
     <motion.div
@@ -32,16 +39,16 @@ export default function AlertDetail({ alert: a, zoneName, projectName }: Props) 
           className="px-2 py-0.5 rounded text-[10px] font-bold uppercase text-white"
           style={{ background: sevColor, boxShadow: `0 0 10px ${sevColor}55, 0 0 4px ${sevColor}30` }}
         >
-          {a.severity}
+          {severityLabel}
         </span>
         <span
           className="px-2 py-0.5 rounded-full text-[10px] font-semibold"
           style={{ background: impact.bg, color: impact.text }}
         >
-          {impact.label}
+          {t(impact.labelKey)}
         </span>
         <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-[rgba(255,255,255,0.06)] text-ink-3">
-          {KIND_LABELS[a.kind] ?? a.kind}
+          {kindKey ? t(kindKey) : a.kind}
         </span>
       </div>
 
@@ -78,7 +85,7 @@ export default function AlertDetail({ alert: a, zoneName, projectName }: Props) 
         >
           <h3 className="text-[11px] font-semibold text-ink-3 uppercase tracking-[0.08em] mb-2 flex items-center gap-1.5">
             <AlertTriangle size={12} className="text-ink-4" />
-            Affected Infrastructure
+            {t("alert.affectedInfra")}
           </h3>
           <div className="flex flex-wrap gap-1.5">
             {a.affectedInfra.map((infra, i) => (
@@ -102,7 +109,7 @@ export default function AlertDetail({ alert: a, zoneName, projectName }: Props) 
         >
           <h3 className="text-[11px] font-semibold text-ink-3 uppercase tracking-[0.08em] mb-2 flex items-center gap-1.5">
             <Shield size={12} className="text-ink-4" />
-            Recommended Actions
+            {t("alert.recommendedActions")}
           </h3>
           <div className="space-y-1.5">
             {a.recommendedActions.map((action, i) => (
@@ -129,7 +136,7 @@ export default function AlertDetail({ alert: a, zoneName, projectName }: Props) 
         >
           <h3 className="text-[11px] font-semibold text-ink-3 uppercase tracking-[0.08em] mb-2 flex items-center gap-1.5">
             <ExternalLink size={12} className="text-ink-4" />
-            Related Projects
+            {t("alert.relatedProjects")}
           </h3>
           <div className="flex flex-wrap gap-1.5">
             {a.relatedProjectIds.map((pid) => (

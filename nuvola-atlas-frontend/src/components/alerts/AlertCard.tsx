@@ -3,7 +3,8 @@ import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { formatRelative } from "@/lib/format";
 import { springSettle, staggerItemScale } from "@/lib/motion";
-import { SEVERITY_COLORS, IMPACT_STYLES, KIND_LABELS } from "./alerts.constants";
+import { useT } from "@/lib/i18n/use-t";
+import { SEVERITY_COLORS, IMPACT_STYLES, KIND_LABEL_KEYS } from "./alerts.constants";
 import type { AlertItem } from "@/types";
 
 interface Props {
@@ -14,8 +15,14 @@ interface Props {
 }
 
 export default function AlertCard({ alert: a, selected, onSelect, zoneName }: Props) {
+  const t = useT();
   const impact = IMPACT_STYLES[a.impactLevel] ?? IMPACT_STYLES.moderate;
   const sevColor = SEVERITY_COLORS[a.severity];
+  const severityLabel = t(
+    a.severity === "high" ? "alerts.severity.high" :
+    a.severity === "medium" ? "alerts.severity.medium" : "alerts.severity.low",
+  );
+  const kindKey = KIND_LABEL_KEYS[a.kind];
 
   return (
     <motion.div
@@ -51,16 +58,16 @@ export default function AlertCard({ alert: a, selected, onSelect, zoneName }: Pr
                 className="px-2 py-0.5 rounded text-[9px] font-bold uppercase text-white"
                 style={{ background: sevColor, boxShadow: `0 0 10px ${sevColor}55, 0 0 4px ${sevColor}30` }}
               >
-                {a.severity}
+                {severityLabel}
               </span>
               <span
                 className="px-2 py-0.5 rounded-full text-[9px] font-semibold"
                 style={{ background: impact.bg, color: impact.text }}
               >
-                {impact.label}
+                {t(impact.labelKey)}
               </span>
               <span className="px-2 py-0.5 rounded text-[9px] font-medium bg-[rgba(255,255,255,0.06)] text-ink-3">
-                {KIND_LABELS[a.kind] ?? a.kind}
+                {kindKey ? t(kindKey) : a.kind}
               </span>
             </div>
             <span className="text-[11px] text-ink-4 tabular-nums shrink-0">{formatRelative(a.createdAt)}</span>

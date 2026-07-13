@@ -4,15 +4,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/cn";
 import { api } from "@/api";
 import { springSettle } from "@/lib/motion";
+import { useT } from "@/lib/i18n/use-t";
+import type { MessageKey } from "@/lib/i18n/translate";
 import ProjectCard from "./ProjectCard";
 import type { InfraType } from "@/types";
 
-const FILTERS: { label: string; value: InfraType | "all" }[] = [
-  { label: "All", value: "all" },
-  { label: "Road", value: "road" },
-  { label: "Energy", value: "energy" },
-  { label: "Grid", value: "grid" },
-  { label: "Water", value: "water" },
+const FILTERS: { labelKey: MessageKey; value: InfraType | "all" }[] = [
+  { labelKey: "infra.filter.all", value: "all" },
+  { labelKey: "infra.filter.road", value: "road" },
+  { labelKey: "infra.filter.energy", value: "energy" },
+  { labelKey: "infra.filter.grid", value: "grid" },
+  { labelKey: "infra.filter.water", value: "water" },
 ];
 
 interface Props {
@@ -21,6 +23,7 @@ interface Props {
 }
 
 export default function ProjectList({ selectedId, onSelect }: Props) {
+  const t = useT();
   const [typeFilter, setTypeFilter] = useState<InfraType | "all">("all");
 
   const { data: projects } = useQuery({ queryKey: ["projects"], queryFn: api.getProjects });
@@ -51,7 +54,7 @@ export default function ProjectList({ selectedId, onSelect }: Props) {
                 transition={springSettle}
               />
             )}
-            <span className="relative z-10">{f.label}</span>
+            <span className="relative z-10">{t(f.labelKey)}</span>
           </motion.button>
         ))}
       </div>

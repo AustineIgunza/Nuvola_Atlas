@@ -124,8 +124,8 @@ export default function AlertList() {
       <DetailPopup
         open={!!selectedAlert}
         onClose={() => setSelectedId(null)}
-        label="Alert details"
-        ariaLabel={selectedAlert ? `${selectedAlert.title} details` : "Alert details"}
+        label={t("alert.detailLabel")}
+        ariaLabel={selectedAlert ? `${selectedAlert.title} — ${t("alert.detailLabel")}` : t("alert.detailLabel")}
       >
         {selectedAlert && (
           <AlertDetail

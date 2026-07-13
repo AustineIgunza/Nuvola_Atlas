@@ -6,16 +6,24 @@ import { api } from "@/api";
 import { formatDate, formatRelative } from "@/lib/format";
 import { springSettle } from "@/lib/motion";
 import { BRAND } from "@/lib/scoreColor";
-import { SEVERITY_COLORS } from "@/components/alerts/alerts.constants";
+import { useT, type TFunction } from "@/lib/i18n/use-t";
+import type { MessageKey } from "@/lib/i18n/translate";
+import { SEVERITY_COLORS, IMPACT_STYLES } from "@/components/alerts/alerts.constants";
 import Timeline from "./Timeline";
 import type { Project } from "@/types";
 
 const TYPE_COLORS: Record<string, string> = { road: "#C0552B", energy: "#E0A82E", grid: "#1F8A78", water: "#176B5D" };
 
-const STATUS_STYLE: Record<Project["status"], { color: string; label: string }> = {
-  active: { color: BRAND.teal, label: "Active" },
-  stalled: { color: BRAND.rose, label: "Stalled" },
-  planned: { color: BRAND.steel, label: "Planned" },
+const STATUS_KEYS: Record<Project["status"], MessageKey> = {
+  active: "infra.status.active",
+  stalled: "infra.status.stalled",
+  planned: "infra.status.planned",
+};
+
+const STATUS_COLORS_MAP: Record<Project["status"], string> = {
+  active: BRAND.teal,
+  stalled: BRAND.rose,
+  planned: BRAND.steel,
 };
 
 interface Props {
@@ -23,8 +31,9 @@ interface Props {
 }
 
 /** Schedule-vs-delivery read derived from the project's own dates:
- *  how much of the started→ETA window has elapsed versus work delivered. */
-function deliveryAnalysis(project: Project) {
+ *  how much of the started→ETA window has elapsed versus work delivered.
+ *  Verdict text is localised via t() so the sentence follows the active locale. */
+function deliveryAnalysis(project: Project, t: TFunction) {
   const start = new Date(project.started).getTime();
   const eta = new Date(project.eta).getTime();
   const now = Date.now();
@@ -37,32 +46,39 @@ function deliveryAnalysis(project: Project) {
 
   const verdict =
     project.status === "stalled"
-      ? { color: BRAND.rose, text: `Stalled — delivery is ${Math.abs(paceDelta)} pts behind the schedule curve.` }
+      ? { color: BRAND.rose, text: t("infra.verdict.stalled", { gap: Math.abs(paceDelta) }) }
       : paceDelta >= -3
-        ? { color: BRAND.teal, text: paceDelta > 3 ? `Tracking ${paceDelta} pts ahead of schedule.` : "On the schedule curve." }
+        ? paceDelta > 3
+          ? { color: BRAND.teal, text: t("infra.verdict.ahead", { gap: paceDelta }) }
+          : { color: BRAND.teal, text: t("infra.verdict.onTrack") }
         : paceDelta >= -15
-          ? { color: BRAND.gold, text: `Slipping — ${Math.abs(paceDelta)} pts behind the schedule curve.` }
-          : { color: BRAND.rose, text: `Critically behind — ${Math.abs(paceDelta)} pts under the schedule curve.` };
+          ? { color: BRAND.gold, text: t("infra.verdict.slipping", { gap: Math.abs(paceDelta) }) }
+          : { color: BRAND.rose, text: t("infra.verdict.critical", { gap: Math.abs(paceDelta) }) };
 
   return { elapsedPct, paceDelta, daysToEta, nextMilestone, nextOverdue, verdict };
 }
 
 export default function ProjectDetail({ project }: Props) {
+  const t = useT();
   const navigate = useNavigate();
   const { data: zones } = useQuery({ queryKey: ["zones"], queryFn: api.getZones });
   const { data: alerts } = useQuery({ queryKey: ["alerts"], queryFn: api.getAlerts });
   const zoneName = zones?.find((z) => z.id === project.zoneId)?.name ?? project.zoneId;
 
-  const status = STATUS_STYLE[project.status];
+  const statusColor = STATUS_COLORS_MAP[project.status];
+  const statusLabel = t(STATUS_KEYS[project.status]);
   const milestonesDone = project.milestones.filter((m) => m.done).length;
   const linkedAlerts = alerts?.filter((a) => a.relatedProjectIds.includes(project.id)) ?? [];
-  const analysis = deliveryAnalysis(project);
+  const analysis = deliveryAnalysis(project, t);
 
   const kvItems = [
-    { label: "Budget", value: project.budget },
-    { label: "Progress", value: `${project.progress}%` },
-    { label: "ETA", value: formatDate(project.eta) },
-    { label: "Milestones", value: `${milestonesDone} of ${project.milestones.length}` },
+    { label: t("infra.kv.budget"), value: project.budget },
+    { label: t("infra.kv.progress"), value: `${project.progress}%` },
+    { label: t("infra.kv.eta"), value: formatDate(project.eta) },
+    {
+      label: t("infra.kv.milestones"),
+      value: t("infra.milestones.of", { done: milestonesDone, total: project.milestones.length }),
+    },
   ];
 
   return (
@@ -87,9 +103,9 @@ export default function ProjectDetail({ project }: Props) {
         </span>
         <span
           className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold"
-          style={{ background: `${status.color}1A`, color: status.color }}
+          style={{ background: `${statusColor}1A`, color: statusColor }}
         >
-          {status.label}
+          {statusLabel}
         </span>
         <span className="text-[12px] text-ink-4">{project.agency}</span>
       </motion.div>
@@ -109,7 +125,7 @@ export default function ProjectDetail({ project }: Props) {
         transition={{ delay: 0.12 }}
         className="text-[12px] text-ink-4 mb-6"
       >
-        {zoneName} · started {formatDate(project.started)}
+        {t("infra.detail.startedLine", { zone: zoneName, date: formatDate(project.started) })}
       </motion.p>
 
       {/* KV grid */}
@@ -137,7 +153,7 @@ export default function ProjectDetail({ project }: Props) {
         className="mb-6"
       >
         <div className="flex justify-between text-[11px] mb-1.5">
-          <span className="text-ink-3 font-medium">Progress</span>
+          <span className="text-ink-3 font-medium">{t("infra.detail.progress")}</span>
           <span className="text-ink-1 font-semibold tabular-nums">{project.progress}%</span>
         </div>
         <div className="h-2 rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
@@ -159,13 +175,13 @@ export default function ProjectDetail({ project }: Props) {
         className="mb-6 rounded-card border border-border/60 bg-[rgba(255,255,255,0.02)] p-4"
       >
         <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.08em] mb-3">
-          Delivery analysis
+          {t("infra.detail.deliveryAnalysis")}
         </div>
 
         <div className="space-y-2.5">
           <div>
             <div className="flex justify-between text-[10.5px] mb-1">
-              <span className="text-ink-4">Schedule elapsed</span>
+              <span className="text-ink-4">{t("infra.detail.scheduleElapsed")}</span>
               <span className="text-ink-3 font-medium tabular-nums">{analysis.elapsedPct}%</span>
             </div>
             <div className="h-[4px] rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
@@ -180,7 +196,7 @@ export default function ProjectDetail({ project }: Props) {
           </div>
           <div>
             <div className="flex justify-between text-[10.5px] mb-1">
-              <span className="text-ink-4">Work delivered</span>
+              <span className="text-ink-4">{t("infra.detail.workDelivered")}</span>
               <span className="text-ink-3 font-medium tabular-nums">{project.progress}%</span>
             </div>
             <div className="h-[4px] rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
@@ -202,34 +218,31 @@ export default function ProjectDetail({ project }: Props) {
         <div className="mt-2 space-y-1 text-[11px] text-ink-3 leading-relaxed">
           <p>
             {analysis.daysToEta >= 0 ? (
-              <>
-                <span className="text-ink-1 font-semibold tabular-nums">{analysis.daysToEta} days</span> to
-                the {formatDate(project.eta)} ETA.
-              </>
+              <span>
+                {t("infra.detail.daysToEta", { days: analysis.daysToEta, eta: formatDate(project.eta) })}
+              </span>
             ) : (
               <span style={{ color: BRAND.rose }}>
-                Overdue by{" "}
-                <span className="font-semibold tabular-nums">{Math.abs(analysis.daysToEta)} days</span>{" "}
-                against the {formatDate(project.eta)} ETA.
+                {t("infra.detail.overdueBy", { days: Math.abs(analysis.daysToEta), eta: formatDate(project.eta) })}
               </span>
             )}
           </p>
           {analysis.nextMilestone && (
             <p>
-              Next milestone:{" "}
-              <span className="text-ink-1 font-medium">{analysis.nextMilestone.label}</span>, due{" "}
-              <span className="tabular-nums">{formatDate(analysis.nextMilestone.date)}</span>
+              {t("infra.detail.nextMilestone", {
+                label: analysis.nextMilestone.label,
+                date: formatDate(analysis.nextMilestone.date),
+              })}
               {analysis.nextOverdue && (
                 <span className="font-semibold" style={{ color: BRAND.rose }}>
-                  {" "}
-                  · overdue
+                  {t("infra.detail.overdueTag")}
                 </span>
               )}
               .
             </p>
           )}
           {!analysis.nextMilestone && (
-            <p>All {project.milestones.length} milestones are confirmed complete.</p>
+            <p>{t("infra.detail.allMilestonesDone", { count: project.milestones.length })}</p>
           )}
         </div>
       </motion.div>
@@ -245,8 +258,7 @@ export default function ProjectDetail({ project }: Props) {
         >
           <AlertTriangle size={15} className="shrink-0 mt-0.5" style={{ color: BRAND.rose }} />
           <p className="text-[12px] leading-relaxed text-ink-2">
-            Delivery is flagged as stalled — field verification is pending. The milestones below
-            reflect the last confirmed on-the-ground status.
+            {t("infra.detail.stalledWarning")}
           </p>
         </motion.div>
       )}
@@ -258,7 +270,7 @@ export default function ProjectDetail({ project }: Props) {
         transition={{ delay: 0.35 }}
         className="mb-6"
       >
-        <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.08em] mb-4">Milestones</div>
+        <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.08em] mb-4">{t("infra.detail.milestones")}</div>
         <Timeline milestones={project.milestones} />
       </motion.div>
 
@@ -272,26 +284,30 @@ export default function ProjectDetail({ project }: Props) {
         >
           <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.08em] mb-2.5 flex items-center gap-1.5">
             <BellRing size={12} />
-            Linked alerts
+            {t("infra.detail.linkedAlerts")}
           </div>
           <div className="space-y-1.5">
-            {linkedAlerts.map((a) => (
-              <div
-                key={a.id}
-                className="flex items-start gap-2.5 rounded-control bg-[rgba(255,255,255,0.02)] border border-border/40 px-3 py-2.5"
-              >
-                <span
-                  className="w-2 h-2 rounded-full shrink-0 mt-1"
-                  style={{ background: SEVERITY_COLORS[a.severity], boxShadow: `0 0 6px ${SEVERITY_COLORS[a.severity]}66` }}
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="text-[12px] font-medium text-ink-1 leading-snug">{a.title}</div>
-                  <div className="text-[10.5px] text-ink-4 mt-0.5">
-                    {a.impactLevel} impact · {formatRelative(a.createdAt)}
+            {linkedAlerts.map((a) => {
+              const impact = IMPACT_STYLES[a.impactLevel] ?? IMPACT_STYLES.moderate;
+              const impactShort = t(impact.shortKey);
+              return (
+                <div
+                  key={a.id}
+                  className="flex items-start gap-2.5 rounded-control bg-[rgba(255,255,255,0.02)] border border-border/40 px-3 py-2.5"
+                >
+                  <span
+                    className="w-2 h-2 rounded-full shrink-0 mt-1"
+                    style={{ background: SEVERITY_COLORS[a.severity], boxShadow: `0 0 6px ${SEVERITY_COLORS[a.severity]}66` }}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[12px] font-medium text-ink-1 leading-snug">{a.title}</div>
+                    <div className="text-[10.5px] text-ink-4 mt-0.5">
+                      {t("alert.linked.impactSuffix", { level: impactShort, relative: formatRelative(a.createdAt) })}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </motion.div>
       )}
@@ -306,7 +322,7 @@ export default function ProjectDetail({ project }: Props) {
         className="w-full h-9 flex items-center justify-center gap-1.5 rounded-control bg-[rgba(255,255,255,0.05)] border border-border text-ink-2 text-[12px] font-medium hover:bg-[rgba(255,255,255,0.1)] transition-colors"
       >
         <MapPin size={13} />
-        View {zoneName} on the Atlas
+        {t("infra.detail.viewOnAtlas", { zone: zoneName })}
       </motion.button>
     </motion.div>
   );

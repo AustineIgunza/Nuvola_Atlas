@@ -7,8 +7,10 @@ import AppShell from "@/components/chrome/AppShell";
 import DetailPopup from "@/components/common/DetailPopup";
 import ProjectList from "@/components/infra/ProjectList";
 import ProjectDetail from "@/components/infra/ProjectDetail";
+import { useT } from "@/lib/i18n/use-t";
 
 export default function InfraPage() {
+  const t = useT();
   const { projectId } = useParams();
   const navigate = useNavigate();
   const [localSelected, setLocalSelected] = useState<string | null>(projectId ?? null);
@@ -42,8 +44,12 @@ export default function InfraPage() {
       <DetailPopup
         open={!!selectedProject}
         onClose={handleClose}
-        label="Project details"
-        ariaLabel={selectedProject ? `${selectedProject.name} details` : "Project details"}
+        label={t("infra.detail.detailsLabel")}
+        ariaLabel={
+          selectedProject
+            ? t("infra.detail.detailsAria", { name: selectedProject.name })
+            : t("infra.detail.detailsLabel")
+        }
       >
         {selectedProject && <ProjectDetail project={selectedProject} />}
       </DetailPopup>

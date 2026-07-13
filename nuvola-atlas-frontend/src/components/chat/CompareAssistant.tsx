@@ -66,9 +66,9 @@ export default function CompareAssistant({ zones }: Props) {
     <aside
       // Mobile: bounded natural height so the assistant doesn't monopolise
       // the screen when stacked under the comparison content. Desktop:
-      // sticky column that hugs the viewport as the user scrolls.
-      className="rounded-card border border-border bg-[rgba(255,255,255,0.02)] flex flex-col overflow-hidden max-h-[60vh] lg:max-h-none lg:sticky lg:top-4"
-      style={{ height: undefined }}
+      // sticky column capped at viewport height so the input row lands near
+      // the bottom of the viewport, not the bottom of the (very tall) grid.
+      className="rounded-card border border-border bg-[rgba(255,255,255,0.02)] flex flex-col overflow-hidden max-h-[60vh] lg:max-h-[calc(100vh-2rem)] lg:sticky lg:top-4"
       aria-label="Comparison assistant"
     >
       <div className="h-[2.5px] shrink-0" style={{ background: `linear-gradient(90deg, ${BRAND.teal}, ${BRAND.gold})` }} />

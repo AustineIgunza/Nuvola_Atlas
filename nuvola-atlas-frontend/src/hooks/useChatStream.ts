@@ -4,30 +4,27 @@ import { useChatStore } from "@/stores/chat";
 import { useAtlasStore } from "@/stores/atlas";
 import { ZONES } from "@/api/fixtures";
 import { translate } from "@/lib/i18n/translate";
+import type { MessageKey, TVars } from "@/lib/i18n/translate";
 import { usePrefsStore } from "@/stores/prefs";
 import type { ChatMessage, Zone } from "@/types";
 
-/**
- * Resolve pillar labels against the currently-active locale. We do this at
- * message-build time (not at module load) so language switches take effect
- * on the very next chat turn.
- */
-function pillarLabels(): Record<"social" | "safety" | "density" | "infra", string> {
+/** Locale-aware t() at message-build time (never at module load) so language
+ *  switches take effect on the very next chat turn. */
+function tt(key: MessageKey, vars?: TVars): string {
   const locale = usePrefsStore.getState().locale;
-  return {
-    social: translate(locale, "pillar.social.long"),
-    safety: translate(locale, "pillar.safety.long"),
-    density: translate(locale, "pillar.density.long"),
-    infra: translate(locale, "pillar.infra.long"),
-  };
+  return translate(locale, key, vars);
 }
 
-function localeTag(): string {
-  const locale = usePrefsStore.getState().locale;
-  if (locale === "sw") {
-    return "Kiswahili · maelezo ya kina bado yako Kiingereza wakati LLM ya kweli inasubiri kuingia mtandaoni.";
-  }
-  return "";
+/**
+ * Resolve pillar labels against the currently-active locale.
+ */
+function pillarLabels(): Record<"social" | "safety" | "density" | "infra", string> {
+  return {
+    social: tt("pillar.social.long"),
+    safety: tt("pillar.safety.long"),
+    density: tt("pillar.density.long"),
+    infra: tt("pillar.infra.long"),
+  };
 }
 
 type StreamEventName =
@@ -116,7 +113,7 @@ export function useChatStream() {
           setError(`Chat request failed (${res.status}).`);
           updateMessage(conversationId, assistantId, {
             streaming: false,
-            content: "Sorry — that request could not be sent.",
+            content: tt("chat.errorGeneric"),
           });
           setStreaming(false);
           return;
@@ -148,7 +145,7 @@ export function useChatStream() {
         setError((err as Error).message);
         updateMessage(conversationId, assistantId, {
           streaming: false,
-          content: "The chat stream ended unexpectedly.",
+          content: tt("chat.errorEnded"),
         });
       } finally {
         setStreaming(false);
@@ -253,15 +250,6 @@ interface MockAnswer {
   followups: string[];
 }
 
-// Preserved as an English fallback but every runtime call site should
-// route through pillarLabels() so labels follow the active locale.
-const PILLAR_LABELS: Record<"social" | "safety" | "density" | "infra", string> = {
-  social: "Social Wellbeing",
-  safety: "Safety & Security",
-  density: "Density & Scaling",
-  infra: "Infrastructure & Environment",
-};
-
 function mockAnswerFor(intent: string, prompt: string, compareZones: Zone[], convZone: Zone | null): MockAnswer {
   // Zone candidates, in priority order:
   //   1. Any zone names explicitly mentioned in the prompt.
@@ -284,9 +272,9 @@ function mockAnswerFor(intent: string, prompt: string, compareZones: Zone[], con
     explicitZones.length > 0 ? explicitZones : fallbackZonesForIntent(intent);
 
   const genericFollowups = [
-    "Which of the four pillars is driving that gap?",
-    "How have these zones moved quarter-over-quarter?",
-    "Which infrastructure projects are behind these numbers?",
+    tt("chat.followup.whichDriving"),
+    tt("chat.followup.qoqMoves"),
+    tt("chat.followup.whichInfra"),
   ];
 
   if (intent === "comparison") {
@@ -309,12 +297,11 @@ function mockAnswerFor(intent: string, prompt: string, compareZones: Zone[], con
   }
   if (intent === "methodology") {
     return {
-      answer:
-        "The Vitality Score aggregates four pillars — Social Wellbeing, Safety & Security, Density & Scaling, and Infrastructure & Environment — each on a 0–100 scale, and blends them into an overall zone score. The exact weightings are held in the methodology paper rather than exposed in the UI, but every input is versioned in a snapshot table so any score you see can be traced back to the reading that produced it.",
+      answer: tt("chat.methodology"),
       followups: [
-        "Which pillar contributes most to the overall score?",
-        "Show me a zone where the pillars disagree",
-        "Where does the underlying data come from?",
+        tt("chat.followup.pillarMostContrib"),
+        tt("chat.followup.pillarsDisagree"),
+        tt("chat.followup.dataOrigin"),
       ],
     };
   }
@@ -360,12 +347,11 @@ function fallbackZonesForIntent(intent: string): Zone[] {
 function buildComparisonAnswer(zones: Zone[]): MockAnswer {
   if (zones.length < 2) {
     return {
-      answer:
-        "Pick a second zone in the picker above and I'll walk through all four pillars side by side — Social Wellbeing, Safety & Security, Density & Scaling, and Infrastructure & Environment.",
+      answer: tt("chat.compare.needSecond"),
       followups: [
-        "Which Nairobi zones lead on Vitality?",
-        "Explain the four Vitality pillars",
-        "Where is Safety weakest across the county?",
+        tt("chat.followup.whichLeads"),
+        tt("chat.followup.explainPillars"),
+        tt("chat.followup.safetyWeakest"),
       ],
     };
   }
@@ -382,7 +368,10 @@ function buildComparisonAnswer(zones: Zone[]): MockAnswer {
 
   const sorted = [...zones].sort((a, b) => b.score - a.score);
   const [top, ...rest] = sorted;
-  const overallGaps = rest.map((z) => `${top.score - z.score} pt${top.score - z.score === 1 ? "" : "s"} ahead of ${z.name}`);
+  const overallGaps = rest.map((z) => {
+    const gap = top.score - z.score;
+    return tt("chat.compare.gap", { gap, plural: gap === 1 ? "" : "s", name: z.name });
+  });
 
   const labels = pillarLabels();
   const pillarKeys = ["social", "safety", "density", "infra"] as const;
@@ -390,7 +379,9 @@ function buildComparisonAnswer(zones: Zone[]): MockAnswer {
     const ranked = [...zones].sort((a, b) => b.pillars[k] - a.pillars[k]);
     const values = ranked.map((z) => `${z.name} ${z.pillars[k]}`).join(", ");
     const spread = ranked[0].pillars[k] - ranked[ranked.length - 1].pillars[k];
-    return `• ${labels[k]}: ${values} — spread of ${spread} pt${spread === 1 ? "" : "s"}.`;
+    return tt("chat.compare.pillarLine", {
+      pillar: labels[k], values, spread, plural: spread === 1 ? "" : "s",
+    });
   });
 
   const widestSpread = pillarKeys
@@ -400,21 +391,22 @@ function buildComparisonAnswer(zones: Zone[]): MockAnswer {
     })
     .sort((a, b) => b.spread - a.spread)[0];
 
-  const opener = `${top.name} leads overall at ${top.score}, ${overallGaps.join(" and ")}.`;
-  const closing = `The four pillars split the story: ${labels[widestSpread.key]} is where these zones diverge most (${widestSpread.spread} pt spread), so if you're prioritising, that's the pillar to interrogate first.`;
-  const tag = localeTag();
-  const answer = tag
-    ? `${tag}\n\n${opener}\n\n${pillarLines.join("\n")}\n\n${closing}`
-    : `${opener}\n\n${pillarLines.join("\n")}\n\n${closing}`;
+  const opener = tt("chat.compare.opener", {
+    top: top.name, topScore: top.score, gaps: overallGaps.join(" & "),
+  });
+  const closing = tt("chat.compare.closing", {
+    pillar: labels[widestSpread.key], spread: widestSpread.spread,
+  });
+  const answer = `${opener}\n\n${pillarLines.join("\n")}\n\n${closing}`;
 
   return {
     sql: `SELECT name, score, pillar_social, pillar_safety, pillar_density, pillar_infra FROM zones WHERE id IN (${idList}) ORDER BY score DESC`,
     rows,
     answer,
     followups: [
-      `Why is ${top.name}'s ${labels[widestSpread.key]} pillar stronger?`,
-      `Which infrastructure projects are active in ${sorted[sorted.length - 1].name}?`,
-      `How has the gap between ${top.name} and ${sorted[sorted.length - 1].name} moved this quarter?`,
+      tt("chat.followup.whyPillarStronger", { zone: top.name, pillar: labels[widestSpread.key] }),
+      tt("chat.followup.activeProjectsIn", { zone: sorted[sorted.length - 1].name }),
+      tt("chat.followup.gapMovedThisQuarter", { top: top.name, bottom: sorted[sorted.length - 1].name }),
     ],
   };
 }
@@ -423,12 +415,11 @@ function buildCompositionAnswer(zones: Zone[]): MockAnswer {
   const [z] = zones;
   if (!z) {
     return {
-      answer:
-        "Pick a zone or mention one by name and I'll break down its four Vitality pillars — Social Wellbeing, Safety & Security, Density & Scaling, and Infrastructure & Environment.",
+      answer: tt("chat.composition.needZone"),
       followups: [
-        "Tell me about Westlands",
-        "Which zones lead on Vitality?",
-        "Explain the four pillars",
+        tt("chat.followup.tellMeAbout", { zone: "Westlands" }),
+        tt("chat.followup.whichLeads"),
+        tt("chat.followup.explainPillars"),
       ],
     };
   }
@@ -451,14 +442,20 @@ function buildCompositionAnswer(zones: Zone[]): MockAnswer {
   const vsCounty = z.score - countyAvg;
   const rankAbove = ZONES.filter((zn) => zn.score > z.score).length + 1;
 
-  const bandName = z.score >= 70 ? "Strong" : z.score >= 55 ? "Moderate" : "At Risk";
+  const bandName = z.score >= 70 ? tt("band.strong") : z.score >= 55 ? tt("band.moderate") : tt("band.atRisk");
+  const deltaFmt = vsCounty >= 0 ? `+${vsCounty}` : String(vsCounty);
 
-  const opener = `**${z.name}** scores **${z.score}/100** overall — that's ${vsCounty >= 0 ? `+${vsCounty}` : vsCounty} vs. the Nairobi average (${countyAvg}) and puts it at rank #${rankAbove} of the 17 sub-counties. Readiness band: **${bandName}**.`;
+  const opener = tt("chat.composition.opener", {
+    zone: z.name, score: z.score, delta: deltaFmt, avg: countyAvg, rank: rankAbove, band: bandName,
+  });
 
   const pillarLine = (e: (typeof sorted)[number]) => {
     const arrow = e.delta > 0 ? "▲" : e.delta < 0 ? "▼" : "◆";
-    const deltaTxt = e.delta === 0 ? "flat" : `${e.delta > 0 ? "+" : ""}${e.delta} this quarter`;
-    return `• **${e.label}** — ${e.value}/100 ${arrow} (${deltaTxt})`;
+    const deltaTxt =
+      e.delta === 0
+        ? tt("chat.composition.deltaFlat")
+        : tt("chat.composition.deltaThisQuarter", { sign: e.delta > 0 ? "+" : "", value: e.delta });
+    return tt("chat.composition.pillarLine", { pillar: e.label, value: e.value, arrow, delta: deltaTxt });
   };
 
   const pillarBreakdown = sorted.map(pillarLine).join("\n");
@@ -470,46 +467,28 @@ function buildCompositionAnswer(zones: Zone[]): MockAnswer {
   const weakExplain = weakInterpretation(weak.key, z);
 
   const closing =
-    `**Strongest — ${strong.label}.** ${strongExplain}\n\n` +
-    `**Weakest — ${weak.label}.** ${weakExplain}`;
+    `${tt("chat.composition.strongLabel", { pillar: strong.label })} ${strongExplain}\n\n` +
+    `${tt("chat.composition.weakLabel", { pillar: weak.label })} ${weakExplain}`;
 
   const answer = `${opener}\n\n${pillarBreakdown}\n\n${closing}`;
 
   return {
     answer,
     followups: [
-      `Why is ${weak.label} the weak point in ${z.name}?`,
-      `Compare ${z.name} to the county average`,
-      `Which infrastructure projects are behind ${z.name}'s score?`,
-      `Show me ${z.name}'s trend over the last 30 days`,
+      tt("chat.followup.whyWeakPoint", { pillar: weak.label, zone: z.name }),
+      tt("chat.followup.compareCountyAvg", { zone: z.name }),
+      tt("chat.followup.projectsBehindScore", { zone: z.name }),
+      tt("chat.followup.trend30d", { zone: z.name }),
     ],
   };
 }
 
 function strongInterpretation(key: "social" | "safety" | "density" | "infra", z: Zone): string {
-  switch (key) {
-    case "social":
-      return `${z.name} has above-average access to healthcare, education, and connectivity — a workforce and community that can absorb new infrastructure without training gaps.`;
-    case "safety":
-      return `Physical and legal safety are the anchor here. Low incident density along transit corridors, and rule-of-law indicators that make long-horizon contracts defensible.`;
-    case "density":
-      return `${z.name} still has headroom for growth — the density-to-capacity ratio hasn't tipped into over-saturation, so new development doesn't fight land costs.`;
-    case "infra":
-      return `Infrastructure and environmental safeguards are already documented — ESIA transparency, resource sovereignty, and lifecycle mandates are on paper and defensible.`;
-  }
+  return tt(`chat.strong.${key}` as MessageKey, { zone: z.name });
 }
 
 function weakInterpretation(key: "social" | "safety" | "density" | "infra", z: Zone): string {
-  switch (key) {
-    case "social":
-      return `This is the pillar to fund alongside any new project in ${z.name} — healthcare access, digital connectivity, or education-capacity gaps will otherwise leak into operational risk in year 2–3.`;
-    case "safety":
-      return `Safety needs closing before the next round of investment. It usually shows up as physical-security incidents or rule-of-law drift; the alerts feed is where a diagnostic reveals which one.`;
-    case "density":
-      return `${z.name} is over-saturated relative to its current infrastructure — new capital tends to lose margin to land costs and permit friction. Fund density-lifting projects (transit, water mains) first.`;
-    case "infra":
-      return `The paper trail is thin — ESIAs, waste mandates, or sovereign-immunity carve-outs are missing or non-public. Budget legal + policy work into any project brief here.`;
-  }
+  return tt(`chat.weak.${key}` as MessageKey, { zone: z.name });
 }
 
 function buildDistributionAnswer(): MockAnswer {
@@ -517,14 +496,15 @@ function buildDistributionAnswer(): MockAnswer {
   return {
     sql: "SELECT name, score FROM zones ORDER BY score DESC LIMIT 5",
     rows: top.map((z) => ({ name: z.name, score: z.score })),
-    answer:
-      `${top[0].name} and ${top[1].name} share the lead at ${top[0].score}/${top[1].score}. ` +
-      `${top[2].name} follows at ${top[2].score}, then ${top[3].name} (${top[3].score}) and ${top[4].name} (${top[4].score}). ` +
-      `The top five sit within ${top[0].score - top[4].score} points — Nairobi's strongest sub-counties are clustered rather than pulled apart by any single runaway leader.`,
+    answer: tt("chat.distribution", {
+      top1: top[0].name, top2: top[1].name, top3: top[2].name, top4: top[3].name, top5: top[4].name,
+      score1: top[0].score, score2: top[1].score, score3: top[2].score, score4: top[3].score, score5: top[4].score,
+      spread: top[0].score - top[4].score,
+    }),
     followups: [
-      "What about the bottom five?",
-      `Which pillar is driving ${top[0].name}'s score?`,
-      "How has the top five changed over the last quarter?",
+      tt("chat.followup.bottomFive"),
+      tt("chat.followup.pillarDriving", { zone: top[0].name }),
+      tt("chat.followup.top5Change"),
     ],
   };
 }
@@ -534,13 +514,11 @@ function buildTrendAnswer(zone?: Zone): MockAnswer {
   return {
     sql: `SELECT date_trunc('day', captured_at) AS bucket, avg(score) AS score FROM zone_score_snapshots WHERE zone_id = '${target.id}' AND captured_at >= now() - interval '30 days' GROUP BY 1 ORDER BY 1`,
     rows: buildFakeTrend(target.score),
-    answer:
-      `${target.name} has held between ${target.score - 2} and ${target.score + 1} over the last 30 days. ` +
-      `The overall trajectory is best described as stable, with a small recent uptick coming from the Infrastructure pillar. No sudden movements to flag.`,
+    answer: tt("chat.trend", { zone: target.name, low: target.score - 2, high: target.score + 1 }),
     followups: [
-      `Which pillar is moving inside ${target.name}?`,
-      `Compare ${target.name}'s trend to another zone`,
-      `What alerts are active for ${target.name}?`,
+      tt("chat.followup.pillarMoving", { zone: target.name }),
+      tt("chat.followup.compareToAnother", { zone: target.name }),
+      tt("chat.followup.activeAlerts", { zone: target.name }),
     ],
   };
 }
@@ -562,7 +540,7 @@ function buildDiagnosticText(zones: Zone[]): string {
   // Fallback resolver always returns at least one zone, so this length
   // check is defensive only — kept for typescript's benefit.
   if (zones.length === 0) {
-    return "Every zone in Nairobi is roughly stable this quarter — the softest moves are inside noise. Ask about a specific pillar to go deeper.";
+    return tt("chat.diagnostic.stable");
   }
   const [z] = zones;
   const labels = pillarLabels();
@@ -577,45 +555,50 @@ function buildDiagnosticText(zones: Zone[]): string {
   const weakest = [...entries].sort((a, b) => a.value - b.value)[0];
 
   if (worstMove.d < 0) {
-    return (
-      `**${z.name}** — the specific pillar to look at is **${worstMove.label}**, which moved ${worstMove.d} this quarter. ` +
-      `The best mover was ${bestMove.label} at ${bestMove.d >= 0 ? "+" : ""}${bestMove.d}, so the net Vitality Score of ${z.score} is only mildly affected by the drop. ` +
-      `\n\n**Likely cause.** ${diagnosticCause(worstMove.key, z.name)} ` +
-      `The alerts feed for ${z.name} usually names the exact project or incident behind a move this size — worth checking before you commit to a diagnosis.` +
-      `\n\nOn the standing weak side, **${weakest.label}** at ${weakest.value}/100 is the pillar that structurally holds ${z.name} back, regardless of quarter-over-quarter movement.`
-    );
+    return tt("chat.diagnostic.drop", {
+      zone: z.name,
+      worstPillar: worstMove.label,
+      worstDelta: worstMove.d,
+      bestPillar: bestMove.label,
+      bestDelta: `${bestMove.d >= 0 ? "+" : ""}${bestMove.d}`,
+      score: z.score,
+      cause: diagnosticCause(worstMove.key, z.name),
+      weakestPillar: weakest.label,
+      weakestValue: weakest.value,
+    });
   }
-  return (
-    `**${z.name}** did not drop on any of the four pillars this quarter — the softest move was ${worstMove.label} at ${worstMove.d >= 0 ? "+" : ""}${worstMove.d}, and the strongest was ${bestMove.label} at ${bestMove.d >= 0 ? "+" : ""}${bestMove.d}. Growth is broad-based, not driven by a single pillar. ` +
-    `\n\nOn the standing weak side, **${weakest.label}** at ${weakest.value}/100 is the pillar that keeps the composite from climbing further — ${weakInterpretation(weakest.key, z)}`
-  );
+  return tt("chat.diagnostic.growth", {
+    zone: z.name,
+    worstPillar: worstMove.label,
+    worstDelta: `${worstMove.d >= 0 ? "+" : ""}${worstMove.d}`,
+    bestPillar: bestMove.label,
+    bestDelta: `${bestMove.d >= 0 ? "+" : ""}${bestMove.d}`,
+    weakestPillar: weakest.label,
+    weakestValue: weakest.value,
+    weakExplain: weakInterpretation(weakest.key, z),
+  });
 }
 
 function diagnosticCause(pillar: "social" | "safety" | "density" | "infra", zoneName: string): string {
-  switch (pillar) {
-    case "social":
-      return `Drops on Social Wellbeing typically track a workforce or health-service disruption — clinic closures, teacher-strike days, or a mobile-broadband coverage regression.`;
-    case "safety":
-      return `Safety drops of this magnitude almost always track a physical-security incident cluster (a set of vandalism or crime reports) or a rule-of-law event flagged by NPS. Around ${zoneName} specifically, transit-corridor incidents are the usual cause.`;
-    case "density":
-      return `Density drops read as either a population-pressure spike (housing shortage widening) or a corridor congestion event — the AM/PM peak transit times are the tell.`;
-    case "infra":
-      return `Infrastructure drops mean an ESIA has expired or been pulled, a resource-sovereignty carve-out has been renegotiated, or waste/lifecycle mandate enforcement has slipped.`;
-  }
+  return tt(`chat.cause.${pillar}` as MessageKey, { zone: zoneName });
 }
 
 function buildSummaryText(zones: Zone[]): string {
   if (zones.length === 0) {
-    return "Pick a zone or two from the compare picker and I'll walk through their four Vitality pillars. Without a specific zone in view, I can only speak to county averages.";
+    return tt("chat.summary.needZone");
   }
   if (zones.length === 1) {
     const [z] = zones;
-    return `${z.name} sits at ${z.score}/100 overall. Social Wellbeing ${z.pillars.social}, Safety ${z.pillars.safety}, Density ${z.pillars.density}, Infrastructure ${z.pillars.infra}. Ask about any pillar and I can go deeper.`;
+    return tt("chat.summary.single", {
+      zone: z.name, score: z.score,
+      social: z.pillars.social, safety: z.pillars.safety,
+      density: z.pillars.density, infra: z.pillars.infra,
+    });
   }
   const avg = Math.round(zones.reduce((a, z) => a + z.score, 0) / zones.length);
   const names = zones.map((z) => z.name);
-  const tail = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}` : names[0];
-  return `You're comparing ${tail}. Their overall Vitality scores average ${avg}. Ask "compare across all four pillars" for the full breakdown, or narrow to a single pillar for a deeper look.`;
+  const tail = names.length > 1 ? `${names.slice(0, -1).join(", ")} & ${names[names.length - 1]}` : names[0];
+  return tt("chat.summary.multi", { names: tail, avg });
 }
 
 function applyEvent(convId: string, msgId: string, event: ServerEvent) {

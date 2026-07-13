@@ -252,13 +252,13 @@ export default function Leaderboard() {
               className="relative w-full max-w-[420px] max-h-[85vh] glass-strong border border-border rounded-modal overflow-y-auto shadow-modal"
               role="dialog"
               aria-modal="true"
-              aria-label={`${popupZone.name} scorecard preview`}
+              aria-label={t("leaderboard.previewAria", { zone: popupZone.name })}
             >
               <div className="p-5">
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.1em]">
-                      Sub-county · Nairobi
+                      {t("leaderboard.subCountyNairobi")}
                     </div>
                     <h2 className="text-[20px] font-semibold tracking-[-0.02em] text-ink-1 mt-1">
                       {popupZone.name}
@@ -267,7 +267,7 @@ export default function Leaderboard() {
                   <button
                     onClick={() => setPopupZone(null)}
                     className="w-8 h-8 flex items-center justify-center rounded-full bg-[rgba(255,255,255,0.06)] text-ink-4 hover:text-ink-2 transition-colors btn-press"
-                    aria-label="Close"
+                    aria-label={t("common.close")}
                   >
                     <X size={14} />
                   </button>
@@ -284,9 +284,9 @@ export default function Leaderboard() {
                     {popupZone.score}
                   </div>
                   <div className="flex-1">
-                    <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.1em]">UE Vitality Index</div>
+                    <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.1em]">{t("leaderboard.indexTitle")}</div>
                     <div className="text-[12px] text-ink-3 mt-1">
-                      Updated {popupZone.lastSyncMin} min ago
+                      {t("leaderboard.updatedAgo", { min: popupZone.lastSyncMin })}
                     </div>
                   </div>
                 </div>
@@ -323,7 +323,7 @@ export default function Leaderboard() {
                   )}
                 >
                   <MapPin size={14} />
-                  Open on Atlas map
+                  {t("leaderboard.openAtlas")}
                 </button>
               </div>
             </motion.div>

@@ -1,7 +1,15 @@
 import { motion } from "framer-motion";
 import { cn } from "@/lib/cn";
 import { springSettle } from "@/lib/motion";
+import { useT } from "@/lib/i18n/use-t";
+import type { MessageKey } from "@/lib/i18n/translate";
 import type { Project } from "@/types";
+
+const STATUS_KEYS: Record<Project["status"], MessageKey> = {
+  active: "infra.status.active",
+  stalled: "infra.status.stalled",
+  planned: "infra.status.planned",
+};
 
 const TYPE_COLORS: Record<string, string> = { road: "#C0552B", energy: "#E0A82E", grid: "#1F8A78", water: "#176B5D" };
 const STATUS_COLORS: Record<string, string> = { active: "#1F8A78", stalled: "#D3402E", planned: "#E0A82E" };
@@ -14,6 +22,7 @@ interface Props {
 }
 
 export default function ProjectCard({ project, selected, zoneName, onClick }: Props) {
+  const t = useT();
   return (
     <motion.button
       onClick={onClick}
@@ -41,7 +50,7 @@ export default function ProjectCard({ project, selected, zoneName, onClick }: Pr
           animate={project.status === "active" ? { scale: [1, 1.3, 1], boxShadow: [`0 0 8px ${STATUS_COLORS[project.status]}66`, `0 0 14px ${STATUS_COLORS[project.status]}88`, `0 0 8px ${STATUS_COLORS[project.status]}66`] } : {}}
           transition={{ repeat: Infinity, duration: 2 }}
         />
-        <span className="text-[10px] text-ink-4 capitalize">{project.status}</span>
+        <span className="text-[10px] text-ink-4">{t(STATUS_KEYS[project.status])}</span>
       </div>
 
       <div className="text-[13px] font-semibold text-ink-1 mb-1">{project.name}</div>
@@ -56,7 +65,9 @@ export default function ProjectCard({ project, selected, zoneName, onClick }: Pr
           transition={{ duration: 0.8, ease: [0.32, 0.72, 0, 1] }}
         />
       </div>
-      <div className="text-[10px] text-ink-4 tabular-nums">{project.progress}% · ETA {project.eta}</div>
+      <div className="text-[10px] text-ink-4 tabular-nums">
+        {t("infra.card.etaLine", { progress: project.progress, eta: project.eta })}
+      </div>
     </motion.button>
   );
 }
