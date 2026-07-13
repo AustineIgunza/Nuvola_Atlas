@@ -132,7 +132,7 @@ export default function Sidebar() {
               {/* Brand tagline — kept in English so it reads the same across
                   locales; changing it means changing the pitch deck too. */}
               <span className="text-[9.5px] font-medium text-ink-4 tracking-[0.06em] mt-0.5 whitespace-nowrap">
-                Making Africa Investment Green
+                Making African investments greener
               </span>
             </motion.div>
           )}
