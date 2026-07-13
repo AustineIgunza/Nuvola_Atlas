@@ -4,7 +4,8 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { X, ChevronLeft, ChevronUp, Sparkles } from "lucide-react";
 import { useUIStore } from "@/stores/ui";
 import { springSettle, modalBackdrop, panelSlideUp } from "@/lib/motion";
-import { BRAND, PILLAR_LABELS } from "@/lib/scoreColor";
+import { BRAND } from "@/lib/scoreColor";
+import { useT, type TFunction } from "@/lib/i18n/use-t";
 import OverviewView from "./panel/OverviewView";
 import IndexExplainer from "./panel/IndexExplainer";
 import PillarExplainer from "./panel/PillarExplainer";
@@ -14,20 +15,20 @@ import AlertExplainer from "./panel/AlertExplainer";
 import type { PanelView } from "./panel/panel-types";
 import type { Zone } from "@/types";
 
-function headerMeta(view: PanelView, zone: Zone): { kicker: string; title: string } {
+function headerMeta(view: PanelView, zone: Zone, t: TFunction): { kicker: string; title: string } {
   switch (view.type) {
     case "overview":
-      return { kicker: "Sub-county · Vitality Scorecard", title: zone.name };
+      return { kicker: t("scorecard.header.overviewKicker"), title: zone.name };
     case "index":
-      return { kicker: zone.name, title: "UE Vitality Index" };
+      return { kicker: zone.name, title: t("scorecard.header.indexTitle") };
     case "pillar":
-      return { kicker: `${zone.name} · Pillar`, title: PILLAR_LABELS[view.key] };
+      return { kicker: t("scorecard.header.pillarKicker", { zone: zone.name }), title: t(`pillar.${view.key}.long` as const) };
     case "water":
-      return { kicker: `${zone.name} · SDG 6`, title: "Water & Sanitation" };
+      return { kicker: t("scorecard.header.waterKicker", { zone: zone.name }), title: t("scorecard.header.waterTitle") };
     case "project":
-      return { kicker: zone.name, title: "Project detail" };
+      return { kicker: t("scorecard.header.projectKicker", { zone: zone.name }), title: t("scorecard.header.projectTitle") };
     case "alert":
-      return { kicker: zone.name, title: "Alert detail" };
+      return { kicker: t("scorecard.header.alertKicker", { zone: zone.name }), title: t("scorecard.header.alertTitle") };
   }
 }
 
@@ -68,6 +69,7 @@ interface Props {
 /** The Vitality Scorecard — a floating right-side panel with drill-in
  *  navigation: every row in the overview opens a detailed explainer view. */
 export default function ScorecardPanel({ zone }: Props) {
+  const t = useT();
   const panelOpen = useUIStore((s) => s.panelOpen);
   const closePanel = useUIStore((s) => s.closePanel);
   const openPanel = useUIStore((s) => s.openPanel);
@@ -109,11 +111,11 @@ export default function ScorecardPanel({ zone }: Props) {
   }, [panelOpen, stack.length, closePanel]);
 
   if (!zone) return null;
-  const meta = headerMeta(view, zone);
+  const meta = headerMeta(view, zone, t);
   const bodyKey = `${zone.id}:${viewKeyOf(view)}`;
 
   const askAboutZone = () => {
-    const prompt = `Tell me about ${zone.name} — what's driving the Vitality score and where are the biggest gaps across the four pillars?`;
+    const prompt = t("scorecard.askPrompt", { zone: zone.name });
     // Pass the zone id so the seeded conversation carries context;
     // follow-up prompts in the same conversation then default to this
     // zone even if the user types a bare "and what about safety?".
@@ -131,10 +133,10 @@ export default function ScorecardPanel({ zone }: Props) {
         borderColor: `${BRAND.teal}55`,
         color: BRAND.teal,
       }}
-      aria-label={`Ask assistant about ${zone.name}`}
+      aria-label={t("scorecard.askAria", { zone: zone.name })}
     >
       <Sparkles size={13} />
-      <span className="text-[11.5px] font-semibold">Ask about {zone.name}</span>
+      <span className="text-[11.5px] font-semibold">{t("scorecard.askShort", { zone: zone.name })}</span>
     </button>
   );
 
@@ -148,7 +150,7 @@ export default function ScorecardPanel({ zone }: Props) {
             exit={{ opacity: 0, width: 0, marginRight: -8 }}
             transition={{ duration: 0.15 }}
             onClick={back}
-            aria-label="Back"
+            aria-label={t("scorecard.back")}
             className="h-7 flex items-center justify-center rounded-full bg-[rgba(255,255,255,0.06)] text-ink-3 hover:text-ink-1 transition-colors shrink-0 btn-press overflow-hidden"
           >
             <ChevronLeft size={14} />
@@ -165,7 +167,7 @@ export default function ScorecardPanel({ zone }: Props) {
       </div>
       <button
         onClick={closePanel}
-        aria-label="Close scorecard"
+        aria-label={t("scorecard.close")}
         className="w-7 h-7 flex items-center justify-center rounded-full bg-[rgba(255,255,255,0.06)] text-ink-4 hover:text-ink-2 transition-colors shrink-0 btn-press"
       >
         <X size={13} />

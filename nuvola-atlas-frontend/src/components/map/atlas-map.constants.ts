@@ -34,12 +34,15 @@ import { BRAND } from "@/lib/scoreColor";
  * live these should be swapped for a hook that reads the actual feed
  * status per layer.
  */
+// LabelKey + descriptionKey point at i18n entries; consumers t() them at
+// render time. Kept as MessageKey strings (not tokens) so tsc can enforce
+// the reference lands on a real translation.
 export const LAYER_META = [
   {
     key: "vitality" as const,
-    label: "Vitality Zones",
+    labelKey: "layer.vitality" as const,
     color: BRAND.gold,
-    description: "The overall 0-100 readiness score for each of the 17 sub-counties, coloured by the score ramp.",
+    descriptionKey: "layerDesc.vitality" as const,
     source: "Navuuna · UE Vitality Index",
     sdg: "SDG 9 & 11",
     features: 17,
@@ -47,9 +50,9 @@ export const LAYER_META = [
   },
   {
     key: "roads" as const,
-    label: "Road Progress",
+    labelKey: "layer.roads" as const,
     color: BRAND.terracotta,
-    description: "Live construction status of major road projects — active, stalled, or planned — with percent complete.",
+    descriptionKey: "layerDesc.roads" as const,
     source: "KURA · KeNHA feeds",
     sdg: "SDG 9",
     features: 12,
@@ -57,9 +60,9 @@ export const LAYER_META = [
   },
   {
     key: "energy" as const,
-    label: "Smart Grid Status",
+    labelKey: "layer.energy" as const,
     color: BRAND.gold,
-    description: "Substations, feeder lines, and smart-meter pilots across the county. Highlights outages and NTL zones.",
+    descriptionKey: "layerDesc.energy" as const,
     source: "KPLC · KETRACO feeds",
     sdg: "SDG 7",
     features: 21,
@@ -67,9 +70,9 @@ export const LAYER_META = [
   },
   {
     key: "density" as const,
-    label: "Density",
+    labelKey: "layer.density" as const,
     color: BRAND.steel,
-    description: "Population density per sub-county at ward resolution — used by the Density & Scaling pillar.",
+    descriptionKey: "layerDesc.density" as const,
     source: "KNBS 2019 · county projections",
     sdg: "SDG 11",
     features: 17,
@@ -77,9 +80,9 @@ export const LAYER_META = [
   },
   {
     key: "water" as const,
-    label: "Water & Sanitation",
+    labelKey: "layer.water" as const,
     color: BRAND.teal,
-    description: "Piped-water coverage, communal water points, and context-specific sanitation for informal settlements.",
+    descriptionKey: "layerDesc.water" as const,
     source: "NCWSC · Athi Water Works",
     sdg: "SDG 6",
     features: 9,
@@ -87,9 +90,9 @@ export const LAYER_META = [
   },
   {
     key: "momentum" as const,
-    label: "Project Momentum",
+    labelKey: "layer.momentum" as const,
     color: BRAND.goldDeep,
-    description: "Rolling 30-day delivery velocity across active infrastructure projects — flags stalling before it shows in totals.",
+    descriptionKey: "layerDesc.momentum" as const,
     source: "Derived · project milestones",
     sdg: null,
     features: 19,
@@ -97,9 +100,9 @@ export const LAYER_META = [
   },
   {
     key: "safety" as const,
-    label: "Safety & Security",
+    labelKey: "layer.safety" as const,
     color: BRAND.rose,
-    description: "Incident heatmap along transit corridors, cross-referenced with the Safety pillar sub-metrics.",
+    descriptionKey: "layerDesc.safety" as const,
     source: "NPS quarterly · Atlas Safety pillar",
     sdg: "SDG 16",
     features: 34,

@@ -13,8 +13,10 @@ import {
 } from "@/components/map/atlas-map.constants";
 import { useEffect } from "react";
 import { api } from "@/api";
+import { useT } from "@/lib/i18n/use-t";
 
 export default function TopBar() {
+  const t = useT();
   const location = useLocation();
   const navigate = useNavigate();
   const openSearch = useUIStore((s) => s.openSearch);
@@ -63,7 +65,7 @@ export default function TopBar() {
           )}
         >
           <div className="w-1.5 h-1.5 rounded-full bg-success pulse-glow glow-success" style={{ color: "#1F8A78" }} />
-          <span className="text-[11px] font-medium text-success">Live</span>
+          <span className="text-[11px] font-medium text-success">{t("topbar.live")}</span>
         </motion.div>
       </div>
 
@@ -81,7 +83,7 @@ export default function TopBar() {
                 ? "text-ink-1 bg-[rgba(31,138,120,0.14)]"
                 : "text-ink-3 hover:text-ink-2 hover:bg-[rgba(255,255,255,0.05)]"
             )}
-            aria-label={chatOpen ? "Close Navuuna assistant" : "Open Navuuna assistant"}
+            aria-label={chatOpen ? t("topbar.closeAssistant") : t("topbar.openAssistant")}
             aria-pressed={chatOpen}
           >
             <Sparkles size={16} />
@@ -94,7 +96,7 @@ export default function TopBar() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.92 }}
           className="w-9 h-9 flex items-center justify-center rounded-control text-ink-3 hover:text-ink-2 hover:bg-[rgba(255,255,255,0.05)] transition-colors"
-          aria-label="Search (Cmd+K)"
+          aria-label={t("topbar.searchAria")}
         >
           <Search size={16} />
         </motion.button>
@@ -105,7 +107,7 @@ export default function TopBar() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.92 }}
           className="relative w-9 h-9 flex items-center justify-center rounded-control text-ink-3 hover:text-ink-2 hover:bg-[rgba(255,255,255,0.05)] transition-colors"
-          aria-label={`Notifications${unread > 0 ? ` (${unread} unread)` : ""}`}
+          aria-label={unread > 0 ? t("topbar.notificationsWithCount", { count: unread }) : t("topbar.notificationsAria")}
         >
           <Bell size={16} />
           <AnimatePresence>

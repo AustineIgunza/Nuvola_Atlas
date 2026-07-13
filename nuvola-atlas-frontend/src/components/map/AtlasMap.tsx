@@ -12,6 +12,7 @@ import { useMapPopups } from "@/hooks/useMapPopups";
 import { LAYER_META, NAIROBI, INITIAL_ZOOM } from "./atlas-map.constants";
 import MapFallback from "./MapFallback";
 import ViewModePill from "./ViewModePill";
+import { useT } from "@/lib/i18n/use-t";
 import type { Zone } from "@/types";
 
 interface Props {
@@ -19,6 +20,7 @@ interface Props {
 }
 
 export default function AtlasMap({ zones }: Props) {
+  const t = useT();
   const { containerRef, mapRef, loaded } = useMapInstance();
   const activeLayers = useUIStore((s) => s.activeLayers);
   const toggleLayer = useUIStore((s) => s.toggleLayer);
@@ -87,8 +89,8 @@ export default function AtlasMap({ zones }: Props) {
                   opacity: on ? 1 : 0.5,
                 }}
               />
-              <span className="hidden sm:inline">{l.label}</span>
-              <span className="sm:hidden text-[10px]">{l.label.split(" ")[0]}</span>
+              <span className="hidden sm:inline">{t(l.labelKey)}</span>
+              <span className="sm:hidden text-[10px]">{t(l.labelKey).split(" ")[0]}</span>
             </button>
           );
         })}
@@ -104,7 +106,7 @@ export default function AtlasMap({ zones }: Props) {
         transition={{ delay: 0.35, ...springSettle }}
         whileHover={{ scale: 1.06 }}
         whileTap={{ scale: 0.93 }}
-        aria-label="Reset view to Nairobi"
+        aria-label={t("atlas.resetView")}
         className={`absolute top-3 z-10 w-9 h-9 flex items-center justify-center rounded-control bg-bone/90 text-navy/70 hover:text-navy shadow-[0_1px_4px_rgba(11,34,53,0.12),0_6px_18px_rgba(11,34,53,0.12)] backdrop-blur-sm transition-[right] duration-300 ${
           panelOpen
             ? "right-3 lg:right-[calc(380px+1.25rem)] xl:right-[calc(420px+1.25rem)]"

@@ -10,6 +10,7 @@ import { cn } from "@/lib/cn";
 import { springSettle, staggerContainer, staggerItem, panelSlideLeft } from "@/lib/motion";
 import { useUIStore } from "@/stores/ui";
 import { useAuthStore, hasRoleAtLeast, isInvestor } from "@/stores/auth";
+import { usePrefsStore } from "@/stores/prefs";
 import { api } from "@/api";
 import { scoreColor } from "@/lib/scoreColor";
 import { Emblem, Wordmark } from "@/components/brand/Brand";
@@ -19,14 +20,14 @@ import { useT } from "@/lib/i18n/use-t";
 import type { MessageKey } from "@/lib/i18n/translate";
 import { useState, useEffect } from "react";
 
-function formatSyncAge(minutes: number): string {
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes}m ago`;
+function formatSyncAge(minutes: number, t: ReturnType<typeof useT>): string {
+  if (minutes < 1) return t("sidebar.syncAge.justNow");
+  if (minutes < 60) return t("sidebar.syncAge.minutes", { n: minutes });
   const hr = Math.floor(minutes / 60);
-  if (hr < 24) return `${hr}h ago`;
+  if (hr < 24) return t("sidebar.syncAge.hours", { n: hr });
   const day = Math.floor(hr / 24);
-  if (day < 30) return `${day}d ago`;
-  return `${Math.floor(day / 30)}mo ago`;
+  if (day < 30) return t("sidebar.syncAge.days", { n: day });
+  return t("sidebar.syncAge.months", { n: Math.floor(day / 30) });
 }
 
 const NAV: ReadonlyArray<{
@@ -54,6 +55,10 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const signOut = useAuthStore((s) => s.signOut);
   const user = useAuthStore((s) => s.user);
+  // Settings > Profile writes into prefs.displayName, not into the auth
+  // user record. Read it here so the sidebar name updates live when the
+  // user renames themselves without a full sign-out cycle.
+  const displayName = usePrefsStore((s) => s.displayName);
   const isAdmin = hasRoleAtLeast(user, "admin");
   const collapsed = useUIStore((s) => s.sidebarCollapsed);
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
@@ -136,7 +141,7 @@ export default function Sidebar() {
           <button
             onClick={() => setMobileOpen(false)}
             className="w-8 h-8 flex items-center justify-center rounded-control text-ink-3 hover:text-ink-2 btn-press shrink-0"
-            aria-label="Close menu"
+            aria-label={t("sidebar.closeMenu")}
           >
             <X size={18} />
           </button>
@@ -231,10 +236,10 @@ export default function Sidebar() {
                         />
                         <div className="min-w-0 flex-1">
                           <div className="text-[12px] font-semibold text-ink-1 leading-tight">
-                            {layer.label}
+                            {t(layer.labelKey)}
                           </div>
                           <p className="mt-0.5 text-[10.5px] leading-snug text-ink-3">
-                            {layer.description}
+                            {t(layer.descriptionKey)}
                           </p>
                         </div>
                         <button
@@ -246,7 +251,7 @@ export default function Sidebar() {
                           }}
                           role="switch"
                           aria-checked={on}
-                          aria-label={`Toggle ${layer.label} layer`}
+                          aria-label={t("sidebar.toggleLayer", { label: t(layer.labelKey) })}
                         >
                           <div className="toggle-thumb" />
                         </button>
@@ -264,10 +269,10 @@ export default function Sidebar() {
                           </span>
                         )}
                         <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] text-ink-3 bg-[rgba(255,255,255,0.04)]">
-                          {layer.features} features
+                          {t("sidebar.featuresCount", { count: layer.features })}
                         </span>
                         <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] text-ink-4 bg-[rgba(255,255,255,0.02)]">
-                          {formatSyncAge(layer.lastSyncMin)}
+                          {formatSyncAge(layer.lastSyncMin, t)}
                         </span>
                       </div>
                       <div className="mt-1 text-[9px] text-ink-4 truncate">
@@ -342,7 +347,13 @@ export default function Sidebar() {
           <div className="px-3 py-2 rounded-control bg-[rgba(255,255,255,0.03)] mb-1">
             <div className="flex items-center gap-1.5 text-[9.5px] font-medium text-ink-4 uppercase tracking-[0.08em]">
               <Building2 size={9} />
-              {user.role ?? "viewer"}
+              {t(
+                user.role === "admin"
+                  ? "sidebar.role.admin"
+                  : user.role === "investor"
+                  ? "sidebar.role.investor"
+                  : "sidebar.role.viewer",
+              )}
               {user.firm && (
                 <span className="ml-auto px-1.5 py-0.5 rounded-full text-[8px] font-bold" style={{ background: "rgba(31,138,120,0.15)", color: "rgb(31,138,120)" }}>
                   {user.firm.tier}
@@ -350,7 +361,7 @@ export default function Sidebar() {
               )}
             </div>
             <div className="text-[10.5px] font-semibold text-ink-1 leading-tight truncate mt-0.5">
-              {user.firm?.name ?? user.name}
+              {user.firm?.name ?? displayName ?? user.name}
             </div>
           </div>
         )}
@@ -378,7 +389,7 @@ export default function Sidebar() {
             onClick={toggleSidebar}
             whileTap={{ scale: 0.9 }}
             className="w-full flex items-center justify-center h-8 rounded-control text-ink-4 hover:text-ink-3 transition-colors"
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={collapsed ? t("sidebar.expandSidebar") : t("sidebar.collapseSidebar")}
           >
             <motion.div
               animate={{ rotate: collapsed ? 0 : 180 }}
@@ -401,7 +412,7 @@ export default function Sidebar() {
           onClick={() => setMobileOpen(true)}
           whileTap={{ scale: 0.9 }}
           className="fixed top-3 left-3 z-50 w-11 h-11 glass rounded-control flex items-center justify-center text-ink-2 shadow-chrome"
-          aria-label="Open menu"
+          aria-label={t("sidebar.openMenu")}
         >
           <Menu size={20} />
         </motion.button>

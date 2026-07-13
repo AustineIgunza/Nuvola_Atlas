@@ -7,6 +7,7 @@ import { api } from "@/api";
 import { BRAND } from "@/lib/scoreColor";
 import { waterProfile } from "@/lib/waterSanitation";
 import { formatRelative } from "@/lib/format";
+import { useT } from "@/lib/i18n/use-t";
 import Ring from "../Ring";
 import PillarBar from "../PillarBar";
 import ZoneRanking from "../ZoneRanking";
@@ -27,6 +28,7 @@ interface Props {
 }
 
 export default function OverviewView({ zone, onNavigate }: Props) {
+  const t = useT();
   const navigate = useNavigate();
   const [exporting, setExporting] = useState(false);
   const { data: projects } = useQuery({ queryKey: ["projects"], queryFn: api.getProjects });
@@ -126,7 +128,7 @@ export default function OverviewView({ zone, onNavigate }: Props) {
           <Ring score={zone.score} size={76} />
           <div className="flex-1 min-w-0">
             <div className="text-[10px] font-medium text-ink-4 uppercase tracking-[0.1em]">
-              UE Vitality Index
+              {t("scorecard.header.indexTitle")}
             </div>
             <div className="mt-1 flex flex-wrap items-center gap-1.5">
               <span
@@ -136,17 +138,17 @@ export default function OverviewView({ zone, onNavigate }: Props) {
                   color: totalDelta >= 0 ? BRAND.teal : BRAND.rose,
                 }}
               >
-                {totalDelta >= 0 ? "▲" : "▼"} {Math.abs(totalDelta)} pts this quarter
+                {t("scorecard.deltaThisQuarter", { arrow: totalDelta >= 0 ? "▲" : "▼", value: Math.abs(totalDelta) })}
               </span>
               <IndicatorAvailabilityChip zoneId={zone.id} />
             </div>
-            <p className="text-[10px] text-ink-4 mt-1">Last sync {zone.lastSyncMin} min ago</p>
+            <p className="text-[10px] text-ink-4 mt-1">{t("scorecard.lastSyncShort", { min: zone.lastSyncMin })}</p>
           </div>
           <ChevronRight size={14} className="shrink-0 text-ink-4 group-hover:text-ink-2 transition-colors" />
         </div>
         <div className="mt-2 flex items-center gap-1.5 text-[10px] text-ink-4">
           <Info size={10} className="shrink-0" />
-          How this score is computed
+          {t("scorecard.howComputed")}
         </div>
       </button>
 
@@ -159,7 +161,7 @@ export default function OverviewView({ zone, onNavigate }: Props) {
       <ScoreHistoryChart zoneId={zone.id} />
 
       {/* Pillars — each row drills into the pillar explainer */}
-      <Section title="Pillars — tap to expand" className="px-1.5 py-1">
+      <Section title={t("scorecard.pillars")} className="px-1.5 py-1">
         {PILLAR_KEYS.map((key, i) => (
           <button
             key={key}
@@ -186,7 +188,7 @@ export default function OverviewView({ zone, onNavigate }: Props) {
         <div className="flex items-center gap-1.5">
           <Droplets size={12} style={{ color: BRAND.teal }} className="shrink-0" />
           <span className="text-[9.5px] font-semibold text-ink-2 uppercase tracking-[0.08em]">
-            Water &amp; Sanitation · SDG 6
+            {t("compare.water")}
           </span>
           <span className="ml-auto shrink-0">
             <Chip color={waterAccent}>{wp.contextLabel}</Chip>
@@ -194,9 +196,9 @@ export default function OverviewView({ zone, onNavigate }: Props) {
           <ChevronRight size={13} className="shrink-0 text-ink-4 group-hover:text-ink-2 transition-colors" />
         </div>
         <div className="mt-2 grid grid-cols-3 gap-1.5">
-          <StatCell value={`${wp.accessPct}%`} label="Safe access" />
-          <StatCell value={`${wp.sharedPointPct}%`} label="Shared points" />
-          <StatCell value={`${wp.waitMin} min`} label="Median queue" />
+          <StatCell value={`${wp.accessPct}%`} label={t("scorecard.water.safeAccess")} />
+          <StatCell value={`${wp.sharedPointPct}%`} label={t("scorecard.water.sharedPoints")} />
+          <StatCell value={`${wp.waitMin} min`} label={t("scorecard.water.medianQueue")} />
         </div>
         <div className="mt-2 flex items-center gap-1.5 min-w-0">
           <span
@@ -206,20 +208,23 @@ export default function OverviewView({ zone, onNavigate }: Props) {
             {wp.solutionTag}
           </span>
           <span className="text-[10px] truncate" style={{ color: waterAccent }}>
-            {wp.opportunity ? "Decentralized sanitation opportunity" : "Sewerage viable here"}
+            {wp.opportunity ? t("scorecard.water.opportunity") : t("scorecard.water.sewerage")}
           </span>
         </div>
       </button>
 
       {/* Infrastructure projects — each row drills into the project explainer */}
       <Section
-        title={`Infrastructure · ${zoneProjects.length} ${zoneProjects.length === 1 ? "project" : "projects"}`}
+        title={t("scorecard.infra.title", {
+          count: zoneProjects.length,
+          noun: t(zoneProjects.length === 1 ? "scorecard.infra.noun.one" : "scorecard.infra.noun.many"),
+        })}
         action={
           <button
             onClick={() => navigate("/infrastructure")}
             className="text-[10px] text-ink-4 hover:text-ink-2 transition-colors"
           >
-            View all →
+            {t("scorecard.viewAll")}
           </button>
         }
       >
@@ -258,21 +263,20 @@ export default function OverviewView({ zone, onNavigate }: Props) {
           </div>
         ) : (
           <p className="text-[10.5px] text-ink-4 leading-[1.5]">
-            No tracked infrastructure projects in {zone.name} yet — new KURA / KPLC / KeNHA works
-            will appear here as they are ingested.
+            {t("scorecard.infra.empty", { zone: zone.name })}
           </p>
         )}
       </Section>
 
       {/* Alerts — each row drills into the alert explainer */}
       <Section
-        title={`Active alerts · ${zoneAlerts.length}`}
+        title={t("scorecard.alerts.title", { count: zoneAlerts.length })}
         action={
           <button
             onClick={() => navigate("/alerts")}
             className="text-[10px] text-ink-4 hover:text-ink-2 transition-colors"
           >
-            View all →
+            {t("scorecard.viewAll")}
           </button>
         }
       >
@@ -308,7 +312,7 @@ export default function OverviewView({ zone, onNavigate }: Props) {
           </div>
         ) : (
           <p className="text-[10.5px] text-ink-4 leading-[1.5]">
-            No active alerts for this zone — monitoring feeds are quiet.
+            {t("scorecard.alerts.empty")}
           </p>
         )}
       </Section>
@@ -320,7 +324,7 @@ export default function OverviewView({ zone, onNavigate }: Props) {
       </Section>
 
       {/* Data source freshness */}
-      <Section title="Data Sources">
+      <Section title={t("scorecard.dataSources")}>
         <div className="space-y-1.5">
           {sources.map((d) => (
             <div key={d.source} className="flex items-center justify-between text-[10.5px]">
@@ -347,7 +351,7 @@ export default function OverviewView({ zone, onNavigate }: Props) {
           onClick={() => navigate(`/reports?zone=${zone.id}`)}
           className="flex-1 h-8 rounded-control bg-accent text-white text-[11px] font-medium hover:brightness-110 transition-all btn-glow"
         >
-          Open full report
+          {t("scorecard.openFullReport")}
         </button>
         <div className="relative flex-1" ref={exportMenuRef}>
           <button
@@ -356,7 +360,7 @@ export default function OverviewView({ zone, onNavigate }: Props) {
             className="w-full h-8 rounded-control bg-[rgba(255,255,255,0.06)] border border-border text-ink-2 text-[11px] font-medium hover:bg-[rgba(255,255,255,0.1)] transition-colors inline-flex items-center justify-center gap-1.5"
           >
             <Download size={12} />
-            {exporting ? "Exporting…" : "Export"}
+            {exporting ? t("scorecard.exporting") : t("scorecard.export")}
             <ChevronDown size={11} className="opacity-70" />
           </button>
           {exportMenuOpen && (
@@ -367,7 +371,7 @@ export default function OverviewView({ zone, onNavigate }: Props) {
                   onClick={() => handleExport(f)}
                   className="w-full text-left px-2.5 py-1.5 rounded-chip text-[10.5px] text-ink-2 hover:bg-[rgba(255,255,255,0.06)] transition-colors flex items-center justify-between"
                 >
-                  <span>{f === "pdf" ? "PDF" : f === "docx" ? "Word (DOCX)" : "Plain text"}</span>
+                  <span>{t(f === "pdf" ? "scorecard.export.pdf" : f === "docx" ? "scorecard.export.docx" : "scorecard.export.txt")}</span>
                   <span className="text-[8.5px] text-ink-4 uppercase">.{f}</span>
                 </button>
               ))}
