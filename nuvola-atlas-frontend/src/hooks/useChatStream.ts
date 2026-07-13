@@ -2,10 +2,11 @@ import { useCallback, useRef } from "react";
 import { BASE, USE_MOCK_CHAT, authHeaders } from "@/api/client";
 import { useChatStore } from "@/stores/chat";
 import { useAtlasStore } from "@/stores/atlas";
-import { ZONES } from "@/api/fixtures";
+import { ZONES, PROJECTS, ALERTS } from "@/api/fixtures";
 import { translate } from "@/lib/i18n/translate";
 import type { MessageKey, TVars } from "@/lib/i18n/translate";
 import { usePrefsStore } from "@/stores/prefs";
+import { isGeminiConfigured, streamGeminiAnswer } from "@/lib/chat/gemini";
 import type { ChatMessage, Zone } from "@/types";
 
 /** Locale-aware t() at message-build time (never at module load) so language
@@ -196,10 +197,52 @@ async function runMockStream(convId: string, msgId: string, prompt: string) {
     .filter((z): z is Zone => Boolean(z));
 
   const intent = pickMockIntent(prompt, compareZones, conversationZone);
-  const mockData = mockAnswerFor(intent, prompt, compareZones, conversationZone);
 
-  await wait(250);
+  // Fast intent chip — same regardless of which backend actually answers.
+  await wait(120);
   applyEvent(convId, msgId, { name: "intent", data: { intent } });
+
+  // When a Gemini key is configured, route the answer through the real
+  // LLM using the ZONES/projects/alerts fixtures as system context. Keeps
+  // the templated intent + translated followups from the mock path so the
+  // UX (chips, follow-up buttons) is identical.
+  if (isGeminiConfigured()) {
+    const focusZones = compareZones.length > 0
+      ? compareZones
+      : conversationZone
+      ? [conversationZone]
+      : [];
+    const locale = usePrefsStore.getState().locale;
+
+    try {
+      const iter = streamGeminiAnswer({
+        prompt,
+        zones: ZONES,
+        projects: PROJECTS,
+        alerts: ALERTS,
+        focusZones,
+        locale,
+      });
+      for await (const delta of iter) {
+        applyEvent(convId, msgId, { name: "insight_delta", data: { text: delta } });
+      }
+      // Follow-ups: reuse the templated set for the detected intent — they're
+      // already locale-aware via tt() and require no extra LLM round-trip.
+      const followups = mockAnswerFor(intent, prompt, compareZones, conversationZone).followups;
+      await wait(120);
+      applyEvent(convId, msgId, { name: "followups", data: { followups } });
+      applyEvent(convId, msgId, { name: "done", data: { message_id: msgId } });
+      return;
+    } catch (err) {
+      // Fall through to the templated path so the demo never dead-ends.
+      // The error surface goes to the console — Sentry catches production.
+      // eslint-disable-next-line no-console
+      console.warn("Gemini stream failed, falling back to templated mock:", err);
+    }
+  }
+
+  // ── Templated fallback (no LLM key, or Gemini call errored) ──
+  const mockData = mockAnswerFor(intent, prompt, compareZones, conversationZone);
 
   if (mockData.sql) {
     await wait(200);
