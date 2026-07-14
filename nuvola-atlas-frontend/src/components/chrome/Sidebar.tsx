@@ -130,8 +130,10 @@ export default function Sidebar() {
             >
               <Wordmark className="text-[17px]" />
               {/* Brand tagline — kept in English so it reads the same across
-                  locales; changing it means changing the pitch deck too. */}
-              <span className="text-[9.5px] font-medium text-ink-4 tracking-[0.06em] mt-0.5 whitespace-nowrap">
+                  locales; changing it means changing the pitch deck too.
+                  Tracking is deliberately tight so the phrase fits inside
+                  the 244px sidebar column at 9.5px without truncation. */}
+              <span className="text-[9.5px] font-medium text-ink-4 tracking-[0.01em] mt-0.5 leading-[1.15]">
                 Making African investments greener
               </span>
             </motion.div>
