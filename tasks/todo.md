@@ -1,7 +1,51 @@
-# NUVOLA ATLAS — Execution Plan
+# NUVOLA ATLAS / NAVUUNA — Execution Plan
 
-_Owner: Austine Igunza (frontend). Backend / scoring owners: Khillon & Devyan._
-_Last updated: 2026-06-27._
+_Owner: Austine Igunza (frontend; this month covering backend for Phase E migrations + Phase F routes)._
+_Backend owners: Khillon (Laravel core, services, middleware, admin routes) · Devyan (FastAPI ingestion, ML, n8n, infra strategy)._
+_Last updated: 2026-07-16 · HEAD `2987b3d`._
+
+---
+
+## ⚡ 2026-07-16 → 2026-08-12 — Backend push (this month's scope)
+
+Frontend polish is **paused for four weeks**. Full backend push: 3 build weeks + 1 test week.
+Weekly per-person plans live at `tasks/team/week-01/` — `austine.md`, `khillon.md`, `devyan.md`.
+Sliced from `Navuuna_Backend_Build_Plan_v1.1_COMPLETE.pdf` (root of repo). Read that first.
+
+**Week 1 (Jul 16–22) — close Phase A + intake pipe**
+- Khillon: production Sentry DSNs · branch protection · Cloudflare DNS · Forge+DO deploy · `POST /api/v1/ingest` + `data_ingestion_logs` migration.
+- Devyan: Vercel Fluid Compute deploy target · ingestion Sentry project · Docker Compose orchestrator (FastAPI + Laravel + Postgres + Reverb + Nginx) · fix Daystar spec 12 → 13 indicators · formalize `X-Internal-Secret` contract.
+- Austine: `RecalculateAllZones` bulk job + audit remaining synchronous `ScoreCalculator` HTTP paths · Phase E migrations 1–4 (`extend_users_for_firms` → `firms` → `firm_users` → `add_firm_fk_to_users`) + `FirmSeeder`.
+
+**Week 2 (Jul 23–29) — FirmService + admin/firms + ingestion hardening**
+- Khillon: `Firms\FirmService`, `Watchlist\WatchlistService`, `audit.write` + `firm.scope` middleware, `/admin/firms` routes, wire `ScoreCalculator` to read weights from `methodology_versions is_current` (60s cache).
+- Devyan: ruff + mypy full pass + CI wire-up · cron scheduling · Phase C ingestion spend guards · deliver feed deficit list to Khillon.
+- Austine: Phase E migrations 5–7 (`firm_watchlists` → `methodology_versions` + v1.0.0 seed → `data_feed_status`) + `FirmUserSeeder`, `FirmWatchlistSeeder`, `FeedStatusSeeder`.
+
+**Week 3 (Jul 30 – Aug 5) — MethodologyPublisher + FeedStatusService + n8n workflow #1**
+- Khillon: `Methodology\MethodologyPublisher` (+ `RecalculateAllZones` dispatch), `Methodology\MethodologyPreview`, `Feeds\FeedStatusService`, `/admin/methodology` + `/admin/feeds` routes.
+- Devyan: n8n self-hosted deploy behind Cloudflare Access · Phase J workflow #1 (Daystar drop intake, pulled forward per Backend Build Plan §19.1) · update `docs/architecture.md`.
+- Austine: Phase E migrations 8–10 (`impersonation_sessions` → `content_blocks` + revisions → `extend_reports_for_cms`) + `/investor/me` + `/investor/watchlist` routes.
+
+**Week 4 (Aug 6–12) — TEST WEEK**
+- Khillon: `Impersonation\ImpersonationService`, `Content\ContentBlockService`, `/admin/impersonate` + `/admin/content` routes · Phase C hardening prep (GIST indexes, materialized views, object storage decision, pruning routines) · flip backend CI `continue-on-error` to false.
+- Devyan: end-to-end telemetry sweep (Daystar → FastAPI → Laravel → PostGIS → Reverb → FE) · ruff+mypy+pytest green · Docker Compose orchestrator verified · pen test scope coordination with Info Sec Club.
+- Austine: `/investor/portfolio`, `/investor/opportunities`, `/investor/brief` (LP-style PDF extending `ZoneReportExporter`) · policy tests (cross-firm leakage) · FE consumption round-trip (existing Phase E/F FE against real API — flip `VITE_USE_REMOTE_API=true` and shape-check).
+
+**Definition of Done — the 5-check baseline** (unchanged, runs after every meaningful slice):
+```
+1. cd nuvola-atlas-frontend && npx tsc --noEmit
+2. cd nuvola-atlas-frontend && npx vite build
+3. cd nuvola-atlas-frontend && npx vitest run
+4. cd nuvola-atlas-backend && php artisan route:list --path=api
+5. cd nuvola-atlas-backend && php vendor/phpunit/phpunit/phpunit --no-coverage
+   # docker compose up -d postgres first — phpunit.xml force-overrides to 127.0.0.1:5434.
+```
+Ingestion additions this month: `cd nuvola-atlas-ingestion && ruff check . && mypy . && pytest`.
+
+Every merged PR this sprint must (a) flip its tracker checkbox to `[x]`, (b) update `Last updated` / `HEAD` in `Navuuna Build Phases.txt`, (c) refresh this file's status snapshot, (d) log any deviation from Backend Build Plan v1.1 under "Documented Deviations" in the tracker.
+
+---
 
 ## Status snapshot
 

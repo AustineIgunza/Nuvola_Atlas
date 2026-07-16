@@ -1,8 +1,8 @@
 # Navuuna — System Architecture
 
 **Owner:** Devyan Jethwa (CTIPSO)
-**Last updated:** 2026-07-10
-**Status:** Phase A scaffold. Populate live endpoints as Phase A checkboxes clear.
+**Last updated:** 2026-07-16 (indicator-count correction; Phase A remainders + Phase B contracts still open)
+**Status:** Phase A scaffold. Populate live endpoints as Phase A checkboxes clear. Phase A remainders (Vercel Fluid Compute target validation, ingestion Sentry project, Docker Compose orchestrator) are Devyan's Week 1 tasks under `tasks/team/week-01/devyan.md`.
 
 This document maps the data topography for the Navuuna Nairobi pilot — every
 edge a byte crosses from Daystar University's raw indicator drop to the
@@ -94,5 +94,5 @@ Frontend                             <-- React + Mapbox GL JS
 - `docs/ops/incident-response.md` — incident playbook
 - `docs/ops/rollback.md` — rollback playbook
 - `docs/ops/secret-rotation.md` — secret rotation
-- `docs/data/daystar-indicator-spec.md` — Daystar 12-indicator spec
+- `docs/data/daystar-indicator-spec.md` — Daystar 13-indicator spec (Pillar 4 carries four indicators; the codebase is the source of truth for the count)
 - `docs/data/internal-transport.md` — X-Internal-Secret transport contract

@@ -5,7 +5,13 @@
 > project, the stack, the domain vocabulary, what's shipped, what's next, and
 > the working conventions.
 >
-> Last regenerated: 2026-07-05. HEAD: `5d761f3`.
+> Last regenerated: 2026-07-16. HEAD: `2987b3d`.
+>
+> **⚡ THIS MONTH (2026-07-16 → 2026-08-12):** dedicated backend push, frontend
+> polish on hold. Weekly per-person plans live at `tasks/team/week-01/` —
+> `austine.md`, `khillon.md`, `devyan.md`. Structure: 3 build weeks + 1 test
+> week. Reference `Navuuna_Backend_Build_Plan_v1.1_COMPLETE.pdf` (root of repo)
+> for the full architecture + task ledger the team MDs slice from.
 
 ---
 
@@ -115,8 +121,14 @@ NUVOLA_ATLAS/
         └── ops/                     # deploy.md, rollback.md, incident-response.md, postmortem-template.md, secret-rotation.md
 ```
 
-**Not in this repo yet:** `nuvola-atlas-ingestion/` (FastAPI service, to be
-split out for Vercel Python Fluid Compute deploy).
+**`nuvola-atlas-ingestion/`** (FastAPI service) **is now in the repo**
+(scaffolded — `app/main.py` with Sentry init, `app/security.py` with
+`X-Internal-Secret` HMAC dependency, `app/services/{data_cleaner,anomaly_detector}.py`,
+`app/routers/{health,ingest}.py`, `app/models/indicators.py`,
+`pyproject.toml` with ruff+mypy+pytest+pytest-asyncio configured under
+dev extras, ruff `select = E,F,I,N,UP,B,SIM,RUF` at line-length 100,
+mypy strict + pydantic plugin, Python 3.13/3.14). Vercel Python Fluid
+Compute deploy target is Phase A remainder (Devyan).
 
 ---
 
@@ -452,31 +464,52 @@ da014dc chore(ops): drop Railway-era artifacts, pin Vercel for ingestion service
 
 ## 12. What's YET TO DO
 
-**Pre-pilot blocking — infra / user-only:**
-- **9.4** provision backend: DO droplet via Forge → Supabase + PostGIS +
-  `nuvola_app` role → paste env → Deploy Now → smoke `/api/health`.
-- **9.7** Supabase AES-at-rest toggle.
-- **9.11** Sentry DSN drop-in on Forge + Vercel envs.
-- GitHub branch protection on `main`.
+**Pre-pilot blocking — infra / user-only (Phase A remainders):**
+- Provision production Sentry DSNs for `navuuna-frontend`, `navuuna-backend`, `navuuna-ingestion` (three projects).
+- GitHub branch protection on `main` — 1 approval + green CI + no force-push.
+- Cloudflare DNS cut-over for production traffic.
+- Forge + DigitalOcean deploy (artifacts staged in `nuvola-atlas-backend/`: `deploy.sh`, `docker/`, `Dockerfile`, `fly.toml`).
+- Supabase AES-at-rest toggle (dashboard step).
 
-**Pre-pilot blocking — code, unblocks once backend is live:**
-- **3.2** flip `VITE_USE_REMOTE_API=true` + `VITE_API_BASE` on Vercel.
-- **3.3** real Reverb subscription (one-line swap in `useLiveData`).
-- **§4 real data ingestion (Devyan / Khillon)** — the platform is still 100%
-  mock data. This is the real pilot gate. Devyan owns FastAPI ingestion for
-  the four pillars (KNBS, OpenAQ, ACLED, KURA, NEMA, KPLC scrapers). Khillon
-  surfaces sub-metric freshness on the zone endpoint.
+**Phase B — Real Data Ingestion (active, blocked on Daystar):**
+- Formalize `X-Internal-Secret` contract with HMAC payload signing (Devyan + Khillon).
+- Correct `docs/data/daystar-indicator-spec.md` from 12 → 13 indicators + hand to Joy for Daystar delivery.
+- Run ruff + mypy on ingestion service (configured in `pyproject.toml`; needs a first pass + CI wire-up).
+- Cron scheduling for intake parsing scripts.
+- Ship `POST /api/v1/ingest` Laravel intake route + `create_data_ingestion_logs_table` migration (Khillon).
+- Wrap remaining synchronous `ScoreCalculator::recalculate*` HTTP paths in `RecalculateZoneScore` job (single-zone job already ships at `app/Jobs/RecalculateZoneScore.php`); add `RecalculateAllZones` bulk job (Austine).
 
-**Engineering — doable now, not blocked:**
-- **9.8** per-user-token read throttle (600 / min).
-- **9.2** GIST indexes + county-rollup materialized views + PgBouncer +
-  object-storage decision (Cloudflare R2 vs Vercel Blob).
-- **9.13** per-zone Vitality sparkline (needs a new `zone_vitality_history`
-  table — current `vitality_history` is county-global only). "Remind now"
-  endpoint for 2FA nag.
-- Tails on 9.5 (Horizon), 9.6 (Conventional Commits check, Husky hooks), 9.10
-  (backend statelessness audit), 9.12 (backup-restore drill, on-call rota,
-  SPOF audit).
+**Phase E — Admin Suite backend (design signed off 2026-07-12, build pending):**
+- 10 migrations: `extend_users_for_firms`, `create_firms_table`, `create_firm_users_table`, `add_firm_fk_to_users`, `create_firm_watchlists_table`, `create_methodology_versions_table` + v1.0.0 seed, `create_data_feed_status_table`, `create_impersonation_sessions_table`, `create_content_blocks_tables` + revisions, `extend_reports_for_cms`. (`audit_logs` table already exists from 2026-06-04.)
+- Services: `Firms\FirmService`, `Watchlist\WatchlistService`, `Methodology\MethodologyPublisher`, `Methodology\MethodologyPreview`, `Feeds\FeedStatusService`, `Impersonation\ImpersonationService`, `Content\ContentBlockService`.
+- Middleware: `audit.write`, `firm.scope`.
+- Routes: `/api/v1/admin/{firms,methodology,feeds,impersonate,content}` families.
+- Seeders: `FirmSeeder`, `FirmUserSeeder`, `FirmWatchlistSeeder`, `FeedStatusSeeder`.
+- **FE for these surfaces is already shipped against mock** (`b1259ec feat(admin+investor): full Phase E frontend + Phase F landing`). Backend fills in behind an existing shape.
+
+**Phase F — Investor Suite backend (design signed off 2026-07-12, build pending):**
+- Routes: `/investor/{me,watchlist,portfolio,opportunities,brief}` behind `firm.scope`.
+- `Export/ZoneReportExporter` already exists — `/investor/brief` extends it with the LP-style firm-portfolio format.
+
+**Phase C — Hardening & Operations (queued):**
+- GIST spatial indexes across core spatial columns.
+- Materialized views for county-wide status (`mv_county_status`).
+- Object storage decision: Cloudflare R2 vs Vercel Blob.
+- Pruning routines: scrub raw ingestion payload text > 30 days.
+- BetterStack + weekly multi-region backups + monthly restore drill.
+- Penetration evaluation with Strathmore Info Sec Club.
+- Ingestion spend guards (Devyan).
+
+**Recent shipped work (post-2026-07-05, i.e. since the previous CONTEXT.md snapshot):**
+- 2026-07-08 — `zone_score_snapshots` table + per-zone history API + Recharts trend chart (single time-series slice).
+- 2026-07-09 — cleared the whole demo-feedback backlog: text-to-SQL RAG (`Chat/*` service stack: AiGatewayClient, ChatOrchestrator, InsightGenerator, IntentRouter, SchemaCatalog, SqlExecutor, SqlGenerator, SqlGuard, StreamEvent), forecast (`Forecast/ZoneScoreForecaster`), compare, PDF/DOCX/TXT exports (`Export/ZoneReportExporter`), polish. Backend `chat_conversations` + `chat_messages` migrations landed. phpunit 71 → 134.
+- Late-July commit cluster — full Phase E frontend + Phase F landing shipped against mock (`b1259ec`), followed by Deal Pipeline board + System Health tab (`5f2500a`), impersonation + Content CMS + per-zone notes drill-in (`fed071b`), and a broad i18n sweep (`3e1587c`, `6ed0161`, `87b191f`).
+- Brand tweaks: floated sidebar (`efc33d8`), tightened sidebar tagline (`2987b3d`), Gemini wiring landed then reverted (`9fac95d` → `8fe1013`).
+
+**Documented deviations (codebase wins over the plan):**
+- Time-series table is `zone_score_snapshots` (4 pillar columns) not `zone_snapshots` (13 indicator columns) as the Backend Build Plan §4.1 lists. Trend reads at pillar granularity.
+- Text-to-SQL persistence uses `chat_conversations` + `chat_messages` (with text-to-SQL-specific columns: `intent`, `generated_sql`, `result_rows`, `tokens_in`, `tokens_out`, `latency_ms`), not the generic `conversations` + `conversation_messages` that Phase I plans. Phase I extends these rather than renaming.
+- `daystar-indicator-spec.md` header still says "12-Indicator" — codebase carries 13. Devyan fix in Week 1.
 
 **Non-engineering (other owners):**
 - **§5** partner outreach (Joy / Ken) — Nairobi County Planning, KARA, CURI

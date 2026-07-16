@@ -1,14 +1,22 @@
-# Daystar 12-Indicator Data Specification
+# Daystar 13-Indicator Data Specification
 
 **Owner:** Devyan Jethwa (CTIPSO)
 **Consumer:** Daystar University data-access partnership
-**Last updated:** 2026-07-10
-**Status:** Draft — to be reviewed with Daystar before Phase B ingest cutover.
+**Last updated:** 2026-07-16 (indicator-count corrected 12 → 13; Pillar 4 carries four indicators per Backend Build Plan §5.1 and the codebase's `swap_pillars_for_indicators` migration)
+**Status:** Draft — to be reviewed with Daystar before Phase B ingest cutover. Devyan reviews all 13 sections in Week 1 (`tasks/team/week-01/devyan.md`) before Joy carries the spec to Daystar admin.
 
 This document is the authoritative contract between Navuuna and Daystar
-University for the 12 indicators that drive the Vitality Index. Every
-field, unit, resolution, spatial anchor, and delivery cadence below must
-match what Daystar sends; any drift is a rejection.
+University for the **13 indicators** that drive the Vitality Index (4 pillars
+× ≈ 3 indicators, with Pillar 4 — Infrastructure & Environmental Safeguards
+— carrying four indicators: road_quality, energy_reliability, food_risk,
+waste_management). Every field, unit, resolution, spatial anchor, and delivery
+cadence below must match what Daystar sends; any drift is a rejection.
+
+**13-indicator canonical list (Backend Build Plan §5.1):**
+1. Social Wellbeing & Human Capital — `healthcare_access`, `education_access`, `digital_connectivity`
+2. Safety & Security — `crime_rates`, `emergency_response_access`, `disaster_exposure`
+3. Density & Scaling Dynamics — `population_density`, `congestion`, `housing_pressure`
+4. Infrastructure & Environmental Safeguards — `road_quality`, `energy_reliability`, `food_risk`, `waste_management`
 
 ## Common contract
 
