@@ -17,14 +17,14 @@ class RecalculateZoneScore implements ShouldQueue
 
     public int $backoff = 10;
 
-    public function __construct(public string $zoneId) {}
+    public function __construct(public string $zoneId, public bool $broadcast = true) {}
 
     public function handle(ScoreCalculator $calculator): void
     {
         $zone = Zone::find($this->zoneId);
 
         if ($zone) {
-            $calculator->recalculate($zone, broadcast: true);
+            $calculator->recalculate($zone, broadcast: $this->broadcast);
         }
     }
 }

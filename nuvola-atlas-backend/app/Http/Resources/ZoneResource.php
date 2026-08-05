@@ -18,6 +18,7 @@ class ZoneResource extends JsonResource
         /** @var \App\Models\Zone $zone */
         $zone = $this->resource;
         $pillars = $calc->pillarScores($zone);
+        $missing = $calc->missingIndicators($zone);
 
         return [
             'id' => $this->id,
@@ -35,6 +36,9 @@ class ZoneResource extends JsonResource
                 'density' => 0,
                 'infra' => 0,
             ],
+            'missingIndicators' => $missing,
+            'indicatorsActive' => 13 - count($missing),
+            'indicatorsTotal' => 13,
             'centroid' => [(float) $this->lon, (float) $this->lat],
             'lastSyncMin' => $this->last_sync_min,
             'layers' => $this->when($this->relationLoaded('layers'), function () {
