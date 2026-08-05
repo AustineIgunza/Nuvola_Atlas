@@ -1,8 +1,10 @@
-"""Pydantic models for the 12 Daystar indicators.
+"""Pydantic models for the 13 Daystar indicators.
 
-Field names, pillar assignments, and IDs match the frontend's
-`nuvola-atlas-frontend/src/lib/indicators.ts`. Keep both in sync when the
-indicator taxonomy changes.
+Post the July 2026 pillars → indicators schema swap the taxonomy is 13
+indicators grouped under 4 pillars. Field names and pillar assignments
+line up exactly with the Laravel `config/methodology.php` and the
+frontend `nuvola-atlas-frontend/src/lib/indicators.ts` — keep all three
+in sync when the taxonomy changes.
 """
 from __future__ import annotations
 
@@ -24,13 +26,14 @@ class IndicatorKey(str, Enum):
     education_access = "education_access"
     digital_connectivity = "digital_connectivity"
     crime_rates = "crime_rates"
-    emergency_response = "emergency_response"
+    emergency_response_access = "emergency_response_access"
     disaster_exposure = "disaster_exposure"
     population_density = "population_density"
     congestion = "congestion"
     housing_pressure = "housing_pressure"
     road_quality = "road_quality"
     energy_reliability = "energy_reliability"
+    food_risk = "food_risk"
     waste_management = "waste_management"
 
 
@@ -39,13 +42,14 @@ INDICATOR_PILLAR: dict[IndicatorKey, PillarKey] = {
     IndicatorKey.education_access: PillarKey.social,
     IndicatorKey.digital_connectivity: PillarKey.social,
     IndicatorKey.crime_rates: PillarKey.safety,
-    IndicatorKey.emergency_response: PillarKey.safety,
+    IndicatorKey.emergency_response_access: PillarKey.safety,
     IndicatorKey.disaster_exposure: PillarKey.safety,
     IndicatorKey.population_density: PillarKey.density,
     IndicatorKey.congestion: PillarKey.density,
     IndicatorKey.housing_pressure: PillarKey.density,
     IndicatorKey.road_quality: PillarKey.infra,
     IndicatorKey.energy_reliability: PillarKey.infra,
+    IndicatorKey.food_risk: PillarKey.infra,
     IndicatorKey.waste_management: PillarKey.infra,
 }
 

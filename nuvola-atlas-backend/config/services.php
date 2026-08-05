@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    // Shared secret between the FastAPI ingestion service and the Laravel
+    // /ingest endpoint. Set INGEST_INTERNAL_SECRET on both services to the
+    // same value — VerifyInternalSecret middleware guards the endpoint.
+    'ingest' => [
+        'secret' => env('INGEST_INTERNAL_SECRET'),
+    ],
+
 ];
