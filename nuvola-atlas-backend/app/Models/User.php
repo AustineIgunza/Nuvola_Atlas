@@ -9,11 +9,12 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'email', 'password', 'role'])]
+#[Fillable(['name', 'email', 'password', 'role', 'primary_firm_id'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -30,6 +31,8 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_two_factor_enabled_at' => 'datetime',
             'email_two_factor_reminded_at' => 'datetime',
             'email_two_factor_locked_at' => 'datetime',
+            'deactivated_at' => 'datetime',
+            'last_active_at' => 'datetime',
             'password' => 'hashed',
             'role' => Role::class,
         ];
@@ -53,6 +56,23 @@ class User extends Authenticatable implements MustVerifyEmail
     public function partner(): BelongsTo
     {
         return $this->belongsTo(Partner::class);
+    }
+
+    public function primaryFirm(): BelongsTo
+    {
+        return $this->belongsTo(Firm::class, 'primary_firm_id');
+    }
+
+    public function firms(): BelongsToMany
+    {
+        return $this->belongsToMany(Firm::class, 'firm_users')
+            ->withPivot(['role_within_firm'])
+            ->withTimestamps();
+    }
+
+    public function isActive(): bool
+    {
+        return $this->deactivated_at === null;
     }
 
     public function hasTwoFactorEnabled(): bool

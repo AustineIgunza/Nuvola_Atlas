@@ -18,6 +18,13 @@ class DatabaseSeeder extends Seeder
             ReportSeeder::class,
             HistorySeeder::class,
             ActivitySeeder::class,
+            // Phase E — firms, investor accounts, watchlists, methodology,
+            // feed status. Ordered: parents before children.
+            FirmSeeder::class,
+            FirmUserSeeder::class,
+            FirmWatchlistSeeder::class,
+            MethodologyVersionSeeder::class,
+            FeedStatusSeeder::class,
         ]);
 
         // Backfill fake time-series only in non-prod so the trend chart renders
