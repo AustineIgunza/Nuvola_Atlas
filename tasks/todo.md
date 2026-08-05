@@ -2,7 +2,7 @@
 
 _Owner: Austine Igunza (frontend; this month covering backend for Phase E migrations + Phase F routes)._
 _Backend owners: Khillon (Laravel core, services, middleware, admin routes) · Devyan (FastAPI ingestion, ML, n8n, infra strategy)._
-_Last updated: 2026-07-16 · HEAD `2987b3d`._
+_Last updated: 2026-08-05 · HEAD `890ea25` + local Austine sprint slice pending commit._
 
 ---
 
@@ -30,7 +30,16 @@ Sliced from `Navuuna_Backend_Build_Plan_v1.1_COMPLETE.pdf` (root of repo). Read 
 **Week 4 (Aug 6–12) — TEST WEEK**
 - Khillon: `Impersonation\ImpersonationService`, `Content\ContentBlockService`, `/admin/impersonate` + `/admin/content` routes · Phase C hardening prep (GIST indexes, materialized views, object storage decision, pruning routines) · flip backend CI `continue-on-error` to false.
 - Devyan: end-to-end telemetry sweep (Daystar → FastAPI → Laravel → PostGIS → Reverb → FE) · ruff+mypy+pytest green · Docker Compose orchestrator verified · pen test scope coordination with Info Sec Club.
-- Austine: `/investor/portfolio`, `/investor/opportunities`, `/investor/brief` (LP-style PDF extending `ZoneReportExporter`) · policy tests (cross-firm leakage) · FE consumption round-trip (existing Phase E/F FE against real API — flip `VITE_USE_REMOTE_API=true` and shape-check).
+- Austine: [x] `/investor/portfolio`, [x] `/investor/opportunities`, [x] `/investor/brief` (LP-style PDF via new `FirmBriefExporter`) · [x] policy tests (cross-firm leakage under `tests/Feature/Investor/InvestorRoutesTest.php`) · FE consumption round-trip pending backend host live (still gated on §9.4).
+
+**Austine sprint progress landed 2026-08-05 (all 4 weeks compressed):**
+- Async job wrapper — [x] `RecalculateAllZones` bulk job (chunks of 5) + audit; broadcast payload now carries `missingIndicators` + `indicatorsActive/Total`; test `RecalculateAllZonesTest`.
+- Phase E migrations 1–4 — [x] `extend_users_for_firms`, `create_firms_table` (CHECK on tier enum), `create_firm_users_table` (composite unique + CHECK on role), `add_firm_fk_to_users` (SET NULL). Models: `Firm` (HasUuids + factory), `FirmUser`, enums `FirmTier` + `FirmUserRole`. Seeder: `FirmSeeder` (Acumen / Andela / GCF).
+- Phase E migrations 5–7 — [x] `create_firm_watchlists_table` (unique zone per firm), `create_methodology_versions_table` (partial UNIQUE `WHERE is_current`), `create_data_feed_status_table` (computed-on-read staleness). Models + seeders (`FirmUserSeeder`, `FirmWatchlistSeeder`, `MethodologyVersionSeeder`, `FeedStatusSeeder`); `DatabaseSeeder` updated.
+- Phase E migrations 8–10 — [x] `create_impersonation_sessions_table`, `create_content_blocks_tables` (blocks + revisions), `extend_reports_for_cms` (created_by / updated_by / published_at / firm_scope_id).
+- Phase F routes — [x] `GET /investor/me`, `GET|POST|PATCH|DELETE /investor/watchlist`, `GET /investor/portfolio` (28-day trend), `GET /investor/opportunities` (tier-weighted), `GET /investor/brief` (LP-style PDF via `FirmBriefExporter`). New middleware `firm.scope` (`FirmScope`). Resources: `InvestorProfileResource`, `FirmWatchlistResource`, `PortfolioResource`. Requests: `StoreWatchlistEntryRequest`, `UpdateWatchlistEntryRequest`. `FirmFactory` for tests.
+- Baseline: `route:list` = 49 (was 32); `tsc --noEmit` clean; `vite build` green 15.4 s (only documented mapbox chunk warning); `vitest run` 24/24 green; `phpunit` deferred (Docker desktop not running on this box — will re-verify against Supabase/docker post-commit).
+- Non-code deliverable: [x] `COPYRIGHT.md` at repo root — full proprietary-elements ledger for Ken's KECOBO filing.
 
 **Definition of Done — the 5-check baseline** (unchanged, runs after every meaningful slice):
 ```
