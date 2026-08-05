@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 use App\Http\Controllers\AdminApiKeyController;
 use App\Http\Controllers\AdminAuditController;
+use App\Http\Controllers\AdminContentController;
+use App\Http\Controllers\AdminFeedsController;
+use App\Http\Controllers\AdminFirmController;
+use App\Http\Controllers\AdminImpersonateController;
+use App\Http\Controllers\AdminMethodologyController;
 use App\Http\Controllers\AdminMetricsController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AlertController;
@@ -11,6 +16,11 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\HistoryController;
+use App\Http\Controllers\IngestController;
+use App\Http\Controllers\InvestorBriefController;
+use App\Http\Controllers\InvestorController;
+use App\Http\Controllers\InvestorOpportunitiesController;
+use App\Http\Controllers\InvestorPortfolioController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TwoFactorController;
@@ -24,6 +34,10 @@ use Illuminate\Support\Facades\Route;
 
 // Unversioned operational endpoints
 Route::get('health', [HealthController::class, 'index']);
+
+// Phase B — FastAPI → Laravel ingestion channel. Guarded by
+// X-Internal-Secret only; never accepts a bearer token.
+Route::middleware('internal.secret')->post('v1/ingest', [IngestController::class, 'store']);
 
 // /api/v1/ — all current consumer endpoints. Reserve /api/v2/ for breaking
 // changes; never delete a v1 endpoint without a 90-day deprecation header.
@@ -98,6 +112,23 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
             Route::post('reports', [ReportController::class, 'store']);
         });
 
+        // Phase F — investor suite. Behind `firm.scope` middleware so
+        // unaffiliated users get a 403. Cross-firm leakage prevention
+        // lives inside every controller method: no query runs without a
+        // `firm_id = <caller's firm>` clause.
+        Route::middleware(['firm.scope'])->prefix('investor')->group(function () {
+            Route::get('me', [InvestorController::class, 'me']);
+
+            Route::get('watchlist', [InvestorController::class, 'watchlist']);
+            Route::post('watchlist', [InvestorController::class, 'addToWatchlist']);
+            Route::patch('watchlist/{id}', [InvestorController::class, 'updateWatchlistEntry']);
+            Route::delete('watchlist/{id}', [InvestorController::class, 'removeFromWatchlist']);
+
+            Route::get('portfolio', [InvestorPortfolioController::class, 'show']);
+            Route::get('opportunities', [InvestorOpportunitiesController::class, 'index']);
+            Route::get('brief', [InvestorBriefController::class, 'download']);
+        });
+
         // Admin-only: dashboard metrics, audit feed, user management, and
         // long-lived partner API keys. Anything under /admin/ requires
         // role=admin AND 2FA enrolled. Never accepts a partner-scoped key.
@@ -114,6 +145,27 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
             Route::get('api-keys', [AdminApiKeyController::class, 'index']);
             Route::post('api-keys', [AdminApiKeyController::class, 'store']);
             Route::delete('api-keys/{id}', [AdminApiKeyController::class, 'destroy']);
+
+            // Phase E — firms, methodology, feeds, impersonation, content CMS.
+            Route::get('firms', [AdminFirmController::class, 'index']);
+            Route::get('firms/{id}', [AdminFirmController::class, 'show']);
+            Route::post('firms', [AdminFirmController::class, 'store']);
+            Route::patch('firms/{id}', [AdminFirmController::class, 'update']);
+            Route::delete('firms/{id}', [AdminFirmController::class, 'destroy']);
+
+            Route::get('methodology', [AdminMethodologyController::class, 'index']);
+            Route::post('methodology/{id}/publish', [AdminMethodologyController::class, 'publish']);
+            Route::post('methodology/preview', [AdminMethodologyController::class, 'preview']);
+
+            Route::get('feeds', [AdminFeedsController::class, 'index']);
+
+            Route::get('impersonate', [AdminImpersonateController::class, 'index']);
+            Route::post('impersonate', [AdminImpersonateController::class, 'start']);
+            Route::delete('impersonate/{id}', [AdminImpersonateController::class, 'stop']);
+
+            Route::get('content', [AdminContentController::class, 'index']);
+            Route::get('content/{key}', [AdminContentController::class, 'show']);
+            Route::put('content/{key}', [AdminContentController::class, 'save']);
         });
     });
 });

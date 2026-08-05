@@ -1,0 +1,114 @@
+# Top-level Compose orchestrator — spins up the whole Navuuna stack for
+# local dev + staging environments. Wraps:
+#
+#   - postgres  (PostgreSQL 16 + PostGIS 3.4, port 5434 on the host)
+#   - laravel   (PHP 8.3 + Laravel 11, port 8000)
+#   - reverb    (Laravel WebSocket broadcaster, port 6001)
+#   - queue     (Horizon-less Laravel queue worker for scoring jobs)
+#   - fastapi   (Python 3.13 ingestion service, port 8100)
+#
+# The Laravel host-only docker-compose.yml in nuvola-atlas-backend/ is
+# kept as-is for the phpunit test path (phpunit.xml pins to :5434). This
+# top-level file supersedes it for full-stack local dev / staging.
+#
+# Usage:
+#   docker compose up -d postgres        # phpunit-only path
+#   docker compose up -d                 # full stack
+#   docker compose logs -f laravel       # tail the API
+#
+# INGEST_INTERNAL_SECRET is the shared bearer between fastapi and laravel;
+# set it once via a .env file (see .env.example) so both services agree.
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: nuvola_atlas
+      POSTGRES_USER: nuvola
+      POSTGRES_PASSWORD: nuvola_secret
+      POSTGRES_HOST_AUTH_METHOD: md5
+      POSTGRES_INITDB_ARGS: "--auth-host=md5"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./nuvola-atlas-backend/docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nuvola -d nuvola_atlas"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  laravel:
+    build:
+      context: ./nuvola-atlas-backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      APP_URL: http://localhost:8000
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: nuvola_atlas
+      DB_USERNAME: nuvola
+      DB_PASSWORD: nuvola_secret
+      BROADCAST_CONNECTION: reverb
+      REVERB_HOST: reverb
+      REVERB_PORT: 6001
+      INGEST_INTERNAL_SECRET: ${INGEST_INTERNAL_SECRET:-dev-only-not-a-real-secret}
+    command: >
+      sh -c "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000"
+
+  queue:
+    build:
+      context: ./nuvola-atlas-backend
+      dockerfile: Dockerfile
+    depends_on:
+      - laravel
+      - postgres
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: nuvola_atlas
+      DB_USERNAME: nuvola
+      DB_PASSWORD: nuvola_secret
+    command: php artisan queue:work --tries=3 --backoff=10
+
+  reverb:
+    build:
+      context: ./nuvola-atlas-backend
+      dockerfile: Dockerfile
+    ports:
+      - "6001:6001"
+    depends_on:
+      - laravel
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: nuvola_atlas
+      DB_USERNAME: nuvola
+      DB_PASSWORD: nuvola_secret
+    command: php artisan reverb:start --host=0.0.0.0 --port=6001
+
+  fastapi:
+    build:
+      context: ./nuvola-atlas-ingestion
+      dockerfile: Dockerfile
+    ports:
+      - "8100:8100"
+    depends_on:
+      - laravel
+    environment:
+      INGESTION_LARAVEL_BASE_URL: http://laravel:8000/api/v1
+      INGESTION_INTERNAL_SECRET: ${INGEST_INTERNAL_SECRET:-dev-only-not-a-real-secret}
+      INGESTION_ENVIRONMENT: local
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8100
+
+volumes:
+  pgdata:

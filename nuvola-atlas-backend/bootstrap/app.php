@@ -117,6 +117,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'partner.context' => \App\Http\Middleware\SetPartnerContext::class,
             'admin.two_factor' => \App\Http\Middleware\RequireAdminTwoFactor::class,
             'http.cache' => \App\Http\Middleware\HttpCache::class,
+            'firm.scope' => \App\Http\Middleware\FirmScope::class,
+            'audit.write' => \App\Http\Middleware\AuditWrite::class,
+            'internal.secret' => \App\Http\Middleware\VerifyInternalSecret::class,
         ]);
         $middleware->redirectGuestsTo(fn (Request $request) => $request->is('api/*') ? null : route('login'));
     })
