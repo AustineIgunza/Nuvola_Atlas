@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\Zone;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class HttpCacheTest extends TestCase
@@ -76,6 +77,23 @@ class HttpCacheTest extends TestCase
         $this->assertNull($response->headers->get('ETag'));
         $cacheControl = (string) $response->headers->get('Cache-Control', '');
         $this->assertStringNotContainsString('max-age=300', $cacheControl);
+    }
+
+    public function test_zones_survives_a_serializing_cache_store(): void
+    {
+        // Every other test here runs on the array store, which hands the
+        // cached value straight back without serializing. Real deployments
+        // use file/redis, where a cached Eloquent paginator failed to
+        // rehydrate and every request after the first 500'd.
+        config(['cache.default' => 'file']);
+        Cache::store('file')->flush();
+
+        Zone::factory()->count(2)->create();
+
+        $this->getJson('/api/v1/zones')->assertOk();
+        $this->getJson('/api/v1/zones')->assertOk()->assertJsonStructure(['data', 'links', 'meta']);
+
+        Cache::store('file')->flush();
     }
 
     public function test_etag_changes_when_underlying_data_changes(): void

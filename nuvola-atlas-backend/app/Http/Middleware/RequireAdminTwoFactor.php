@@ -31,7 +31,7 @@ class RequireAdminTwoFactor
                 'type' => rtrim(config('app.url', ''), '/').'/problems/two-factor-required',
                 'title' => 'Two-factor authentication required',
                 'status' => 403,
-                'detail' => 'Admin accounts must enrol in TOTP before reaching admin routes. POST /api/v1/auth/2fa/enable to start.',
+                'detail' => 'Admin accounts must enrol in two-factor auth before reaching admin routes. POST /api/v1/auth/2fa/email/start to begin enrolment.',
                 'instance' => $request->path(),
                 'two_factor_required' => true,
             ], 403, ['Content-Type' => 'application/problem+json']);
