@@ -7,6 +7,7 @@ import { api } from "@/api";
 import { twoFactorApi } from "@/api/twoFactor";
 import { springSettle } from "@/lib/motion";
 import { Emblem, Wordmark } from "@/components/brand/Brand";
+import { GoogleButton } from "@/components/auth/GoogleButton";
 
 type SignInLocationState = {
   justRegistered?: boolean;
@@ -222,6 +223,15 @@ export default function SignInPage() {
         )}
 
         {!challenge && (
+        <>
+        <div className="mb-4">
+          <GoogleButton />
+        </div>
+        <div className="relative flex items-center gap-3 my-4">
+          <div className="flex-1 h-px bg-border" />
+          <span className="text-[10px] uppercase tracking-[0.15em] text-ink-4">or</span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
             <label htmlFor="email" className="block text-[12px] font-medium text-ink-3 mb-1.5">Email</label>
@@ -274,6 +284,7 @@ export default function SignInPage() {
             )}
           </motion.button>
         </form>
+        </>
         )}
 
         <motion.p

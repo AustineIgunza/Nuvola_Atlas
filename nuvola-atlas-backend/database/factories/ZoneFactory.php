@@ -14,6 +14,9 @@ class ZoneFactory extends Factory
 
     public function definition(): array
     {
+        // Post-2026-07-25 schema swap: pillars are derived from indicators
+        // at read time. Every indicator gets a plausible value so the
+        // ScoreCalculator sees the same shape production does.
         $social = fake()->numberBetween(30, 95);
         $safety = fake()->numberBetween(30, 95);
         $density = fake()->numberBetween(30, 95);
@@ -23,14 +26,19 @@ class ZoneFactory extends Factory
             'id' => fake()->slug(2),
             'name' => fake()->city(),
             'score' => (int) round(($social + $safety + $density + $infra) / 4),
-            'pillar_social' => $social,
-            'pillar_safety' => $safety,
-            'pillar_density' => $density,
-            'pillar_infra' => $infra,
-            'delta_social' => fake()->numberBetween(-5, 5),
-            'delta_safety' => fake()->numberBetween(-5, 5),
-            'delta_density' => fake()->numberBetween(-5, 5),
-            'delta_infra' => fake()->numberBetween(-5, 5),
+            'indicator_healthcare_access' => $social,
+            'indicator_education_access' => $social,
+            'indicator_digital_connectivity' => $social,
+            'indicator_crime_rates' => $safety,
+            'indicator_emergency_response_access' => $safety,
+            'indicator_disaster_exposure' => $safety,
+            'indicator_population_density' => $density,
+            'indicator_congestion' => $density,
+            'indicator_housing_pressure' => $density,
+            'indicator_road_quality' => $infra,
+            'indicator_energy_reliability' => $infra,
+            'indicator_food_risk' => $infra,
+            'indicator_waste_management' => $infra,
             'last_sync_min' => fake()->numberBetween(1, 30),
         ];
     }

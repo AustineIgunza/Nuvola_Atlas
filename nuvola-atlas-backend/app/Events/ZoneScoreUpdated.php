@@ -24,6 +24,13 @@ class ZoneScoreUpdated implements ShouldBroadcast
         ];
     }
 
+    // Without this the wire name is the FQCN, which couples the JS listener
+    // to the PHP namespace — moving the class would silently stop the feed.
+    public function broadcastAs(): string
+    {
+        return 'ZoneScoreUpdated';
+    }
+
     public function broadcastWith(): array
     {
         return (new ZoneResource(

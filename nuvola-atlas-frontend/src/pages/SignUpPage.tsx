@@ -5,6 +5,7 @@ import { useAuthStore } from "@/stores/auth";
 import { api } from "@/api";
 import { springSettle } from "@/lib/motion";
 import { Emblem, Wordmark } from "@/components/brand/Brand";
+import { GoogleButton } from "@/components/auth/GoogleButton";
 
 export default function SignUpPage() {
   const user = useAuthStore((s) => s.user);
@@ -75,6 +76,14 @@ export default function SignUpPage() {
           Join the Ground Truth network
         </motion.p>
 
+        <div className="mb-4">
+          <GoogleButton label="Sign up with Google" />
+        </div>
+        <div className="relative flex items-center gap-3 my-4">
+          <div className="flex-1 h-px bg-border" />
+          <span className="text-[10px] uppercase tracking-[0.15em] text-ink-4">or</span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28 }}>
             <label htmlFor="name" className="block text-[12px] font-medium text-ink-3 mb-1.5">Full name</label>

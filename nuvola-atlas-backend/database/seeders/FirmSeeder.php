@@ -7,7 +7,7 @@ namespace Database\Seeders;
 use App\Enums\FirmTier;
 use App\Models\Firm;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
+use Ramsey\Uuid\Uuid;
 
 /**
  * Three dev firms — one per tier — so the /admin/firms + /investor/*
@@ -54,7 +54,7 @@ class FirmSeeder extends Seeder
             Firm::updateOrCreate(
                 ['slug' => $data['slug']],
                 [
-                    'id' => (string) Str::uuid5(self::NAMESPACE_UUID, $data['slug']),
+                    'id' => Uuid::uuid5(self::NAMESPACE_UUID, $data['slug'])->toString(),
                     'name' => $data['name'],
                     'tier' => $data['tier'],
                     'contact_name' => $data['contact_name'],

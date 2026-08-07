@@ -7,12 +7,18 @@ use App\Models\Alert;
 use App\Models\Report;
 use App\Models\User;
 use App\Models\ZoneLayer;
+use App\Events\ZoneScoreUpdated;
+use App\Listeners\FireAlertRulesOnZoneScoreUpdated;
 use App\Observers\AuditableObserver;
 use App\Observers\ZoneLayerObserver;
+use App\Services\Agents\AgentProvider;
+use App\Services\Agents\Providers\HeuristicAgentProvider;
+use App\Services\Agents\Providers\HuggingFaceAgentProvider;
 use App\Services\Chat\SqlGuard;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -30,6 +36,16 @@ class AppServiceProvider extends ServiceProvider
             defaultLimit: (int) config('ai.chat.max_result_rows', 200),
             hardLimit: (int) config('ai.chat.hard_limit', 1000),
         ));
+
+        // AgentProvider binding — heuristic by default so every route
+        // works without an LLM key. Flip AGENT_PROVIDER=huggingface once
+        // an HF Inference Endpoint is wired up.
+        $this->app->bind(AgentProvider::class, function ($app) {
+            $provider = (string) config('services.agents.provider', 'heuristic');
+            return $provider === 'huggingface'
+                ? $app->make(HuggingFaceAgentProvider::class)
+                : $app->make(HeuristicAgentProvider::class);
+        });
     }
 
     public function boot(): void
@@ -40,6 +56,11 @@ class AppServiceProvider extends ServiceProvider
         // Append-only audit trail on user-driven writes.
         Report::observe(AuditableObserver::class);
         Alert::observe(AuditableObserver::class);
+
+        // Automation — fire watchlist alert rules when a zone score
+        // moves. Runs on the queue so a fleet-wide bulk recompute
+        // (17 zones × N rules × M users) doesn't block the request path.
+        Event::listen(ZoneScoreUpdated::class, FireAlertRulesOnZoneScoreUpdated::class);
 
         // Default per-user cap is 60/min. Partner API keys minted via the
         // admin wizard can carry their own `rate_limit_per_minute` cap, in
@@ -61,22 +82,26 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
 
-        // Auth-IP throttle (§9.8): 10 attempts per 10-minute rolling window
-        // per IP. Caps brute-force attempts on /sign-in, /register,
-        // /forgot-password, /reset-password, and /auth/2fa/verify well below
-        // a useful guess rate (60/hr ceiling) while leaving headroom for a
-        // real user fat-fingering a password or reset code.
-        // Auth throttle. Keyed by (email + IP) when the request carries an
-        // email, so mobile carrier NAT and shared Wi-Fi don't lock out
-        // every user behind the same egress IP. Falls back to IP-only for
-        // requests without an email (2FA verify). Ceiling is 20 attempts
-        // per 10 minutes — well below a useful guess rate but generous
-        // enough that a real user fat-fingering three times doesn't burn
-        // the demo.
+        // Auth throttle (§9.8) — two tiers, both applied.
+        //
+        // Per (email + IP): mobile carrier NAT and shared Wi-Fi put many
+        // users behind one egress IP, so an IP-only bucket let one person's
+        // fat-fingered password lock out everyone else on the network.
+        //
+        // Per IP: the email bucket alone throttles nothing when the attacker
+        // varies the email, which is exactly the shape of password-reset
+        // bombing and user enumeration. The IP ceiling is deliberately a few
+        // multiples of the email budget so a genuinely shared egress still
+        // has room, while a single host spraying addresses runs out.
         RateLimiter::for('auth', function (Request $request) {
+            $limits = [Limit::perMinutes(10, 50)->by('auth-ip:'.$request->ip())];
+
             $email = strtolower((string) $request->input('email', ''));
-            $key = $email !== '' ? $email.'|'.$request->ip() : $request->ip();
-            return Limit::perMinutes(10, 20)->by($key);
+            if ($email !== '') {
+                $limits[] = Limit::perMinutes(10, 20)->by('auth-id:'.$email.'|'.$request->ip());
+            }
+
+            return $limits;
         });
 
         // Chat throttle — every LLM call costs money. Default 10/min per

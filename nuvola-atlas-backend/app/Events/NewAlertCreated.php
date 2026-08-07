@@ -24,6 +24,11 @@ class NewAlertCreated implements ShouldBroadcast
         ];
     }
 
+    public function broadcastAs(): string
+    {
+        return 'AlertCreated';
+    }
+
     public function broadcastWith(): array
     {
         return (new AlertResource($this->alert))->resolve();

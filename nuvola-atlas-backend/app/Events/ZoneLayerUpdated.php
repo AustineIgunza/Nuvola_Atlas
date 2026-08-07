@@ -24,6 +24,11 @@ class ZoneLayerUpdated implements ShouldBroadcast
         ];
     }
 
+    public function broadcastAs(): string
+    {
+        return 'ZoneLayerUpdated';
+    }
+
     public function broadcastWith(): array
     {
         return (new ZoneLayerResource($this->layer))->resolve();

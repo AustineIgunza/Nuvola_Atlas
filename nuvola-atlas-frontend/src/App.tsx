@@ -8,6 +8,7 @@ import SignInPage from "@/pages/SignInPage";
 // lazyWithRetry survives Vercel deploys that change chunk file hashes —
 // see the file for the reload-recovery details.
 const SignUpPage = lazyWithRetry(() => import("@/pages/SignUpPage"));
+const GoogleCompletePage = lazyWithRetry(() => import("@/pages/GoogleCompletePage"));
 const AtlasPage = lazyWithRetry(() => import("@/pages/AtlasPage"));
 const VitalityPage = lazyWithRetry(() => import("@/pages/VitalityPage"));
 const ComparePage = lazyWithRetry(() => import("@/pages/ComparePage"));
@@ -71,6 +72,7 @@ export default function App() {
       <Routes location={location} key={location.pathname}>
         <Route path="/sign-in" element={<SignInPage />} />
         <Route path="/sign-up" element={<SignUpPage />} />
+        <Route path="/auth/google/complete" element={<GoogleCompletePage />} />
         <Route path="/public" element={<PublicPortalPage />} />
         <Route path="/atlas" element={<RequireAuth><AtlasPage /></RequireAuth>} />
         <Route path="/vitality" element={<RequireAuth><VitalityPage /></RequireAuth>} />

@@ -3,14 +3,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import { api } from "@/api";
 import { useChromeStore } from "@/stores/chrome";
 import { subscribe, startMockPulse, type LiveEvent } from "@/lib/realtime";
+import { startReverbSubscription, useReverbEnabled } from "@/lib/reverb";
 
 /**
  * Single source of truth for live data invalidation across the app. Mount
  * once at the top of the tree. When the auto-refresh toggle is off this
  * is a no-op, so users on slow connections can pause updates.
- *
- * When 3.3 lands (real Reverb), swap `startMockPulse` for the Echo
- * subscription — listener shape and channel names already match.
  */
 export function useLiveData(): void {
   const queryClient = useQueryClient();
@@ -40,12 +38,23 @@ export function useLiveData(): void {
     const unsubscribe = subscribe(handle);
 
     let stopPulse: (() => void) | null = null;
-    // Seed the pulse with the current zone IDs so mock events name real ones.
+    // The zone list arrives async, so the effect can be torn down before the
+    // subscription exists. Without this flag a fast unmount/remount (toggling
+    // auto-refresh, or StrictMode) leaves an orphaned socket behind.
+    let cancelled = false;
+
+    // Real Reverb takes over when VITE_USE_REVERB=true and the backend is
+    // reachable; falls back to the mock pulse for offline / no-server dev.
     api.getZones().then((zones) => {
-      stopPulse = startMockPulse(zones.map((z) => z.id));
+      if (cancelled) return;
+      const zoneIds = zones.map((z) => z.id);
+      stopPulse = useReverbEnabled()
+        ? startReverbSubscription(zoneIds)
+        : startMockPulse(zoneIds);
     }).catch(() => { /* zones fetch will retry via TanStack */ });
 
     return () => {
+      cancelled = true;
       unsubscribe();
       stopPulse?.();
     };

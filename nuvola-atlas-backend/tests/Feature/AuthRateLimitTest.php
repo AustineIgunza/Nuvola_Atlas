@@ -10,7 +10,7 @@ use Tests\TestCase;
 
 class AuthRateLimitTest extends TestCase
 {
-    public function test_eleventh_sign_in_attempt_from_same_ip_returns_429(): void
+    public function test_repeated_attempts_on_one_account_hit_the_email_bucket(): void
     {
         User::create([
             'name' => 'Brute Target',
@@ -20,51 +20,50 @@ class AuthRateLimitTest extends TestCase
 
         $payload = ['email' => 'target@nuvola.ke', 'password' => 'wrongpass'];
 
-        // First 10 attempts are spent on wrong-password tries. Each should
-        // return 401 with the Problem+JSON shape the rest of the API uses.
-        for ($i = 0; $i < 10; $i++) {
+        // The (email + IP) bucket allows 20 per 10 minutes; each of those is
+        // a plain 401 with the Problem+JSON shape the rest of the API uses.
+        for ($i = 0; $i < 20; $i++) {
             $this->postJson('/api/v1/auth/sign-in', $payload)
                 ->assertUnauthorized();
         }
 
-        // 11th request hits the perMinutes(10, 10) cap.
         $response = $this->postJson('/api/v1/auth/sign-in', $payload);
         $response->assertStatus(429);
         $this->assertSame('application/problem+json', $response->headers->get('Content-Type'));
         $this->assertSame(429, $response->json('status'));
     }
 
-    public function test_throttle_is_scoped_per_ip(): void
+    public function test_email_bucket_is_scoped_per_ip(): void
     {
-        // Burn the budget from one IP, then prove a different IP is still
-        // free. Cache is per-app-instance so we just vary REMOTE_ADDR.
-        $payload = ['email' => 'nope@nuvola.ke', 'password' => 'x'];
+        // Burn one account's budget from one IP, then prove the same account
+        // is still reachable from another — carrier NAT must not let one
+        // client lock an account out globally.
+        $payload = ['email' => 'nope@nuvola.ke', 'password' => 'wrongpass'];
 
-        for ($i = 0; $i < 10; $i++) {
+        for ($i = 0; $i < 20; $i++) {
             $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.1'])
                 ->postJson('/api/v1/auth/sign-in', $payload);
         }
 
-        $blocked = $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.1'])
-            ->postJson('/api/v1/auth/sign-in', $payload);
-        $blocked->assertStatus(429);
+        $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.1'])
+            ->postJson('/api/v1/auth/sign-in', $payload)
+            ->assertStatus(429);
 
-        // Same minute, different IP — budget intact.
         $clean = $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.2'])
             ->postJson('/api/v1/auth/sign-in', $payload);
         $this->assertNotSame(429, $clean->status());
     }
 
-    public function test_throttle_covers_forgot_password_endpoint(): void
+    public function test_ip_ceiling_stops_one_host_spraying_many_addresses(): void
     {
-        // Spamming password-reset email triggers from one IP should be capped
-        // by the same limiter, since /forgot-password is in the throttle:auth
-        // group.
-        for ($i = 0; $i < 10; $i++) {
+        // Varying the email dodges the per-account bucket entirely, so this
+        // is the only limit standing between one host and unlimited
+        // password-reset mail. 50 per 10 minutes per IP.
+        for ($i = 0; $i < 50; $i++) {
             $this->postJson('/api/v1/auth/forgot-password', ['email' => "victim{$i}@nuvola.ke"]);
         }
 
-        $response = $this->postJson('/api/v1/auth/forgot-password', ['email' => 'victim-final@nuvola.ke']);
-        $response->assertStatus(429);
+        $this->postJson('/api/v1/auth/forgot-password', ['email' => 'victim-final@nuvola.ke'])
+            ->assertStatus(429);
     }
 }

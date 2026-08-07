@@ -39,6 +39,41 @@ from `src/api/mock.ts` and `src/api/fixtures.ts`. No code changes are
 needed to flip between mock and real. The wire contract is documented in
 [`../nuvola-atlas-backend/docs/api/openapi.yaml`](../nuvola-atlas-backend/docs/api/openapi.yaml).
 
+## Realtime — swapping the mock pulse for Reverb
+
+`useLiveData()` is the single place the app invalidates queries from. It
+mounts once at the top of the tree and is gated on the Settings
+auto-refresh toggle, so turning that off pauses updates from either source.
+
+By default it runs a 45-second mock pulse (`src/lib/realtime.ts`) that
+cycles the three channels, so the dashboard looks live with no websocket
+server. Flip to real Laravel Echo + Reverb with env only — there is no code
+change:
+
+```env
+VITE_USE_REVERB=true
+VITE_REVERB_APP_KEY=nuvola-atlas-key   # must equal backend REVERB_APP_KEY
+VITE_REVERB_HOST=localhost
+VITE_REVERB_PORT=8080
+VITE_REVERB_SCHEME=http
+```
+
+Then, in the backend, `php artisan reverb:start` plus a queue worker —
+`ZoneScoreUpdated` fires from a queued job, so with no worker running the
+socket connects and stays silent.
+
+| Backend event | Channel | Client effect |
+|---------------|---------|---------------|
+| `ZoneScoreUpdated` | private `zones.{id}` | invalidates `zones`, `history`, `zoneHistory` |
+| `ZoneLayerUpdated` | private `zones.{id}` | same — geometry changes invalidate the same views |
+| `AlertCreated` | private `alerts` | invalidates `alerts` |
+
+All three are private channels, so every subscribe authorizes against
+`POST {VITE_API_BASE}/broadcasting/auth` with the same Sanctum bearer token
+the REST client uses. That endpoint is deliberately *not* the framework
+default at `/broadcasting/auth` — that one sits on the `web` session guard,
+which a token SPA can never satisfy.
+
 ## File Structure
 
 ```

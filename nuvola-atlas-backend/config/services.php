@@ -42,4 +42,27 @@ return [
         'secret' => env('INGEST_INTERNAL_SECRET'),
     ],
 
+    // Google OAuth. `redirect` defaults to a URL derived from APP_URL if
+    // no explicit override; expose it here so the callback controller
+    // and the frontend "Continue with Google" button use the same value.
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI', env('APP_URL').'/api/v1/auth/google/callback'),
+    ],
+
+    // Assistant agent runtime — pluggable LLM provider. `heuristic` is
+    // the default no-key fallback that ships tool routing without an
+    // external model. Flip AGENT_PROVIDER=huggingface once the HF
+    // Inference Endpoint is live.
+    'agents' => [
+        'provider' => env('AGENT_PROVIDER', 'heuristic'),
+        'huggingface' => [
+            'endpoint' => env('HF_ENDPOINT'),
+            'token' => env('HF_TOKEN'),
+            'model' => env('HF_MODEL'),
+            'timeout' => (int) env('HF_TIMEOUT', 60),
+        ],
+    ],
+
 ];

@@ -12,9 +12,11 @@ use App\Http\Controllers\AdminMethodologyController;
 use App\Http\Controllers\AdminMetricsController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AlertController;
+use App\Http\Controllers\AssistantAgentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\HealthController;
+use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\IngestController;
 use App\Http\Controllers\InvestorBriefController;
@@ -30,6 +32,7 @@ use App\Http\Controllers\ZoneController;
 use App\Http\Controllers\ZoneExportController;
 use App\Http\Controllers\ZoneForecastController;
 use App\Http\Controllers\ZoneHistoryController;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
 // Unversioned operational endpoints
@@ -38,6 +41,16 @@ Route::get('health', [HealthController::class, 'index']);
 // Phase B — FastAPI → Laravel ingestion channel. Guarded by
 // X-Internal-Secret only; never accepts a bearer token.
 Route::middleware('internal.secret')->post('v1/ingest', [IngestController::class, 'store']);
+
+// Google OAuth — public endpoints (redirect is JSON-returning so the SPA
+// can window.location.assign() to the Google consent URL; callback runs
+// stateless and mints a Sanctum token before bouncing to the SPA).
+Route::prefix('v1')->group(function () {
+    Route::get('auth/google/redirect', [GoogleAuthController::class, 'redirect'])
+        ->middleware('throttle:auth');
+    Route::get('auth/google/callback', [GoogleAuthController::class, 'callback'])
+        ->middleware('throttle:auth');
+});
 
 // /api/v1/ — all current consumer endpoints. Reserve /api/v2/ for breaking
 // changes; never delete a v1 endpoint without a 90-day deprecation header.
@@ -88,6 +101,13 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
         Route::get('auth/me', [AuthController::class, 'me']);
         Route::post('auth/sign-out', [AuthController::class, 'signOut']);
 
+        // Private-channel authorization for Reverb. The framework's default
+        // /broadcasting/auth sits on the `web` guard, which a bearer-token SPA
+        // can never satisfy — so the SPA authorizes here instead, against the
+        // same Sanctum guard it uses for every other call. Callbacks still
+        // come from routes/channels.php.
+        Broadcast::routes(['middleware' => ['auth:sanctum']]);
+
         // RAG chatbot — throttled per user via the 'chat' limiter (see
         // AppServiceProvider). Streaming send endpoint uses SSE and cannot
         // be HTTP-cached (that's why chat routes live outside the
@@ -97,6 +117,12 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
         Route::delete('chat/conversations/{id}', [ChatController::class, 'destroy'])->middleware('throttle:api');
         Route::get('chat/conversations/{id}/messages', [ChatController::class, 'messages'])->middleware('throttle:api');
         Route::post('chat/conversations/{id}/messages', [ChatController::class, 'send'])->middleware('throttle:chat');
+
+        // Assistant agent — provider-agnostic tool-calling loop. Heuristic
+        // provider ships by default; flip AGENT_PROVIDER=huggingface once
+        // the HF Inference Endpoint is live to swap in the LLM router.
+        Route::get('assistant/agent/tools', [AssistantAgentController::class, 'tools'])->middleware('throttle:api');
+        Route::post('assistant/agent', [AssistantAgentController::class, 'run'])->middleware('throttle:chat');
 
         // Email-2FA self-service: any authenticated user can enrol; admins
         // are *required* to enrol before they can reach /admin/* (see
