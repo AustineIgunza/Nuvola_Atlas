@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.models.indicators import IndicatorKey, IndicatorReading
 from app.services.anomaly_detector import detect_anomalies
@@ -10,7 +10,7 @@ def _reading(zone: str, key: IndicatorKey, value: float) -> IndicatorReading:
         indicator=key,
         value=value,
         unit="index",
-        observed_at=datetime(2026, 7, 8, tzinfo=timezone.utc),
+        observed_at=datetime(2026, 7, 8, tzinfo=UTC),
     )
 
 

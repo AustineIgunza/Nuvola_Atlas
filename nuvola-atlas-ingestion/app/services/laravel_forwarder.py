@@ -2,17 +2,19 @@
 endpoint.
 
 Batches are grouped by zone_id before forwarding so each Laravel-side
-insert lands as a single per-zone atomic write. The Laravel endpoint's
-X-Internal-Secret guard uses the same shared secret defined in
-`INGESTION_INTERNAL_SECRET` / Laravel `INGEST_INTERNAL_SECRET`.
+insert lands as a single per-zone atomic write. Every request carries the
+shared ``X-Internal-Secret`` plus an HMAC-SHA256 signature over the exact
+body bytes -- see ``docs/data/internal-transport.md``.
 
-Failures are collected and returned rather than raised — the caller
-decides whether to retry or dead-letter. The FastAPI service is not the
-system of record; the receipts it stores must reflect what Laravel
-actually accepted, not what we hoped it would accept.
+Failures are collected and returned rather than raised -- the caller
+decides whether to dead-letter. The FastAPI service is not the system of
+record; the receipts it stores must reflect what Laravel actually
+accepted, not what we hoped it would accept.
 """
 from __future__ import annotations
 
+import asyncio
+import json
 from dataclasses import dataclass
 from typing import Any
 
@@ -20,6 +22,16 @@ import httpx
 
 from app.config import Settings
 from app.models.indicators import IndicatorReading
+from app.signing import sign
+
+# One initial send plus three retries. Backoff is stepped rather than
+# doubled so a Laravel deploy (which takes tens of seconds) still lands
+# inside the retry window without us hammering it during the restart.
+RETRY_BACKOFF_SECONDS = (1.0, 4.0, 16.0)
+
+# A 4xx other than these means the payload itself is wrong; retrying sends
+# the same bad bytes again and burns budget for nothing.
+RETRYABLE_STATUS = frozenset({408, 425, 429, 500, 502, 503, 504})
 
 
 @dataclass
@@ -28,6 +40,7 @@ class ForwardResult:
     ok: bool
     status_code: int
     body: dict[str, Any]
+    attempts: int = 1
 
 
 def _group_by_zone(rows: list[IndicatorReading]) -> dict[str, dict[str, float | None]]:
@@ -38,22 +51,72 @@ def _group_by_zone(rows: list[IndicatorReading]) -> dict[str, dict[str, float | 
     return grouped
 
 
+def build_signed_headers(secret: str, body: bytes) -> dict[str, str]:
+    timestamp, signature = sign(secret, body)
+    return {
+        "X-Internal-Secret": secret,
+        "X-Internal-Timestamp": str(timestamp),
+        "X-Internal-Signature": signature,
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+
+
+async def _post_with_retries(
+    client: httpx.AsyncClient,
+    endpoint: str,
+    secret: str,
+    body: bytes,
+    zone_id: str,
+    *,
+    sleep: Any = asyncio.sleep,
+) -> ForwardResult:
+    last: ForwardResult | None = None
+
+    for attempt in range(len(RETRY_BACKOFF_SECONDS) + 1):
+        # Re-sign per attempt: the timestamp is inside the MAC, so a
+        # signature minted before a 16s backoff would be closer to the
+        # skew ceiling than it needs to be.
+        headers = build_signed_headers(secret, body)
+        try:
+            response = await client.post(endpoint, headers=headers, content=body)
+            last = ForwardResult(
+                zone_id=zone_id,
+                ok=200 <= response.status_code < 300,
+                status_code=response.status_code,
+                body=_safe_json(response),
+                attempts=attempt + 1,
+            )
+            if last.ok or response.status_code not in RETRYABLE_STATUS:
+                return last
+        except httpx.HTTPError as exc:
+            last = ForwardResult(
+                zone_id=zone_id,
+                ok=False,
+                status_code=0,
+                body={"error": str(exc)},
+                attempts=attempt + 1,
+            )
+
+        if attempt < len(RETRY_BACKOFF_SECONDS):
+            await sleep(RETRY_BACKOFF_SECONDS[attempt])
+
+    assert last is not None
+    return last
+
+
 async def forward_batch(
     rows: list[IndicatorReading],
     settings: Settings,
     *,
     source: str = "fastapi.daystar",
     client: httpx.AsyncClient | None = None,
+    sleep: Any = asyncio.sleep,
 ) -> list[ForwardResult]:
     if not rows:
         return []
 
     payloads = _group_by_zone(rows)
-    headers = {
-        "X-Internal-Secret": settings.internal_secret,
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-    }
     endpoint = f"{settings.laravel_base_url.rstrip('/')}/ingest"
 
     close_client = False
@@ -64,30 +127,16 @@ async def forward_batch(
     results: list[ForwardResult] = []
     try:
         for zone_id, indicators in payloads.items():
-            body = {
-                "source": source,
-                "zone_id": zone_id,
-                "indicators": indicators,
-            }
-            try:
-                response = await client.post(endpoint, headers=headers, json=body)
-                results.append(
-                    ForwardResult(
-                        zone_id=zone_id,
-                        ok=200 <= response.status_code < 300,
-                        status_code=response.status_code,
-                        body=_safe_json(response),
-                    )
+            body = json.dumps(
+                {"source": source, "zone_id": zone_id, "indicators": indicators},
+                separators=(",", ":"),
+                sort_keys=True,
+            ).encode()
+            results.append(
+                await _post_with_retries(
+                    client, endpoint, settings.internal_secret, body, zone_id, sleep=sleep
                 )
-            except httpx.HTTPError as exc:
-                results.append(
-                    ForwardResult(
-                        zone_id=zone_id,
-                        ok=False,
-                        status_code=0,
-                        body={"error": str(exc)},
-                    )
-                )
+            )
     finally:
         if close_client:
             await client.aclose()
@@ -96,10 +145,13 @@ async def forward_batch(
 
 
 def _safe_json(response: httpx.Response) -> dict[str, Any]:
+    # Deliberately broad: an upstream 502 from a proxy is usually an HTML
+    # error page, and the receipt is more useful with the first 2KB of that
+    # page in it than with a decode traceback replacing the whole result.
     try:
         parsed = response.json()
         if isinstance(parsed, dict):
             return parsed
         return {"data": parsed}
-    except Exception:  # noqa: BLE001 — defensive; any parse error returns raw text
+    except Exception:
         return {"text": response.text[:2000]}

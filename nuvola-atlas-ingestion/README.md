@@ -45,16 +45,45 @@ mypy app
 pytest
 ```
 
+## Spend guards
+
+Every ingest is bounded (`app/guards.py`, overridable per environment):
+
+| Guard | Default | Response |
+|-------|---------|----------|
+| Payload size | 10 MB | 413 |
+| Rows per batch | 5 000 | 413 |
+| Rows per UTC day | 100 000 | 429 + `Retry-After` |
+| Circuit breaker | 3 consecutive Laravel 5xx → 60s open | 503 + `Retry-After` |
+
+Live state: `GET /api/health/guards`. Counters are per-process, so they are a
+local brake — the durable record is Laravel's `data_ingestion_logs`.
+
+Replayed batches are deduplicated by SHA-256 of the raw body for one hour and
+return the original receipt with `"duplicate": true`.
+
+## Scheduled ingest
+
+| Route | Caller | Credential |
+|-------|--------|-----------|
+| `GET /api/cron/tick` | Vercel Cron | `Authorization: Bearer $CRON_SECRET` |
+| `POST /internal/scheduler/tick` | n8n / Docker cron / manual | `X-Internal-Secret` |
+
+Both pull `INGESTION_DAYSTAR_FEED_BASE`. With that unset the tick is a healthy
+no-op — Phase B is blocked on Daystar delivering a feed URL.
+
 ## Deploy
 
 Two target shapes are supported:
 
-1. **Vercel Fluid Compute** — Python 3.13 function. `app/main.py` exports
-   `app`; add a `vercel.json` at deploy time pointing at it.
-2. **Uvicorn on Forge** — behind Nginx alongside the Laravel app for the
-   `docker-compose` local stack.
+1. **Vercel Fluid Compute** — `api/index.py` + `vercel.json` + `requirements.txt`.
+   Full runbook, env vars, and cold-start notes: `docs/ops/ingestion-deploy.md`.
+2. **Uvicorn on Forge / Docker Compose** — `Dockerfile` at the repo root of
+   this service, orchestrated by the top-level `docker-compose.yml`.
 
-Sentry DSN, `INGESTION_INTERNAL_SECRET`, and `INGESTION_DAYSTAR_FEED_BASE`
-must be set per-environment (Vercel/Forge dashboards); never in code.
+Sentry DSN, `INGESTION_INTERNAL_SECRET`, `CRON_SECRET`, and
+`INGESTION_DAYSTAR_FEED_BASE` must be set per-environment (Vercel/Forge
+dashboards); never in code.
 
-See `docs/architecture.md` for the full data topography.
+See `docs/architecture.md` for the full data topography and
+`docs/data/internal-transport.md` for the signed FastAPI → Laravel contract.

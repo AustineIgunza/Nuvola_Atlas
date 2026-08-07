@@ -6,7 +6,8 @@ from fastapi import FastAPI
 
 from app import __version__
 from app.config import get_settings
-from app.routers import health, ingest
+from app.problems import register_problem_handlers
+from app.routers import health, ingest, scheduler
 
 
 def create_app() -> FastAPI:
@@ -30,8 +31,10 @@ def create_app() -> FastAPI:
             "function or under Uvicorn on Forge."
         ),
     )
+    register_problem_handlers(app)
     app.include_router(health.router)
     app.include_router(ingest.router)
+    app.include_router(scheduler.router)
     return app
 
 

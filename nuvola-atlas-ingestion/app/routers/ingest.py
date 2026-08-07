@@ -3,14 +3,19 @@
 Cleans the batch, runs anomaly detection, forwards the accepted rows to
 the Laravel intake endpoint, and returns a receipt describing what was
 accepted, rejected, forwarded, or flagged as anomalous.
+
+Order of operations matters: the idempotency check fires before the guards
+consume budget, so a replayed batch costs nothing.
 """
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 
 from app.config import get_settings
+from app.guards import enforce_payload_size, get_guards
+from app.idempotency import lookup, payload_hash, remember
 from app.models.indicators import IndicatorBatch
 from app.security import require_internal_secret
 from app.services.anomaly_detector import Anomaly, detect_anomalies
@@ -22,11 +27,22 @@ router = APIRouter(prefix="/api/ingest", tags=["ingest"])
 
 @router.post(
     "/indicators",
-    dependencies=[Depends(require_internal_secret)],
+    dependencies=[Depends(require_internal_secret), Depends(enforce_payload_size)],
     summary="Accept a Daystar indicator batch",
 )
-async def ingest_indicators(batch: IndicatorBatch) -> dict[str, object]:
+async def ingest_indicators(batch: IndicatorBatch, request: Request) -> dict[str, object]:
     settings = get_settings()
+    guards = get_guards()
+
+    digest = payload_hash(await request.body())
+    replayed = lookup(digest)
+    if replayed is not None:
+        return {**replayed, "duplicate": True}
+
+    guards.check_circuit(settings)
+    guards.check_row_count(len(batch.readings), settings)
+    guards.check_budget(len(batch.readings), settings)
+
     raw_rows = [r.model_dump(mode="json") for r in batch.readings]
     cleaning = clean_batch(raw_rows)
 
@@ -45,9 +61,16 @@ async def ingest_indicators(batch: IndicatorBatch) -> dict[str, object]:
     # Bad rows get quarantined by rejection, not forwarding suppression.
     forwarded = await forward_batch(cleaning.cleaned, settings)
 
-    return {
+    for result in forwarded:
+        guards.record_forward_outcome(
+            ok=result.ok, status_code=result.status_code, settings=settings
+        )
+    guards.consume_budget(len(cleaning.cleaned))
+
+    receipt: dict[str, object] = {
         "batch_id": batch.batch_id,
-        "received_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "payload_hash": digest,
+        "received_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "accepted": len(cleaning.cleaned),
         "rejected": len(cleaning.rejected),
         "forwarded": [
@@ -55,6 +78,7 @@ async def ingest_indicators(batch: IndicatorBatch) -> dict[str, object]:
                 "zone_id": f.zone_id,
                 "ok": f.ok,
                 "status_code": f.status_code,
+                "attempts": f.attempts,
             }
             for f in forwarded
         ],
@@ -70,3 +94,6 @@ async def ingest_indicators(batch: IndicatorBatch) -> dict[str, object]:
         ],
         "rejections": cleaning.rejected,
     }
+
+    remember(digest, receipt)
+    return receipt

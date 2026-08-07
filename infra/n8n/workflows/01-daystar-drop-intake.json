@@ -1,0 +1,197 @@
+{
+  "name": "01 · Daystar drop intake",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "a1000000-0000-4000-8000-000000000001",
+      "name": "Manual Dry Run",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-320, 40]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "daystar-drop",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "a1000000-0000-4000-8000-000000000002",
+      "name": "Drop Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-320, 240],
+      "webhookId": "a1000000-0000-4000-8000-0000000000w1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Two doors into this workflow: the webhook (real Daystar delivery) and the\n// manual trigger (dry run). Collapse both to { filename, batch } so nothing\n// downstream has to know which one fired.\nconst SYNTHETIC_FILENAME = 'daystar-2026-08-12-social.json';\nconst SYNTHETIC_BATCH = {\n  batch_id: 'daystar-2026-08-12-social',\n  submitted_at: '2026-08-12T09:00:00Z',\n  readings: [\n    { zone_id: 'westlands', indicator: 'healthcare_access', value: 72.4, unit: 'index_0_100', observed_at: '2026-08-12T09:00:00Z', field_verified: true, centroid: { lon: 36.8048, lat: -1.2673 }, source: 'daystar' },\n    { zone_id: 'westlands', indicator: 'education_access', value: 68.1, unit: 'index_0_100', observed_at: '2026-08-12T09:00:00Z', field_verified: false, centroid: { lon: 36.8048, lat: -1.2673 }, source: 'daystar' },\n    { zone_id: 'starehe', indicator: 'digital_connectivity', value: 41.6, unit: 'mbps', observed_at: '2026-08-12T09:00:00Z', field_verified: false, centroid: { lon: 36.83, lat: -1.28 }, source: 'daystar' },\n    { zone_id: 'kibra', indicator: 'healthcare_access', value: 44.9, unit: 'index_0_100', observed_at: '2026-08-12T09:00:00Z', field_verified: true, centroid: { lon: 36.78, lat: -1.313 }, source: 'daystar' }\n  ]\n};\n\nconst out = [];\nfor (const item of $input.all()) {\n  const payload = item.json.body ?? item.json;\n  const filename = payload.filename ?? payload.file_name ?? null;\n  const batch = payload.batch ?? (Array.isArray(payload.readings) ? payload : null);\n  if (filename && batch) {\n    out.push({ json: { filename, batch, dry_run: false } });\n  }\n}\n\nif (out.length === 0) {\n  out.push({ json: { filename: SYNTHETIC_FILENAME, batch: SYNTHETIC_BATCH, dry_run: true } });\n}\n\nreturn out;"
+      },
+      "id": "a1000000-0000-4000-8000-000000000003",
+      "name": "Normalize Drop",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-80, 140]
+    },
+    {
+      "parameters": {
+        "jsCode": "// The filename is the only metadata available before the file is opened, so\n// it is a hard gate — see the \"Drop filename convention\" section of\n// docs/data/daystar-indicator-spec.md. A drop that fails here is\n// quarantined and never reaches the ingestion service.\nconst INDICATORS = [\n  'healthcare_access', 'education_access', 'digital_connectivity',\n  'crime_rates', 'emergency_response_access', 'disaster_exposure',\n  'population_density', 'congestion', 'housing_pressure',\n  'road_quality', 'energy_reliability', 'food_risk', 'waste_management'\n];\nconst GROUPS = ['social', 'safety', 'density', 'infra'];\nconst MAX_ROWS = 5000;\n\nfunction isRealDate(segment) {\n  const [y, m, d] = segment.split('-').map(Number);\n  const dt = new Date(Date.UTC(y, m - 1, d));\n  return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;\n}\n\nreturn $input.all().map((item) => {\n  const { filename, batch, dry_run } = item.json;\n  const reasons = [];\n  let observedDate = null;\n  let scope = null;\n  let seq = null;\n\n  if (!filename) {\n    reasons.push('filename missing');\n  } else if (!filename.endsWith('.json')) {\n    reasons.push('extension must be .json — the batch envelope is JSON, not CSV');\n  } else {\n    const match = /^daystar-(\\d{4}-\\d{2}-\\d{2})-(.+)\\.json$/.exec(filename);\n    if (!match) {\n      reasons.push('expected daystar-<YYYY-MM-DD>-<scope>[-<seq>].json');\n    } else {\n      observedDate = match[1];\n      let rest = match[2];\n      const seqMatch = /^(.+)-(\\d{2,})$/.exec(rest);\n      if (seqMatch) {\n        rest = seqMatch[1];\n        seq = seqMatch[2];\n      }\n      scope = rest;\n      if (!isRealDate(observedDate)) {\n        reasons.push(`date segment ${observedDate} is not a real calendar date`);\n      }\n      if (!GROUPS.includes(scope) && !INDICATORS.includes(scope)) {\n        reasons.push(`unknown scope '${scope}' — expected a pillar group (${GROUPS.join(', ')}) or one of the 13 indicator keys`);\n      }\n    }\n  }\n\n  const readings = Array.isArray(batch?.readings) ? batch.readings : null;\n  if (!readings) {\n    reasons.push('batch has no readings array');\n  } else if (readings.length === 0) {\n    reasons.push('batch is empty');\n  } else if (readings.length > MAX_ROWS) {\n    // Mirror the ingestion row cap so an oversized drop is quarantined with an\n    // actionable message instead of bouncing back as a bare 413.\n    reasons.push(`batch has ${readings.length} rows, over the ${MAX_ROWS}-row cap — chunk it with a -NN suffix`);\n  }\n\n  return {\n    json: {\n      filename,\n      batch,\n      dry_run,\n      valid: reasons.length === 0,\n      reasons,\n      stem: filename ? filename.replace(/\\.json$/, '') : null,\n      observed_date: observedDate,\n      scope,\n      seq\n    }\n  };\n});"
+      },
+      "id": "a1000000-0000-4000-8000-000000000004",
+      "name": "Validate Filename",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [160, 140]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "filename-valid",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": false,
+        "options": {}
+      },
+      "id": "a1000000-0000-4000-8000-000000000005",
+      "name": "Filename Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [400, 140]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.INGESTION_BASE_URL }}/api/ingest/indicators",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Internal-Secret",
+              "value": "={{ $env.INGESTION_INTERNAL_SECRET }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.batch) }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 300000
+        }
+      },
+      "id": "a1000000-0000-4000-8000-000000000006",
+      "name": "Forward To Ingestion",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [660, 40],
+      "notes": "neverError keeps a 413/429/503 on the happy path so it reaches Slack as a readable message instead of a red execution."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Turn the ingestion receipt into one line a human in #data-feeds can act on.\n// Item order is 1:1 with Validate Filename because the HTTP node emits one\n// response per input item.\nconst INDICATOR_COUNT = 13;\n\nreturn $input.all().map((item, index) => {\n  const response = item.json;\n  const status = response.statusCode ?? 0;\n  const receipt = response.body ?? {};\n  const drop = $('Validate Filename').all()[index].json;\n  const readings = drop.batch?.readings ?? [];\n\n  // The receipt echoes every rejected row in full, so the indicators that\n  // actually landed are the submitted ones minus the rejected ones.\n  const rejections = receipt.rejections ?? [];\n  const rejectedRows = new Set(rejections.map((r) => `${r.zone_id}|${r.indicator}|${r.observed_at}`));\n  const active = new Set(\n    readings\n      .filter((r) => !rejectedRows.has(`${r.zone_id}|${r.indicator}|${r.observed_at}`))\n      .map((r) => r.indicator)\n  );\n\n  const ok = status >= 200 && status < 300;\n  const duplicate = receipt.duplicate === true;\n  const failedZones = (receipt.forwarded ?? []).filter((f) => !f.ok).map((f) => f.zone_id);\n\n  const icon = duplicate ? ':repeat:' : ok ? ':white_check_mark:' : ':rotating_light:';\n  const lines = [`${icon} *Daystar drop* \\`${drop.filename}\\`${drop.dry_run ? ' _(dry run)_' : ''}`];\n\n  if (duplicate) {\n    lines.push(`Already ingested — replay of \\`${receipt.payload_hash}\\`, nothing re-counted.`);\n  } else if (!ok) {\n    lines.push(`Ingestion answered *${status}* — ${receipt.detail ?? receipt.title ?? 'no detail returned'}`);\n  }\n\n  lines.push(`Accepted *${receipt.accepted ?? 0}* · rejected *${receipt.rejected ?? 0}* · anomalies *${(receipt.anomalies ?? []).length}*`);\n  lines.push(`*${active.size} of ${INDICATOR_COUNT}* indicators active in this drop`);\n\n  if (failedZones.length) {\n    lines.push(`:warning: Laravel forward failed for: ${failedZones.join(', ')}`);\n  }\n  if (rejections.length) {\n    const sample = rejections.slice(0, 3).map((r) => `\\`${r.zone_id}/${r.indicator}\\` — ${r._reject_reason}`);\n    lines.push(`First rejections: ${sample.join(' · ')}`);\n  }\n\n  return {\n    json: {\n      text: lines.join('\\n'),\n      status,\n      duplicate,\n      active_indicators: active.size,\n      payload_hash: receipt.payload_hash ?? null,\n      quarantined: false\n    }\n  };\n});"
+      },
+      "id": "a1000000-0000-4000-8000-000000000007",
+      "name": "Summarize Receipt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 40]
+    },
+    {
+      "parameters": {
+        "jsCode": "// A quarantined drop never reaches the ingestion service, so there is no\n// receipt to summarise — the filename reasons are the whole message.\nreturn $input.all().map((item) => {\n  const drop = item.json;\n  const lines = [\n    `:no_entry: *Daystar drop quarantined* \\`${drop.filename ?? '(no filename)'}\\`${drop.dry_run ? ' _(dry run)_' : ''}`,\n    'Nothing was forwarded to the ingestion service.',\n    ...drop.reasons.map((reason) => `• ${reason}`),\n    'Convention: `daystar-<YYYY-MM-DD>-<scope>[-<seq>].json` — docs/data/daystar-indicator-spec.md'\n  ];\n\n  return { json: { text: lines.join('\\n'), quarantined: true, filename: drop.filename ?? null } };\n});"
+      },
+      "id": "a1000000-0000-4000-8000-000000000008",
+      "name": "Quarantine Notice",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 260]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLACK_DATA_FEEDS_WEBHOOK }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.text }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "a1000000-0000-4000-8000-000000000009",
+      "name": "Notify #data-feeds",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1160, 140],
+      "notes": "Slack incoming-webhook URL comes from the SLACK_DATA_FEEDS_WEBHOOK env var, never from a stored credential, so this JSON stays safe to commit."
+    }
+  ],
+  "connections": {
+    "Manual Dry Run": {
+      "main": [[{ "node": "Normalize Drop", "type": "main", "index": 0 }]]
+    },
+    "Drop Webhook": {
+      "main": [[{ "node": "Normalize Drop", "type": "main", "index": 0 }]]
+    },
+    "Normalize Drop": {
+      "main": [[{ "node": "Validate Filename", "type": "main", "index": 0 }]]
+    },
+    "Validate Filename": {
+      "main": [[{ "node": "Filename Valid?", "type": "main", "index": 0 }]]
+    },
+    "Filename Valid?": {
+      "main": [
+        [{ "node": "Forward To Ingestion", "type": "main", "index": 0 }],
+        [{ "node": "Quarantine Notice", "type": "main", "index": 0 }]
+      ]
+    },
+    "Forward To Ingestion": {
+      "main": [[{ "node": "Summarize Receipt", "type": "main", "index": 0 }]]
+    },
+    "Summarize Receipt": {
+      "main": [[{ "node": "Notify #data-feeds", "type": "main", "index": 0 }]]
+    },
+    "Quarantine Notice": {
+      "main": [[{ "node": "Notify #data-feeds", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Nairobi",
+    "saveManualExecutions": true
+  },
+  "tags": [{ "name": "phase-j" }, { "name": "daystar" }],
+  "meta": {
+    "description": "Phase J workflow #1. Daystar drop -> filename gate -> FastAPI /api/ingest/indicators -> Slack #data-feeds. Idempotency is delegated to the ingestion service's SHA-256 payload dedupe; this workflow reports the duplicate rather than tracking its own."
+  }
+}

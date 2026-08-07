@@ -178,9 +178,6 @@ jobs:
         run: ruff check .
 
       - name: Mypy strict
-        # Informational for the pilot — flip continue-on-error to false
-        # once the ingestion type surface is fully typed end-to-end.
-        continue-on-error: true
         run: mypy app
 
       - name: Pytest

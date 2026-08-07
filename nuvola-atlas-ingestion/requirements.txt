@@ -1,0 +1,10 @@
+# Vercel's Python builder installs from requirements.txt, not pyproject.toml.
+# pyproject.toml stays the source of truth for local/Docker/CI; this file
+# mirrors its [project].dependencies block. Change both together.
+fastapi>=0.115,<0.120
+uvicorn[standard]>=0.32,<0.35
+pydantic>=2.9,<3
+pydantic-settings>=2.5,<3
+httpx>=0.27,<0.30
+python-dateutil>=2.9,<3
+sentry-sdk[fastapi]>=2.17,<3

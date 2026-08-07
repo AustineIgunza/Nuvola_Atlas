@@ -1,4 +1,4 @@
-from datetime import timezone
+from datetime import UTC
 
 from app.services.data_cleaner import clean_batch
 
@@ -17,7 +17,7 @@ def test_cleans_valid_row_to_utc() -> None:
     )
     assert len(result.cleaned) == 1
     reading = result.cleaned[0]
-    assert reading.observed_at.tzinfo == timezone.utc
+    assert reading.observed_at.tzinfo == UTC
     assert reading.observed_at.hour == 6  # +03:00 → UTC
     assert not result.rejected
 

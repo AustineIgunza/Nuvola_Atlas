@@ -13,7 +13,7 @@ the append-only `data_ingestion_logs` table on the Laravel side.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from dateutil import parser as date_parser
@@ -38,8 +38,8 @@ def _to_utc(value: Any) -> datetime | None:
         except (ValueError, TypeError):
             return None
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
-    return dt.astimezone(timezone.utc)
+        dt = dt.replace(tzinfo=UTC)
+    return dt.astimezone(UTC)
 
 
 def _coerce_coordinate(raw: Any) -> Coordinate | None:
@@ -47,9 +47,11 @@ def _coerce_coordinate(raw: Any) -> Coordinate | None:
         return None
     try:
         if isinstance(raw, dict):
-            lon = float(raw.get("lon", raw.get("lng")))
+            # Feeds are inconsistent about lon vs lng; accept either.
+            lon_raw = raw["lon"] if "lon" in raw else raw["lng"]
+            lon = float(lon_raw)
             lat = float(raw["lat"])
-        elif isinstance(raw, (list, tuple)) and len(raw) == 2:
+        elif isinstance(raw, list | tuple) and len(raw) == 2:
             lon, lat = float(raw[0]), float(raw[1])
         else:
             return None

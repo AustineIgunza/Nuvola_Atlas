@@ -110,5 +110,35 @@ services:
       INGESTION_ENVIRONMENT: local
     command: uvicorn app.main:app --host 0.0.0.0 --port 8100
 
+  # Phase J automation glue. Behind a profile so plain `docker compose up`
+  # stays lean — start it with `docker compose --profile automation up -d`.
+  # In production this sits behind Cloudflare Access and is never published
+  # directly; see infra/n8n/README.md.
+  n8n:
+    image: n8nio/n8n:1.70.1
+    profiles: ["automation"]
+    ports:
+      - "5678:5678"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: nuvola_atlas
+      DB_POSTGRESDB_USER: nuvola
+      DB_POSTGRESDB_PASSWORD: nuvola_secret
+      DB_POSTGRESDB_SCHEMA: n8n
+      N8N_PORT: 5678
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:-dev-only-not-a-real-key}
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      GENERIC_TIMEZONE: Africa/Nairobi
+      INGESTION_BASE_URL: http://fastapi:8100
+    volumes:
+      - n8ndata:/home/node/.n8n
+      - ./infra/n8n/workflows:/workflows:ro
+
 volumes:
   pgdata:
+  n8ndata:

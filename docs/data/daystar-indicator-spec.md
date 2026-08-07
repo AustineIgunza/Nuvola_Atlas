@@ -2,7 +2,7 @@
 
 **Owner:** Devyan Jethwa (CTIPSO)
 **Consumer:** Daystar University data-access partnership
-**Last updated:** 2026-07-16 (indicator-count corrected 12 → 13; Pillar 4 carries four indicators per Backend Build Plan §5.1 and the codebase's `swap_pillars_for_indicators` migration)
+**Last updated:** 2026-08-07 (residual "12 indicator" artifacts swept; `emergency_response` → `emergency_response_access`; `food_risk` row restored to Pillar 4; drop filename convention added; batch cap aligned to the enforced 5,000)
 **Status:** Draft — to be reviewed with Daystar before Phase B ingest cutover. Devyan reviews all 13 sections in Week 1 (`tasks/team/week-01/devyan.md`) before Joy carries the spec to Daystar admin.
 
 This document is the authoritative contract between Navuuna and Daystar
@@ -58,7 +58,7 @@ cadence below must match what Daystar sends; any drift is a rejection.
 }
 ```
 
-## The 12 indicators
+## The 13 indicators
 
 Each row lists: **key** (immutable machine identifier), **unit**,
 **resolution** (spatial or numeric granularity), and **cadence**
@@ -76,9 +76,9 @@ Each row lists: **key** (immutable machine identifier), **unit**,
 
 | Key                    | Unit                        | Resolution                        | Cadence  |
 |------------------------|-----------------------------|-----------------------------------|----------|
-| `crime_rates`          | `incidents_per_1000_90d`    | Sub-county; NPS-sourced           | Monthly  |
-| `emergency_response`   | `minutes` (median)          | Sub-county; police + ambulance    | Monthly  |
-| `disaster_exposure`    | `index_0_100`               | Sub-county; overlay of NDMA hazards | Quarterly |
+| `crime_rates`             | `incidents_per_1000_90d` | Sub-county; NPS-sourced             | Monthly   |
+| `emergency_response_access` | `minutes` (median)     | Sub-county; police + ambulance      | Monthly   |
+| `disaster_exposure`       | `index_0_100`            | Sub-county; overlay of NDMA hazards | Quarterly |
 
 ### Pillar 3 — Density and Scaling Dynamics
 
@@ -94,6 +94,7 @@ Each row lists: **key** (immutable machine identifier), **unit**,
 |----------------------|----------------|------------------------------------|-----------|
 | `road_quality`       | `index_0_100`  | Sub-county; paved share + IRI      | Quarterly |
 | `energy_reliability` | `outage_min_per_month` | Sub-county; KPLC feeder-level     | Monthly   |
+| `food_risk`          | `index_0_100`  | Sub-county; market-price + access stress | Quarterly |
 | `waste_management`   | `index_0_100`  | Sub-county; formal collection coverage | Quarterly |
 
 ## Field verification
@@ -109,7 +110,7 @@ value came from a passive feed with no on-the-ground confirmation.
 | Reason string                              | Meaning                                             |
 |--------------------------------------------|-----------------------------------------------------|
 | `missing zone_id`                          | Row has no `zone_id`.                               |
-| `unknown indicator: <key>`                 | Key not in the 12 above.                            |
+| `unknown indicator: <key>`                 | Key not in the 13 above.                            |
 | `missing value`                            | Value is null.                                      |
 | `value not numeric`                        | Value is not castable to float.                     |
 | `missing/invalid observed_at`              | Timestamp is missing or unparseable.                |
@@ -125,10 +126,42 @@ guessing which line failed.
   three prior observations per (zone, indicator). We propose Daystar
   bulk-loads the trailing four quarters at first ingest so anomaly
   detection is meaningful from day one.
-- **Coverage staging:** which of the 12 indicators is Daystar committing
+- **Coverage staging:** which of the 13 indicators is Daystar committing
   to for the Phase B (Aug-01 to Aug-21) window? The frontend's partial
-  data UX communicates "N of 12" gracefully, but the four-week window
+  data UX communicates "N of 13" gracefully, but the four-week window
   needs firm scope.
-- **Batch size cap:** proposed 10,000 rows per POST. Larger batches
-  should be chunked upstream so we can keep the ingest function inside
-  Vercel's 300s timeout with headroom.
+- **Batch size cap:** 5,000 rows per POST, enforced by the ingestion
+  service (`INGESTION_MAX_ROWS_PER_BATCH`) and answered with a `413`.
+  Larger drops must be chunked upstream so the ingest function stays
+  inside Vercel's 300s timeout with headroom.
+
+## Drop filename convention
+
+Daystar drops arrive as files, not as direct POSTs — the automation glue
+(`infra/n8n/workflows/01-daystar-drop-intake.json`) is what turns a file
+into a batch. The filename is the only metadata available before the file
+is opened, so it is a hard contract: a drop whose name does not match is
+quarantined and never forwarded.
+
+```
+daystar-<YYYY-MM-DD>-<pillar-or-indicator>[-<seq>].json
+```
+
+| Segment                | Rule                                                                 |
+|------------------------|----------------------------------------------------------------------|
+| `daystar-`             | Literal prefix. Marks the source; other partners get their own prefix. |
+| `<YYYY-MM-DD>`         | Observation date of the drop, UTC. Not the upload date.               |
+| `<pillar-or-indicator>` | One of `social`, `safety`, `density`, `infra`, or a single indicator key from the 13 above. |
+| `[-<seq>]`             | Optional zero-padded chunk index (`-01`, `-02`, …) when a drop is split to stay under the 5,000-row cap. |
+| `.json`                | Extension. CSV drops are rejected — the batch envelope is JSON.        |
+
+Valid: `daystar-2026-08-12-social.json`,
+`daystar-2026-08-12-digital_connectivity-02.json`.
+Rejected: `daystar_2026_08_12.json` (underscores), `2026-08-12-social.json`
+(no prefix), `daystar-2026-08-12-social.csv` (wrong format),
+`daystar-Aug-12-social.json` (date not ISO).
+
+The `batch_id` inside the envelope should equal the filename stem. The
+ingestion service does not enforce that equality — it deduplicates on the
+SHA-256 of the raw body, which is stricter — but keeping them aligned is
+what makes a Slack notification traceable back to a file.
