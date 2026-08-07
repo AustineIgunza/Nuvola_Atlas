@@ -6,6 +6,11 @@ namespace App\Services\Agents;
 
 abstract class BaseAgentTool implements AgentTool
 {
+    public function ability(): ?string
+    {
+        return null;
+    }
+
     public function schema(): array
     {
         return [

@@ -117,6 +117,7 @@ class AppServiceProvider extends ServiceProvider
         // and stay decoupled from the underlying role tiers.
         Gate::define('edit-internal', fn (User $user) => $user->role()->canEditInternal());
         Gate::define('manage-users', fn (User $user) => $user->role()->canManageUsers());
+        Gate::define('view-feed-status', fn (User $user) => $user->role()->isAtLeast(Role::Admin));
     }
 
     /**

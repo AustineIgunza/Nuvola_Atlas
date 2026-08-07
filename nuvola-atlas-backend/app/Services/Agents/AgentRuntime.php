@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Agents;
 
+use App\Models\User;
 use App\Support\Audit;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -31,13 +32,15 @@ class AgentRuntime
      *   final: bool
      * }
      */
-    public function run(string $prompt, ?int $userId = null): array
+    public function run(string $prompt, ?User $user = null): array
     {
+        $userId = $user?->id;
+        $tools = $this->tools->forUser($user);
         $history = [];
         $steps = [];
 
         for ($i = 0; $i < self::MAX_STEPS; $i++) {
-            $next = $this->provider->nextStep($prompt, $this->tools->schemas(), $history);
+            $next = $this->provider->nextStep($prompt, $tools->schemas(), $history);
 
             if ($next['action'] === 'final') {
                 $answer = $next['answer'] ?? '';
@@ -50,7 +53,7 @@ class AgentRuntime
                 break;
             }
 
-            $tool = $this->tools->find($next['tool']);
+            $tool = $tools->find($next['tool']);
             if ($tool === null) {
                 $steps[] = ['action' => 'tool_call', 'tool' => $next['tool'], 'error' => 'unknown tool'];
                 break;

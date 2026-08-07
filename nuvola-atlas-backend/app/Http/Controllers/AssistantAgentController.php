@@ -29,11 +29,11 @@ class AssistantAgentController extends Controller
         private ToolRegistry $registry,
     ) {}
 
-    public function tools(): JsonResponse
+    public function tools(Request $request): JsonResponse
     {
         return response()->json([
             'provider' => (string) config('services.agents.provider', 'heuristic'),
-            'tools' => $this->registry->schemas(),
+            'tools' => $this->registry->forUser($request->user())->schemas(),
         ]);
     }
 
@@ -43,8 +43,7 @@ class AssistantAgentController extends Controller
             'prompt' => ['required', 'string', 'min:2', 'max:1000'],
         ]);
 
-        $userId = $request->user()?->id;
-        $result = $this->runtime->run($data['prompt'], $userId);
+        $result = $this->runtime->run($data['prompt'], $request->user());
 
         return response()->json([
             'answer' => $result['answer'],

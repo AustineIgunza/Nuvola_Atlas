@@ -20,6 +20,13 @@ interface AgentTool
     public function description(): string;
 
     /**
+     * Gate ability the caller must hold, or null for tools over public data.
+     * A tool that wraps a role-gated REST endpoint must name the equivalent
+     * ability here, otherwise the agent becomes a way around that gate.
+     */
+    public function ability(): ?string;
+
+    /**
      * JSON schema for the tool's parameters (draft-2020-12 subset).
      * @return array<string, mixed>
      */
