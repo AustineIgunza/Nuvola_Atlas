@@ -196,6 +196,29 @@ Docker Desktop installed, either install it or run the four-check baseline
 manually (`route:list`, typecheck, build, dev server smoke test) and note
 in your PR that tests were skipped.
 
+### 5a. One-command dev stack (Postgres + Laravel + FastAPI ingestion)
+
+For a full-stack local run without hand-starting each service, use the
+top-level orchestrator at `docker-compose.dev.yml`:
+
+```bash
+docker compose -f docker-compose.dev.yml up --build
+```
+
+Brings up on the host:
+
+- `5434` → Postgres+PostGIS (same port as `phpunit`, so tests and the
+  stack can share one container)
+- `8000` → Laravel API (FrankenPHP inside serves :8080)
+- `8100` → FastAPI ingestion
+
+The frontend Vite dev server stays outside the compose file — HMR is
+smoother when it runs on the host directly. Point it at the compose
+backend with `VITE_API_BASE=http://localhost:8000/api/v1`.
+
+Reverb is not started by the orchestrator — for websocket work run
+`php artisan reverb:start` on the host against a checked-out backend.
+
 ---
 
 ## 6. Routine systems check

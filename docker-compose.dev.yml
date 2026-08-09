@@ -1,0 +1,91 @@
+# One-command local dev stack — Postgres+PostGIS, Laravel API, FastAPI
+# ingestion. Frontend (Vite dev server) stays outside the compose stack so
+# HMR keeps working directly against the host.
+#
+# Usage:
+#   docker compose -f docker-compose.dev.yml up --build
+#
+# Ports on the host:
+#   5434  → Postgres (matches phpunit.xml force-override so `phpunit` and
+#           the compose stack share one database container)
+#   8000  → Laravel API (FrankenPHP inside serves :8080)
+#   8100  → FastAPI ingestion
+#
+# On the internal `nuvola` docker network services address each other by
+# name (`backend`, `ingestion`, `postgres`) — never localhost — so the
+# ingestion → Laravel hop uses `http://backend:8080/api/v1`.
+#
+# Reverb is intentionally NOT started here. In production it is a Forge
+# supervisor daemon (see nuvola-atlas-backend/docker/supervisor/nuvola-reverb.conf);
+# for local dev run `php artisan reverb:start` on the host when you need
+# websockets. Adding it here would need a supervisor entrypoint inside the
+# frankenphp image and buys nothing for the common dev loop.
+
+name: navuuna-dev
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: nuvola_atlas
+      POSTGRES_USER: nuvola
+      POSTGRES_PASSWORD: nuvola_secret
+      POSTGRES_HOST_AUTH_METHOD: md5
+      POSTGRES_INITDB_ARGS: "--auth-host=md5"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./nuvola-atlas-backend/docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nuvola -d nuvola_atlas"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build:
+      context: ./nuvola-atlas-backend
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Laravel reads these on boot. APP_KEY still comes from an .env
+      # inside the image at build time; override here if you rotate.
+      APP_ENV: local
+      APP_DEBUG: "true"
+      LOG_STACK: single
+      LOG_LEVEL: debug
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_DATABASE: nuvola_atlas
+      DB_USERNAME: nuvola
+      DB_PASSWORD: nuvola_secret
+      DB_SSLMODE: disable
+      CACHE_STORE: file
+      SESSION_DRIVER: file
+      QUEUE_CONNECTION: sync
+      # Hop-2 secret must match INGESTION_INTERNAL_SECRET on the other side.
+      INGEST_INTERNAL_SECRET: dev-only-not-a-real-secret
+      # Prevents FrankenPHP from binding to the wrong port when re-mapped.
+      SERVER_NAME: ":8080"
+    ports:
+      - "8000:8080"
+
+  ingestion:
+    build:
+      context: ./nuvola-atlas-ingestion
+      dockerfile: Dockerfile
+    depends_on:
+      - backend
+    environment:
+      INGESTION_LARAVEL_BASE_URL: http://backend:8080/api/v1
+      INGESTION_INTERNAL_SECRET: dev-only-not-a-real-secret
+      INGESTION_ENVIRONMENT: local
+    ports:
+      - "8100:8100"
+
+volumes:
+  pgdata:

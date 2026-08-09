@@ -45,7 +45,7 @@ def test_wrong_secret_fails_verification() -> None:
 
 
 def test_rewritten_timestamp_fails_verification() -> None:
-    ts, signature = sign(SECRET, BODY, timestamp=1_760_000_000)
+    _, signature = sign(SECRET, BODY, timestamp=1_760_000_000)
     assert verify(SECRET, BODY, "1760000001", signature, now=1_760_000_001) is False
 
 

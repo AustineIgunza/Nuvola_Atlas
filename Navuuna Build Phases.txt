@@ -46,8 +46,8 @@ Austine
 Khillon & Devyan
 * Final code review: Double-check all automated test suites are green, write down the final system documentation files, and present the live setup to the founding board for launch authorization.
 DETAILED EXPLANATIONS
-Last updated: 2026-07-12
-Current HEAD: 92626c3
+Last updated: 2026-08-09
+Current HEAD: d9f4f7b (pre-slice) — checkboxes flipped for shipped items: /api/v1/ingest + data_ingestion_logs migration + hop-2 HMAC contract (formal) + ruff/mypy/pytest CI + async ScoreCalculator wrapper (RecalculateAllZones); this slice adds the top-level docker-compose.dev.yml orchestrator.
 Active phase: Phase B — blocked on Daystar delivery (ingestion scaffold complete on our side; external data delivery has not started); Phase E — Admin Suite (design signed off, build pending); Phase F — Investor Suite (design signed off, build pending)
 Critical Rules for Code IDE
 * Read this file before every session. Do not redo completed items ([x]).
@@ -339,7 +339,7 @@ Devyan — Ingestion Service Foundation
 * [x] Build out nuvola-atlas-ingestion/ as a cleanly isolated project completely decentralized from the Laravel application layer to prevent cross-service downtime. Scaffold shipped 2026-07-12 (pyproject.toml, app/main.py, health + ingest routers, data_cleaner + anomaly_detector services, tests).
 * [ ] Formulate a dedicated ingestion Sentry target and map independent keys.
 * [x] Compose docs/architecture.md: draft system topography documentation mapping endpoints from source providers down through processing to user interfaces before initializing code blocks.
-* [ ] Build a robust orchestrator configuration via Docker Compose tying local engines together smoothly (FastAPI + Laravel + PostGIS + Reverb + Nginx).
+* [x] Build a robust orchestrator configuration via Docker Compose tying local engines together smoothly (FastAPI + Laravel + PostGIS + Reverb + Nginx). Top-level docker-compose.dev.yml at repo root wires Postgres + Laravel + FastAPI on one docker network; Reverb intentionally deferred to a host-run artisan command (see Documented Deviations).
 * [x] Verify spatial extension activates automatically on initial database container execution (docker-compose.yml).
 Vitality Score Engine Rewrite
 Suggested Timeline: July 25 – July 31, 2026 (1 Week)
@@ -356,7 +356,7 @@ Suggested Timeline: August 01 – August 21, 2026 (3 Weeks)
 Strategic Intent: Disconnect the platform from static mock configurations entirely. This builds secure parsing endpoints, data filters, and validation pipelines that ingest authentic data drops directly from Daystar University channels.
 Devyan & Khillon — Integration Contract
 * Why it's necessary: Hardens internal system-to-system security configurations, ensuring secure communication signatures block external network attempts on ingestion routes.
-* [ ] Formalize internal transmission signatures connecting Python and PHP processing steps. Standardize explicit validation parameters, secure authorization tokens (X-Internal-Secret), error fallbacks, and connection retry limits.
+* [x] Formalize internal transmission signatures connecting Python and PHP processing steps. Standardize explicit validation parameters, secure authorization tokens (X-Internal-Secret), error fallbacks, and connection retry limits. (docs/data/internal-transport.md marked Formal 2026-08-07 — two-hop scheme: Daystar → FastAPI token-only, FastAPI → Laravel token + timestamp + HMAC-SHA256; contract tests in nuvola-atlas-ingestion/tests/test_signing.py and nuvola-atlas-backend/tests/Feature/IngestContractTest.php stay in step.)
 Devyan — Daystar Data Specification & Outreach
 * Why it's necessary: Translates abstract data requirements into precise technical definitions. This outlines exact formatting boundaries for raw external datasets while protecting scoring logs from invalid geographic entries.
 * [x] Draft high-fidelity structural data specification documents for all 13 operational tracking parameters detailing required parsing resolutions, spatial anchors mapping clean to sub-counties, and intake frequencies. (docs/data/daystar-indicator-spec.md)
@@ -367,7 +367,7 @@ Devyan — Daystar Data Specification & Outreach
 Devyan — Ingestion Microservice Execution
 * Why it's necessary: Deploys data ingestion pipelines. It normalizes external structures, runs automated anomaly checks, and routes parsed geospatial datasets down into storage blocks.
 * [x] Architecture clean internal project configurations across nuvola-atlas-ingestion/.
-* [ ] Initialize structural pipeline validation checking routines (ruff + mypy + pytest). (pytest tests present; ruff + mypy config not yet added.)
+* [x] Initialize structural pipeline validation checking routines (ruff + mypy + pytest). Config in nuvola-atlas-ingestion/pyproject.toml (ruff select E,F,I,N,UP,B,SIM,RUF; mypy strict + pydantic plugin); CI job `.github/workflows/ci.yml` → `ingestion` runs all three on every PR that touches the ingestion path. Local baseline 2026-08-09: ruff clean, mypy clean, 44/44 pytest green.
 * [x] Build out ingestion target check status points at /api/health/ingestion. (Health router shipped in nuvola-atlas-ingestion/app/routers/health.py)
 * [x] Deploy strict data validation structures via Pydantic mapping cleanly to confirmed ingestion feeds. (app/models/indicators.py)
 * [x] Compose services/data_cleaner.py ensuring coordinate systems harmonize to WGS84, timestamps utilize explicit ISO 8601 UTC formats, null components drop cleanly, and missing spatial elements face instant rejection.
@@ -376,11 +376,11 @@ Devyan — Ingestion Microservice Execution
 * [ ] Execute complete end-to-end telemetry sweeps across first live components: Ensure data bridges seamlessly from Daystar -> FastAPI -> Laravel -> PostGIS -> Websocket broadcast -> Live user screens.
 Khillon — Laravel Intake & Core Spatial API Exposures
 * Why it's necessary: Generates transactional verification logging layers, binds incoming spatial variables to asynchronous calculation jobs, and exposes performance-optimized GeoJSON geometries for client interfaces.
-* [ ] Code target routing hooks accepting cleaned ingestion streams from processing pipelines, backed by strict X-Internal-Secret authorization checks.
-* [ ] Structure append-only data_ingestion_logs tables logging pipeline states. (Design captured for Phase E data_feed_status table — see below.)
+* [x] Code target routing hooks accepting cleaned ingestion streams from processing pipelines, backed by strict X-Internal-Secret authorization checks. (POST /api/v1/ingest wired 2026-08-04 with EnsureInternalSecret middleware; FastAPI forwarder in nuvola-atlas-ingestion/app/services/laravel_forwarder.py signs the hop-2 request with the shared secret + HMAC-SHA256 signature.)
+* [x] Structure append-only data_ingestion_logs tables logging pipeline states. Migration 2026_08_04_100011_create_data_ingestion_logs_table.php shipped as part of the /api/v1/ingest wire-up.
 * [x] Expose rich structural sub-metric parameters via standard zone details queries to feed interface data freshness indicators. (ZoneResource + DaystarIndicatorPanel.)
 * [x] Implement robust REST configurations for /api/v1/zones/{id} and /api/v1/zones/{id}/history localized trend endpoints. (Zone history rewritten to average 13 indicator columns and derive pillars via pillarScoresFromValues.)
-* [ ] Ensure calculation scripts execute entirely inside async jobs and trigger instant regional server broadcasts upon status shifts. (Current ScoreCalculator::recalculate is synchronous — needs job dispatch wrapper per coding rule.)
+* [x] Ensure calculation scripts execute entirely inside async jobs and trigger instant regional server broadcasts upon status shifts. RecalculateZoneScore (single zone) + RecalculateAllZones (bulk, chunks of 5) both queue-dispatched; ZoneScoreUpdated broadcast on channel `zones.{id}` carries composite + 4 pillars + missingIndicators + indicatorsActive/Total.
 * [x] Expose production-ready GeoJSON feature configurations detailing Roads, Energy metrics, and Density tracking spaces. (zone_layers table + atlas-map.sources.ts.)
 Austine — Partial-Scoring Interface Adaptations
 * Why it's necessary: Updates client interfaces to reflect real-world pipeline states. This clearly isolates verified data points while communicating tracking updates non-alarmingly during onboarding phases.
@@ -516,4 +516,5 @@ Recorded when what's live on the codebase differs from what this file originally
 * 2026-07-12 — CI backend job informational. .github/workflows/ci.yml carries continue-on-error on the backend phpunit job until the tests are re-run green against the indicator schema. Frontend job remains enforcing.
 * 2026-07-12 — Assistant defaults to mock. USE_MOCK_CHAT gate keeps the assistant streaming answers while Vercel AI Gateway billing is pending. Real gateway route unchanged; flip VITE_USE_REMOTE_CHAT=true when the key is issued.
 * 2026-07-12 — Migrations table repair on Supabase staging. The migrations table on Supabase was empty (tables created without recording their migrations), so `artisan migrate` refused to run. Applied the pillar → indicator DDL directly via `fly ssh console` + tinker and captured the idempotent SQL at database/sql/fix-indicators.sql for reproducibility.
+* 2026-08-09 — Dev orchestrator scope. docker-compose.dev.yml at the repo root brings up Postgres+PostGIS + Laravel + FastAPI ingestion on one docker network. Reverb and Nginx are intentionally NOT in the compose stack: Reverb runs as a Forge supervisor daemon in prod (docker/supervisor/nuvola-reverb.conf) and locally is a single `php artisan reverb:start` on the host when websocket work is needed; Nginx sits in front of Forge in prod and buys nothing for the dev inner loop where FrankenPHP already serves HTTP on :8080. Frontend Vite stays outside so HMR keeps its host-native perf.
 End of Technical Tracking Manifest

@@ -9,19 +9,19 @@ in sync when the taxonomy changes.
 from __future__ import annotations
 
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class PillarKey(str, Enum):
+class PillarKey(StrEnum):
     social = "social"
     safety = "safety"
     density = "density"
     infra = "infra"
 
 
-class IndicatorKey(str, Enum):
+class IndicatorKey(StrEnum):
     healthcare_access = "healthcare_access"
     education_access = "education_access"
     digital_connectivity = "digital_connectivity"
