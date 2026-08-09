@@ -162,10 +162,11 @@ class ChatOrchestrator
 
     private function userSafeError(Throwable $e): string
     {
-        // Pipe validation errors through — they're already user-safe and
-        // give useful signal ("Table `secrets` is not in the allowlist").
         if ($e instanceof \InvalidArgumentException) {
             return $e->getMessage();
+        }
+        if (str_contains($e->getMessage(), 'AI_GATEWAY_API_KEY')) {
+            return 'The AI assistant needs an API key. Set AI_GATEWAY_API_KEY in the backend .env and restart.';
         }
         return 'The assistant is unavailable right now.';
     }

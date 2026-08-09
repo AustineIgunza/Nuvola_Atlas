@@ -34,10 +34,12 @@ export default function AppShell({ children }: Props) {
       <Sidebar />
       <div className={`flex flex-col min-w-0 min-h-screen ${inset}`}>
         {/* Mobile chrome is now a floating right-edge vertical pill instead
-            of a full-width bottom bar. Content pads right on <md so the
-            pill never sits over active content. Safe-area handled by
-            MobileTabBar itself. */}
-        <main className="flex-1 overflow-y-auto pr-16 md:pr-0">{children}</main>
+            of a full-width bottom bar. Text-content pages pad right on <md
+            so the pill never sits over active content; the Atlas map bleeds
+            edge-to-edge because the pill has its own glass background and
+            the 64 px reserved strip would otherwise crop the map. Safe-area
+            handled by MobileTabBar itself. */}
+        <main className={`flex-1 ${isAtlas ? "overflow-hidden" : "overflow-y-auto pr-16 md:pr-0"}`}>{children}</main>
       </div>
       <MobileTabBar />
       <SearchModal />
