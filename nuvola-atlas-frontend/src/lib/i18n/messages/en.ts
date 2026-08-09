@@ -334,6 +334,18 @@ export const en = {
   "watchlist.remove": "Remove from watchlist",
   "watchlist.watching": "Watching",
 
+  // ── ESG lens (investor-only, additive framing chip) ─────────────────────
+  "esgLens.on": "ESG lens · on",
+  "esgLens.off": "ESG lens",
+  "esgLens.turnOn": "Turn ESG lens on",
+  "esgLens.turnOff": "Turn ESG lens off",
+  "compare.capitalAllocation.title": "Capital-allocation lens",
+  "compare.capitalAllocation.subtitle": "Zones ranked on Safety × Infrastructure × Rule-of-Law composite",
+  "compare.capitalAllocation.rank": "#{rank}",
+  "reports.investorFilter.badge": "Watchlist only",
+  "reports.investorFilter.showAll": "Show all reports",
+  "reports.investorFilter.showWatchlist": "Show only watchlist",
+
   // ── Announcements ───────────────────────────────────────────────────────
   "announce.dismiss": "Dismiss",
 

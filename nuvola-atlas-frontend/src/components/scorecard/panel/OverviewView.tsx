@@ -17,10 +17,17 @@ import IndicatorAvailabilityChip from "./IndicatorAvailabilityChip";
 import DaystarIndicatorPanel from "./DaystarIndicatorPanel";
 import { Section, Chip, StatCell, SEVERITY_COLOR, IMPACT_COLOR, STATUS_STYLE } from "./bits";
 import ZoneNotesCard from "@/components/investor/ZoneNotesCard";
+import { useChromeStore } from "@/stores/chrome";
+import { useAuthStore, isInvestor } from "@/stores/auth";
 import type { PanelView } from "./panel-types";
 import type { Zone, PillarKey } from "@/types";
 
-const PILLAR_KEYS: PillarKey[] = ["social", "safety", "density", "infra"];
+// Default pillar order matches the grant methodology: Social, Safety,
+// Density, Infra (four equally weighted pillars). Investors with the ESG
+// lens on get the sovereign-risk-first ordering — Safety + Infra rise
+// because those are the pillars a deal reviewer signs off on first.
+const DEFAULT_PILLAR_ORDER: PillarKey[] = ["social", "safety", "density", "infra"];
+const ESG_LENS_PILLAR_ORDER: PillarKey[] = ["safety", "infra", "social", "density"];
 
 interface Props {
   zone: Zone;
@@ -33,6 +40,9 @@ export default function OverviewView({ zone, onNavigate }: Props) {
   const [exporting, setExporting] = useState(false);
   const { data: projects } = useQuery({ queryKey: ["projects"], queryFn: api.getProjects });
   const { data: alerts } = useQuery({ queryKey: ["alerts"], queryFn: api.getAlerts });
+  const user = useAuthStore((s) => s.user);
+  const esgLens = useChromeStore((s) => s.esgLens);
+  const pillarOrder = isInvestor(user) && esgLens ? ESG_LENS_PILLAR_ORDER : DEFAULT_PILLAR_ORDER;
 
   const zoneProjects = (projects ?? []).filter((p) => p.zoneId === zone.id);
   const zoneAlerts = (alerts ?? []).filter((a) => a.zoneId === zone.id);
@@ -162,7 +172,7 @@ export default function OverviewView({ zone, onNavigate }: Props) {
 
       {/* Pillars — each row drills into the pillar explainer */}
       <Section title={t("scorecard.pillars")} className="px-1.5 py-1">
-        {PILLAR_KEYS.map((key, i) => (
+        {pillarOrder.map((key, i) => (
           <button
             key={key}
             onClick={() => onNavigate({ type: "pillar", key })}

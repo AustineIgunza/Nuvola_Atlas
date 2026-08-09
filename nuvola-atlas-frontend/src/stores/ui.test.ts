@@ -77,4 +77,14 @@ describe("chrome store", () => {
     useChromeStore.getState().toggleSidebar();
     expect(useChromeStore.getState().sidebarCollapsed).toBe(true);
   });
+
+  it("toggles the ESG lens and persists to localStorage", () => {
+    useChromeStore.setState({ esgLens: false });
+    useChromeStore.getState().toggleEsgLens();
+    expect(useChromeStore.getState().esgLens).toBe(true);
+    expect(window.localStorage.getItem("nuvola_esg_lens")).toBe("1");
+    useChromeStore.getState().toggleEsgLens();
+    expect(useChromeStore.getState().esgLens).toBe(false);
+    expect(window.localStorage.getItem("nuvola_esg_lens")).toBe("0");
+  });
 });

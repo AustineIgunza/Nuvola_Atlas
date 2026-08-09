@@ -337,6 +337,18 @@ export const sw: Partial<Record<MessageKey, string>> = {
   "watchlist.remove": "Ondoa kutoka orodha",
   "watchlist.watching": "Inafuatiliwa",
 
+  // ESG lens
+  "esgLens.on": "Lenzi ya ESG · imewashwa",
+  "esgLens.off": "Lenzi ya ESG",
+  "esgLens.turnOn": "Washa lenzi ya ESG",
+  "esgLens.turnOff": "Zima lenzi ya ESG",
+  "compare.capitalAllocation.title": "Lenzi ya mgao wa mtaji",
+  "compare.capitalAllocation.subtitle": "Maeneo yamepangwa kwa Usalama × Miundombinu × Utawala wa Sheria",
+  "compare.capitalAllocation.rank": "#{rank}",
+  "reports.investorFilter.badge": "Orodha tu",
+  "reports.investorFilter.showAll": "Onyesha ripoti zote",
+  "reports.investorFilter.showWatchlist": "Onyesha za orodha pekee",
+
   // Announcements
   "announce.dismiss": "Ondoa",
 

@@ -6,8 +6,14 @@ import ProjectQuickView from "./ProjectQuickView";
 import AnnouncementsBanner from "./AnnouncementsBanner";
 import ImpersonationBanner from "./ImpersonationBanner";
 import MethodologyModal from "@/components/modals/MethodologyModal";
+import ESGLensChip from "@/components/investor/ESGLensChip";
 import { useLiveData } from "@/hooks/useLiveData";
 import { useChromeStore } from "@/stores/chrome";
+
+// Investor ESG-lens chip only surfaces on the scorecard-adjacent pages
+// where the reordering actually pays off. On other pages (Reports,
+// Assistant, Settings, Admin) the toggle would be confusing chrome.
+const ESG_LENS_ROUTES = new Set(["/atlas", "/vitality", "/compare"]);
 
 interface Props {
   children: React.ReactNode;
@@ -25,6 +31,7 @@ export default function AppShell({ children }: Props) {
   const location = useLocation();
   const collapsed = useChromeStore((s) => s.sidebarCollapsed);
   const isAtlas = location.pathname === "/atlas";
+  const showEsgLens = ESG_LENS_ROUTES.has(location.pathname);
   // Atlas gets no padding so the map extends edge-to-edge behind the
   // floating sidebar. Every other page pads left so its content clears
   // the sidebar.
@@ -47,6 +54,17 @@ export default function AppShell({ children }: Props) {
       <ProjectQuickView />
       <AnnouncementsBanner />
       <ImpersonationBanner />
+      {showEsgLens && (
+        // Floating top-right — high enough to clear the mobile pill and
+        // stays out of the Atlas compass column (compass is at right-3;
+        // this chip is right-16 on Atlas so both fit, right-3 elsewhere).
+        <div
+          className={`fixed z-30 top-3 ${isAtlas ? "right-16" : "right-16 md:right-6"}`}
+          data-testid="esg-lens-mount"
+        >
+          <ESGLensChip />
+        </div>
+      )}
     </div>
   );
 }

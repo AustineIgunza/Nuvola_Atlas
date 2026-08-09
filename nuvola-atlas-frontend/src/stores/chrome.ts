@@ -1,11 +1,17 @@
 import { create } from "zustand";
 
 const AUTO_REFRESH_KEY = "nuvola_auto_refresh";
+const ESG_LENS_KEY = "nuvola_esg_lens";
 
 function loadAutoRefresh(): boolean {
   if (typeof window === "undefined") return true;
   const raw = window.localStorage.getItem(AUTO_REFRESH_KEY);
   return raw === null ? true : raw === "1";
+}
+
+function loadEsgLens(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.localStorage.getItem(ESG_LENS_KEY) === "1";
 }
 
 interface ChromeState {
@@ -19,6 +25,11 @@ interface ChromeState {
   // navigate away to show the detail.
   quickViewProjectId: string | null;
   autoRefresh: boolean;
+  // Investor "ESG lens" — additive framing chip that reorders the scorecard
+  // to lead with Safety + Infra when on. Only rendered to investor users;
+  // the boolean lives here so non-investor sessions can still round-trip
+  // through localStorage without collisions.
+  esgLens: boolean;
 
   togglePanel: () => void;
   openPanel: () => void;
@@ -35,6 +46,8 @@ interface ChromeState {
   openQuickView: (projectId: string) => void;
   closeQuickView: () => void;
   setAutoRefresh: (on: boolean) => void;
+  setEsgLens: (on: boolean) => void;
+  toggleEsgLens: () => void;
 }
 
 export const useChromeStore = create<ChromeState>((set) => ({
@@ -45,6 +58,7 @@ export const useChromeStore = create<ChromeState>((set) => ({
   sidebarCollapsed: false,
   quickViewProjectId: null,
   autoRefresh: loadAutoRefresh(),
+  esgLens: loadEsgLens(),
 
   togglePanel: () => set((s) => ({ panelOpen: !s.panelOpen })),
   openPanel: () => set({ panelOpen: true }),
@@ -65,5 +79,18 @@ export const useChromeStore = create<ChromeState>((set) => ({
       window.localStorage.setItem(AUTO_REFRESH_KEY, on ? "1" : "0");
     }
     set({ autoRefresh: on });
+  },
+  setEsgLens: (on) => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(ESG_LENS_KEY, on ? "1" : "0");
+    }
+    set({ esgLens: on });
+  },
+  toggleEsgLens: () => {
+    const next = !useChromeStore.getState().esgLens;
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(ESG_LENS_KEY, next ? "1" : "0");
+    }
+    set({ esgLens: next });
   },
 }));

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FileText, Plus } from "lucide-react";
+import { FileText, Plus, Star } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { api } from "@/api";
 import { formatDate, formatBytes } from "@/lib/format";
@@ -12,6 +12,8 @@ import { useT } from "@/lib/i18n/use-t";
 import DetailPopup from "@/components/common/DetailPopup";
 import ReportDetail from "./ReportDetail";
 import NewReportModal from "./NewReportModal";
+import { useAuthStore, isInvestor } from "@/stores/auth";
+import { useWatchlistStore } from "@/stores/watchlist";
 import type { Report, ReportStatus } from "@/types";
 
 // Filter labels resolved inside the component via useT so language flips
@@ -29,6 +31,19 @@ export default function ReportsTable() {
   // the popup without it snapping back on the next re-render.
   const [autoOpenedFor, setAutoOpenedFor] = useState<string | null>(null);
 
+  // Investor default: scope reports to the firm's watchlist. Toggleable so
+  // an investor can still browse the whole library when they want to. The
+  // toggle is not rendered for non-investors — they never see it.
+  const user = useAuthStore((s) => s.user);
+  const watchlistIds = useWatchlistStore((s) => s.ids);
+  const investor = isInvestor(user);
+  const [watchlistOnly, setWatchlistOnly] = useState(investor);
+  // If a zone-scoped deeplink lands (`?zone=`) the investor filter would
+  // hide the target report — drop the filter for that navigation.
+  useEffect(() => {
+    if (zoneParam) setWatchlistOnly(false);
+  }, [zoneParam]);
+
   const { data: reports } = useQuery({
     queryKey: ["reports"],
     queryFn: api.getReports,
@@ -44,6 +59,7 @@ export default function ReportsTable() {
     reports?.filter((r) => {
       if (filter !== "all" && r.status !== filter) return false;
       if (zoneParam && r.zoneId !== zoneParam) return false;
+      if (investor && watchlistOnly && r.zoneId && !watchlistIds.has(r.zoneId)) return false;
       return true;
     }) ?? [];
 
@@ -120,6 +136,22 @@ export default function ReportsTable() {
             })}
           </div>
           <div className="flex items-center gap-2 self-start">
+            {investor && !zoneParam && (
+              <button
+                onClick={() => setWatchlistOnly((v) => !v)}
+                aria-pressed={watchlistOnly}
+                className={cn(
+                  "h-8 px-3 rounded-chip border text-[11px] font-medium inline-flex items-center gap-1.5 transition-colors",
+                  watchlistOnly
+                    ? "border-[color:var(--gold,#E0A82E)] text-[color:var(--gold,#E0A82E)] bg-[rgba(224,168,46,0.10)]"
+                    : "border-border text-ink-3 hover:text-ink-1",
+                )}
+                title={watchlistOnly ? t("reports.investorFilter.showAll") : t("reports.investorFilter.showWatchlist")}
+              >
+                <Star size={12} fill={watchlistOnly ? "currentColor" : "none"} />
+                {t("reports.investorFilter.badge")}
+              </button>
+            )}
             {zoneParam && (
               <button
                 onClick={() => {
