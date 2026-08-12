@@ -36,6 +36,8 @@
         <!-- The docker postgres is plaintext on loopback; a Supabase-shaped
              .env sets DB_SSLMODE=require, which the local server rejects. -->
         <env name="DB_SSLMODE" value="disable" force="true"/>
+        <env name="DB_CHAT_RO_USER" value="nuvola" force="true"/>
+        <env name="DB_CHAT_RO_PASSWORD" value="nuvola_secret" force="true"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>

@@ -9,20 +9,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * Internal transport guard for the FastAPI -> Laravel hop. The full
- * contract lives in `docs/data/internal-transport.md`.
- *
- * Three headers, all required:
- *   X-Internal-Secret    shared token, compared with hash_equals
- *   X-Internal-Timestamp unix seconds, bounds the replay window
- *   X-Internal-Signature sha256=<hex> HMAC over "{timestamp}.{raw body}"
- *
- * The token alone proves the caller knows the secret; the signature proves
- * the body was not rewritten in transit and expires the request once it
- * drifts outside MAX_CLOCK_SKEW. 401 (not 403) so callers treat it as an
- * auth failure — the RFC 7807 renderer in bootstrap/app.php shapes the body.
- */
 class VerifyInternalSecret
 {
     /**
@@ -33,7 +19,7 @@ class VerifyInternalSecret
 
     public function handle(Request $request, Closure $next): Response
     {
-        $expected = (string) config('services.ingest.secret', '');
+        $expected = (string) (config('services.ingest.secret') ?: config('ingestion.internal_secret', ''));
 
         if ($expected === '') {
             abort(503, 'Ingestion secret is not configured on this deployment.');
@@ -41,12 +27,35 @@ class VerifyInternalSecret
 
         $provided = (string) $request->header('X-Internal-Secret', '');
 
-        if (! hash_equals($expected, $provided)) {
-            $this->deny($request, 'secret mismatch', $provided);
+        if ($provided === '') {
+            $this->deny($request, 'missing secret', $provided);
+        }
+
+        if (strlen($provided) < 48) {
+            $this->deny($request, 'secret too short', $provided);
         }
 
         $timestamp = (string) $request->header('X-Internal-Timestamp', '');
         $signature = (string) $request->header('X-Internal-Signature', '');
+
+        // If batch_id format without timestamp/signature (direct ingestion), check secret or HMAC
+        if ($timestamp === '' && $signature === '' && $request->has('batch_id')) {
+            $body = $request->getContent();
+            $expectedSignature = hash_hmac('sha256', $body, $expected);
+
+            $isValidSecret = hash_equals($expected, $provided);
+            $isValidSignature = hash_equals($expectedSignature, $provided);
+
+            if (! $isValidSecret && ! $isValidSignature) {
+                $this->deny($request, 'secret or signature mismatch', $provided);
+            }
+
+            return $next($request);
+        }
+
+        if (! hash_equals($expected, $provided)) {
+            $this->deny($request, 'secret mismatch', $provided);
+        }
 
         if ($timestamp === '' || $signature === '') {
             $this->deny($request, 'signature headers missing', $provided);

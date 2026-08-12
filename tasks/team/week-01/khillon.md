@@ -97,13 +97,13 @@ Base + `enable_postgis`, `zones + boundary`, `projects`, `alerts`, `reports`, `v
   - Deploy Now → smoke `/api/health` (DB ping + cache write must both be green).
   - **DoD:** `/api/health` returns 200 with both `database: ok` + `cache: ok` on production; migrations ran without drift; Reverb WebSocket connects on `wss://`.
 
-- [ ] **Phase B intake pipe — `POST /api/v1/ingest`**
+- [x] **Phase B intake pipe — `POST /api/v1/ingest`**
   - New route inside `routes/api.php`, `throttle:api` + `X-Internal-Secret` header validator middleware (build `EnsureInternalSecret` in `app/Http/Middleware/`).
   - Body accepts cleaned Daystar batches per Devyan's `daystar-indicator-spec.md`. Payload validates via `IngestBatchRequest` FormRequest.
   - Writes an append-only row to `data_ingestion_logs` (new migration below), then persists indicator values to the correct zone/indicator columns, then dispatches `RecalculateZoneScore` per zone in the batch.
   - Coordinate with Devyan on: header name, HMAC signature scheme (`hash_hmac('sha256', $body, $secret)`), retry limits (3 tries, exponential backoff), error envelope shape.
 
-- [ ] **Phase B migration — `create_data_ingestion_logs_table` (append-only)**
+- [x] **Phase B migration — `create_data_ingestion_logs_table` (append-only)**
   - `id PK`, `source` string (Daystar batch id or feed name), `payload_hash` string(64) unique (idempotency dedupe), `arrived_at` timestamp, `verified_by_field` bool (default false, updated by field workers via a later admin action), `status` enum(`received`,`validated`,`rejected`,`applied`), `error_reasons` jsonb nullable, `zone_count` int nullable, `indicator_count` int nullable, timestamps.
   - Table is **append-only** — no updates or deletes ever. Enforce at model level (`static::updating(fn () => throw)`) + at DB level with a `BEFORE UPDATE/DELETE` trigger returning `NULL` (isolated commented raw SQL per the coding rule).
   - Reversible (`up()` + `down()`).

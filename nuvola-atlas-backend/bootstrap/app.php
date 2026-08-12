@@ -120,6 +120,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'firm.scope' => \App\Http\Middleware\FirmScope::class,
             'audit.write' => \App\Http\Middleware\AuditWrite::class,
             'internal.secret' => \App\Http\Middleware\VerifyInternalSecret::class,
+            'ingest.secret' => \App\Http\Middleware\VerifyInternalSecret::class,
         ]);
         $middleware->redirectGuestsTo(fn (Request $request) => $request->is('api/*') ? null : route('login'));
     })

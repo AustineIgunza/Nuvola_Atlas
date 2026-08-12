@@ -22,10 +22,7 @@ class ZoneFactory extends Factory
         $density = fake()->numberBetween(30, 95);
         $infra = fake()->numberBetween(30, 95);
 
-        return [
-            'id' => fake()->slug(2),
-            'name' => fake()->city(),
-            'score' => (int) round(($social + $safety + $density + $infra) / 4),
+        $indicators = [
             'indicator_healthcare_access' => $social,
             'indicator_education_access' => $social,
             'indicator_digital_connectivity' => $social,
@@ -39,8 +36,14 @@ class ZoneFactory extends Factory
             'indicator_energy_reliability' => $infra,
             'indicator_food_risk' => $infra,
             'indicator_waste_management' => $infra,
-            'last_sync_min' => fake()->numberBetween(1, 30),
         ];
+
+        return array_merge([
+            'id' => fake()->slug(2),
+            'name' => fake()->city(),
+            'score' => (int) round(($social + $safety + $density + $infra) / 4),
+            'last_sync_min' => fake()->numberBetween(1, 30),
+        ], $indicators);
     }
 
     public function configure(): static
