@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+#
+# Formats and lints staged files only. Fast checks — no test suites; those
+# belong in `make check` and in CI, not in the half second before a commit.
+#
+# Install:  make hooks     (or: git config core.hooksPath .githooks)
+# Skip once: git commit --no-verify
+#
+# Deliberately not Husky + lint-staged. Both are Node tools and would need a
+# root package.json this repo does not have, to dispatch work to a PHP binary
+# and a Python one. Two dependencies and a new manifest to do what git already
+# does natively across all three languages.
+
+set -uo pipefail
+
+cd "$(git rev-parse --show-toplevel)" || exit 1
+
+staged() {
+  git diff --cached --name-only --diff-filter=ACM -- "$@"
+}
+
+fail=0
+
+# --- frontend -------------------------------------------------------------
+fe=$(staged 'nuvola-atlas-frontend/src/*.ts' 'nuvola-atlas-frontend/src/*.tsx' 'nuvola-atlas-frontend/src/*.css')
+if [ -n "$fe" ]; then
+  rel=$(echo "$fe" | sed 's|^nuvola-atlas-frontend/||')
+
+  echo "prettier: $(echo "$rel" | wc -l | tr -d ' ') file(s)"
+  (cd nuvola-atlas-frontend && echo "$rel" | xargs npx prettier --write) || fail=1
+  echo "$fe" | xargs git add
+
+  ts=$(echo "$rel" | grep -E '\.tsx?$')
+  if [ -n "$ts" ]; then
+    echo "eslint:"
+    (cd nuvola-atlas-frontend && echo "$ts" | xargs npx eslint) || fail=1
+  fi
+fi
+
+# --- backend --------------------------------------------------------------
+be=$(staged 'nuvola-atlas-backend/*.php')
+if [ -n "$be" ]; then
+  rel=$(echo "$be" | sed 's|^nuvola-atlas-backend/||')
+  echo "pint: $(echo "$rel" | wc -l | tr -d ' ') file(s)"
+  (cd nuvola-atlas-backend && echo "$rel" | xargs vendor/bin/pint) || fail=1
+  echo "$be" | xargs git add
+fi
+
+# --- ingestion ------------------------------------------------------------
+py=$(staged 'nuvola-atlas-ingestion/*.py')
+if [ -n "$py" ]; then
+  rel=$(echo "$py" | sed 's|^nuvola-atlas-ingestion/||')
+  echo "ruff: $(echo "$rel" | wc -l | tr -d ' ') file(s)"
+  if command -v ruff > /dev/null 2>&1; then
+    (cd nuvola-atlas-ingestion && echo "$rel" | xargs ruff check --fix) || fail=1
+    echo "$py" | xargs git add
+  else
+    echo "  ruff not installed — skipped. pip install -e '.[dev]' in nuvola-atlas-ingestion"
+  fi
+fi
+
+if [ "$fail" -ne 0 ]; then
+  echo
+  echo "pre-commit found problems it could not fix automatically."
+  echo "fix them, or commit with --no-verify if you know what you are doing."
+fi
+exit "$fail"
