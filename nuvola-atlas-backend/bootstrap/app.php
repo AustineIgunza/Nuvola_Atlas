@@ -117,7 +117,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin.two_factor' => \App\Http\Middleware\RequireAdminTwoFactor::class,
             'http.cache' => \App\Http\Middleware\HttpCache::class,
             'firm.scope' => \App\Http\Middleware\FirmScope::class,
-            'audit.write' => \App\Http\Middleware\AuditWrite::class,
             'internal.secret' => \App\Http\Middleware\VerifyInternalSecret::class,
             'ingest.secret' => \App\Http\Middleware\VerifyInternalSecret::class,
         ]);

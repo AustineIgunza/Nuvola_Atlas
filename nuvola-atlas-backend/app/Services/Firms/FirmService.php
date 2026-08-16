@@ -14,8 +14,9 @@ use Illuminate\Support\Str;
 /**
  * Firm CRUD + intra-firm role management. Wraps the raw model access so
  * controllers stay thin and every write is transactional. Audit rows are
- * written by the controller via `audit.write` middleware — this service
- * only owns the DB transitions.
+ * written by `AdminFirmController` via explicit `Audit::record` calls, which
+ * carry the resource and the semantic action — this service only owns the DB
+ * transitions.
  */
 class FirmService
 {
