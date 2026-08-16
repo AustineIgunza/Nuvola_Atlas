@@ -8,11 +8,15 @@ import type { HistoryRange, ZoneHistory } from "@/types";
  * when a `zones` event fires for the same zoneId, so the chart trails
  * the score ring in real time once Reverb is live.
  */
-export function useZoneHistory(zoneId: string | null, range: HistoryRange = "week") {
+export function useZoneHistory(
+  zoneId: string | null,
+  range: HistoryRange = "week",
+  enabled = true,
+) {
   return useQuery<ZoneHistory>({
     queryKey: ["zoneHistory", zoneId, range],
     queryFn: () => api.getZoneHistory(zoneId as string, range),
-    enabled: Boolean(zoneId),
+    enabled: Boolean(zoneId) && enabled,
     staleTime: 60_000,
   });
 }

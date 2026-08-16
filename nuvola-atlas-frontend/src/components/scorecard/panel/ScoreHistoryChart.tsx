@@ -23,6 +23,12 @@ const RANGES: { key: HistoryRange; label: string }[] = [
   { key: "month", label: "Month" },
 ];
 
+const RANGE_WINDOW: Record<HistoryRange, string> = {
+  day: "24 hours",
+  week: "7 days",
+  month: "30 days",
+};
+
 const PILLAR_KEYS: PillarKey[] = ["social", "safety", "density", "infra"];
 
 function prefersReducedMotion(): boolean {
@@ -49,6 +55,15 @@ export default function ScoreHistoryChart({ zoneId }: Props) {
   const { data, isLoading } = useZoneHistory(zoneId, range);
   const { data: forecast } = useZoneForecast(zoneId, 14, forecastOn);
   const reduceMotion = useMemo(prefersReducedMotion, []);
+
+  // A range with no rows does not mean the zone has no history — a stalled
+  // feed empties the short windows first. Probe the widest window before
+  // claiming there is nothing, so the panel never reports absence it has
+  // not checked for.
+  const noRowsHere = !isLoading && (data?.points.length ?? 0) < 2;
+  const { data: widest } = useZoneHistory(zoneId, "month", noRowsHere && range !== "month");
+  const widestPoints = range === "month" ? (data?.points ?? []) : (widest?.points ?? []);
+  const latestElsewhere = widestPoints.length >= 2 ? widestPoints[widestPoints.length - 1].t : null;
 
   const chartData = useMemo(() => {
     if (!data) return [];
@@ -95,7 +110,7 @@ export default function ScoreHistoryChart({ zoneId }: Props) {
     return [...historical, ...projected];
   }, [data, range, forecastOn, forecast]);
 
-  const empty = !isLoading && chartData.length < 2;
+  const empty = noRowsHere;
   const dividerLabel = data && data.points.length > 0 ? formatTick(data.points[data.points.length - 1].t, range) : null;
 
   const toggleOverlay = (k: PillarKey) => {
@@ -149,7 +164,22 @@ export default function ScoreHistoryChart({ zoneId }: Props) {
           <div className="h-full w-full rounded-control bg-[rgba(255,255,255,0.03)] animate-pulse" />
         ) : empty ? (
           <div className="h-full w-full grid place-items-center text-[10.5px] text-ink-4 text-center px-3">
-            Not enough data yet — check back after the next sync.
+            {latestElsewhere ? (
+              <div>
+                <p>
+                  No snapshots in the last {RANGE_WINDOW[range]}. The most recent is
+                  from {new Date(latestElsewhere).toLocaleDateString([], { month: "short", day: "numeric" })}.
+                </p>
+                <button
+                  onClick={() => setRange("month")}
+                  className="mt-1.5 px-2 py-0.5 rounded-full border border-border text-ink-2 hover:text-ink-1 transition-colors"
+                >
+                  Show last 30 days
+                </button>
+              </div>
+            ) : (
+              <p>No history recorded for this zone yet.</p>
+            )}
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
