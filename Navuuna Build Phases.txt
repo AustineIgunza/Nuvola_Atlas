@@ -46,9 +46,9 @@ Austine
 Khillon & Devyan
 * Final code review: Double-check all automated test suites are green, write down the final system documentation files, and present the live setup to the founding board for launch authorization.
 DETAILED EXPLANATIONS
-Last updated: 2026-08-09
-Current HEAD: d9f4f7b (pre-slice) — checkboxes flipped for shipped items: /api/v1/ingest + data_ingestion_logs migration + hop-2 HMAC contract (formal) + ruff/mypy/pytest CI + async ScoreCalculator wrapper (RecalculateAllZones); this slice adds the top-level docker-compose.dev.yml orchestrator.
-Active phase: Phase B — blocked on Daystar delivery (ingestion scaffold complete on our side; external data delivery has not started); Phase E — Admin Suite (design signed off, build pending); Phase F — Investor Suite (design signed off, build pending)
+Last updated: 2026-08-16
+Current HEAD: 45d764a — audit sweep against the live codebase, not against memory. Phases E and F turned out to be substantially built despite being marked "build pending": all 10 Phase E migrations, all 7 services, firm.scope, the methodology-driven ScoreCalculator, all 4 seeders and all 6 Phase F investor routes are shipped and covered by tests. Flipped those, plus Phase C GIST indexes / county rollup matview / 30-day payload pruning. Left [ ] with a PARTIAL or DEVIATION note where only some of a line shipped — read those notes before assuming a line is untouched. Also this session: every reference doc consolidated into one root docs/ tree (1c354cb), 29 composer advisories cleared (75ac2b6), dead audit.write middleware replaced by AdminAuditCoverageTest (45d764a). Baseline green: 72 routes, 247 backend tests / 1127 assertions, 25 frontend tests, tsc + vite build clean.
+Active phase: Phase B — blocked on Daystar delivery (our side is code-complete and provable end to end via `php artisan nuvola:ingest-smoke`; external data delivery has not started); Phase C — hardening, open items are pen-test, BetterStack, multi-region backups, object storage and native-device QA; Phase E — Admin Suite backend done, /admin/* frontend still pending; Phase F — Investor Suite backend done, 3 of 6 frontend items pending
 Critical Rules for Code IDE
 * Read this file before every session. Do not redo completed items ([x]).
 * Do not skip incomplete items unless explicitly told to.
@@ -210,7 +210,7 @@ AuthUser.firm?: { id, name, tier: "basic"|"deal"|"sovereign", watchlist: string[
 
 * API Standard: Prefixed with /api/v1/*, RFC 7807 errors, Sanctum bearer auth.
 * Pagination: Cursor-based pagination on /alerts and /zones/{id}/activity. Page-based pagination on /zones, /projects, and /reports.
-* Documentation: OpenAPI 3.1 specification maintained at nuvola-atlas-backend/docs/api/openapi.yaml.
+* Documentation: OpenAPI 3.1 specification maintained at docs/api/openapi.yaml. (Moved there 2026-08-16 when every reference doc was consolidated into one root docs/ tree. Spec currently covers 17 of 72 live routes — `php artisan route:list --path=api` is authoritative until it is regenerated.)
 * Resilience: remoteApi.getZones / getZone hydrate null pillar values from mock fixtures so a thin backend never breaks the UI (nuvola-atlas-frontend/src/api/remote.ts::hydrateZone).
 Repository Layout Key Paths
 Plaintext
@@ -393,11 +393,11 @@ Strategic Intent: Optimize database scaling, secure administrative access contro
 Database Optimization & Scaling
 * Why it's necessary: Builds structural spatial indices and query processing layers that maintain rapid client response times as live datasets scale.
 * [ ] Khillon: Execute definitive design sweeps over active PostGIS tables prior to accepting production data feeds.
-* [ ] Khillon: Implement performance-driven spatial indexes (GIST) across all core spatial columns to block sequential server bottlenecks as data density expands.
-* [ ] Khillon: Construct pre-aggregated materialized views capturing global county status configurations, controlled via automated overnight calculation routines.
+* [x] Khillon: Implement performance-driven spatial indexes (GIST) across all core spatial columns to block sequential server bottlenecks as data density expands. (zones_boundary_gist + zones_centroid_gist — both geometry columns indexed because containment and proximity are different questions; zone_layers_geojson_gin for jsonb feature lookups.)
+* [x] Khillon: Construct pre-aggregated materialized views capturing global county status configurations, controlled via automated overnight calculation routines. (county_vitality_rollup + unique county_vitality_rollup_county_idx, required for REFRESH CONCURRENTLY; rebuilt nightly by nuvola:refresh-county-rollup.)
 * [ ] Khillon: Deploy connection pooling configurations using PgBouncer to manage database connection scale. (Supabase pooler :6543 already in use; PgBouncer superfluous.)
 * [ ] Khillon: Select and map object storage endpoints (Cloudflare R2 vs Vercel Blob) handling large document exports.
-* [ ] Khillon: Deploy data optimization pruning routines scrubbing unprocessed raw storage text files after 30 days while locking analytical scores indefinitely.
+* [x] Khillon: Deploy data optimization pruning routines scrubbing unprocessed raw storage text files after 30 days while locking analytical scores indefinitely. (nuvola:prune-ingestion-payloads redacts data_ingestion_logs.payload only; the append-only trigger permits the redaction and still blocks any other column change. Partial index data_ingestion_logs_pending_purge_idx keeps the sweep off already-purged rows.)
 Security, Telemetry, and Alert Configurations
 * Why it's necessary: Implements robust system telemetry, enforces access control parameters, and sets up automated notifications to monitor infrastructure status.
 * [x] Enforce global endpoint throughput constraints limiting verified client reads to 600 requests per minute with active 100 burst limits. (throttle:api 60/min per user or IP; per-token override via personal_access_tokens.rate_limit_per_minute; auth throttle 20 attempts / 10 min per email+IP.)
@@ -434,35 +434,35 @@ Phase E: Admin Suite (Signed off — build pending)
 Design signed off 2026-07-12 in-session. See "Backend architecture — Admin + Investor build" for full schema + routes.
 Strategic Intent: Give Navuuna internal staff the deep-controls console needed to manage users, monitor Daystar delivery health, tune the scoring engine, review the audit trail, and manage published content.
 Backend — Foundations
-* [ ] Khillon: Migration `extend_users_for_firms` — primary_firm_id, deactivated_at, last_active_at on users.
-* [ ] Khillon: Migration `create_firms_table` (uuid PK + slug + tier + contact fields + active).
-* [ ] Khillon: Migration `create_firm_users_table` (pivot with role_within_firm).
-* [ ] Khillon: Migration `add_firm_fk_to_users` (finalise users.primary_firm_id FK).
-* [ ] Khillon: Migration `create_firm_watchlists_table` (firm_id + zone_id + priority + thesis).
-* [ ] Khillon: Migration `create_methodology_versions_table` (weights jsonb + bands jsonb + is_current with partial unique index). Seed v1.0.0 as is_current=true, draft=false with equal 0.25 weights.
-* [ ] Khillon: Migration `create_data_feed_status_table` (feed_name enum + zone_id + indicator_key + last_delivered_at + verified_records + expected_frequency_min).
-* [ ] Khillon: Migration `create_impersonation_sessions_table` (admin_user_id + target_user_id + reason + ip + user_agent + started_at + ended_at).
-* [ ] Khillon: Migration `create_content_blocks_tables` (content_blocks + content_block_revisions).
-* [ ] Khillon: Migration `extend_reports_for_cms` (created_by + updated_by + published_at + firm_scope_id).
+* [x] Khillon: Migration `extend_users_for_firms` — primary_firm_id, deactivated_at, last_active_at on users.
+* [x] Khillon: Migration `create_firms_table` (uuid PK + slug + tier + contact fields + active).
+* [x] Khillon: Migration `create_firm_users_table` (pivot with role_within_firm).
+* [x] Khillon: Migration `add_firm_fk_to_users` (finalise users.primary_firm_id FK).
+* [x] Khillon: Migration `create_firm_watchlists_table` (firm_id + zone_id + priority + thesis).
+* [x] Khillon: Migration `create_methodology_versions_table` (weights jsonb + bands jsonb + is_current with partial unique index). Seed v1.0.0 as is_current=true, draft=false with equal 0.25 weights. (Partial index methodology_versions_current_unique filtered WHERE is_current IS TRUE — a plain unique constraint would have capped history at one archived row.)
+* [x] Khillon: Migration `create_data_feed_status_table` (feed_name enum + zone_id + indicator_key + last_delivered_at + verified_records + expected_frequency_min).
+* [x] Khillon: Migration `create_impersonation_sessions_table` (admin_user_id + target_user_id + reason + ip + user_agent + started_at + ended_at).
+* [x] Khillon: Migration `create_content_blocks_tables` (content_blocks + content_block_revisions).
+* [x] Khillon: Migration `extend_reports_for_cms` (created_by + updated_by + published_at + firm_scope_id).
 Backend — Services & Middleware
-* [ ] Khillon: App\Services\Firms\FirmService (CRUD + membership).
-* [ ] Khillon: App\Services\Watchlist\WatchlistService.
-* [ ] Khillon: App\Services\Methodology\MethodologyPublisher (publish + dispatch RecalculateAllZones).
-* [ ] Khillon: App\Services\Methodology\MethodologyPreview (project scores under proposed weights).
-* [ ] Khillon: App\Services\Feeds\FeedStatusService (staleness computed on read).
-* [ ] Khillon: App\Services\Impersonation\ImpersonationService (mint target-user tokens + audit both ends).
-* [ ] Khillon: App\Services\Content\ContentBlockService (auto-snapshot revisions on save).
-* [ ] Khillon: Middleware `audit.write` (writes audit_logs row per admin action).
-* [ ] Khillon: Middleware `firm.scope` (injects primary_firm_id + watchlist context; 403 for investors without a firm).
-* [ ] Khillon: Modify ScoreCalculator to read weights from methodology_versions WHERE is_current=true (60s cache) instead of hardcoded 0.25 quartet.
+* [x] Khillon: App\Services\Firms\FirmService (CRUD + membership).
+* [x] Khillon: App\Services\Watchlist\WatchlistService.
+* [x] Khillon: App\Services\Methodology\MethodologyPublisher (publish + dispatch RecalculateAllZones).
+* [x] Khillon: App\Services\Methodology\MethodologyPreview (project scores under proposed weights).
+* [x] Khillon: App\Services\Feeds\FeedStatusService (staleness computed on read).
+* [x] Khillon: App\Services\Impersonation\ImpersonationService (mint target-user tokens + audit both ends).
+* [x] Khillon: App\Services\Content\ContentBlockService (auto-snapshot revisions on save).
+* [ ] Khillon: Middleware `audit.write` (writes audit_logs row per admin action). (DEVIATION — built, then removed 2026-08-16. Every mutating admin route already calls Audit::record with the resource and a semantic action; a blanket middleware would have written a second, less informative route.* row on all eleven. The invariant it was meant to guarantee now lives in tests/Feature/Admin/AdminAuditCoverageTest.php, which walks the router and fails when a mutating admin route lands unaudited. Do not re-add the middleware — extend the test instead.)
+* [x] Khillon: Middleware `firm.scope` (injects primary_firm_id + watchlist context; 403 for investors without a firm).
+* [x] Khillon: Modify ScoreCalculator to read weights from methodology_versions WHERE is_current=true (60s cache) instead of hardcoded 0.25 quartet.
 Backend — Routes (all under /api/v1/)
-* [ ] /admin/firms (GET, POST) + /admin/firms/{id} (GET, PATCH, DELETE)
-* [ ] /admin/firms/{id}/users (POST) + /admin/firms/{id}/users/{userId} (DELETE)
-* [ ] /admin/firms/{id}/watchlist (PUT)
-* [ ] /admin/methodology (GET, POST) + /admin/methodology/{version}/preview + /publish
-* [ ] /admin/feeds (GET) + /admin/feeds/{feedName} + /admin/feeds/zones/{zoneId}
-* [ ] /admin/impersonate/{userId} (POST) + /admin/impersonate/end + /admin/impersonations (GET)
-* [ ] /admin/content/{key} (GET, PUT) + /admin/content/{key}/revisions
+* [x] /admin/firms (GET, POST) + /admin/firms/{id} (GET, PATCH, DELETE) (DELETE deactivates rather than hard-deletes — watchlists and audit rows hang off firm_id.)
+* [ ] /admin/firms/{id}/users (POST) + /admin/firms/{id}/users/{userId} (DELETE) (Absent from route:list. FirmService owns the membership transitions already; only the routes are missing.)
+* [ ] /admin/firms/{id}/watchlist (PUT) (Absent. Investors manage their own watchlist via /investor/watchlist; the admin-side bulk edit was never wired.)
+* [ ] /admin/methodology (GET, POST) + /admin/methodology/{version}/preview + /publish (PARTIAL — GET index, POST /methodology/preview and POST /methodology/{id}/publish all ship. There is no POST /admin/methodology, so a new version can only be created by seeder or migration. Preview is body-scoped rather than version-scoped, which is the more useful shape: it scores an unsaved weight set.)
+* [ ] /admin/feeds (GET) + /admin/feeds/{feedName} + /admin/feeds/zones/{zoneId} (PARTIAL — the matrix endpoint ships and carries per-feed staleness; the two drill-down routes do not exist.)
+* [x] /admin/impersonate/{userId} (POST) + /admin/impersonate/end + /admin/impersonations (GET) (DEVIATION — shipped as GET/POST /admin/impersonate + DELETE /admin/impersonate/{id}, i.e. RESTful on the session rather than on the user. Same capability, and ending a session by its own id is safer than ending "whatever is current".)
+* [x] /admin/content/{key} (GET, PUT) + /admin/content/{key}/revisions (DEVIATION — revisions are returned inside the GET /admin/content/{key} payload rather than from a separate route; ContentBlockService snapshots them on every save.)
 Frontend — /admin/* section
 * [ ] Austine: /admin dashboard landing — 4 KPI tiles + recent activity strip.
 * [ ] Austine: /admin/users (extend existing) — impersonation button, role edit, deactivate, resend-verification, filters (role, firm, last active).
@@ -473,21 +473,21 @@ Frontend — /admin/* section
 * [ ] Austine: /admin/audit — filter (user, action, date), CSV export, expand row for before/after diff.
 * [ ] Austine: Admin chrome — reuse AppShell but swap sidebar section list; header "ADMIN CONSOLE" chip + current methodology version.
 Seed data (dev + demo)
-* [ ] Khillon: FirmSeeder — Acumen East Africa (deal), Andela Ventures (basic), GCF Nairobi Corridor (sovereign).
-* [ ] Khillon: FirmUserSeeder — investor+{firm}@navuuna.dev accounts with primary_firm_id set.
-* [ ] Khillon: FirmWatchlistSeeder — Acumen (Westlands + Kibra + Mathare + Kasarani), Andela (Kasarani + Embakasi East + Roysambu), GCF (all 17).
-* [ ] Khillon: FeedStatusSeeder — feed × zone × indicator with realistic mixed staleness.
+* [x] Khillon: FirmSeeder — Acumen East Africa (deal), Andela Ventures (basic), GCF Nairobi Corridor (sovereign).
+* [x] Khillon: FirmUserSeeder — investor+{firm}@navuuna.dev accounts with primary_firm_id set.
+* [x] Khillon: FirmWatchlistSeeder — Acumen (Westlands + Kibra + Mathare + Kasarani), Andela (Kasarani + Embakasi East + Roysambu), GCF (all 17).
+* [x] Khillon: FeedStatusSeeder — feed × zone × indicator with realistic mixed staleness.
 * [ ] Austine: mock.ts sign-in rules for investor emails (parallel to admin rules).
 Phase F: Investor Suite (Signed off — build pending)
 Design signed off 2026-07-12 in-session. Watchlist scoping: investors see everything, watchlisted zones just highlighted. ESG-lens toggle re-orders scorecard sub-metrics.
 Strategic Intent: Give external investors (VCs, grant reviewers, corporate innovation heads) a purpose-built read-only surface that frames Navuuna's data for capital allocation.
 Backend
-* [ ] Khillon: /investor/me (own profile + firm + tier).
-* [ ] Khillon: /investor/watchlist (GET, POST/PATCH/DELETE per zone).
-* [ ] Khillon: /investor/portfolio (rollup: composite scores across watchlist + trend).
-* [ ] Khillon: /investor/opportunities (non-watchlisted zones ranked by tier-specific heuristic).
-* [ ] Khillon: /investor/brief (LP-style PDF over the watchlist; extends ZoneReportExporter with firm-portfolio format).
-* [ ] Khillon: firm.scope middleware applied to all investor routes (403 if user has no primary_firm_id).
+* [x] Khillon: /investor/me (own profile + firm + tier).
+* [x] Khillon: /investor/watchlist (GET, POST/PATCH/DELETE per zone).
+* [x] Khillon: /investor/portfolio (rollup: composite scores across watchlist + trend).
+* [x] Khillon: /investor/opportunities (non-watchlisted zones ranked by tier-specific heuristic).
+* [x] Khillon: /investor/brief (LP-style PDF over the watchlist; extends ZoneReportExporter with firm-portfolio format). Pre-generated nightly by nuvola:pregen-firm-briefs so the download is a file read, not a render.
+* [x] Khillon: firm.scope middleware applied to all investor routes (403 if user has no primary_firm_id).
 Frontend
 * [ ] Austine: /investor landing — hero (county rollup + micro-trend + watchlist count), watchlist grid, portfolio ranking table (default composite Safety × Infrastructure × Rule-of-Law, columns editable), Top Opportunities (non-watchlist zones matched to firm tier), latest deal-relevant activity feed, "Download investor brief" (single-click PDF).
 * [x] Austine: ESG-lens toggle — additive framing chip on Atlas, Vitality, Compare when role=investor. ESGLensChip in @/components/investor/ESGLensChip.tsx; mounted globally in AppShell and gated to the three routes via ESG_LENS_ROUTES; store lives in chrome (esgLens + localStorage key nuvola_esg_lens); OverviewView reorders pillars to ["safety","infra","social","density"] when ON. Mapbox layer re-tint deferred — logged under Documented Deviations.
@@ -519,4 +519,8 @@ Recorded when what's live on the codebase differs from what this file originally
 * 2026-08-09 — Dev orchestrator scope. docker-compose.dev.yml at the repo root brings up Postgres+PostGIS + Laravel + FastAPI ingestion on one docker network. Reverb and Nginx are intentionally NOT in the compose stack: Reverb runs as a Forge supervisor daemon in prod (docker/supervisor/nuvola-reverb.conf) and locally is a single `php artisan reverb:start` on the host when websocket work is needed; Nginx sits in front of Forge in prod and buys nothing for the dev inner loop where FrankenPHP already serves HTTP on :8080. Frontend Vite stays outside so HMR keeps its host-native perf.
 * 2026-08-09 — ESG lens scope. Shipping additive framing (chip + scorecard pillar reorder + Compare capital-allocation row + Reports watchlist-default) but NOT the Mapbox layer re-tint on Safety + Infra. Reason: the layers are painted from atlas-map.sources.ts through a shared style pipeline, and a role-conditional re-paint pipes user role into map-style code that is otherwise role-agnostic — the tradeoff isn't worth the coupling for a v1 chip. Revisit when the investor pilot has field-tested the reorder.
 * 2026-08-09 — Capital-allocation composite scope. Backend Build Plan §F wording says "Safety × Infrastructure × Rule-of-Law composite". Current 4-pillar model exposes Safety and Infrastructure as top-level pillars; Rule of Law is a sub-metric inside the Safety pillar (Backend Build Plan §4.3 Pillar 2). Composite ships as (Safety + Infra) / 2 with Rule of Law folded implicitly. If a partner asks for it as a distinct axis, the SafetyPillar sub-metric can be surfaced separately from ScoreCalculator without a schema change.
+* 2026-08-16 — Phase E/F status was wrong, not the code. This file carried Phases E and F as "Signed off — build pending". An audit against the live codebase found both backends substantially shipped and test-covered: 10/10 Phase E migrations, 7/7 services, firm.scope, methodology-driven ScoreCalculator, 4/4 seeders, 6/6 Phase F investor routes. The tracker had drifted behind the repo, which is the exact failure mode the "codebase wins" rule exists for. Checkboxes flipped; PARTIAL and DEVIATION notes added inline where only part of a line shipped. Lesson: audit before planning, and flip checkboxes in the slice that ships the work rather than in a later sweep.
+* 2026-08-16 — audit.write middleware removed rather than wired. It was registered as a middleware alias but bound to zero routes. Wiring it would have double-written, since all eleven mutating admin routes already call Audit::record with the resource and a semantic action name that a generic route.* row cannot carry. A registered-but-inert security control is worse than none — it had already produced a false docblock in FirmService claiming firm writes were audited "via audit.write middleware". Middleware and alias deleted; the invariant moved to tests/Feature/Admin/AdminAuditCoverageTest.php, which walks the router and fails when a mutating admin route lands without an Audit::record call. Add new admin mutations with an explicit Audit::record, not a middleware.
+* 2026-08-16 — Documentation topology. Every reference doc now lives in one root docs/ tree; per-service docs/ folders are gone and each service README points back to it. Superseded planning documents moved to docs/archive/ and are deliberately left un-updated — they record past intent, so their stale paths and stale claims are the point. Only docs/ and this file are maintained as current.
+* 2026-08-16 — Rate-limit line unresolved. Line 403 is checked [x] claiming "600 requests per minute with active 100 burst", but the implementation in AppServiceProvider is Limit::perMinute(60) per user or IP, with a per-token override via personal_access_tokens.rate_limit_per_minute. The parenthetical already documents the real value. Left as-is because this is a product decision, not a code defect: either the target was 60 and the line's wording is wrong, or the target is 600 and the limiter is 10× too tight for partner API traffic. Needs a call before the partner portal opens.
 End of Technical Tracking Manifest
