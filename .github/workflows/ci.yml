@@ -139,13 +139,18 @@ jobs:
       - name: Run phpunit suite
         run: php vendor/phpunit/phpunit/phpunit --no-coverage
 
-      # Style + static-analysis are informational while we work down pre-existing
-      # debt. Set continue-on-error to false once the backlog is clear.
-      - name: Pint (dirty files only, informational)
-        continue-on-error: true
-        run: vendor/bin/pint --dirty --test
+      # Was `pint --dirty --test`. `--dirty` resolves its file list from
+      # uncommitted working-tree changes, and a fresh checkout has none, so the
+      # step inspected zero files and passed unconditionally — the same vacuous
+      # pass the PHP lint step had. Scoping it to the whole repo is what makes
+      # the check mean anything, and only then is it worth blocking on.
+      - name: Pint
+        run: vendor/bin/pint --test
 
-      - name: PHPStan (informational)
+      # Still informational: 158 pre-existing violations at level 5. Blocking
+      # this now would only teach everyone to ignore a permanently red check.
+      # The level stays at 5 — it does not get lowered to buy a green tick.
+      - name: PHPStan (informational — 158 known violations at level 5)
         continue-on-error: true
         run: vendor/bin/phpstan analyse --memory-limit=512M --no-progress
 
