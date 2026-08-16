@@ -7,6 +7,7 @@ namespace App\Services\Methodology;
 use App\Jobs\RecalculateAllZones;
 use App\Models\MethodologyVersion;
 use App\Models\User;
+use App\Services\ScoreCalculator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -48,6 +49,7 @@ class MethodologyPublisher
         });
 
         Cache::forget('vitality_methodology');
+        Cache::forget(ScoreCalculator::WEIGHTS_CACHE_KEY);
         RecalculateAllZones::dispatch(broadcast: true);
 
         return $target->refresh();

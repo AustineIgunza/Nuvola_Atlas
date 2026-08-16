@@ -31,7 +31,7 @@ class MethodologyPreview
             ->map(function (Zone $zone) use ($calc) {
                 $pillars = $calc->pillarScores($zone);
                 $current = $zone->score;
-                $proposed = $this->weighted($pillars);
+                $proposed = $calc->compositeFromPillars($pillars, $this->weights);
 
                 return [
                     'zone_id' => $zone->id,
@@ -45,20 +45,5 @@ class MethodologyPreview
             })
             ->values()
             ->all();
-    }
-
-    /**
-     * @param  array{social: ?int, safety: ?int, density: ?int, infra: ?int} $pillars
-     */
-    private function weighted(array $pillars): ?int
-    {
-        $total = 0.0;
-        $wsum = 0.0;
-        foreach ($this->weights as $k => $w) {
-            if ($pillars[$k] === null) continue;
-            $total += $pillars[$k] * $w;
-            $wsum += $w;
-        }
-        return $wsum > 0 ? (int) round($total / $wsum) : null;
     }
 }

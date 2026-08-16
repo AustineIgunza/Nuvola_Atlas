@@ -5,17 +5,20 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Events\ZoneScoreUpdated;
+use App\Models\MethodologyVersion;
 use App\Models\Zone;
 use App\Models\ZoneScoreSnapshot;
+use Illuminate\Support\Facades\Cache;
 
 /**
- * Vitality Score engine — 4 equally-weighted pillars, 13 indicators.
+ * Vitality Score engine — 4 pillars, 13 indicators.
  *
  * Rules (PHASES.md, §Scoring Engine Logic):
  * - Every indicator is a 0-100 normalized value or NULL ("Awaiting data").
  * - Pillar score = simple average of the pillar's non-null indicators.
- * - Composite score = simple average of pillars that have at least one
- *   non-null indicator (a fully-missing pillar is skipped too — you cannot
+ * - Composite score = weighted mean of the pillars that have at least one
+ *   non-null indicator, with the weights renormalized across the pillars
+ *   actually present (a fully-missing pillar is skipped too — you cannot
  *   score against an empty pillar).
  * - Missing indicators are excluded from the average; they are NEVER
  *   treated as zero. That was the whole point of the July 2026 rewrite —
@@ -24,24 +27,62 @@ use App\Models\ZoneScoreSnapshot;
  */
 class ScoreCalculator
 {
+    public const WEIGHTS_CACHE_KEY = 'vitality_weights';
+
     /**
-     * Pillar weights the API surfaces on /vitality/methodology.
+     * Fallback used before any methodology version is published, and for
+     * any pillar the published version leaves out or stores as garbage.
+     */
+    public const DEFAULT_WEIGHTS = [
+        'social' => 0.25,
+        'safety' => 0.25,
+        'density' => 0.25,
+        'infra' => 0.25,
+    ];
+
+    /** @var array{social: float, safety: float, density: float, infra: float}|null */
+    private ?array $resolvedWeights = null;
+
+    /**
+     * Pillar weights for the live methodology, surfaced on
+     * /vitality/methodology and applied by `calculateScore`.
      *
-     * Post-July-2026 the composite is a simple average of the four pillars,
-     * so the weights are all equal — 0.25 each. This method is kept so the
-     * API response shape (`{weights: {social, safety, density, infra}}`)
-     * stays backwards compatible with clients that already read it.
+     * Read from `methodology_versions WHERE is_current` and cached for 60s;
+     * MethodologyPublisher drops the key on publish, so a weight change goes
+     * live with the recalculation it triggers rather than a minute later.
+     * Held on the instance as well so recalculateAll's 17-zone loop doesn't
+     * re-enter the cache once per zone.
      *
      * @return array{social: float, safety: float, density: float, infra: float}
      */
     public function getWeights(): array
     {
-        return [
-            'social' => 0.25,
-            'safety' => 0.25,
-            'density' => 0.25,
-            'infra' => 0.25,
-        ];
+        return $this->resolvedWeights ??= Cache::remember(
+            self::WEIGHTS_CACHE_KEY,
+            60,
+            fn () => self::normalizeWeights(MethodologyVersion::current()?->weights),
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $stored
+     * @return array{social: float, safety: float, density: float, infra: float}
+     */
+    private static function normalizeWeights(?array $stored): array
+    {
+        if ($stored === null) {
+            return self::DEFAULT_WEIGHTS;
+        }
+
+        $weights = [];
+        foreach (self::DEFAULT_WEIGHTS as $pillar => $fallback) {
+            $value = $stored[$pillar] ?? null;
+            $weights[$pillar] = is_numeric($value) && (float) $value >= 0
+                ? (float) $value
+                : $fallback;
+        }
+
+        return array_sum($weights) > 0 ? $weights : self::DEFAULT_WEIGHTS;
     }
 
     /**
@@ -104,8 +145,37 @@ class ScoreCalculator
      */
     public function calculateScore(Zone $zone): ?int
     {
-        $pillars = array_values($this->pillarScores($zone));
-        return $this->average($pillars);
+        return $this->compositeFromPillars($this->pillarScores($zone));
+    }
+
+    /**
+     * Weighted mean of the pillars that have a score, renormalized over
+     * exactly those pillars — a zone missing its safety data is scored on
+     * the three it has, not penalised for the one it doesn't.
+     *
+     * Pass `$weights` to project a score under a proposed vector without
+     * touching the live methodology; MethodologyPreview does this so the
+     * admin preview and the post-publish recalculation cannot disagree.
+     *
+     * @param  array{social: ?int, safety: ?int, density: ?int, infra: ?int}  $pillars
+     * @param  array<string, float>|null  $weights
+     */
+    public function compositeFromPillars(array $pillars, ?array $weights = null): ?int
+    {
+        $weights ??= $this->getWeights();
+
+        $weighted = 0.0;
+        $totalWeight = 0.0;
+        foreach ($pillars as $pillar => $value) {
+            if ($value === null) {
+                continue;
+            }
+            $weight = (float) ($weights[$pillar] ?? 0.0);
+            $weighted += $weight * $value;
+            $totalWeight += $weight;
+        }
+
+        return $totalWeight > 0.0 ? (int) round($weighted / $totalWeight) : null;
     }
 
     /**
