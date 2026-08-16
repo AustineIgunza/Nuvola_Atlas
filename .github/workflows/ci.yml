@@ -111,12 +111,18 @@ jobs:
           PGPASSWORD=nuvola_secret psql -h 127.0.0.1 -p 5434 -U nuvola -d nuvola_atlas_test \
             -c "CREATE EXTENSION IF NOT EXISTS postgis;"
 
-      - name: Lint PHP syntax (changed files only)
+      # Was scoped to `git diff origin/main...HEAD`. checkout@v4 fetches depth 1,
+      # so on a pull request `origin/main` does not exist, git errored, the
+      # trailing `|| true` swallowed it and the loop iterated over nothing — a
+      # step named "lint" that linted zero files and reported success. Linting
+      # the whole tracked set costs a few seconds and cannot silently no-op.
+      - name: Lint PHP syntax (all tracked files)
         run: |
-          set -e
-          for f in $(git diff --name-only origin/main...HEAD -- '*.php' | grep '^nuvola-atlas-backend/' | sed 's|^nuvola-atlas-backend/||' || true); do
-            [ -f "$f" ] && php -l "$f"
+          fail=0
+          for f in $(git ls-files '*.php'); do
+            php -l "$f" > /dev/null 2>&1 || { php -l "$f"; fail=1; }
           done
+          exit $fail
 
       - name: Smoke — routes register
         run: php artisan route:list --path=api > /dev/null
