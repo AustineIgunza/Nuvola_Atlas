@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Vitality Index — 4 equally-weighted pillars, 13 indicators sourced via
  * the Daystar University data-access partnership. Every pillar contributes

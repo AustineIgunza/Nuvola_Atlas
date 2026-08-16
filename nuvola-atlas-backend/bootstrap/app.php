@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Middleware\EnsureRole;
 use App\Http\Middleware\FirmScope;
 use App\Http\Middleware\HttpCache;
