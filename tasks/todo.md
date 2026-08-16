@@ -10,7 +10,7 @@ _Last updated: 2026-08-05 · HEAD `890ea25` + local Austine sprint slice pending
 
 Frontend polish is **paused for four weeks**. Full backend push: 3 build weeks + 1 test week.
 Weekly per-person plans live at `tasks/team/week-01/` — `austine.md`, `khillon.md`, `devyan.md`.
-Sliced from `Navuuna_Backend_Build_Plan_v1.1_COMPLETE.pdf` (root of repo). Read that first.
+Sliced from `docs/archive/Navuuna_Backend_Build_Plan_v1.1_COMPLETE.pdf`. Read that first.
 
 **Week 1 (Jul 16–22) — close Phase A + intake pipe**
 - Khillon: production Sentry DSNs · branch protection · Cloudflare DNS · Forge+DO deploy · `POST /api/v1/ingest` + `data_ingestion_logs` migration.
@@ -160,7 +160,7 @@ The single biggest pre-pilot milestone. Today the frontend reads from
 is the source of truth on both sides).
 
 ### 3.1 Freeze the API contract with Khillon — ✅ shipped
-- [x] Authoritative OpenAPI 3.1 spec at `nuvola-atlas-backend/docs/api/openapi.yaml`. All routes namespaced under `/api/v1/`; errors standardised to RFC 7807 `application/problem+json`.
+- [x] Authoritative OpenAPI 3.1 spec at `docs/api/openapi.yaml`. All routes namespaced under `/api/v1/`; errors standardised to RFC 7807 `application/problem+json`.
 - [x] Sanctum bearer auth + 401-to-sign-in handled by `handleResponse()` on the client. CORS is env-driven (`CORS_ALLOWED_ORIGINS`).
 
 ### 3.2 Flip the data flag — ✅ shipped
@@ -304,7 +304,7 @@ Owner: Ken + Joy, ongoing.
 Owners: Khillon (Laravel + Postgres + auth), Devyan (FastAPI ingestion, infra strategy, CI/CD), me (frontend deploy + client telemetry), Ken (compliance and budget sign-off). Everything in this section is **pre-pilot blocking** unless explicitly marked otherwise.
 
 ### 9.1 APIs and backend logic
-- [x] OpenAPI 3.1 spec at `nuvola-atlas-backend/docs/api/openapi.yaml` — single source of truth.
+- [x] OpenAPI 3.1 spec at `docs/api/openapi.yaml` — single source of truth.
 - [x] `/api/v1/` namespace; `/api/v2/` reserved.
 - [x] RFC 7807 error rendering via `problemResponse()` in `bootstrap/app.php`. Client-side `pickErrorMessage()` parses both Problem and legacy shapes.
 - [x] Cursor pagination on `/alerts` and `/zones/{id}/activity`; page-based on `zones`, `projects`, `reports`.

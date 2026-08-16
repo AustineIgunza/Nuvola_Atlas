@@ -10,7 +10,7 @@
 > **⚡ THIS MONTH (2026-07-16 → 2026-08-12):** dedicated backend push, frontend
 > polish on hold. Weekly per-person plans live at `tasks/team/week-01/` —
 > `austine.md`, `khillon.md`, `devyan.md`. Structure: 3 build weeks + 1 test
-> week. Reference `Navuuna_Backend_Build_Plan_v1.1_COMPLETE.pdf` (root of repo)
+> week. Reference `docs/archive/Navuuna_Backend_Build_Plan_v1.1_COMPLETE.pdf`
 > for the full architecture + task ledger the team MDs slice from.
 
 ---
@@ -241,7 +241,7 @@ export interface Report {
 Backend API is under `/api/v1/*`, RFC 7807 problem+json for errors, Sanctum
 bearer auth. Cursor pagination on `/alerts` and `/zones/{id}/activity`;
 page-based on `/zones`, `/projects`, `/reports`. OpenAPI 3.1 spec at
-`nuvola-atlas-backend/docs/api/openapi.yaml`.
+`docs/api/openapi.yaml`.
 
 ---
 
@@ -644,7 +644,7 @@ Environment variables that matter for the frontend:
   more current than this file for tactical status.
 - **`docs/ops/`** — deploy, rollback, incident-response, postmortem, secret-
   rotation runbooks.
-- **`nuvola-atlas-backend/docs/api/openapi.yaml`** — the API contract.
+- **`docs/api/openapi.yaml`** — the API contract.
 - **`nuvola-atlas-frontend/src/types/index.ts`** — the shared data contract.
 - **`nuvola-atlas-frontend/src/api/fixtures.ts`** — the mock data everything
   currently renders from.

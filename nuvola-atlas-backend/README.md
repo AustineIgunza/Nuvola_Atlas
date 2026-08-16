@@ -1,58 +1,106 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Navuuna — Laravel API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Headless JSON API for the Navuuna spatial intelligence platform. Serves the
+React SPA in `../nuvola-atlas-frontend`, receives cleaned indicator batches
+from the FastAPI service in `../nuvola-atlas-ingestion`, and computes the
+Vitality Index.
 
-## About Laravel
+Laravel 13 · PHP 8.3+ · PostgreSQL 16 + PostGIS 3.4 · Sanctum · Reverb
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+There are no server-rendered pages. `routes/web.php` exists only because
+signed URLs (email verification, password reset) resolve through the web
+stack.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Run it locally
 
 ```bash
-composer require laravel/boost --dev
+# 1. Test/dev database (PostGIS). Required — the suite will hang without it.
+docker compose up -d postgres
 
-php artisan boost:install
+# 2. Dependencies and app key
+composer install
+cp .env.example .env
+php artisan key:generate
+
+# 3. Schema + demo data
+php artisan migrate:fresh --seed
+
+# 4. Serve on http://localhost:8000
+php artisan serve
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Seeded admin: `austine@nuvola.dev` / `password`.
 
-## Contributing
+The queue must be running for scores to recalculate after an ingest:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+php artisan queue:work
+```
 
-## Code of Conduct
+Frontend dev server runs separately from `../nuvola-atlas-frontend`
+(`npm ci && npm run dev`, on `:5173`).
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Checks
 
-## Security Vulnerabilities
+Run all of these before pushing. Green across the board is the baseline.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+php artisan route:list --path=api                    # 72 routes
+php vendor/phpunit/phpunit/phpunit --no-coverage      # 245 tests
+```
 
-## License
+`phpunit.xml` force-overrides the connection to the local Docker Postgres on
+`127.0.0.1:5434`. Without `docker compose up -d postgres` the suite hangs on
+a TCP timeout rather than failing fast — if tests appear to freeze, that is
+almost always why.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Tests run against a real Postgres with PostGIS. The database is never mocked:
+spatial behaviour, append-only triggers and RLS policies are exactly the
+things a mock would hide.
+
+## Proving the ingestion channel end to end
+
+```bash
+php artisan nuvola:ingest-smoke
+```
+
+Drives a signed synthetic batch through the real HTTP kernel, verifies the
+readings landed, waits for the queued rescore, then restores the zone and
+deletes the snapshot it created. Requires `INGESTION_INTERNAL_SECRET` and a
+running queue worker.
+
+Smoke batches are stamped with a `smoke:` source prefix and are excluded from
+`/api/health/intake`, so a smoke run can never make the channel look healthy
+while the real feed is silent.
+
+## Health
+
+| Endpoint | Answers |
+|---|---|
+| `GET /api/health` | Is the app up? Database + cache. |
+| `GET /api/health/intake` | Is data still arriving? |
+
+`/api/health/intake` returns 503 only when the channel is **stalled**. A
+rejected batch or an overdue feed reports `degraded` on a 200 — a
+data-quality problem to chase, not an outage to page for.
+
+## Documentation
+
+All reference docs live in the repo-root `docs/` tree:
+
+- [`docs/backend/architecture.md`](../docs/backend/architecture.md) — service internals, scoring engine, roles, audit
+- [`docs/backend/schema.md`](../docs/backend/schema.md) — database design rationale
+- [`docs/api/openapi.yaml`](../docs/api/openapi.yaml) — API contract (partial; see the banner inside)
+- [`docs/architecture.md`](../docs/architecture.md) — cross-service data flow
+- [`docs/ops/deploy.md`](../docs/ops/deploy.md) — deploy runbook
+- [`docs/ops/google-oauth.md`](../docs/ops/google-oauth.md) — OAuth client setup
+
+## Conventions
+
+- Controllers stay thin: validate, delegate to a service, return a Resource.
+- Role checks go through `role:` middleware or `App\Enums\Role` Gates — never
+  an inline `$user->role === 'admin'`.
+- No raw SQL except isolated, commented PostGIS queries inside a service.
+- Every migration implements both `up()` and `down()`.
+- Scoring runs only as a queued job, never inline in a controller.
+- Missing indicators are excluded from score averages, never zero-filled.

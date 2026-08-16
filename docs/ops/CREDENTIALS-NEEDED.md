@@ -145,7 +145,7 @@ https://<staging-host>/api/v1/auth/google/callback
 https://<prod-host>/api/v1/auth/google/callback
 ```
 
-Full walkthrough: `nuvola-atlas-backend/docs/ops/google-oauth.md`.
+Full walkthrough: `docs/ops/google-oauth.md`.
 
 ### 7. Sentry — three separate projects
 

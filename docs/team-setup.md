@@ -309,7 +309,7 @@ backend directory.
   `nuvola-atlas-backend/config/methodology.php` for pillar weights and
   `nuvola-atlas-backend/app/Services/ScoreCalculator.php` for the actual
   math. The formula stays out of the UI on purpose.
-- **Ops / deploy runbook**: `nuvola-atlas-backend/docs/ops/deploy.md`.
+- **Ops / deploy runbook**: `docs/ops/deploy.md`.
 - **Architecture overview**: `docs/architecture.md`.
 
 ---

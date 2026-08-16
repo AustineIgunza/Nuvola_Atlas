@@ -1,19 +1,27 @@
 openapi: 3.1.0
 info:
-  title: Nuvola Atlas API
+  title: Navuuna API
   version: 1.0.0
   summary: Spatial intelligence + Vitality Index API for Nairobi County (pilot).
   description: |
-    Public API for the Nuvola Atlas platform. The frontend, partner
-    integrations, and FastAPI ingestion services consume this contract.
+    ⚠️ **INCOMPLETE — describes 17 of 72 live routes (last regenerated
+    2026-06-04).** The zone, project, alert, report and auth paths below are
+    accurate. The chat/RAG, investor, admin, methodology, feeds, forecast,
+    export, 2FA, Google OAuth, ingest and health-intake surfaces are live in
+    the API but **absent from this file**. Until it is regenerated, treat
+    `php artisan route:list --path=api` as the authoritative route list and
+    this file as a partial contract. Do not hand it to a partner as-is.
+
+    Public API for the Navuuna platform. The frontend, partner integrations,
+    and FastAPI ingestion service consume this contract.
 
     All endpoints are namespaced under `/api/v1/`. Breaking changes go to
     `/api/v2/`; v1 endpoints will not be removed without a 90-day
     deprecation header. Errors are returned as RFC 7807
     `application/problem+json`.
   contact:
-    name: Nuvola Atlas Team
-    email: security@nuvola-atlas.example
+    name: Navuuna Team
+    email: security@navuuna.example
   license:
     name: TBD (pre-pilot)
 servers:

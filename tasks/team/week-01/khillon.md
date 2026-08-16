@@ -2,7 +2,7 @@
 
 **Owner:** Khillon (Lead Programmer) · **Week:** 2026-07-16 → 2026-07-22 (Week 1 of a 4-week backend push)
 **Full window:** 2026-07-16 → 2026-08-12 · **Shape:** 3 build weeks + 1 test week
-**Companion docs:** `Navuuna_Backend_Build_Plan_v1.1_COMPLETE.pdf` (root of repo), `Navuuna Build Phases.txt`, `tasks/todo.md`, `nuvola-atlas-backend/docs/api/openapi.yaml`
+**Companion docs:** `docs/archive/Navuuna_Backend_Build_Plan_v1.1_COMPLETE.pdf`, `Navuuna Build Phases.txt`, `tasks/todo.md`, `docs/api/openapi.yaml`
 
 > **Authority chain (unchanged).** `Navuuna Build Phases.txt` (tracker) > `Backend Build Plan v1.1` (PDF) > this MD > codebase. Where the codebase drifts from the docs, the codebase wins and the deviation is logged in the tracker under "Documented Deviations". Do not delete or overwrite the tracker — only flip checkboxes and update the `Last updated` / `HEAD` lines.
 
@@ -81,7 +81,7 @@ Base + `enable_postgis`, `zones + boundary`, `projects`, `alerts`, `reports`, `v
 - [ ] **Phase A #1 — Provision production Sentry targets**
   - Three separate Sentry projects: `navuuna-frontend`, `navuuna-backend`, `navuuna-ingestion` (last one is Devyan's — you own the two Laravel/frontend keys).
   - Push DSN env vars to Forge (`SENTRY_LARAVEL_DSN`) and Vercel (`VITE_SENTRY_DSN`). Never in code.
-  - **DoD:** a deliberate test exception thrown in each service surfaces in the correct Sentry project inside 60s. Update `.env.production.example` with the var names (values never committed). Rotation runbook stays at `nuvola-atlas-backend/docs/ops/secret-rotation.md`.
+  - **DoD:** a deliberate test exception thrown in each service surfaces in the correct Sentry project inside 60s. Update `.env.production.example` with the var names (values never committed). Rotation runbook stays at `docs/ops/secret-rotation.md`.
 
 - [ ] **Phase A #2 — GitHub branch protection on `main`**
   - Settings → Branches → `main`: require 1 approving review, require all CI checks to pass (frontend workflow + backend workflow both required), no force-push, no direct commit.
@@ -93,7 +93,7 @@ Base + `enable_postgis`, `zones + boundary`, `projects`, `alerts`, `reports`, `v
 
 - [ ] **Phase A #4 — Execute Forge + DigitalOcean production deploy**
   - Deploy artifacts are staged (`nuvola-atlas-backend/deploy.sh`, `docker/`, `Dockerfile`). Provisioning is user-only (you drive Forge dashboard + DO account).
-  - Supabase side: create the `nuvola_app` role with RLS per `nuvola-atlas-backend/docs/ops/deploy.md`. Pooled `:6543` for app, direct `:5432` for migrations. Confirm AES-256 at rest.
+  - Supabase side: create the `nuvola_app` role with RLS per `docs/ops/deploy.md`. Pooled `:6543` for app, direct `:5432` for migrations. Confirm AES-256 at rest.
   - Deploy Now → smoke `/api/health` (DB ping + cache write must both be green).
   - **DoD:** `/api/health` returns 200 with both `database: ok` + `cache: ok` on production; migrations ran without drift; Reverb WebSocket connects on `wss://`.
 
@@ -267,9 +267,9 @@ Post daily standup snippets to `#navuuna-backend` Slack. Blockers escalated same
 
 - **Live tactical status:** `tasks/todo.md` (updated per-slice).
 - **Authoritative phase state:** `Navuuna Build Phases.txt` (checkboxes).
-- **Backend architecture + full task ledger:** `Navuuna_Backend_Build_Plan_v1.1_COMPLETE.pdf` (root of repo).
-- **API contract (authoritative for /api/v1/*):** `nuvola-atlas-backend/docs/api/openapi.yaml` — update as routes ship.
-- **Ops runbooks:** `nuvola-atlas-backend/docs/ops/` — `deploy.md`, `rollback.md`, `incident-response.md`, `secret-rotation.md`, `postmortem-template.md`.
+- **Backend architecture + full task ledger:** `docs/archive/Navuuna_Backend_Build_Plan_v1.1_COMPLETE.pdf`.
+- **API contract (authoritative for /api/v1/*):** `docs/api/openapi.yaml` — update as routes ship.
+- **Ops runbooks:** `docs/ops/` — `deploy.md`, `rollback.md`, `incident-response.md`, `secret-rotation.md`, `postmortem-template.md`.
 - **This sprint's team MDs:** `tasks/team/week-01/austine.md` · `khillon.md` · `devyan.md` — regenerated weekly by Austine.
 
 ## 10. Handover contract

@@ -37,7 +37,7 @@ VITE_USE_REMOTE_API=true
 When `VITE_USE_REMOTE_API` is anything other than `true`/`1`, the app reads
 from `src/api/mock.ts` and `src/api/fixtures.ts`. No code changes are
 needed to flip between mock and real. The wire contract is documented in
-[`../nuvola-atlas-backend/docs/api/openapi.yaml`](../nuvola-atlas-backend/docs/api/openapi.yaml).
+[`../docs/api/openapi.yaml`](../docs/api/openapi.yaml).
 
 ## Realtime — swapping the mock pulse for Reverb
 

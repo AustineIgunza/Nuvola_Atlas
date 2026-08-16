@@ -2,7 +2,7 @@
 
 **Owner:** Devyan Jethwa (CTIPSO) · **Week:** 2026-07-16 → 2026-07-22 (Week 1 of a 4-week backend push)
 **Full window:** 2026-07-16 → 2026-08-12 · **Shape:** 3 build weeks + 1 test week
-**Companion docs:** `Navuuna_Backend_Build_Plan_v1.1_COMPLETE.pdf` (root of repo), `Navuuna Build Phases.txt`, `tasks/todo.md`, `docs/architecture.md`, `docs/data/daystar-indicator-spec.md`, `docs/data/internal-transport.md`
+**Companion docs:** `docs/archive/Navuuna_Backend_Build_Plan_v1.1_COMPLETE.pdf`, `Navuuna Build Phases.txt`, `tasks/todo.md`, `docs/architecture.md`, `docs/data/daystar-indicator-spec.md`, `docs/data/internal-transport.md`
 
 > **Authority chain (unchanged).** `Navuuna Build Phases.txt` (tracker) > `Backend Build Plan v1.1` (PDF) > this MD > codebase. Where the codebase drifts from the docs, the codebase wins and the deviation is logged in the tracker under "Documented Deviations". Do not delete or overwrite the tracker — only flip checkboxes and update the `Last updated` / `HEAD` lines.
 
@@ -258,11 +258,11 @@ Post daily standup snippets to `#navuuna-backend` Slack. Blockers escalated same
 
 - **Live tactical status:** `tasks/todo.md` (updated per-slice).
 - **Authoritative phase state:** `Navuuna Build Phases.txt` (checkboxes).
-- **Backend architecture + full task ledger:** `Navuuna_Backend_Build_Plan_v1.1_COMPLETE.pdf` (root of repo).
+- **Backend architecture + full task ledger:** `docs/archive/Navuuna_Backend_Build_Plan_v1.1_COMPLETE.pdf`.
 - **System topography (yours to keep current):** `docs/architecture.md`.
 - **Daystar data contract:** `docs/data/daystar-indicator-spec.md` (update to 13 indicators Week 1).
 - **X-Internal-Secret contract:** `docs/data/internal-transport.md` (formalize Week 1).
-- **Ops runbooks:** `nuvola-atlas-backend/docs/ops/` — `deploy.md`, `rollback.md`, `incident-response.md`, `secret-rotation.md`, `postmortem-template.md`.
+- **Ops runbooks:** `docs/ops/` — `deploy.md`, `rollback.md`, `incident-response.md`, `secret-rotation.md`, `postmortem-template.md`.
 - **This sprint's team MDs:** `tasks/team/week-01/austine.md` · `khillon.md` · `devyan.md` — regenerated weekly by Austine.
 
 ## 11. Handover contract

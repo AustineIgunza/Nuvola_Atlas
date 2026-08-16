@@ -1,6 +1,6 @@
 # Admin & Investor — Product Workflows
 
-Companion to `docs/backend-build-plan.md`. This file documents **what admins and investors can do inside the platform**, not how it's engineered. Some workflows are already shipped, others are on the roadmap. Each entry marks its current state so the team can see the gap between what exists and what will exist.
+Companion to `docs/archive/backend-build-plan.md`. This file documents **what admins and investors can do inside the platform**, not how it's engineered. Some workflows are already shipped, others are on the roadmap. Each entry marks its current state so the team can see the gap between what exists and what will exist.
 
 Last updated: 2026-07-12 · HEAD after this commit.
 

@@ -101,7 +101,7 @@ Devyan's service (deployed on Vercel Fluid Compute):
 - **Docker artifacts:** `Dockerfile`, `docker-compose.yml`, `docker/nginx/forge.conf`, `docker/supervisor/nuvola-queue.conf`, `docker/supervisor/nuvola-reverb.conf`.
 - **Deploy scripts:** `nuvola-atlas-backend/deploy.sh`, `fly.toml`, `.env.production.example`.
 - **CI workflows:** `.github/workflows/*` for frontend, backend, ingestion CI + Dependabot config.
-- **Runbooks (`nuvola-atlas-backend/docs/ops/*`):** `deploy.md`, `rollback.md`, `incident-response.md`, `postmortem-template.md`, `secret-rotation.md`, `restore-drill.md` (planned). Each is an authored operational literary work.
+- **Runbooks (`docs/ops/*`):** `deploy.md`, `rollback.md`, `incident-response.md`, `postmortem-template.md`, `secret-rotation.md`, `restore-drill.md` (planned). Each is an authored operational literary work.
 
 ---
 
@@ -202,8 +202,8 @@ Original literary works under §22(1)(a). The following documents are authored b
 - **`CLAUDE.md` (project-level).** The scope note, phase plan, data contract, and design north-star reference. Authored guidance to the build process.
 - **`tasks/todo.md`.** The execution plan cross-referenced to the grant proposal.
 - **`tasks/team/week-01/austine.md`, `khillon.md`, `devyan.md`.** The 4-week backend sprint plans.
-- **`nuvola-atlas-backend/docs/api/openapi.yaml`.** The full OpenAPI 3.1 API contract — authored schema + authored English descriptions.
-- **`nuvola-atlas-backend/docs/ops/*`.** `deploy.md`, `rollback.md`, `incident-response.md`, `postmortem-template.md`, `secret-rotation.md`, and forthcoming runbooks. Each is an authored operational literary work.
+- **`docs/api/openapi.yaml`.** The full OpenAPI 3.1 API contract — authored schema + authored English descriptions.
+- **`docs/ops/*`.** `deploy.md`, `rollback.md`, `incident-response.md`, `postmortem-template.md`, `secret-rotation.md`, and forthcoming runbooks. Each is an authored operational literary work.
 - **`docs/architecture.md`.** Devyan's authored architecture write-up.
 - **`Navuuna_Backend_Build_Plan_v1.1_COMPLETE.pdf`.** The backend build plan at repo root — 100 % team-authored.
 - **`Navuuna Build Phases.txt`.** The authored phase tracker.

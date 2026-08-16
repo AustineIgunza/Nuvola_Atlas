@@ -2,7 +2,7 @@
 
 **Owner:** Austine Igunza · **Week:** 2026-07-16 → 2026-07-22 (this is Week 1 of a 4-week backend push)
 **Full window:** 2026-07-16 → 2026-08-12 · **Shape:** 3 build weeks + 1 test week
-**Companion docs:** `Navuuna_Backend_Build_Plan_v1.1_COMPLETE.pdf` (root of repo), `Navuuna Build Phases.txt`, `tasks/todo.md`
+**Companion docs:** `docs/archive/Navuuna_Backend_Build_Plan_v1.1_COMPLETE.pdf`, `Navuuna Build Phases.txt`, `tasks/todo.md`
 
 > **Authority chain (unchanged).** `Navuuna Build Phases.txt` (tracker) > `Backend Build Plan v1.1` (PDF) > this MD > codebase. Where the codebase drifts from the docs, the codebase wins and the deviation is logged in the tracker under "Documented Deviations". Do not delete or overwrite the tracker — only flip checkboxes and update the `Last updated` / `HEAD` lines.
 
@@ -237,8 +237,8 @@ Post daily standup snippets to `#navuuna-backend` Slack. Blockers escalated same
 
 - **Live tactical status:** `tasks/todo.md` (updated per-slice).
 - **Authoritative phase state:** `Navuuna Build Phases.txt` (checkboxes).
-- **Backend architecture + full task ledger:** `Navuuna_Backend_Build_Plan_v1.1_COMPLETE.pdf` (root of repo).
-- **API contract:** `nuvola-atlas-backend/docs/api/openapi.yaml`.
+- **Backend architecture + full task ledger:** `docs/archive/Navuuna_Backend_Build_Plan_v1.1_COMPLETE.pdf`.
+- **API contract:** `docs/api/openapi.yaml`.
 - **Data contract:** `nuvola-atlas-frontend/src/types/index.ts`.
-- **Ops runbooks:** `nuvola-atlas-backend/docs/ops/` — deploy, rollback, incident, secret-rotation, postmortem template.
+- **Ops runbooks:** `docs/ops/` — deploy, rollback, incident, secret-rotation, postmortem template.
 - **This sprint's team MDs:** `tasks/team/week-01/` — my copy is `austine.md`; Khillon's and Devyan's copies are the ones I hand off to them.
