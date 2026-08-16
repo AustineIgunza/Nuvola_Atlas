@@ -4,10 +4,19 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class DataIngestionLog extends Model
 {
+    /**
+     * `source` prefix stamped by nuvola:ingest-smoke. Synthetic batches are
+     * real rows — they went through the real pipeline — but they must never
+     * count as evidence that a live feed is delivering, or a smoke run would
+     * make /api/health/ingestion look green while Daystar sat silent.
+     */
+    public const SMOKE_SOURCE_PREFIX = 'smoke:';
+
     protected $guarded = [];
 
     protected function casts(): array
@@ -20,6 +29,15 @@ class DataIngestionLog extends Model
             'arrived_at' => 'datetime',
             'received_at' => 'datetime',
         ];
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeExcludingSmoke(Builder $query): Builder
+    {
+        return $query->where('source', 'not like', self::SMOKE_SOURCE_PREFIX.'%');
     }
 
     /**

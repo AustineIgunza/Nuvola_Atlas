@@ -24,13 +24,13 @@ use Illuminate\Support\Facades\DB;
  */
 class PruneIngestionPayloads extends Command
 {
-    protected $signature = 'nuvola:prune-ingestion-payloads {--days=30 : Retention window in days}';
+    protected $signature = 'nuvola:prune-ingestion-payloads {--days= : Retention window in days, defaults to ingestion.payload_retention_days}';
 
     protected $description = 'Redact raw ingestion payloads older than the retention window; scores and outcomes are kept indefinitely.';
 
     public function handle(): int
     {
-        $days = (int) $this->option('days');
+        $days = (int) ($this->option('days') ?? config('ingestion.payload_retention_days'));
 
         if ($days < 1) {
             $this->error('Retention window must be at least 1 day.');

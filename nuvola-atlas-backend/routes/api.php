@@ -37,6 +37,7 @@ use Illuminate\Support\Facades\Route;
 
 // Unversioned operational endpoints
 Route::get('health', [HealthController::class, 'index']);
+Route::get('health/ingestion', [HealthController::class, 'ingestion']);
 
 // Phase B — FastAPI → Laravel ingestion channel. Guarded by
 // X-Internal-Secret only; never accepts a bearer token.
