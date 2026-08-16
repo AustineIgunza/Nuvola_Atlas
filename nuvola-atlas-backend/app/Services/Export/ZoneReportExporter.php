@@ -69,7 +69,7 @@ class ZoneReportExporter
         // Pillars are derived from indicators — no longer stored on the row.
         // Deltas were dropped in the pillars → indicators migration; the
         // quarter-over-quarter view will land again on a snapshot-diff.
-        $calc = new ScoreCalculator();
+        $calc = new ScoreCalculator;
         $pillars = $calc->pillarScores($zone);
 
         return [
@@ -93,18 +93,18 @@ class ZoneReportExporter
             "Vitality Score: {$z->score}/100",
             '',
             'Pillar Scores:',
-            "  Social Wellbeing:    " . $this->fmtScore($p['social']),
-            "  Safety & Security:   " . $this->fmtScore($p['safety']),
-            "  Density & Scaling:   " . $this->fmtScore($p['density']),
-            "  Infrastructure/Env:  " . $this->fmtScore($p['infra']),
+            '  Social Wellbeing:    '.$this->fmtScore($p['social']),
+            '  Safety & Security:   '.$this->fmtScore($p['safety']),
+            '  Density & Scaling:   '.$this->fmtScore($p['density']),
+            '  Infrastructure/Env:  '.$this->fmtScore($p['infra']),
             '',
             'Deltas (quarter-over-quarter):',
-            "  Social:   " . $this->signed($d['social']),
-            "  Safety:   " . $this->signed($d['safety']),
-            "  Density:  " . $this->signed($d['density']),
-            "  Infra:    " . $this->signed($d['infra']),
+            '  Social:   '.$this->signed($d['social']),
+            '  Safety:   '.$this->signed($d['safety']),
+            '  Density:  '.$this->signed($d['density']),
+            '  Infra:    '.$this->signed($d['infra']),
             '',
-            'Infrastructure projects: ' . count($data['projects']),
+            'Infrastructure projects: '.count($data['projects']),
         ];
 
         foreach ($data['projects'] as $p) {
@@ -112,19 +112,20 @@ class ZoneReportExporter
         }
 
         $lines[] = '';
-        $lines[] = 'Active alerts: ' . count($data['alerts']);
+        $lines[] = 'Active alerts: '.count($data['alerts']);
         foreach ($data['alerts'] as $a) {
             $lines[] = "  - [{$a->severity}] {$a->title}";
         }
 
         $lines[] = '';
         $lines[] = "Generated: {$data['generatedAt']}";
+
         return implode("\n", $lines);
     }
 
     private function buildPdf(array $data): string
     {
-        $options = new DompdfOptions();
+        $options = new DompdfOptions;
         $options->set('isRemoteEnabled', false);
         $options->set('defaultFont', 'Helvetica');
 
@@ -155,7 +156,9 @@ class ZoneReportExporter
                 (int) $p->progress,
             );
         }
-        if ($projectRows === '') $projectRows = '<tr><td colspan="4">None tracked.</td></tr>';
+        if ($projectRows === '') {
+            $projectRows = '<tr><td colspan="4">None tracked.</td></tr>';
+        }
 
         $alertRows = '';
         foreach ($alerts as $a) {
@@ -165,7 +168,9 @@ class ZoneReportExporter
                 htmlspecialchars((string) $a->title),
             );
         }
-        if ($alertRows === '') $alertRows = '<tr><td colspan="2">None active.</td></tr>';
+        if ($alertRows === '') {
+            $alertRows = '<tr><td colspan="2">None active.</td></tr>';
+        }
 
         return <<<HTML
 <!doctype html>
@@ -224,7 +229,7 @@ HTML;
         $z = $data['zone'];
         $p = $data['pillars'];
         $d = $data['deltas'];
-        $phpWord = new PhpWord();
+        $phpWord = new PhpWord;
         $section = $phpWord->addSection();
 
         $section->addText('Navuuna Atlas · Sub-county Vitality Report', ['size' => 8, 'color' => '6B6257']);
@@ -280,12 +285,16 @@ HTML;
         $writer = IOFactory::createWriter($phpWord, 'Word2007');
         ob_start();
         $writer->save('php://output');
+
         return (string) ob_get_clean();
     }
 
     private function signed(int $n): string
     {
-        if ($n > 0) return "+{$n}";
+        if ($n > 0) {
+            return "+{$n}";
+        }
+
         return (string) $n;
     }
 

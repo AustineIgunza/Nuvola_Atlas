@@ -46,6 +46,7 @@ class AgentRuntime
                 $answer = $next['answer'] ?? '';
                 $steps[] = ['action' => 'final'];
                 $this->audit($prompt, $steps, $answer, $userId);
+
                 return ['answer' => $answer, 'steps' => $steps, 'final' => true];
             }
 
@@ -69,7 +70,7 @@ class AgentRuntime
                 $observation = $tool->execute($args);
             } catch (Throwable $e) {
                 Log::warning('agent_tool_failed', ['tool' => $tool->name(), 'error' => $e->getMessage()]);
-                $observation = ['error' => 'Tool execution failed: ' . $e->getMessage()];
+                $observation = ['error' => 'Tool execution failed: '.$e->getMessage()];
             }
 
             $steps[] = [
@@ -88,17 +89,20 @@ class AgentRuntime
         // Cap hit — coerce a final answer from whatever the last observation was.
         $answer = $this->coerceFinalFromLastStep($steps);
         $this->audit($prompt, $steps, $answer, $userId);
+
         return ['answer' => $answer, 'steps' => $steps, 'final' => false];
     }
 
     /**
      * Sanitised copy of the args for logging — strip the internal
      * `_user_id` injection so audit rows don't confuse readers.
-     * @param  array<string, mixed> $args
+     *
+     * @param  array<string, mixed>  $args
      */
     private function sanitiseArgs(array $args): array
     {
         unset($args['_user_id']);
+
         return $args;
     }
 
@@ -110,9 +114,11 @@ class AgentRuntime
                 if (isset($steps[$i]['observation']['error'])) {
                     return $steps[$i]['observation']['error'];
                 }
-                return "I gathered some data but couldn't compose a final answer within " . self::MAX_STEPS . " steps. Latest observation attached.";
+
+                return "I gathered some data but couldn't compose a final answer within ".self::MAX_STEPS.' steps. Latest observation attached.';
             }
         }
+
         return "I couldn't decide how to answer that. Try rephrasing with a zone name or a specific metric.";
     }
 

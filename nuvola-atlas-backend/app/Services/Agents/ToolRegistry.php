@@ -73,8 +73,11 @@ class ToolRegistry
     public function find(string $name): ?AgentTool
     {
         foreach ($this->tools as $t) {
-            if ($t->name() === $name) return $t;
+            if ($t->name() === $name) {
+                return $t;
+            }
         }
+
         return null;
     }
 

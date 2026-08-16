@@ -55,6 +55,7 @@ class RemindAdminsWithoutTwoFactor extends Command
         foreach ($admins as $admin) {
             if ($admin->email_two_factor_locked_at !== null) {
                 $skipped++;
+
                 continue;
             }
 
@@ -69,6 +70,7 @@ class RemindAdminsWithoutTwoFactor extends Command
                     Audit::record(action: 'user.two_factor_reminder_sent', resource: $admin);
                 }
                 $reminded++;
+
                 continue;
             }
 
@@ -89,6 +91,7 @@ class RemindAdminsWithoutTwoFactor extends Command
                     Audit::record(action: 'user.two_factor_locked', resource: $admin);
                 }
                 $locked++;
+
                 continue;
             }
 

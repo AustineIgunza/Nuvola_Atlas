@@ -28,6 +28,7 @@ interface AgentTool
 
     /**
      * JSON schema for the tool's parameters (draft-2020-12 subset).
+     *
      * @return array<string, mixed>
      */
     public function parameters(): array;
@@ -40,6 +41,7 @@ interface AgentTool
 
     /**
      * Full descriptor for the LLM / router.
+     *
      * @return array{name: string, description: string, parameters: array<string, mixed>}
      */
     public function schema(): array;

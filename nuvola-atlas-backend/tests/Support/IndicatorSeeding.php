@@ -19,7 +19,7 @@ final class IndicatorSeeding
     /**
      * Map a pillar-shaped array to indicator columns.
      *
-     * @param array{social?: int, safety?: int, density?: int, infra?: int} $pillars
+     * @param  array{social?: int, safety?: int, density?: int, infra?: int}  $pillars
      * @return array<string, int>
      */
     public static function fromPillars(array $pillars): array
@@ -31,9 +31,10 @@ final class IndicatorSeeding
             }
             $value = (int) $pillars[$pillar];
             foreach ($indicators as $slug) {
-                $out['indicator_' . $slug] = $value;
+                $out['indicator_'.$slug] = $value;
             }
         }
+
         return $out;
     }
 
@@ -43,9 +44,10 @@ final class IndicatorSeeding
         $cols = [];
         foreach (self::indicatorsByPillar() as $indicators) {
             foreach ($indicators as $slug) {
-                $cols[] = 'indicator_' . $slug;
+                $cols[] = 'indicator_'.$slug;
             }
         }
+
         return $cols;
     }
 

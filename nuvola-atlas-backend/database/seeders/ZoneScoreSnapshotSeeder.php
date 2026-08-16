@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 class ZoneScoreSnapshotSeeder extends Seeder
 {
     private const DAYS = 30;
+
     private const HOURS_PER_DAY = 24;
 
     /** @return array<int, string> */
@@ -33,6 +34,7 @@ class ZoneScoreSnapshotSeeder extends Seeder
                 $out[] = $slug;
             }
         }
+
         return $out;
     }
 
@@ -54,7 +56,7 @@ class ZoneScoreSnapshotSeeder extends Seeder
             // the whole series so partial data stays partial in the chart.
             $current = [];
             foreach ($slugs as $slug) {
-                $current[$slug] = $zone->getAttribute('indicator_' . $slug);
+                $current[$slug] = $zone->getAttribute('indicator_'.$slug);
             }
 
             for ($i = self::DAYS * self::HOURS_PER_DAY - 1; $i >= 0; $i--) {
@@ -63,16 +65,16 @@ class ZoneScoreSnapshotSeeder extends Seeder
                 $rowIndicators = [];
                 foreach ($slugs as $slug) {
                     if ($current[$slug] === null) {
-                        $rowIndicators['indicator_' . $slug] = null;
+                        $rowIndicators['indicator_'.$slug] = null;
                     } else {
                         $current[$slug] = $this->drift((int) $current[$slug]);
-                        $rowIndicators['indicator_' . $slug] = $current[$slug];
+                        $rowIndicators['indicator_'.$slug] = $current[$slug];
                     }
                 }
 
                 // Reuse the production calculator so snapshot scores match
                 // the "average non-null indicators" rule.
-                $tempZone = (new Zone())->forceFill($rowIndicators);
+                $tempZone = (new Zone)->forceFill($rowIndicators);
                 $score = $calculator->calculateScore($tempZone) ?? 0;
 
                 $rows[] = array_merge(
@@ -96,6 +98,7 @@ class ZoneScoreSnapshotSeeder extends Seeder
     private function drift(int $value): int
     {
         $delta = mt_rand(-2, 2);
+
         return max(0, min(100, $value + $delta));
     }
 }

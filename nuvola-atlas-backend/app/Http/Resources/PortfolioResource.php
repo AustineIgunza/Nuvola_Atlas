@@ -20,6 +20,7 @@ class PortfolioResource extends JsonResource
          * } $data
          */
         $data = $this->resource;
+
         return $data;
     }
 }

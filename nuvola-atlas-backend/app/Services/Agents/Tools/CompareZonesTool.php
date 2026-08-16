@@ -12,7 +12,10 @@ class CompareZonesTool extends BaseAgentTool
 {
     public function __construct(private ScoreCalculator $calc) {}
 
-    public function name(): string { return 'compare_zones'; }
+    public function name(): string
+    {
+        return 'compare_zones';
+    }
 
     public function description(): string
     {
@@ -49,6 +52,7 @@ class CompareZonesTool extends BaseAgentTool
             $zone = $zones->get($id);
             if (! $zone) {
                 $rows[] = ['zone_id' => $id, 'error' => 'not found'];
+
                 continue;
             }
             $pillars = $this->calc->pillarScores($zone);
@@ -65,9 +69,13 @@ class CompareZonesTool extends BaseAgentTool
         foreach ($winners as $key => &$holder) {
             $best = null;
             foreach ($rows as $row) {
-                if (isset($row['error'])) continue;
+                if (isset($row['error'])) {
+                    continue;
+                }
                 $value = $key === 'overall' ? $row['score'] : ($row['pillars'][$key] ?? null);
-                if ($value === null) continue;
+                if ($value === null) {
+                    continue;
+                }
                 if ($best === null || $value > $best['value']) {
                     $best = ['zone_id' => $row['zone_id'], 'value' => $value];
                 }

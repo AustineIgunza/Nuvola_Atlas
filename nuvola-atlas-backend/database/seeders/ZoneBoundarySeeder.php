@@ -35,7 +35,7 @@ class ZoneBoundarySeeder extends Seeder
 
         foreach ($boundaries as $zoneId => $wkt) {
             DB::statement(
-                "UPDATE zones SET boundary = ST_GeogFromText(?) WHERE id = ?",
+                'UPDATE zones SET boundary = ST_GeogFromText(?) WHERE id = ?',
                 [$wkt, $zoneId]
             );
         }

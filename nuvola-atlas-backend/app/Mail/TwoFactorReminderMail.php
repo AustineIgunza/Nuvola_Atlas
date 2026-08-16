@@ -29,8 +29,7 @@ class TwoFactorReminderMail extends Mailable
     public function __construct(
         public string $name,
         public string $stage,
-    ) {
-    }
+    ) {}
 
     public function envelope(): Envelope
     {

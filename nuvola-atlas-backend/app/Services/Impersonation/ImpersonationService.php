@@ -31,6 +31,7 @@ class ImpersonationService
     {
         $session->ended_at = now();
         $session->save();
+
         return $session->refresh();
     }
 }

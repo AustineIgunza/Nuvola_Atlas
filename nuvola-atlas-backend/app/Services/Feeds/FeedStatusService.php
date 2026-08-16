@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Services\Feeds;
 
 use App\Models\DataFeedStatus;
-use Illuminate\Support\Collection;
 
 /**
  * Reads over `data_feed_status` — staleness is computed on read via
@@ -35,7 +34,7 @@ class FeedStatusService
     public function matrix(): array
     {
         $rows = DataFeedStatus::with('zone')->get();
-        $now = new \DateTimeImmutable();
+        $now = new \DateTimeImmutable;
 
         $summary = ['fresh' => 0, 'stale' => 0, 'overdue' => 0, 'missing' => 0, 'total' => $rows->count()];
         $feeds = $rows->map(function (DataFeedStatus $row) use (&$summary, $now) {

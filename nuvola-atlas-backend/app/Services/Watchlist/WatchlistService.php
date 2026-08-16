@@ -44,6 +44,7 @@ class WatchlistService
     public function updateEntry(FirmWatchlist $entry, array $changes): FirmWatchlist
     {
         $entry->fill(array_filter($changes, fn ($v) => $v !== null))->save();
+
         return $entry->refresh();
     }
 
@@ -74,10 +75,13 @@ class WatchlistService
                 $total = 0.0;
                 $wsum = 0.0;
                 foreach ($weights as $k => $w) {
-                    if ($pillars[$k] === null) continue;
+                    if ($pillars[$k] === null) {
+                        continue;
+                    }
                     $total += $pillars[$k] * $w;
                     $wsum += $w;
                 }
+
                 return [
                     'zone_id' => $zone->id,
                     'zone_name' => $zone->name,

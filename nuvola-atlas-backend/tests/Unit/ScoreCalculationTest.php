@@ -19,7 +19,7 @@ class ScoreCalculationTest extends TestCase
 {
     public function test_pillar_scores_average_indicators(): void
     {
-        $calc = new ScoreCalculator();
+        $calc = new ScoreCalculator;
 
         $zone = new Zone([
             // social: (80 + 70 + 60) / 3 = 70
@@ -51,7 +51,7 @@ class ScoreCalculationTest extends TestCase
 
     public function test_composite_score_is_average_of_pillars(): void
     {
-        $calc = new ScoreCalculator();
+        $calc = new ScoreCalculator;
 
         $zone = new Zone([
             'indicator_healthcare_access' => 80,
@@ -75,7 +75,7 @@ class ScoreCalculationTest extends TestCase
 
     public function test_null_indicators_are_excluded_not_treated_as_zero(): void
     {
-        $calc = new ScoreCalculator();
+        $calc = new ScoreCalculator;
 
         // Only two of the three social indicators exist. The average must
         // be over those two, not diluted with a fake zero for the missing
@@ -96,11 +96,11 @@ class ScoreCalculationTest extends TestCase
 
     public function test_pillar_with_all_indicators_null_returns_null(): void
     {
-        $calc = new ScoreCalculator();
+        $calc = new ScoreCalculator;
 
         // A zone with no indicator readings at all — every pillar is null,
         // the composite is null, and the API surfaces this as "Awaiting data".
-        $zone = new Zone();
+        $zone = new Zone;
 
         $this->assertNull($calc->calculateScore($zone));
         $pillars = $calc->pillarScores($zone);
@@ -111,7 +111,7 @@ class ScoreCalculationTest extends TestCase
 
     public function test_missing_indicators_lists_the_gaps(): void
     {
-        $calc = new ScoreCalculator();
+        $calc = new ScoreCalculator;
 
         $zone = new Zone([
             'indicator_healthcare_access' => 80,
@@ -130,7 +130,7 @@ class ScoreCalculationTest extends TestCase
 
     public function test_pillar_scores_from_values_matches_pillar_scores(): void
     {
-        $calc = new ScoreCalculator();
+        $calc = new ScoreCalculator;
 
         $values = [
             'healthcare_access' => 80,
@@ -152,7 +152,7 @@ class ScoreCalculationTest extends TestCase
 
         // Build the equivalent Zone for a sanity cross-check.
         $zone = new Zone(array_combine(
-            array_map(fn ($k) => 'indicator_' . $k, array_keys($values)),
+            array_map(fn ($k) => 'indicator_'.$k, array_keys($values)),
             array_values($values),
         ));
 

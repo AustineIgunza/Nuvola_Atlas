@@ -31,7 +31,7 @@ return new class extends Migration
             return;
         }
 
-        $exists = DB::selectOne("SELECT 1 AS ok FROM pg_roles WHERE rolname = ?", [$roleName]);
+        $exists = DB::selectOne('SELECT 1 AS ok FROM pg_roles WHERE rolname = ?', [$roleName]);
 
         if (! $exists) {
             DB::statement("CREATE ROLE {$this->quoteIdent($roleName)} LOGIN PASSWORD ?", [$password]);
@@ -63,7 +63,7 @@ return new class extends Migration
             return;
         }
 
-        $exists = DB::selectOne("SELECT 1 AS ok FROM pg_roles WHERE rolname = ?", [$roleName]);
+        $exists = DB::selectOne('SELECT 1 AS ok FROM pg_roles WHERE rolname = ?', [$roleName]);
         if (! $exists) {
             return;
         }
@@ -85,6 +85,6 @@ return new class extends Migration
      */
     private function quoteIdent(string $ident): string
     {
-        return '"' . str_replace('"', '""', $ident) . '"';
+        return '"'.str_replace('"', '""', $ident).'"';
     }
 };

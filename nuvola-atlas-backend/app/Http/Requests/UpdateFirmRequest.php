@@ -9,11 +9,15 @@ use Illuminate\Validation\Rule;
 
 class UpdateFirmRequest extends FormRequest
 {
-    public function authorize(): bool { return true; }
+    public function authorize(): bool
+    {
+        return true;
+    }
 
     public function rules(): array
     {
         $id = $this->route('id');
+
         return [
             'name' => ['nullable', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:96', Rule::unique('firms', 'slug')->ignore($id)],

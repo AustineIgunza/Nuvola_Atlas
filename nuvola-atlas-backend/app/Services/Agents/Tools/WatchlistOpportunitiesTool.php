@@ -19,7 +19,10 @@ class WatchlistOpportunitiesTool extends BaseAgentTool
 {
     public function __construct(private WatchlistService $service) {}
 
-    public function name(): string { return 'watchlist_opportunities'; }
+    public function name(): string
+    {
+        return 'watchlist_opportunities';
+    }
 
     public function description(): string
     {

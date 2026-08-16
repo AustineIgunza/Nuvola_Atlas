@@ -18,7 +18,7 @@ final class StreamEvent
 
     public function toSse(): string
     {
-        return 'event: ' . $this->name . "\n"
-            . 'data: ' . json_encode($this->payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n\n";
+        return 'event: '.$this->name."\n"
+            .'data: '.json_encode($this->payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)."\n\n";
     }
 }

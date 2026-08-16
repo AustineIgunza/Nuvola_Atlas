@@ -12,6 +12,7 @@ class Report extends Model
     use HasFactory, SoftDeletes;
 
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $guarded = [];

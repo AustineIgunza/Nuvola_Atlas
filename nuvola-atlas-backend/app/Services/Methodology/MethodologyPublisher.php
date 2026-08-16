@@ -26,9 +26,7 @@ use RuntimeException;
 class MethodologyPublisher
 {
     /**
-     * @param  MethodologyVersion  $target
-     * @param  User|null  $publisher
-     * @throws RuntimeException  when the target is already current or is a draft
+     * @throws RuntimeException when the target is already current or is a draft
      */
     public function publish(MethodologyVersion $target, ?User $publisher = null): MethodologyVersion
     {
@@ -59,7 +57,7 @@ class MethodologyPublisher
      * Preview the effect of a proposed weight vector without touching the
      * live methodology. Used by /admin/methodology preview endpoint.
      *
-     * @param  array{social: float, safety: float, density: float, infra: float} $weights
+     * @param  array{social: float, safety: float, density: float, infra: float}  $weights
      */
     public function previewImpact(array $weights): MethodologyPreview
     {

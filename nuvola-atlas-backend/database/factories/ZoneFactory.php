@@ -54,7 +54,7 @@ class ZoneFactory extends Factory
             $lat = fake()->randomFloat(4, -1.38, -1.22);
 
             DB::statement(
-                "UPDATE zones SET centroid = ST_MakePoint(?, ?)::geography WHERE id = ?",
+                'UPDATE zones SET centroid = ST_MakePoint(?, ?)::geography WHERE id = ?',
                 [$lon, $lat, $zone->id]
             );
         });

@@ -62,7 +62,7 @@ class IngestController extends Controller
                     $indicatorKey = 'emergency_response_access';
                 }
 
-                $columnName = 'indicator_' . $indicatorKey;
+                $columnName = 'indicator_'.$indicatorKey;
 
                 // Update the zone indicators
                 $zone = Zone::findOrFail($zoneId);
@@ -116,6 +116,7 @@ class IngestController extends Controller
         if ($request->has('batch_id') && $request->has('readings')) {
             /** @var IngestBatchRequest $batchRequest */
             $batchRequest = app(IngestBatchRequest::class);
+
             return $this->ingest($batchRequest);
         }
 
@@ -132,10 +133,12 @@ class IngestController extends Controller
         foreach ($data['indicators'] as $slug => $value) {
             if (! in_array($slug, $known, true)) {
                 $ignored[] = $slug;
+
                 continue;
             }
             if ($value !== null && (! is_numeric($value) || $value < 0 || $value > 100)) {
                 $ignored[] = $slug;
+
                 continue;
             }
             $updates['indicator_'.$slug] = $value === null ? null : (int) $value;
@@ -181,6 +184,7 @@ class IngestController extends Controller
             ], $log->accepted ? 202 : 422);
         } catch (Throwable $e) {
             report($e);
+
             return response()->json([
                 'ok' => false,
                 'error' => 'Ingestion failed.',

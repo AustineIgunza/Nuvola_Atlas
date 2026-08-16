@@ -39,7 +39,9 @@ use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 class TwoFactorController extends Controller
 {
     private const CHALLENGE_TTL_SECONDS = 300;
+
     private const ENROL_TTL_SECONDS = 300;
+
     private const RESEND_LIMIT_PER_MINUTE = 1;
 
     public function emailStart(Request $request): JsonResponse

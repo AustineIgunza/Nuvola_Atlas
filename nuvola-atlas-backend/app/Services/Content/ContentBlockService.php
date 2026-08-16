@@ -7,6 +7,7 @@ namespace App\Services\Content;
 use App\Models\ContentBlock;
 use App\Models\ContentBlockRevision;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -30,6 +31,7 @@ class ContentBlockService
                 ]);
                 $existing->body = $body;
                 $existing->save();
+
                 return $existing;
             }
 
@@ -37,7 +39,7 @@ class ContentBlockService
         });
     }
 
-    /** @return \Illuminate\Database\Eloquent\Collection<int, ContentBlockRevision> */
+    /** @return Collection<int, ContentBlockRevision> */
     public function revisions(string $key)
     {
         return ContentBlockRevision::query()

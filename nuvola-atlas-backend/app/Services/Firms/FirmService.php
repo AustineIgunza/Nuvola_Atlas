@@ -21,7 +21,7 @@ use Illuminate\Support\Str;
 class FirmService
 {
     /**
-     * @param  array{name: string, slug?: string, tier: string, contact_email?: ?string, contact_name?: ?string, website?: ?string, active?: bool} $data
+     * @param  array{name: string, slug?: string, tier: string, contact_email?: ?string, contact_name?: ?string, website?: ?string, active?: bool}  $data
      */
     public function create(array $data): Firm
     {
@@ -40,7 +40,7 @@ class FirmService
     }
 
     /**
-     * @param  array{name?: string, slug?: string, tier?: string, contact_email?: ?string, contact_name?: ?string, website?: ?string, active?: bool} $data
+     * @param  array{name?: string, slug?: string, tier?: string, contact_email?: ?string, contact_name?: ?string, website?: ?string, active?: bool}  $data
      */
     public function update(Firm $firm, array $data): Firm
     {
@@ -54,6 +54,7 @@ class FirmService
             }
 
             $firm->fill($updates)->save();
+
             return $firm->refresh();
         });
     }
@@ -63,6 +64,7 @@ class FirmService
         return DB::transaction(function () use ($firm) {
             $firm->active = false;
             $firm->save();
+
             return $firm->refresh();
         });
     }

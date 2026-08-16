@@ -48,6 +48,7 @@ class FireAlertRulesOnZoneScoreUpdated implements ShouldQueue
             if (! $rule->shouldFire($currentScore)) {
                 $rule->last_score_seen = $currentScore;
                 $rule->save();
+
                 continue;
             }
 
@@ -89,6 +90,7 @@ class FireAlertRulesOnZoneScoreUpdated implements ShouldQueue
     private function formatBody(AlertRule $rule, $zone, int $currentScore, int $delta): string
     {
         $arrow = $delta > 0 ? '+' : '';
+
         return match ($rule->direction) {
             'below' => "{$zone->name} dropped to {$currentScore} (threshold {$rule->threshold_score}, {$arrow}{$delta}).",
             'above' => "{$zone->name} rose to {$currentScore} (threshold {$rule->threshold_score}, {$arrow}{$delta}).",
@@ -110,12 +112,14 @@ class FireAlertRulesOnZoneScoreUpdated implements ShouldQueue
                 ->pluck('email')
                 ->all();
 
-            if (empty($recipients)) return;
+            if (empty($recipients)) {
+                return;
+            }
 
             $body = "Alert: {$alert->title}\n\n{$alert->body}\n\nView in Navuuna Atlas.";
             foreach ($recipients as $email) {
                 Mail::raw($body, function ($mail) use ($email, $alert) {
-                    $mail->to($email)->subject('[Navuuna Atlas] ' . $alert->title);
+                    $mail->to($email)->subject('[Navuuna Atlas] '.$alert->title);
                 });
             }
         } catch (\Throwable $e) {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -11,7 +12,7 @@ class InvestorProfileResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = $this->resource;
         $firm = $user->primaryFirm;
 

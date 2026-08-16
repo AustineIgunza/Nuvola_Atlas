@@ -21,6 +21,7 @@ use Illuminate\Support\Str;
 class AlertStaleFeeds extends Command
 {
     protected $signature = 'nuvola:alert-stale-feeds';
+
     protected $description = 'Emit a single alert per overdue/missing feed cluster (dedup vs last 24h).';
 
     public function __construct(private FeedStatusService $service)
@@ -38,6 +39,7 @@ class AlertStaleFeeds extends Command
 
         if (empty($offenders)) {
             $this->info('All feeds are fresh or stale-under-SLA. Nothing to alert.');
+
             return self::SUCCESS;
         }
 
@@ -49,15 +51,17 @@ class AlertStaleFeeds extends Command
                 ->where('title', 'like', "%{$feed['indicator_key']}%")
                 ->where('created_at', '>=', now()->subHours(24))
                 ->exists();
-            if ($existing) continue;
+            if ($existing) {
+                continue;
+            }
 
             $alert = Alert::create([
                 'id' => (string) Str::uuid(),
                 'severity' => $feed['state'] === 'missing' ? 'high' : 'medium',
                 'kind' => 'system',
-                'title' => ucfirst($feed['state']) . " feed: {$feed['indicator_key']} for {$feed['zone_name']}",
+                'title' => ucfirst($feed['state'])." feed: {$feed['indicator_key']} for {$feed['zone_name']}",
                 'body' => "Source: {$feed['source_system']}. SLA {$feed['expected_frequency_min']} min; last delivered "
-                    . ($feed['age_min'] === null ? 'never' : "{$feed['age_min']} min ago") . '.',
+                    .($feed['age_min'] === null ? 'never' : "{$feed['age_min']} min ago").'.',
                 'zone_id' => $feed['zone_id'],
                 'read' => false,
             ]);
@@ -66,6 +70,7 @@ class AlertStaleFeeds extends Command
         }
 
         $this->info("Emitted {$emitted} stale-feed alerts.");
+
         return self::SUCCESS;
     }
 }

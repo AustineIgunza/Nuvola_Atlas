@@ -36,7 +36,9 @@ class AlertRule extends Model
      */
     public function shouldFire(?int $currentScore): bool
     {
-        if (! $this->active || $currentScore === null) return false;
+        if (! $this->active || $currentScore === null) {
+            return false;
+        }
         if ($this->last_fired_at !== null && $this->last_fired_at->gt(now()->subMinutes(30))) {
             return false;
         }

@@ -25,16 +25,16 @@ class InsightGenerator
         $sample = array_slice($rows, 0, 20);
 
         $system = "You explain Postgres query results to a Nairobi urban planner.\n"
-            . "Rules:\n"
-            . "- Answer in 3-6 sentences. Plain English, no code.\n"
-            . "- Ground every claim in the numbers you were given. Do not speculate about causes not present in the data.\n"
-            . "- If the result set is empty, say so and suggest one refined question.\n"
-            . "- Intent: {$intent}.\n"
-            . "- The rows come from Navuuna's Postgres — pillar scores are 0-100, deltas are quarter-over-quarter.";
+            ."Rules:\n"
+            ."- Answer in 3-6 sentences. Plain English, no code.\n"
+            ."- Ground every claim in the numbers you were given. Do not speculate about causes not present in the data.\n"
+            ."- If the result set is empty, say so and suggest one refined question.\n"
+            ."- Intent: {$intent}.\n"
+            ."- The rows come from Navuuna's Postgres — pillar scores are 0-100, deltas are quarter-over-quarter.";
 
         $userBlock = "Question: {$prompt}\n\n"
-            . "Result rows (" . count($rows) . " total, first " . count($sample) . " shown):\n"
-            . json_encode($sample, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+            .'Result rows ('.count($rows).' total, first '.count($sample)." shown):\n"
+            .json_encode($sample, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
         $messages = [
             ['role' => 'system', 'content' => $system],
@@ -60,15 +60,13 @@ class InsightGenerator
         $columns = ! empty($sample) ? array_keys($sample[0]) : [];
 
         $messages = [
-            ['role' => 'system', 'content' =>
-                "Suggest 3 short follow-up questions a Nairobi planner might ask next, "
-                . "grounded on these result columns and the original question. "
-                . "Respond with a JSON array of 3 strings, nothing else."
+            ['role' => 'system', 'content' => 'Suggest 3 short follow-up questions a Nairobi planner might ask next, '
+                .'grounded on these result columns and the original question. '
+                .'Respond with a JSON array of 3 strings, nothing else.',
             ],
-            ['role' => 'user', 'content' =>
-                "Original: {$prompt}\n"
-                . "Intent: {$intent}\n"
-                . "Columns available: " . implode(', ', $columns)
+            ['role' => 'user', 'content' => "Original: {$prompt}\n"
+                ."Intent: {$intent}\n"
+                .'Columns available: '.implode(', ', $columns),
             ],
         ];
 
@@ -81,6 +79,7 @@ class InsightGenerator
         if (! is_array($decoded)) {
             return [];
         }
+
         return array_values(array_filter(array_map('strval', $decoded)));
     }
 
@@ -91,6 +90,7 @@ class InsightGenerator
             $s = preg_replace('/^```[a-z]*\n?/i', '', $s) ?? $s;
             $s = preg_replace('/\n?```$/', '', $s) ?? $s;
         }
+
         return trim($s);
     }
 }

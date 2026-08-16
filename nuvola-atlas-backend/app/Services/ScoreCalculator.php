@@ -116,6 +116,7 @@ class ScoreCalculator
                 $values[$slug] = $this->indicator($zone, $slug);
             }
         }
+
         return $this->pillarScoresFromValues($values);
     }
 
@@ -124,7 +125,7 @@ class ScoreCalculator
      * Useful when aggregating snapshot rows (ZoneHistoryController averages
      * indicator columns per bucket and only needs the pillar math).
      *
-     * @param array<string, ?int> $values slug (without "indicator_" prefix) → 0-100 value or null
+     * @param  array<string, ?int>  $values  slug (without "indicator_" prefix) → 0-100 value or null
      * @return array{social: ?int, safety: ?int, density: ?int, infra: ?int}
      */
     public function pillarScoresFromValues(array $values): array
@@ -135,6 +136,7 @@ class ScoreCalculator
                 array_map(fn (string $ind) => $values[$ind] ?? null, $indicators)
             );
         }
+
         return $result;
     }
 
@@ -194,6 +196,7 @@ class ScoreCalculator
                 }
             }
         }
+
         return $missing;
     }
 
@@ -233,11 +236,12 @@ class ScoreCalculator
         foreach ($zones as $zone) {
             $this->recalculate($zone, $broadcast);
         }
+
         return $zones->count();
     }
 
     /**
-     * @param array<int, int|null> $values
+     * @param  array<int, int|null>  $values
      */
     private function average(array $values): ?int
     {
@@ -245,6 +249,7 @@ class ScoreCalculator
         if (empty($present)) {
             return null;
         }
+
         return (int) round(array_sum($present) / count($present));
     }
 
@@ -254,10 +259,11 @@ class ScoreCalculator
      */
     private function indicator(Zone $zone, string $slug): ?int
     {
-        $value = $zone->getAttribute('indicator_' . $slug);
+        $value = $zone->getAttribute('indicator_'.$slug);
         if ($value === null) {
             return null;
         }
+
         return (int) $value;
     }
 
@@ -271,9 +277,10 @@ class ScoreCalculator
         $out = [];
         foreach (self::pillars() as $indicators) {
             foreach ($indicators as $slug) {
-                $out['indicator_' . $slug] = $this->indicator($zone, $slug);
+                $out['indicator_'.$slug] = $this->indicator($zone, $slug);
             }
         }
+
         return $out;
     }
 }

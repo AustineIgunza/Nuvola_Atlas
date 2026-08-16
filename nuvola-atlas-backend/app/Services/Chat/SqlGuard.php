@@ -40,8 +40,7 @@ class SqlGuard
         private readonly array $allowedTables,
         private readonly int $defaultLimit = 200,
         private readonly int $hardLimit = 1000,
-    ) {
-    }
+    ) {}
 
     /**
      * Validate and rewrite a query. Returns a safe SQL string or throws.
@@ -72,13 +71,13 @@ class SqlGuard
         $upper = strtoupper($sql);
 
         foreach (self::DENY_KEYWORDS as $kw) {
-            if (preg_match('/\b' . preg_quote($kw, '/') . '\b/', $upper)) {
+            if (preg_match('/\b'.preg_quote($kw, '/').'\b/', $upper)) {
                 throw new InvalidArgumentException("Keyword {$kw} is not allowed.");
             }
         }
 
         foreach (self::DENY_FUNCTIONS as $fn) {
-            if (preg_match('/\b' . preg_quote(strtoupper($fn), '/') . '\s*\(/', $upper)) {
+            if (preg_match('/\b'.preg_quote(strtoupper($fn), '/').'\s*\(/', $upper)) {
                 throw new InvalidArgumentException("Function {$fn} is not allowed.");
             }
         }
@@ -109,6 +108,7 @@ class SqlGuard
         if (str_ends_with($sql, ';')) {
             $sql = rtrim(substr($sql, 0, -1));
         }
+
         return $sql;
     }
 
@@ -157,13 +157,15 @@ class SqlGuard
             if ($n > $this->hardLimit) {
                 $offset = $m[1][1];
                 $len = strlen($m[1][0]);
+
                 return substr($sql, 0, $offset)
-                    . (string) $this->hardLimit
-                    . substr($sql, $offset + $len);
+                    .(string) $this->hardLimit
+                    .substr($sql, $offset + $len);
             }
+
             return $sql;
         }
 
-        return $sql . ' LIMIT ' . $this->defaultLimit;
+        return $sql.' LIMIT '.$this->defaultLimit;
     }
 }

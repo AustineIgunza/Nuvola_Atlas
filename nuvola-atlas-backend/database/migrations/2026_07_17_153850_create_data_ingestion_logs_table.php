@@ -60,10 +60,10 @@ return new class extends Migration
     public function down(): void
     {
         if (DB::getDriverName() === 'pgsql') {
-            DB::unprepared("
+            DB::unprepared('
                 DROP TRIGGER IF EXISTS trigger_logs_append_only ON data_ingestion_logs;
                 DROP FUNCTION IF EXISTS enforce_logs_append_only();
-            ");
+            ');
         }
 
         Schema::dropIfExists('data_ingestion_logs');

@@ -7,7 +7,6 @@ namespace Tests\Feature\Scoring;
 use App\Events\ZoneScoreUpdated;
 use App\Jobs\RecalculateAllZones;
 use App\Jobs\RecalculateZoneScore;
-use App\Models\Zone;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
@@ -45,7 +44,7 @@ class RecalculateAllZonesTest extends TestCase
         $this->seedZone('bulk-b');
         $this->seedZone('bulk-c');
 
-        (new RecalculateAllZones())->handle();
+        (new RecalculateAllZones)->handle();
 
         Queue::assertPushed(RecalculateZoneScore::class, 3);
         Queue::assertPushed(RecalculateZoneScore::class, fn ($job) => $job->zoneId === 'bulk-a');

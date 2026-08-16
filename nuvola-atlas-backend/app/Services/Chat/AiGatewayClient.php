@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Services\Chat;
 
 use Generator;
-use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
@@ -32,7 +31,7 @@ class AiGatewayClient
 
         if (! $response->ok()) {
             throw new RuntimeException(
-                'AI Gateway request failed: ' . $response->status() . ' ' . $response->body()
+                'AI Gateway request failed: '.$response->status().' '.$response->body()
             );
         }
 
@@ -65,7 +64,7 @@ class AiGatewayClient
 
         if (! $response->ok()) {
             throw new RuntimeException(
-                'AI Gateway stream failed: ' . $response->status() . ' ' . $response->body()
+                'AI Gateway stream failed: '.$response->status().' '.$response->body()
             );
         }
 
@@ -105,6 +104,7 @@ class AiGatewayClient
     public function isConfigured(): bool
     {
         $key = config('ai.gateway.api_key');
+
         return is_string($key) && $key !== '';
     }
 

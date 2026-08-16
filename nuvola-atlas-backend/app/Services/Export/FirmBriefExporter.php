@@ -43,7 +43,7 @@ class FirmBriefExporter
 
     private function buildPdf(array $data): string
     {
-        $options = new DompdfOptions();
+        $options = new DompdfOptions;
         $options->set('isRemoteEnabled', false);
         $options->set('defaultFont', 'Helvetica');
 
@@ -57,11 +57,11 @@ class FirmBriefExporter
 
     private function buildHtml(array $data): string
     {
-        /** @var \App\Models\Firm $firm */
+        /** @var Firm $firm */
         $firm = $data['firm'];
         $watchlists = $data['watchlists'];
         $g = htmlspecialchars((string) $data['generatedAt']);
-        $calc = new ScoreCalculator();
+        $calc = new ScoreCalculator;
 
         $tier = htmlspecialchars(strtoupper($firm->tier->value));
         $firmName = htmlspecialchars($firm->name);

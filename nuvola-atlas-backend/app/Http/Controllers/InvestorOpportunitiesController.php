@@ -39,7 +39,7 @@ class InvestorOpportunitiesController extends Controller
             ->all();
 
         $weights = $firm->tier->opportunityWeights();
-        $calc = new ScoreCalculator();
+        $calc = new ScoreCalculator;
 
         $ranked = Zone::query()
             ->whereNotIn('id', $watchlistedIds)
@@ -47,6 +47,7 @@ class InvestorOpportunitiesController extends Controller
             ->map(function (Zone $zone) use ($calc, $weights) {
                 $pillars = $calc->pillarScores($zone);
                 $rank = $this->weightedScore($pillars, $weights);
+
                 return [
                     'zone_id' => $zone->id,
                     'zone_name' => $zone->name,
@@ -68,8 +69,8 @@ class InvestorOpportunitiesController extends Controller
     }
 
     /**
-     * @param  array{social: ?int, safety: ?int, density: ?int, infra: ?int} $pillars
-     * @param  array{social: float, safety: float, density: float, infra: float} $weights
+     * @param  array{social: ?int, safety: ?int, density: ?int, infra: ?int}  $pillars
+     * @param  array{social: float, safety: float, density: float, infra: float}  $weights
      */
     private function weightedScore(array $pillars, array $weights): ?float
     {
@@ -82,6 +83,7 @@ class InvestorOpportunitiesController extends Controller
             $total += $pillars[$key] * $w;
             $weightSum += $w;
         }
+
         return $weightSum > 0 ? round($total / $weightSum, 2) : null;
     }
 }

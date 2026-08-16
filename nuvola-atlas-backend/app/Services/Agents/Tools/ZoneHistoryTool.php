@@ -10,7 +10,10 @@ use Illuminate\Support\Facades\DB;
 
 class ZoneHistoryTool extends BaseAgentTool
 {
-    public function name(): string { return 'zone_history'; }
+    public function name(): string
+    {
+        return 'zone_history';
+    }
 
     public function description(): string
     {

@@ -46,18 +46,18 @@ class ZoneHistoryController extends Controller
         // Aggregate the 13 indicator columns per bucket, then compute the four
         // pillar averages in PHP via ScoreCalculator so the chart-ready wire
         // format matches the live Zones endpoint.
-        $calc = new ScoreCalculator();
+        $calc = new ScoreCalculator;
         $indicatorAggregates = [];
         foreach (ScoreCalculator::pillars() as $pillar => $indicators) {
             foreach ($indicators as $slug) {
-                $indicatorAggregates[] = 'indicator_' . $slug;
+                $indicatorAggregates[] = 'indicator_'.$slug;
             }
         }
 
         $query = DB::table('zone_score_snapshots')
             ->where('zone_id', $zoneId)
             ->where('captured_at', '>=', now()->subHours($hours))
-            ->selectRaw("date_trunc(?, captured_at) as bucket", [$bucket])
+            ->selectRaw('date_trunc(?, captured_at) as bucket', [$bucket])
             ->selectRaw('AVG(score)::int as score');
 
         foreach ($indicatorAggregates as $col) {
@@ -73,7 +73,7 @@ class ZoneHistoryController extends Controller
             $values = [];
             foreach (ScoreCalculator::pillars() as $indicators) {
                 foreach ($indicators as $slug) {
-                    $col = 'indicator_' . $slug;
+                    $col = 'indicator_'.$slug;
                     $values[$slug] = isset($row->$col) ? (int) $row->$col : null;
                 }
             }

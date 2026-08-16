@@ -82,6 +82,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     /**
      * Returns the user's email with the local-part masked except the first
+     *
      * two characters, e.g. `au***@nuvola.dev`. Used in sign-in responses so
      * the UI can hint where the code was sent without disclosing the full
      * address to anyone who got hold of the credentials.
@@ -90,10 +91,15 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         $email = $this->email ?? '';
         $at = strpos($email, '@');
-        if ($at === false) return $email;
+        if ($at === false) {
+            return $email;
+        }
         $local = substr($email, 0, $at);
         $domain = substr($email, $at);
-        if (strlen($local) <= 2) return $local.'***'.$domain;
+        if (strlen($local) <= 2) {
+            return $local.'***'.$domain;
+        }
+
         return substr($local, 0, 2).str_repeat('*', max(3, strlen($local) - 2)).$domain;
     }
 }

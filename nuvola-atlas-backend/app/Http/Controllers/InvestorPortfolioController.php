@@ -78,7 +78,7 @@ class InvestorPortfolioController extends Controller
     /**
      * Daily mean score across the given zones over the last 28 days.
      *
-     * @param  list<string> $zoneIds
+     * @param  list<string>  $zoneIds
      * @return list<array{captured_at: string, score: float}>
      */
     private function trend(array $zoneIds): array

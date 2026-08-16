@@ -14,8 +14,8 @@ namespace App\Services\Agents;
 interface AgentProvider
 {
     /**
-     * @param  array<int, array{name: string, description: string, parameters: array<string,mixed>}> $tools
-     * @param  array<int, array{role: string, content: string}> $history
+     * @param  array<int, array{name: string, description: string, parameters: array<string,mixed>}>  $tools
+     * @param  array<int, array{role: string, content: string}>  $history
      * @return array{action: 'tool_call'|'final', tool?: string, args?: array<string,mixed>, answer?: string, reasoning?: string}
      */
     public function nextStep(string $prompt, array $tools, array $history): array;

@@ -30,7 +30,7 @@ class ZoneApiTest extends TestCase
         ])));
 
         DB::statement(
-            "UPDATE zones SET centroid = ST_MakePoint(36.8048, -1.2673)::geography WHERE id = ?",
+            'UPDATE zones SET centroid = ST_MakePoint(36.8048, -1.2673)::geography WHERE id = ?',
             [$id]
         );
 

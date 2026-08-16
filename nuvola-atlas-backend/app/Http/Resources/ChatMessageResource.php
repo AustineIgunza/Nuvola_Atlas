@@ -19,6 +19,7 @@ class ChatMessageResource extends JsonResource
         foreach ($rows as $row) {
             if (is_array($row) && array_key_exists('__followups__', $row)) {
                 $followups = $row['__followups__'];
+
                 continue;
             }
             $cleanRows[] = $row;

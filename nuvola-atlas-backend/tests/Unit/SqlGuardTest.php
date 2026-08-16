@@ -91,7 +91,7 @@ class SqlGuardTest extends TestCase
     public function test_line_comment_is_rejected(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->guard->validate("SELECT * FROM zones -- DROP TABLE zones");
+        $this->guard->validate('SELECT * FROM zones -- DROP TABLE zones');
     }
 
     public function test_block_comment_is_rejected(): void

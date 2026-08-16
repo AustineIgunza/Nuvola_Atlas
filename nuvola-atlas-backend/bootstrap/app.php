@@ -1,5 +1,12 @@
 <?php
 
+use App\Http\Middleware\EnsureRole;
+use App\Http\Middleware\FirmScope;
+use App\Http\Middleware\HttpCache;
+use App\Http\Middleware\RequireAdminTwoFactor;
+use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\SetPartnerContext;
+use App\Http\Middleware\VerifyInternalSecret;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
@@ -15,7 +22,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 // renderer closure below fires. Anything after Application::create() never
 // executes — the file returns immediately.
 if (! function_exists('problemResponse')) {
-    function problemResponse(\Throwable $e, Request $request): JsonResponse
+    function problemResponse(Throwable $e, Request $request): JsonResponse
     {
         $base = rtrim(config('app.url', ''), '/').'/problems';
 
@@ -102,23 +109,23 @@ return Application::configure(basePath: dirname(__DIR__))
         );
 
         $middleware->web(append: [
-            \App\Http\Middleware\SecurityHeaders::class,
+            SecurityHeaders::class,
         ]);
         // Token-based auth (Bearer) — no stateful/CSRF needed
         // $middleware->api(prepend: [
         //     \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         // ]);
         $middleware->api(append: [
-            \App\Http\Middleware\SecurityHeaders::class,
+            SecurityHeaders::class,
         ]);
         $middleware->alias([
-            'role' => \App\Http\Middleware\EnsureRole::class,
-            'partner.context' => \App\Http\Middleware\SetPartnerContext::class,
-            'admin.two_factor' => \App\Http\Middleware\RequireAdminTwoFactor::class,
-            'http.cache' => \App\Http\Middleware\HttpCache::class,
-            'firm.scope' => \App\Http\Middleware\FirmScope::class,
-            'internal.secret' => \App\Http\Middleware\VerifyInternalSecret::class,
-            'ingest.secret' => \App\Http\Middleware\VerifyInternalSecret::class,
+            'role' => EnsureRole::class,
+            'partner.context' => SetPartnerContext::class,
+            'admin.two_factor' => RequireAdminTwoFactor::class,
+            'http.cache' => HttpCache::class,
+            'firm.scope' => FirmScope::class,
+            'internal.secret' => VerifyInternalSecret::class,
+            'ingest.secret' => VerifyInternalSecret::class,
         ]);
         // Headless: there is no login page to bounce anyone to, and naming a
         // route that does not exist would turn every unauthenticated request
@@ -126,14 +133,14 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectGuestsTo(fn () => null);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->shouldRenderJsonWhen(function (Request $request, \Throwable $e) {
+        $exceptions->shouldRenderJsonWhen(function (Request $request, Throwable $e) {
             return $request->is('api/*') || $request->expectsJson();
         });
 
         // RFC 7807 application/problem+json for every API failure. Keeps the
         // wire shape stable for partners and matches what the OpenAPI spec
         // declares as the error response type.
-        $exceptions->render(function (\Throwable $e, Request $request) {
+        $exceptions->render(function (Throwable $e, Request $request) {
             if (! $request->is('api/*') && ! $request->expectsJson()) {
                 return null;
             }
@@ -145,7 +152,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // only binds the `sentry` container key after sentry-laravel boots
         // with a non-empty DSN — so this is a true no-op in local dev, CI,
         // and any environment without SENTRY_LARAVEL_DSN set.
-        $exceptions->reportable(function (\Throwable $e): void {
+        $exceptions->reportable(function (Throwable $e): void {
             if (app()->bound('sentry')) {
                 app('sentry')->captureException($e);
             }

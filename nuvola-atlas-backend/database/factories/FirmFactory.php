@@ -30,9 +30,18 @@ class FirmFactory extends Factory
         ];
     }
 
-    public function basic(): static { return $this->state(['tier' => FirmTier::Basic]); }
+    public function basic(): static
+    {
+        return $this->state(['tier' => FirmTier::Basic]);
+    }
 
-    public function deal(): static { return $this->state(['tier' => FirmTier::Deal]); }
+    public function deal(): static
+    {
+        return $this->state(['tier' => FirmTier::Deal]);
+    }
 
-    public function sovereign(): static { return $this->state(['tier' => FirmTier::Sovereign]); }
+    public function sovereign(): static
+    {
+        return $this->state(['tier' => FirmTier::Sovereign]);
+    }
 }

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Role;
-use App\Http\Controllers\TwoFactorController;
 use App\Http\Requests\ForgotPasswordRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\ResetPasswordRequest;

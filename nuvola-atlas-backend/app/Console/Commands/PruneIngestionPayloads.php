@@ -34,6 +34,7 @@ class PruneIngestionPayloads extends Command
 
         if ($days < 1) {
             $this->error('Retention window must be at least 1 day.');
+
             return self::FAILURE;
         }
 

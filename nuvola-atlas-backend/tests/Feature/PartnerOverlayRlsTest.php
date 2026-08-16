@@ -6,6 +6,8 @@ namespace Tests\Feature;
 
 use App\Models\Partner;
 use App\Models\PartnerDatasetOverlay;
+use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
@@ -105,7 +107,7 @@ class PartnerOverlayRlsTest extends TestCase
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             $blocked = true;
         }
 
@@ -117,7 +119,7 @@ class PartnerOverlayRlsTest extends TestCase
     public function test_middleware_sets_partner_id_on_authenticated_request(): void
     {
         $partner = Partner::factory()->create();
-        $user = \App\Models\User::factory()->editor()->create(['partner_id' => $partner->id]);
+        $user = User::factory()->editor()->create(['partner_id' => $partner->id]);
 
         $this->actingAs($user)
             ->getJson('/api/v1/auth/me')

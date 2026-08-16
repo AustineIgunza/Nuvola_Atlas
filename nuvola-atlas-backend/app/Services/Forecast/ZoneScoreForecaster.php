@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services\Forecast;
 
-use App\Models\ZoneScoreSnapshot;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
@@ -22,7 +21,9 @@ use Illuminate\Support\Facades\DB;
 class ZoneScoreForecaster
 {
     private const TRAIN_DAYS = 30;
+
     private const ALPHA = 0.4;   // level smoothing
+
     private const BETA = 0.15;   // trend smoothing
 
     public function __construct(private readonly int $maxHorizon = 30) {}
@@ -82,8 +83,8 @@ class ZoneScoreForecaster
     }
 
     /**
-     * @param array<int, float> $series
-     * @return array{0: float, 1: float, 2: float}  [level, trend, residualStd]
+     * @param  array<int, float>  $series
+     * @return array{0: float, 1: float, 2: float} [level, trend, residualStd]
      */
     private function fitHolt(array $series): array
     {
@@ -102,16 +103,19 @@ class ZoneScoreForecaster
     }
 
     /**
-     * @param array<int, float> $values
+     * @param  array<int, float>  $values
      */
     private function stdev(array $values): float
     {
-        if (count($values) < 2) return 2.0; // sensible minimum band
+        if (count($values) < 2) {
+            return 2.0;
+        } // sensible minimum band
         $mean = array_sum($values) / count($values);
         $variance = 0.0;
         foreach ($values as $v) {
             $variance += ($v - $mean) ** 2;
         }
+
         return max(1.0, sqrt($variance / (count($values) - 1)));
     }
 
@@ -131,6 +135,7 @@ class ZoneScoreForecaster
                 'upper' => (int) round(min(100, $last + 5)),
             ];
         }
+
         return ['horizon' => $horizonDays, 'points' => $points];
     }
 

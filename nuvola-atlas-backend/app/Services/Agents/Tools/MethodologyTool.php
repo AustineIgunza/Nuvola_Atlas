@@ -12,7 +12,10 @@ class MethodologyTool extends BaseAgentTool
 {
     public function __construct(private ScoreCalculator $calc) {}
 
-    public function name(): string { return 'methodology'; }
+    public function name(): string
+    {
+        return 'methodology';
+    }
 
     public function description(): string
     {

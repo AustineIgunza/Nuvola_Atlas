@@ -11,10 +11,16 @@ class FeedStatusTool extends BaseAgentTool
 {
     public function __construct(private FeedStatusService $service) {}
 
-    public function name(): string { return 'feed_status'; }
+    public function name(): string
+    {
+        return 'feed_status';
+    }
 
     // Mirrors the gate on GET /api/v1/admin/feeds, which this tool wraps.
-    public function ability(): ?string { return 'view-feed-status'; }
+    public function ability(): ?string
+    {
+        return 'view-feed-status';
+    }
 
     public function description(): string
     {

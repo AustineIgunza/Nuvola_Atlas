@@ -42,6 +42,7 @@ class AdminFirmController extends Controller
     public function show(string $id): FirmResource
     {
         $firm = Firm::withCount(['users', 'watchlists'])->findOrFail($id);
+
         return new FirmResource($firm);
     }
 

@@ -75,7 +75,7 @@ class AdminMetricsController extends Controller
             $driver = DB::connection()->getDriverName();
             $dayExpr = $driver === 'pgsql'
                 ? "TO_CHAR(created_at, 'YYYY-MM-DD')"
-                : "DATE(created_at)";
+                : 'DATE(created_at)';
 
             $rows = AuditLog::query()
                 ->where('created_at', '>=', $start)

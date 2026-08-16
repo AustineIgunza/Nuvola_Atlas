@@ -12,7 +12,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Facades\Socialite;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 
 /**
@@ -63,6 +62,7 @@ class GoogleAuthController extends Controller
             $googleUser = Socialite::driver('google')->stateless()->user();
         } catch (Throwable $e) {
             Log::warning('Google OAuth callback failed', ['error' => $e->getMessage()]);
+
             return redirect()->away($frontendUrl.'/sign-in?error=oauth_callback_failed');
         }
 
@@ -79,6 +79,7 @@ class GoogleAuthController extends Controller
                         'email_verified_at' => $existing->email_verified_at ?? now(),
                         'last_active_at' => now(),
                     ])->save();
+
                     return $existing;
                 }
 
@@ -96,6 +97,7 @@ class GoogleAuthController extends Controller
             });
         } catch (Throwable $e) {
             Log::error('Google OAuth user upsert failed', ['error' => $e->getMessage()]);
+
             return redirect()->away($frontendUrl.'/sign-in?error=oauth_persist_failed');
         }
 

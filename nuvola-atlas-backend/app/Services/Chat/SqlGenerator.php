@@ -19,8 +19,8 @@ class SqlGenerator
     public function generate(string $prompt, string $intent, array $recentTurns = []): string
     {
         $system = $this->catalog->forPrompt()
-            . "\n\nThe user's intent is: {$intent}.\n"
-            . "Return ONLY a single SELECT statement. No explanation, no markdown fences, no comments.";
+            ."\n\nThe user's intent is: {$intent}.\n"
+            .'Return ONLY a single SELECT statement. No explanation, no markdown fences, no comments.';
 
         $messages = array_merge(
             [['role' => 'system', 'content' => $system]],
@@ -46,6 +46,7 @@ class SqlGenerator
             $sql = preg_replace('/^```[a-z]*\n?/i', '', $sql) ?? $sql;
             $sql = preg_replace('/\n?```$/', '', $sql) ?? $sql;
         }
+
         return trim($sql);
     }
 }

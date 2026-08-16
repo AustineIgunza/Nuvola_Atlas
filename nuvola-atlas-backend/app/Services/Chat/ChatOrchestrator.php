@@ -61,6 +61,7 @@ class ChatOrchestrator
             if (! $result['ok']) {
                 yield new StreamEvent('error', ['error' => $result['error']]);
                 $this->persistAssistant($conversation, $intent, $sqlSafe, [], $result['error'], $start);
+
                 return;
             }
             $rows = $result['rows'];
@@ -104,7 +105,7 @@ class ChatOrchestrator
                 $intent,
                 $sqlSafe,
                 [],
-                'Sorry — I could not answer that question. ' . $this->userSafeError($e),
+                'Sorry — I could not answer that question. '.$this->userSafeError($e),
                 $start,
             );
         }
@@ -168,6 +169,7 @@ class ChatOrchestrator
         if (str_contains($e->getMessage(), 'AI_GATEWAY_API_KEY')) {
             return 'The AI assistant needs an API key. Set AI_GATEWAY_API_KEY in the backend .env and restart.';
         }
+
         return 'The assistant is unavailable right now.';
     }
 }

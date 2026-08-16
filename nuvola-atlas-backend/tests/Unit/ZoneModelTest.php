@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use App\Models\Zone;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Tests\TestCase;
 
 class ZoneModelTest extends TestCase
@@ -21,20 +22,20 @@ class ZoneModelTest extends TestCase
     {
         $zone = new Zone;
 
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\HasMany::class, $zone->projects());
+        $this->assertInstanceOf(HasMany::class, $zone->projects());
     }
 
     public function test_zone_has_alerts_relationship(): void
     {
         $zone = new Zone;
 
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\HasMany::class, $zone->alerts());
+        $this->assertInstanceOf(HasMany::class, $zone->alerts());
     }
 
     public function test_zone_has_layers_relationship(): void
     {
         $zone = new Zone;
 
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\HasMany::class, $zone->layers());
+        $this->assertInstanceOf(HasMany::class, $zone->layers());
     }
 }

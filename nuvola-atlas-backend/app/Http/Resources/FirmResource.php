@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Models\Firm;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -11,7 +12,7 @@ class FirmResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        /** @var \App\Models\Firm $firm */
+        /** @var Firm $firm */
         $firm = $this->resource;
 
         return [

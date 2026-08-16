@@ -8,6 +8,7 @@ use App\Enums\Role;
 use App\Mail\TwoFactorReminderMail;
 use App\Models\AuditLog;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
@@ -158,7 +159,7 @@ class RemindAdminsWithoutTwoFactorTest extends TestCase
         ]);
 
         // Stash a code in the cache that emailConfirm will accept.
-        \Illuminate\Support\Facades\Cache::put('auth.two_factor_enrol:'.$admin->id, '123456', 300);
+        Cache::put('auth.two_factor_enrol:'.$admin->id, '123456', 300);
 
         $this->actingAs($admin)
             ->postJson('/api/v1/auth/2fa/email/confirm', ['code' => '123456'])

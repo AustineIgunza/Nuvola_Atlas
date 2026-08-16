@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Jobs\RecalculateZoneScore;
 use App\Models\DataIngestionLog;
 use App\Models\Zone;
-use App\Jobs\RecalculateZoneScore;
-use Illuminate\Support\Facades\Queue;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class IngestApiTest extends TestCase
@@ -34,6 +35,7 @@ class IngestApiTest extends TestCase
              VALUES (?, ?, 0, 99, ST_GeogFromText('POINT(36.82 -1.29)'), now(), now())",
             [$id, 'Test Zone']
         );
+
         return Zone::find($id);
     }
 
@@ -46,7 +48,7 @@ class IngestApiTest extends TestCase
     public function test_short_secret_returns_401(): void
     {
         $response = $this->withHeaders([
-            'X-Internal-Secret' => 'too_short'
+            'X-Internal-Secret' => 'too_short',
         ])->postJson('/api/v1/ingest', []);
 
         $response->assertStatus(401);
@@ -55,7 +57,7 @@ class IngestApiTest extends TestCase
     public function test_invalid_secret_returns_401(): void
     {
         $response = $this->withHeaders([
-            'X-Internal-Secret' => 'invalid_secret_that_is_long_enough_but_does_not_match_at_all_123456789'
+            'X-Internal-Secret' => 'invalid_secret_that_is_long_enough_but_does_not_match_at_all_123456789',
         ])->postJson('/api/v1/ingest', []);
 
         $response->assertStatus(401);
@@ -72,12 +74,12 @@ class IngestApiTest extends TestCase
                     'indicator' => 'healthcare_access',
                     'value' => 75.2,
                     'observed_at' => now()->toIso8601String(),
-                ]
-            ]
+                ],
+            ],
         ];
 
         $response = $this->withHeaders([
-            'X-Internal-Secret' => $this->secret
+            'X-Internal-Secret' => $this->secret,
         ])->postJson('/api/v1/ingest', $payload);
 
         $response->assertStatus(422);
@@ -111,12 +113,12 @@ class IngestApiTest extends TestCase
                     'indicator' => 'emergency_response', // translates to emergency_response_access
                     'value' => 60.1,
                     'observed_at' => now()->toIso8601String(),
-                ]
-            ]
+                ],
+            ],
         ];
 
         $response = $this->withHeaders([
-            'X-Internal-Secret' => $this->secret
+            'X-Internal-Secret' => $this->secret,
         ])->postJson('/api/v1/ingest', $payload);
 
         $response->assertStatus(200);
@@ -154,15 +156,15 @@ class IngestApiTest extends TestCase
                     'indicator' => 'healthcare_access',
                     'value' => 90,
                     'observed_at' => now()->toIso8601String(),
-                ]
-            ]
+                ],
+            ],
         ];
 
         $body = json_encode($payload);
         $signature = hash_hmac('sha256', $body, $this->secret);
 
         $response = $this->withHeaders([
-            'X-Internal-Secret' => $signature
+            'X-Internal-Secret' => $signature,
         ])->postJson('/api/v1/ingest', $payload);
 
         $response->assertStatus(200);
@@ -185,19 +187,19 @@ class IngestApiTest extends TestCase
                     'indicator' => 'congestion',
                     'value' => 45.8,
                     'observed_at' => now()->toIso8601String(),
-                ]
-            ]
+                ],
+            ],
         ];
 
         // Process first time
         $response1 = $this->withHeaders([
-            'X-Internal-Secret' => $this->secret
+            'X-Internal-Secret' => $this->secret,
         ])->postJson('/api/v1/ingest', $payload);
         $response1->assertStatus(200);
 
         // Process second time (should trigger short-circuit success)
         $response2 = $this->withHeaders([
-            'X-Internal-Secret' => $this->secret
+            'X-Internal-Secret' => $this->secret,
         ])->postJson('/api/v1/ingest', $payload);
 
         $response2->assertStatus(200);
@@ -251,7 +253,7 @@ class IngestApiTest extends TestCase
         try {
             DB::statement("UPDATE data_ingestion_logs SET status = 'rejected' WHERE id = ?", [$log->id]);
             $this->fail('Database trigger allowed update');
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             $this->assertStringContainsString('append-only', $e->getMessage());
         }
     }
@@ -266,9 +268,9 @@ class IngestApiTest extends TestCase
         ]);
 
         try {
-            DB::statement("DELETE FROM data_ingestion_logs WHERE id = ?", [$log->id]);
+            DB::statement('DELETE FROM data_ingestion_logs WHERE id = ?', [$log->id]);
             $this->fail('Database trigger allowed delete');
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             $this->assertStringContainsString('append-only', $e->getMessage());
         }
     }

@@ -2,12 +2,9 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Foundation\Http\FormRequest;
-
 use App\Models\DataIngestionLog;
 use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Foundation\Http\FormRequest;
 
 class IngestBatchRequest extends FormRequest
 {
@@ -48,7 +45,7 @@ class IngestBatchRequest extends FormRequest
             'submitted_at' => ['required', 'date'],
             'readings' => ['required', 'array'],
             'readings.*.zone_id' => ['required', 'string', 'exists:zones,id'],
-            'readings.*.indicator' => ['required', 'string', 'in:' . implode(',', $indicators)],
+            'readings.*.indicator' => ['required', 'string', 'in:'.implode(',', $indicators)],
             'readings.*.value' => ['required', 'numeric'],
             'readings.*.observed_at' => ['required', 'date'],
             'readings.*.field_verified' => ['nullable', 'boolean'],

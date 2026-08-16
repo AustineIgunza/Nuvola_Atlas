@@ -52,7 +52,7 @@ class MethodologyWeightsTest extends TestCase
 
     public function test_weights_default_to_the_equal_quartet_before_anything_is_published(): void
     {
-        $this->assertSame(ScoreCalculator::DEFAULT_WEIGHTS, (new ScoreCalculator())->getWeights());
+        $this->assertSame(ScoreCalculator::DEFAULT_WEIGHTS, (new ScoreCalculator)->getWeights());
     }
 
     public function test_published_weights_replace_the_defaults(): void
@@ -61,7 +61,7 @@ class MethodologyWeightsTest extends TestCase
 
         $this->assertSame(
             ['social' => 0.4, 'safety' => 0.3, 'density' => 0.2, 'infra' => 0.1],
-            (new ScoreCalculator())->getWeights(),
+            (new ScoreCalculator)->getWeights(),
         );
     }
 
@@ -72,7 +72,7 @@ class MethodologyWeightsTest extends TestCase
         // (70 + 66 + 60 + 70) / 4 = 66.5 → 67, same as before Phase E.
         $this->assertSame(
             67,
-            (new ScoreCalculator())->calculateScore($this->zoneWithPillars(70, 66, 60, 70)),
+            (new ScoreCalculator)->calculateScore($this->zoneWithPillars(70, 66, 60, 70)),
         );
     }
 
@@ -83,7 +83,7 @@ class MethodologyWeightsTest extends TestCase
         // 0.7·90 + 0.1·30 + 0.1·30 + 0.1·30 = 72
         $this->assertSame(
             72,
-            (new ScoreCalculator())->calculateScore($this->zoneWithPillars(90, 30, 30, 30)),
+            (new ScoreCalculator)->calculateScore($this->zoneWithPillars(90, 30, 30, 30)),
         );
     }
 
@@ -103,14 +103,14 @@ class MethodologyWeightsTest extends TestCase
             'indicator_disaster_exposure' => 40,
         ]);
 
-        $this->assertSame(65, (new ScoreCalculator())->calculateScore($zone));
+        $this->assertSame(65, (new ScoreCalculator)->calculateScore($zone));
     }
 
     public function test_a_malformed_weight_falls_back_to_that_pillars_default(): void
     {
         $this->publishWeights(['social' => 'heavy', 'safety' => -1, 'infra' => 0.25]);
 
-        $this->assertSame(ScoreCalculator::DEFAULT_WEIGHTS, (new ScoreCalculator())->getWeights());
+        $this->assertSame(ScoreCalculator::DEFAULT_WEIGHTS, (new ScoreCalculator)->getWeights());
     }
 
     public function test_publishing_invalidates_the_cached_weights(): void
@@ -118,7 +118,7 @@ class MethodologyWeightsTest extends TestCase
         Queue::fake();
 
         // Warm the 60s cache against the equal-weight default.
-        $this->assertSame(ScoreCalculator::DEFAULT_WEIGHTS, (new ScoreCalculator())->getWeights());
+        $this->assertSame(ScoreCalculator::DEFAULT_WEIGHTS, (new ScoreCalculator)->getWeights());
         $this->assertTrue(Cache::has(ScoreCalculator::WEIGHTS_CACHE_KEY));
 
         $target = MethodologyVersion::create([
@@ -133,7 +133,7 @@ class MethodologyWeightsTest extends TestCase
 
         $this->assertSame(
             ['social' => 0.55, 'safety' => 0.15, 'density' => 0.15, 'infra' => 0.15],
-            (new ScoreCalculator())->getWeights(),
+            (new ScoreCalculator)->getWeights(),
         );
     }
 
@@ -164,7 +164,7 @@ class MethodologyWeightsTest extends TestCase
         $projected = $publisher->previewImpact($weights)->compute()[0]['proposed'];
 
         $this->publishWeights($weights, 'v4.0.0');
-        $recomputed = (new ScoreCalculator())->calculateScore(Zone::find('embakasi'));
+        $recomputed = (new ScoreCalculator)->calculateScore(Zone::find('embakasi'));
 
         $this->assertSame($projected, $recomputed);
     }

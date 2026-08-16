@@ -205,7 +205,7 @@ class IngestSmoke extends Command
 
     /**
      * @param  list<array<string, mixed>>  $readings
-     * @return string|null  a description of the first mismatch, or null when all landed
+     * @return string|null a description of the first mismatch, or null when all landed
      */
     private function verifyReadings(Zone $zone, array $readings): ?string
     {
@@ -216,7 +216,7 @@ class IngestSmoke extends Command
             $actual = $zone->getAttribute($column);
 
             if ((int) $actual !== (int) $reading['value']) {
-                return "Reading for {$reading['indicator']} did not land: expected {$reading['value']}, found ".var_export($actual, true).".";
+                return "Reading for {$reading['indicator']} did not land: expected {$reading['value']}, found ".var_export($actual, true).'.';
             }
         }
 

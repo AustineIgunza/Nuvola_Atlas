@@ -41,24 +41,34 @@ class ChatApiTest extends TestCase
             'infra' => 80,
         ])));
         DB::statement(
-            "UPDATE zones SET centroid = ST_MakePoint(36.8048, -1.2673)::geography WHERE id = ?",
+            'UPDATE zones SET centroid = ST_MakePoint(36.8048, -1.2673)::geography WHERE id = ?',
             ['westlands']
         );
+
         return $zone;
     }
 
     private function fakeGatewayWith(array $completions, iterable $stream = ['Zone Westlands ', 'is trending up.']): void
     {
-        $client = new class($completions, $stream) extends AiGatewayClient {
+        $client = new class($completions, $stream) extends AiGatewayClient
+        {
             public function __construct(private array $completions, private iterable $streamData) {}
-            public function isConfigured(): bool { return true; }
+
+            public function isConfigured(): bool
+            {
+                return true;
+            }
+
             public function complete(array $messages, array $opts = []): array
             {
                 return array_shift($this->completions) ?? ['content' => 'summary', 'tokens_in' => 0, 'tokens_out' => 0];
             }
+
             public function stream(array $messages, array $opts = []): Generator
             {
-                foreach ($this->streamData as $d) yield $d;
+                foreach ($this->streamData as $d) {
+                    yield $d;
+                }
             }
         };
         $this->app->instance(AiGatewayClient::class, $client);

@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Storage;
 class PregenFirmBriefs extends Command
 {
     protected $signature = 'nuvola:pregen-firm-briefs {--only= : Comma-separated firm slugs}';
+
     protected $description = 'Pre-generate LP-style firm briefs and cache under storage/app/briefs/.';
 
     public function __construct(private FirmBriefExporter $exporter)
@@ -53,6 +54,7 @@ class PregenFirmBriefs extends Command
         }
 
         $this->info("Pre-generated {$generated} firm brief(s) for {$stamp}.");
+
         return self::SUCCESS;
     }
 }

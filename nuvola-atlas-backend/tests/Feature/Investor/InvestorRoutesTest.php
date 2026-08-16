@@ -41,6 +41,7 @@ class InvestorRoutesTest extends TestCase
         $firm->users()->syncWithoutDetaching([
             $user->id => ['role_within_firm' => 'admin'],
         ]);
+
         return $user;
     }
 

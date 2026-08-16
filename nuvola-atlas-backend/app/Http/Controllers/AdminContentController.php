@@ -28,6 +28,7 @@ class AdminContentController extends Controller
     public function show(string $key): JsonResponse
     {
         $block = ContentBlock::findOrFail($key);
+
         return response()->json([
             'key' => $block->key,
             'body' => $block->body,

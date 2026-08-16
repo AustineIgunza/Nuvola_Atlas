@@ -43,11 +43,23 @@ class UserFactory extends Factory
         ]);
     }
 
-    public function viewer(): static { return $this->state(['role' => Role::Viewer]); }
+    public function viewer(): static
+    {
+        return $this->state(['role' => Role::Viewer]);
+    }
 
-    public function partner(): static { return $this->state(['role' => Role::Partner]); }
+    public function partner(): static
+    {
+        return $this->state(['role' => Role::Partner]);
+    }
 
-    public function editor(): static { return $this->state(['role' => Role::Editor]); }
+    public function editor(): static
+    {
+        return $this->state(['role' => Role::Editor]);
+    }
 
-    public function admin(): static { return $this->state(['role' => Role::Admin]); }
+    public function admin(): static
+    {
+        return $this->state(['role' => Role::Admin]);
+    }
 }

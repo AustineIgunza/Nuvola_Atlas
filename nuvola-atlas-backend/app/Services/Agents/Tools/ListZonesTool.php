@@ -9,7 +9,10 @@ use App\Services\Agents\BaseAgentTool;
 
 class ListZonesTool extends BaseAgentTool
 {
-    public function name(): string { return 'list_zones'; }
+    public function name(): string
+    {
+        return 'list_zones';
+    }
 
     public function description(): string
     {

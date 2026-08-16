@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Zone;
 use App\Services\ScoreCalculator;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -127,7 +128,7 @@ class ZoneSeeder extends Seeder
         ];
 
         $now = now();
-        $calc = new ScoreCalculator();
+        $calc = new ScoreCalculator;
 
         foreach ($zones as $id => [$name, $lon, $lat, $lastSync, $indicators]) {
             $row = array_merge(
@@ -142,7 +143,7 @@ class ZoneSeeder extends Seeder
 
             // Score gets computed from the indicators via the same calculator
             // that runs in production so seed data matches production behaviour.
-            $tempZone = (new \App\Models\Zone())->forceFill($row);
+            $tempZone = (new Zone)->forceFill($row);
             $row['score'] = $calc->calculateScore($tempZone) ?? 0;
 
             DB::table('zones')->insert($row);
@@ -150,15 +151,16 @@ class ZoneSeeder extends Seeder
     }
 
     /**
-     * @param array<string, int|null> $values
+     * @param  array<string, int|null>  $values
      * @return array<string, int|null>
      */
     private function prefix(array $values, string $prefix): array
     {
         $out = [];
         foreach ($values as $k => $v) {
-            $out[$prefix . $k] = $v;
+            $out[$prefix.$k] = $v;
         }
+
         return $out;
     }
 }

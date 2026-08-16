@@ -30,7 +30,7 @@ class ReportController extends Controller
         $validated = $request->validated();
 
         $report = Report::create([
-            'id' => 'r' . Str::random(6),
+            'id' => 'r'.Str::random(6),
             'title' => $validated['title'],
             'zone_id' => $validated['zoneId'] ?? null,
             'date' => now()->toDateString(),

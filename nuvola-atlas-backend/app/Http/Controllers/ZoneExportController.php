@@ -22,7 +22,7 @@ class ZoneExportController extends Controller
 
         return response($out['body'], 200, [
             'Content-Type' => $out['mime'],
-            'Content-Disposition' => 'attachment; filename="' . $out['filename'] . '"',
+            'Content-Disposition' => 'attachment; filename="'.$out['filename'].'"',
             'X-Content-Type-Options' => 'nosniff',
         ]);
     }

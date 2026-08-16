@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Zone;
 use App\Services\ScoreCalculator;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -14,8 +15,8 @@ class ZoneResource extends JsonResource
         // (pillars → 13 indicators) means the pillar columns no longer exist.
         // Deltas are still stubbed until a v2 snapshot-diff pipeline lands;
         // returning zeros keeps the wire format intact for the frontend.
-        $calc = new ScoreCalculator();
-        /** @var \App\Models\Zone $zone */
+        $calc = new ScoreCalculator;
+        /** @var Zone $zone */
         $zone = $this->resource;
         $pillars = $calc->pillarScores($zone);
         $missing = $calc->missingIndicators($zone);

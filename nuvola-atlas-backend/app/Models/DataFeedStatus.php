@@ -36,7 +36,7 @@ class DataFeedStatus extends Model
         if ($this->last_delivered_at === null) {
             return 'missing';
         }
-        $now ??= new \DateTimeImmutable();
+        $now ??= new \DateTimeImmutable;
         $ageMin = (int) (($now->getTimestamp() - $this->last_delivered_at->getTimestamp()) / 60);
         $sla = max(1, $this->expected_frequency_min);
 
@@ -46,6 +46,7 @@ class DataFeedStatus extends Model
         if ($ageMin <= $sla * 3) {
             return 'stale';
         }
+
         return 'overdue';
     }
 }

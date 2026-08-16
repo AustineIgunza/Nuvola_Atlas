@@ -3,12 +3,12 @@
 namespace App\Providers;
 
 use App\Enums\Role;
+use App\Events\ZoneScoreUpdated;
+use App\Listeners\FireAlertRulesOnZoneScoreUpdated;
 use App\Models\Alert;
 use App\Models\Report;
 use App\Models\User;
 use App\Models\ZoneLayer;
-use App\Events\ZoneScoreUpdated;
-use App\Listeners\FireAlertRulesOnZoneScoreUpdated;
 use App\Observers\AuditableObserver;
 use App\Observers\ZoneLayerObserver;
 use App\Services\Agents\AgentProvider;
@@ -42,6 +42,7 @@ class AppServiceProvider extends ServiceProvider
         // an HF Inference Endpoint is wired up.
         $this->app->bind(AgentProvider::class, function ($app) {
             $provider = (string) config('services.agents.provider', 'heuristic');
+
             return $provider === 'huggingface'
                 ? $app->make(HuggingFaceAgentProvider::class)
                 : $app->make(HeuristicAgentProvider::class);

@@ -32,8 +32,7 @@ class AdminAuditCoverageTest extends TestCase
      * @var array<string, string>
      */
     private const EXEMPT = [
-        'App\Http\Controllers\AdminMethodologyController@preview' =>
-            'Scores a hypothetical weight set in memory and mutates nothing.',
+        'App\Http\Controllers\AdminMethodologyController@preview' => 'Scores a hypothetical weight set in memory and mutates nothing.',
     ];
 
     public function test_every_mutating_admin_route_records_an_audit_row(): void

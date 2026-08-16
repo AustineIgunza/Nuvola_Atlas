@@ -103,7 +103,7 @@ class HttpCacheTest extends TestCase
         $etagBefore = $first->headers->get('ETag');
 
         // Drop the cached zones page so the next request reflects the new zone.
-        \Illuminate\Support\Facades\Cache::flush();
+        Cache::flush();
 
         Zone::factory()->create(['name' => 'Just Added Ward']);
         $second = $this->getJson('/api/v1/zones')->assertOk();

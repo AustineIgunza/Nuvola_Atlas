@@ -6,8 +6,8 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 /**
  * Endpoint that Laravel's SendEmailVerificationNotification links to. The
@@ -34,6 +34,7 @@ class VerifyEmailController extends Controller
         // Send the user back to the SPA. APP_FRONTEND_URL is the canonical
         // frontend host (set on Fly); falls back to APP_URL for local dev.
         $frontend = rtrim((string) config('app.frontend_url', config('app.url', '/')), '/');
-        return redirect()->away($frontend . '/sign-in?verified=1');
+
+        return redirect()->away($frontend.'/sign-in?verified=1');
     }
 }

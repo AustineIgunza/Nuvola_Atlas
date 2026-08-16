@@ -23,8 +23,7 @@ class TwoFactorCodeMail extends Mailable
         public string $code,
         public string $purpose,
         public int $ttlSeconds,
-    ) {
-    }
+    ) {}
 
     public function envelope(): Envelope
     {

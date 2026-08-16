@@ -12,7 +12,10 @@ class GetZoneTool extends BaseAgentTool
 {
     public function __construct(private ScoreCalculator $calc) {}
 
-    public function name(): string { return 'get_zone'; }
+    public function name(): string
+    {
+        return 'get_zone';
+    }
 
     public function description(): string
     {

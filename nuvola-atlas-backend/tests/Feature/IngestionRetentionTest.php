@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
@@ -86,7 +87,7 @@ class IngestionRetentionTest extends TestCase
     {
         $id = $this->log('daystar-delete', 45);
 
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
         DB::table('data_ingestion_logs')->where('id', $id)->delete();
     }
 
@@ -94,7 +95,7 @@ class IngestionRetentionTest extends TestCase
     {
         $id = $this->log('daystar-tamper', 45);
 
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
         DB::table('data_ingestion_logs')->where('id', $id)->update(['status' => 'rejected']);
     }
 
@@ -104,7 +105,7 @@ class IngestionRetentionTest extends TestCase
 
         // A redaction that forgets the audit stamp would erase evidence with
         // no record that it happened — the trigger requires both halves.
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
         DB::table('data_ingestion_logs')->where('id', $id)->update(['payload' => null]);
     }
 

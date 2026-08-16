@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\Role;
 use App\Mail\TwoFactorCodeMail;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
@@ -147,7 +148,7 @@ class TwoFactorTest extends TestCase
 
     public function test_admin_with_2fa_can_reach_admin_routes(): void
     {
-        $admin = $this->makeUserWithEmailTwoFactor(['role' => \App\Enums\Role::Admin]);
+        $admin = $this->makeUserWithEmailTwoFactor(['role' => Role::Admin]);
 
         $this->actingAs($admin)
             ->getJson('/api/v1/admin/api-keys')

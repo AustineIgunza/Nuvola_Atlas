@@ -33,7 +33,7 @@ class ImportGeoJson extends Command
 
         $validTypes = ['road_progress', 'smart_grid', 'density'];
         if (! in_array($layerType, $validTypes)) {
-            $this->error("Invalid layer type. Must be one of: ".implode(', ', $validTypes));
+            $this->error('Invalid layer type. Must be one of: '.implode(', ', $validTypes));
 
             return self::FAILURE;
         }

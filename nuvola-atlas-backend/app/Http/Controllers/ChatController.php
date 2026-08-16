@@ -103,6 +103,7 @@ class ChatController extends Controller
         if (! $conversation) {
             abort(404);
         }
+
         return $conversation;
     }
 }

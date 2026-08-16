@@ -55,6 +55,7 @@ class HeuristicAgentProvider implements AgentProvider
             if (preg_match('/last (\d+) days?/i', $prompt, $m)) {
                 $days = min(365, max(7, (int) $m[1]));
             }
+
             return [
                 'action' => 'tool_call',
                 'tool' => 'zone_history',
@@ -110,6 +111,7 @@ class HeuristicAgentProvider implements AgentProvider
                     break;
                 }
             }
+
             return [
                 'action' => 'tool_call',
                 'tool' => 'feed_status',
@@ -147,27 +149,32 @@ class HeuristicAgentProvider implements AgentProvider
                 $found[] = $slug;
             }
         }
+
         return array_values(array_unique($found));
     }
 
     /**
-     * @param  array<int, array{role: string, content: string}> $history
+     * @param  array<int, array{role: string, content: string}>  $history
      */
     private function lastObservation(array $history): ?array
     {
         for ($i = count($history) - 1; $i >= 0; $i--) {
             if (($history[$i]['role'] ?? '') === 'tool') {
                 $decoded = json_decode($history[$i]['content'] ?? '', true);
-                if (! is_array($decoded)) continue;
+                if (! is_array($decoded)) {
+                    continue;
+                }
                 // AgentRuntime wraps every tool turn as {tool, observation}
                 // so unwrap that here to expose the raw payload the
                 // format switch below expects.
                 if (isset($decoded['observation']) && is_array($decoded['observation'])) {
                     return $decoded['observation'];
                 }
+
                 return $decoded;
             }
         }
+
         return null;
     }
 
@@ -175,22 +182,24 @@ class HeuristicAgentProvider implements AgentProvider
     {
         // compare_zones
         if (isset($obs['zones']) && isset($obs['winners'])) {
-            $lines = ["Comparing the requested zones:"];
+            $lines = ['Comparing the requested zones:'];
             foreach ($obs['zones'] as $z) {
                 if (isset($z['error'])) {
                     $lines[] = "- {$z['zone_id']}: not found";
+
                     continue;
                 }
                 $name = $z['name'] ?? $z['zone_id'];
                 $lines[] = "- **{$name}**: composite {$z['score']}/100 · "
-                    . "social " . ($z['pillars']['social'] ?? '—')
-                    . " · safety " . ($z['pillars']['safety'] ?? '—')
-                    . " · density " . ($z['pillars']['density'] ?? '—')
-                    . " · infra " . ($z['pillars']['infra'] ?? '—');
+                    .'social '.($z['pillars']['social'] ?? '—')
+                    .' · safety '.($z['pillars']['safety'] ?? '—')
+                    .' · density '.($z['pillars']['density'] ?? '—')
+                    .' · infra '.($z['pillars']['infra'] ?? '—');
             }
             if ($obs['winners']['overall']) {
                 $lines[] = "Highest overall: **{$obs['winners']['overall']['zone_id']}** at {$obs['winners']['overall']['value']}.";
             }
+
             return implode("\n", $lines);
         }
 
@@ -200,8 +209,9 @@ class HeuristicAgentProvider implements AgentProvider
                 return "No score history is available for {$obs['zone_id']} yet — the snapshot table is empty for the requested window.";
             }
             $delta = $obs['delta'] > 0 ? "+{$obs['delta']}" : (string) $obs['delta'];
+
             return "Over the last {$obs['days']} days, **{$obs['zone_id']}** moved {$delta} points ({$obs['direction']}). "
-                . count($obs['series']) . " daily snapshots.";
+                .count($obs['series']).' daily snapshots.';
         }
 
         // get_zone
@@ -210,12 +220,13 @@ class HeuristicAgentProvider implements AgentProvider
             $total = $obs['indicators_total'];
             $lines = [
                 "**{$obs['name']}** ({$obs['zone_id']}) — Vitality Score **{$obs['score']}/100**.",
-                "Pillars: social " . ($obs['pillars']['social'] ?? '—')
-                    . " · safety " . ($obs['pillars']['safety'] ?? '—')
-                    . " · density " . ($obs['pillars']['density'] ?? '—')
-                    . " · infra " . ($obs['pillars']['infra'] ?? '—') . ".",
-                "{$active} of {$total} indicators active" . (empty($obs['missing_indicators']) ? '.' : ' (missing: ' . implode(', ', $obs['missing_indicators']) . ').'),
+                'Pillars: social '.($obs['pillars']['social'] ?? '—')
+                    .' · safety '.($obs['pillars']['safety'] ?? '—')
+                    .' · density '.($obs['pillars']['density'] ?? '—')
+                    .' · infra '.($obs['pillars']['infra'] ?? '—').'.',
+                "{$active} of {$total} indicators active".(empty($obs['missing_indicators']) ? '.' : ' (missing: '.implode(', ', $obs['missing_indicators']).').'),
             ];
+
             return implode("\n", $lines);
         }
 
@@ -223,8 +234,9 @@ class HeuristicAgentProvider implements AgentProvider
         if (isset($obs['zones']) && isset($obs['count'])) {
             $lines = ["Top {$obs['count']} zones by composite score:"];
             foreach ($obs['zones'] as $i => $z) {
-                $lines[] = ($i + 1) . ". **{$z['name']}** ({$z['zone_id']}) — {$z['score']}/100";
+                $lines[] = ($i + 1).". **{$z['name']}** ({$z['zone_id']}) — {$z['score']}/100";
             }
+
             return implode("\n", $lines);
         }
 
@@ -232,9 +244,10 @@ class HeuristicAgentProvider implements AgentProvider
         if (isset($obs['weights']) && isset($obs['pillars'])) {
             $lines = ["**Vitality methodology (v{$obs['version']})** — four equally-weighted pillars, 13 indicators, null-exclusion averaging."];
             foreach ($obs['pillars'] as $key => $indicators) {
-                $lines[] = "- **{$key}**: " . implode(', ', $indicators);
+                $lines[] = "- **{$key}**: ".implode(', ', $indicators);
             }
-            $lines[] = "Notes: " . implode(' ', $obs['notes'] ?? []);
+            $lines[] = 'Notes: '.implode(' ', $obs['notes'] ?? []);
+
             return implode("\n", $lines);
         }
 
@@ -243,18 +256,21 @@ class HeuristicAgentProvider implements AgentProvider
             $s = $obs['summary'];
             $lines = ["Feed freshness: {$s['fresh']} fresh · {$s['stale']} stale · {$s['overdue']} overdue · {$s['missing']} missing (of {$s['total']} tracked)."];
             if (! empty($obs['feeds'])) {
-                $lines[] = "Latest feeds:";
+                $lines[] = 'Latest feeds:';
                 foreach (array_slice($obs['feeds'], 0, 5) as $f) {
                     $age = $f['age_min'] === null ? 'never delivered' : "{$f['age_min']} min ago";
                     $lines[] = "- [{$f['state']}] {$f['zone_id']}/{$f['indicator_key']} · {$f['source_system']} · {$age}";
                 }
             }
+
             return implode("\n", $lines);
         }
 
         // watchlist_opportunities
         if (isset($obs['watchlist']) || isset($obs['opportunities'])) {
-            if (isset($obs['error'])) return $obs['error'];
+            if (isset($obs['error'])) {
+                return $obs['error'];
+            }
             $lines = ["**{$obs['firm']['name']}** ({$obs['firm']['tier']} tier)"];
             if (! empty($obs['watchlist'])) {
                 $lines[] = "\nWatchlist:";
@@ -268,11 +284,15 @@ class HeuristicAgentProvider implements AgentProvider
                     $lines[] = "- {$o['zone_name']} · fit {$o['fit']} · score {$o['score']}";
                 }
             }
+
             return implode("\n", $lines);
         }
 
         // Generic — fall back to JSON so the user still sees the data.
-        if (isset($obs['error'])) return $obs['error'];
-        return "Result: " . json_encode($obs, JSON_UNESCAPED_SLASHES);
+        if (isset($obs['error'])) {
+            return $obs['error'];
+        }
+
+        return 'Result: '.json_encode($obs, JSON_UNESCAPED_SLASHES);
     }
 }

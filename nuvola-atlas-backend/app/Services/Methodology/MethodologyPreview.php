@@ -15,7 +15,7 @@ use App\Services\ScoreCalculator;
 class MethodologyPreview
 {
     /**
-     * @param  array{social: float, safety: float, density: float, infra: float} $weights
+     * @param  array{social: float, safety: float, density: float, infra: float}  $weights
      */
     public function __construct(private array $weights) {}
 
@@ -24,7 +24,7 @@ class MethodologyPreview
      */
     public function compute(): array
     {
-        $calc = new ScoreCalculator();
+        $calc = new ScoreCalculator;
 
         return Zone::query()
             ->get()

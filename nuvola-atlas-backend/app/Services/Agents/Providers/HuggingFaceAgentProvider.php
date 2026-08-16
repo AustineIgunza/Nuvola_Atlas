@@ -38,6 +38,7 @@ class HuggingFaceAgentProvider implements AgentProvider
 
         if ($endpoint === '' || $token === '') {
             Log::warning('HF endpoint not configured, falling back to heuristic');
+
             return $this->fallback->nextStep($prompt, $tools, $history);
         }
 
@@ -52,22 +53,25 @@ class HuggingFaceAgentProvider implements AgentProvider
             $step = $this->coerce($decoded);
             if ($step === null) {
                 Log::warning('HF model returned unusable response, falling back', ['raw' => $decoded]);
+
                 return $this->fallback->nextStep($prompt, $tools, $history);
             }
+
             return $step;
         } catch (Throwable $e) {
             Log::warning('HF call failed, falling back to heuristic', ['error' => $e->getMessage()]);
+
             return $this->fallback->nextStep($prompt, $tools, $history);
         }
     }
 
     private function buildOpenAIStyleBody(string $prompt, array $tools, array $history, string $model): array
     {
-        $system = "You are the Navuuna assistant. You have access to tools that read Nairobi sub-county Vitality data. "
-            . "For every turn you MUST reply with a JSON object matching either:\n"
-            . '{"action":"tool_call","tool":"<name>","args":{...}}' . "\n"
-            . '{"action":"final","answer":"..."}' . "\n"
-            . "Available tools:\n" . json_encode($tools, JSON_PRETTY_PRINT);
+        $system = 'You are the Navuuna assistant. You have access to tools that read Nairobi sub-county Vitality data. '
+            ."For every turn you MUST reply with a JSON object matching either:\n"
+            .'{"action":"tool_call","tool":"<name>","args":{...}}'."\n"
+            .'{"action":"final","answer":"..."}'."\n"
+            ."Available tools:\n".json_encode($tools, JSON_PRETTY_PRINT);
 
         $messages = [['role' => 'system', 'content' => $system]];
         foreach ($history as $turn) {
@@ -83,6 +87,7 @@ class HuggingFaceAgentProvider implements AgentProvider
         if ($model !== '') {
             $body['model'] = $model;
         }
+
         return $body;
     }
 
@@ -91,11 +96,11 @@ class HuggingFaceAgentProvider implements AgentProvider
         if (! $response->ok()) {
             throw new RuntimeException("HF endpoint returned {$response->status()}");
         }
+
         return $response->json();
     }
 
     /**
-     * @param  mixed  $raw
      * @return array{action: 'tool_call'|'final', tool?: string, args?: array<string,mixed>, answer?: string, reasoning?: string}|null
      */
     private function coerce(mixed $raw): ?array
@@ -108,10 +113,14 @@ class HuggingFaceAgentProvider implements AgentProvider
                 ?? $raw[0]['generated_text']
                 ?? null;
         }
-        if (! is_string($content)) return null;
+        if (! is_string($content)) {
+            return null;
+        }
 
         $decoded = json_decode(trim($content), true);
-        if (! is_array($decoded)) return null;
+        if (! is_array($decoded)) {
+            return null;
+        }
 
         if (($decoded['action'] ?? '') === 'final' && is_string($decoded['answer'] ?? null)) {
             return ['action' => 'final', 'answer' => $decoded['answer']];
@@ -123,6 +132,7 @@ class HuggingFaceAgentProvider implements AgentProvider
                 'args' => is_array($decoded['args'] ?? null) ? $decoded['args'] : [],
             ];
         }
+
         return null;
     }
 }

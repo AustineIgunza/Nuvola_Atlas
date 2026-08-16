@@ -43,7 +43,7 @@ class ScoreRecalculationTest extends TestCase
     public function test_score_calculator_recalculates_zone(): void
     {
         $zone = $this->createTestZone();
-        $calculator = new ScoreCalculator();
+        $calculator = new ScoreCalculator;
 
         $calculator->recalculate($zone);
 
