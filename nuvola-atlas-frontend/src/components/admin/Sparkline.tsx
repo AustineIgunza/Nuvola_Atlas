@@ -41,7 +41,9 @@ export default function Sparkline({
       return [x, y] as const;
     });
 
-    const stroke = points.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(2)},${y.toFixed(2)}`).join(" ");
+    const stroke = points
+      .map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(2)},${y.toFixed(2)}`)
+      .join(" ");
     const area = `${stroke} L${width.toFixed(2)},${height} L0,${height} Z`;
 
     return { stroke, area };

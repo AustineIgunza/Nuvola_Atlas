@@ -20,7 +20,8 @@ export default function FirmsTable() {
     <div className="space-y-2">
       <div className="flex items-center justify-between mb-1">
         <div className="text-[11.5px] text-ink-3">
-          {FIRMS.length} firms · {FIRMS.reduce((a, f) => a + f.watchlist.length, 0)} zones under watch
+          {FIRMS.length} firms · {FIRMS.reduce((a, f) => a + f.watchlist.length, 0)} zones under
+          watch
         </div>
         <button
           disabled
@@ -52,8 +53,12 @@ export default function FirmsTable() {
                 <div className="text-[12.5px] font-semibold text-ink-1 truncate">{f.name}</div>
                 {/* Full contact only on sm+ — on mobile show contact name + zone count so nothing overflows */}
                 <div className="text-[10px] text-ink-4 mt-0.5 truncate">
-                  <span className="hidden sm:inline">{f.contactName} · {f.contactEmail}</span>
-                  <span className="sm:hidden">{f.contactName} · {f.watchlist.length} zones</span>
+                  <span className="hidden sm:inline">
+                    {f.contactName} · {f.contactEmail}
+                  </span>
+                  <span className="sm:hidden">
+                    {f.contactName} · {f.watchlist.length} zones
+                  </span>
                 </div>
               </div>
               <span
@@ -96,7 +101,9 @@ export default function FirmsTable() {
                   <Users size={10} className="inline mr-1" />
                   Test logins:
                   <br className="sm:hidden" />
-                  <span className="sm:ml-1">investor+{f.slug}@navuuna.dev · investor-lead+{f.slug}@navuuna.dev</span>
+                  <span className="sm:ml-1">
+                    investor+{f.slug}@navuuna.dev · investor-lead+{f.slug}@navuuna.dev
+                  </span>
                 </div>
               </div>
             )}

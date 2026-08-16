@@ -111,7 +111,10 @@ export default function ScoreHistoryChart({ zoneId }: Props) {
   }, [data, range, forecastOn, forecast]);
 
   const empty = noRowsHere;
-  const dividerLabel = data && data.points.length > 0 ? formatTick(data.points[data.points.length - 1].t, range) : null;
+  const dividerLabel =
+    data && data.points.length > 0
+      ? formatTick(data.points[data.points.length - 1].t, range)
+      : null;
 
   const toggleOverlay = (k: PillarKey) => {
     setOverlays((prev) => {
@@ -167,8 +170,12 @@ export default function ScoreHistoryChart({ zoneId }: Props) {
             {latestElsewhere ? (
               <div>
                 <p>
-                  No snapshots in the last {RANGE_WINDOW[range]}. The most recent is
-                  from {new Date(latestElsewhere).toLocaleDateString([], { month: "short", day: "numeric" })}.
+                  No snapshots in the last {RANGE_WINDOW[range]}. The most recent is from{" "}
+                  {new Date(latestElsewhere).toLocaleDateString([], {
+                    month: "short",
+                    day: "numeric",
+                  })}
+                  .
                 </p>
                 <button
                   onClick={() => setRange("month")}
@@ -300,10 +307,7 @@ export default function ScoreHistoryChart({ zoneId }: Props) {
               }}
               aria-pressed={on}
             >
-              <span
-                className="w-1.5 h-1.5 rounded-full"
-                style={{ background: PILLAR_COLORS[k] }}
-              />
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: PILLAR_COLORS[k] }} />
               {PILLAR_SHORT[k]}
             </button>
           );

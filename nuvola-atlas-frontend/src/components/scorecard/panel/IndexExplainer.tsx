@@ -27,7 +27,12 @@ export default function IndexExplainer({ zone, onNavigate }: Props) {
   const BANDS = [
     { range: "70–100", label: t("band.strong"), color: BRAND.teal, note: t("band.strong.note") },
     { range: "55–69", label: t("band.moderate"), color: BRAND.gold, note: t("band.moderate.note") },
-    { range: "0–54", label: t("band.atRisk"), color: BRAND.terracotta, note: t("band.atRisk.note") },
+    {
+      range: "0–54",
+      label: t("band.atRisk"),
+      color: BRAND.terracotta,
+      note: t("band.atRisk.note"),
+    },
   ];
 
   return (
@@ -86,15 +91,18 @@ export default function IndexExplainer({ zone, onNavigate }: Props) {
                 <span className="text-[12px] font-semibold tabular-nums shrink-0" style={{ color }}>
                   {zone.pillars[key]}
                 </span>
-                <ChevronRight size={12} className="shrink-0 text-ink-4 group-hover:text-ink-2 transition-colors" />
+                <ChevronRight
+                  size={12}
+                  className="shrink-0 text-ink-4 group-hover:text-ink-2 transition-colors"
+                />
               </button>
             );
           })}
         </div>
         <p className="mt-2 text-[9.5px] text-ink-4 leading-[1.5]">
-          The four pillars combine into the composite readiness score; each pillar synthesizes sub-metrics
-          from live public feeds. The composite methodology is proprietary — pillar definitions and
-          data sources are open.
+          The four pillars combine into the composite readiness score; each pillar synthesizes
+          sub-metrics from live public feeds. The composite methodology is proprietary — pillar
+          definitions and data sources are open.
         </p>
       </Section>
 

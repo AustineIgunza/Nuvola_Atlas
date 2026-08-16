@@ -105,8 +105,8 @@ function PublicBanner() {
       </span>
 
       <span className="hidden md:block text-[11px] text-ink-3 leading-tight truncate">
-        Open partner view. Tap any Nairobi sub-county to see its Vitality score and 12
-        Daystar indicators.
+        Open partner view. Tap any Nairobi sub-county to see its Vitality score and 12 Daystar
+        indicators.
       </span>
 
       <Link

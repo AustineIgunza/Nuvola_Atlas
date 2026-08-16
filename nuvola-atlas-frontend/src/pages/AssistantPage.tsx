@@ -24,9 +24,15 @@ import type { ChatConversation, ChatMessage } from "@/types";
 export default function AssistantPage() {
   const t = useT();
   const {
-    conversations, setConversations, addConversation, removeConversation,
-    activeConversationId, setActive,
-    messagesByConv, streaming, error,
+    conversations,
+    setConversations,
+    addConversation,
+    removeConversation,
+    activeConversationId,
+    setActive,
+    messagesByConv,
+    streaming,
+    error,
   } = useChatStore();
   const { send } = useChatStream();
   const [prompt, setPrompt] = useState("");
@@ -34,10 +40,15 @@ export default function AssistantPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [historyOpen, setHistoryOpen] = useState(false);
 
-  const messages = activeConversationId ? messagesByConv[activeConversationId] ?? [] : [];
+  const messages = activeConversationId ? (messagesByConv[activeConversationId] ?? []) : [];
 
   useEffect(() => {
-    api.listConversations().then(setConversations).catch(() => { /* offline is ok */ });
+    api
+      .listConversations()
+      .then(setConversations)
+      .catch(() => {
+        /* offline is ok */
+      });
   }, [setConversations]);
 
   // Auto-collapse the sidebar while on the Assistant page — the chat area
@@ -103,7 +114,9 @@ export default function AssistantPage() {
   };
 
   const removeConv = async (id: string) => {
-    await api.deleteConversation(id).catch(() => { /* offline is ok */ });
+    await api.deleteConversation(id).catch(() => {
+      /* offline is ok */
+    });
     removeConversation(id);
   };
 
@@ -135,16 +148,21 @@ export default function AssistantPage() {
           <header className="px-4 sm:px-6 py-3 border-b border-border shrink-0">
             <div className="flex items-start gap-2">
               <div className="min-w-0 flex-1">
-                <div className="text-[10px] font-medium text-ink-4 uppercase tracking-[0.12em]">{t("nav.assistant")}</div>
+                <div className="text-[10px] font-medium text-ink-4 uppercase tracking-[0.12em]">
+                  {t("nav.assistant")}
+                </div>
                 <h1 className="text-[18px] font-semibold text-ink-1 leading-tight flex items-center gap-2">
                   <Sparkles size={16} style={{ color: BRAND.teal }} />
                   <span className="truncate">
                     {activeConversationId
-                      ? conversations.find((c) => c.id === activeConversationId)?.title ?? t("assistant.title")
+                      ? (conversations.find((c) => c.id === activeConversationId)?.title ??
+                        t("assistant.title"))
                       : t("assistant.title")}
                   </span>
                 </h1>
-                <p className="mt-0.5 text-[11.5px] text-ink-3 line-clamp-2">{t("assistant.subtitle")}</p>
+                <p className="mt-0.5 text-[11.5px] text-ink-3 line-clamp-2">
+                  {t("assistant.subtitle")}
+                </p>
               </div>
               {/* Mobile-only controls — history sheet + new chat. Desktop
                   uses the persistent HistoryRail on the left instead. */}
@@ -169,7 +187,12 @@ export default function AssistantPage() {
 
           <div ref={listRef} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3">
             {messages.length === 0 ? (
-              <StarterScreen t={t} starters={starters} onPick={doSend} activeId={activeConversationId} />
+              <StarterScreen
+                t={t}
+                starters={starters}
+                onPick={doSend}
+                activeId={activeConversationId}
+              />
             ) : (
               messages.map((m) => <MessageBubble key={m.id} message={m} onFollowup={doSend} />)
             )}
@@ -181,7 +204,10 @@ export default function AssistantPage() {
           </div>
 
           <form
-            onSubmit={(e) => { e.preventDefault(); doSend(prompt); }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              doSend(prompt);
+            }}
             className="border-t border-border p-3 sm:p-4 shrink-0"
           >
             <div className="flex items-end gap-2 max-w-[860px] mx-auto">
@@ -249,7 +275,10 @@ export default function AssistantPage() {
                 </div>
                 <div className="p-3 border-b border-border">
                   <button
-                    onClick={() => { startNew(); setHistoryOpen(false); }}
+                    onClick={() => {
+                      startNew();
+                      setHistoryOpen(false);
+                    }}
                     className="w-full flex items-center justify-center gap-1.5 h-9 rounded-control bg-accent text-white text-[12.5px] font-semibold btn-press"
                   >
                     <Plus size={14} /> {t("assistant.newChat")}
@@ -257,14 +286,19 @@ export default function AssistantPage() {
                 </div>
                 <nav className="flex-1 overflow-y-auto p-2 space-y-1">
                   {conversations.length === 0 ? (
-                    <div className="text-[11px] text-ink-4 italic px-2 py-4">{t("assistant.historyEmpty")}</div>
+                    <div className="text-[11px] text-ink-4 italic px-2 py-4">
+                      {t("assistant.historyEmpty")}
+                    </div>
                   ) : (
                     conversations.map((c) => {
                       const active = activeConversationId === c.id;
                       return (
                         <button
                           key={c.id}
-                          onClick={() => { setActive(c.id); setHistoryOpen(false); }}
+                          onClick={() => {
+                            setActive(c.id);
+                            setHistoryOpen(false);
+                          }}
                           className={`w-full flex items-start gap-2 px-2.5 py-2 rounded-control text-left transition-colors ${
                             active
                               ? "bg-[rgba(192,85,43,0.14)] text-ink-1"
@@ -283,7 +317,10 @@ export default function AssistantPage() {
                           <span
                             role="button"
                             aria-label={t("common.delete")}
-                            onClick={(e) => { e.stopPropagation(); removeConv(c.id); }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeConv(c.id);
+                            }}
                             className="w-6 h-6 flex items-center justify-center rounded-full text-ink-4 hover:text-danger"
                           >
                             <Trash2 size={11} />
@@ -336,7 +373,9 @@ function HistoryRail({
 
       <nav className="flex-1 overflow-y-auto p-2 space-y-1">
         {conversations.length === 0 ? (
-          <div className="text-[11px] text-ink-4 italic px-2 py-4">{t("assistant.historyEmpty")}</div>
+          <div className="text-[11px] text-ink-4 italic px-2 py-4">
+            {t("assistant.historyEmpty")}
+          </div>
         ) : (
           conversations.map((c) => {
             const active = activeId === c.id;
@@ -356,13 +395,14 @@ function HistoryRail({
                     <div className="text-[11.5px] font-medium truncate">
                       {c.title ?? t("common.new")}
                     </div>
-                    <div className="text-[9.5px] text-ink-4">
-                      {formatRelative(c.updatedAt)}
-                    </div>
+                    <div className="text-[9.5px] text-ink-4">{formatRelative(c.updatedAt)}</div>
                   </div>
                 </button>
                 <button
-                  onClick={(e) => { e.stopPropagation(); onDelete(c.id); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(c.id);
+                  }}
                   aria-label={t("common.delete")}
                   className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 text-ink-4 hover:text-danger hover:bg-[rgba(0,0,0,0.15)] transition-all"
                 >
@@ -418,7 +458,13 @@ function StarterScreen({
   );
 }
 
-function MessageBubble({ message, onFollowup }: { message: ChatMessage; onFollowup: (s: string) => void }) {
+function MessageBubble({
+  message,
+  onFollowup,
+}: {
+  message: ChatMessage;
+  onFollowup: (s: string) => void;
+}) {
   const isUser = message.role === "user";
   const rows = message.resultRows ?? [];
   return (

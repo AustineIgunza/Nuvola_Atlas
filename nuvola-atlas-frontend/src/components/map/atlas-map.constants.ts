@@ -12,10 +12,7 @@ export const DEFAULT_STYLE = MAP_STYLES.light;
 
 // Light and dark are the two "Map" view-mode basemaps — they follow the app
 // theme. Satellite and Terrain are user-selected overrides that ignore theme.
-export const BASEMAP_STYLES: ReadonlySet<string> = new Set([
-  MAP_STYLES.light,
-  MAP_STYLES.dark,
-]);
+export const BASEMAP_STYLES: ReadonlySet<string> = new Set([MAP_STYLES.light, MAP_STYLES.dark]);
 
 export function defaultStyleForTheme(theme: "light" | "dark"): string {
   return theme === "dark" ? MAP_STYLES.dark : MAP_STYLES.light;

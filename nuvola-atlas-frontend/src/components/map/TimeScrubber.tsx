@@ -18,9 +18,7 @@ export default function TimeScrubber() {
   return (
     <div className="glass rounded-card px-5 py-3 shadow-chrome w-[480px] max-w-[calc(100vw-2rem)]">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[12px] font-medium text-ink-2">
-          {current.month}
-        </span>
+        <span className="text-[12px] font-medium text-ink-2">{current.month}</span>
         <span className="text-[11px] text-ink-4 tabular-nums">
           Avg vitality: {Math.round(current.overallAvg)}
         </span>

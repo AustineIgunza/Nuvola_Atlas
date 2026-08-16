@@ -64,11 +64,15 @@ export function Section({
   className?: string;
 }) {
   return (
-    <div className={cn("rounded-card bg-[rgba(255,255,255,0.02)] border border-border p-3", className)}>
+    <div
+      className={cn("rounded-card bg-[rgba(255,255,255,0.02)] border border-border p-3", className)}
+    >
       {(title || action) && (
         <div className="flex items-center justify-between mb-2">
           {title && (
-            <div className="text-[10px] font-medium text-ink-4 uppercase tracking-[0.08em]">{title}</div>
+            <div className="text-[10px] font-medium text-ink-4 uppercase tracking-[0.08em]">
+              {title}
+            </div>
           )}
           {action}
         </div>

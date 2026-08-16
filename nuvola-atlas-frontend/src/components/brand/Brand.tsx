@@ -4,13 +4,7 @@ import { cn } from "@/lib/cn";
  * Navuuna continent emblem — the hand-drawn Africa "fingerprint" mark,
  * backgroundless (transparent PNG) so it sits on any surface.
  */
-export function Emblem({
-  className,
-  size = 28,
-}: {
-  className?: string;
-  size?: number;
-}) {
+export function Emblem({ className, size = 28 }: { className?: string; size?: number }) {
   return (
     <img
       src="/navuuna-emblem.png"

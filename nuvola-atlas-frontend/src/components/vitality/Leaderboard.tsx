@@ -6,7 +6,13 @@ import { ArrowUpDown, Download, ChevronRight, X, MapPin } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { api } from "@/api";
 import { scoreColor, PILLAR_COLORS } from "@/lib/scoreColor";
-import { springSettle, staggerContainer, staggerItem, modalBackdrop, modalContent } from "@/lib/motion";
+import {
+  springSettle,
+  staggerContainer,
+  staggerItem,
+  modalBackdrop,
+  modalContent,
+} from "@/lib/motion";
 import { useUIStore } from "@/stores/ui";
 import { useT } from "@/lib/i18n/use-t";
 import Sparkline from "./Sparkline";
@@ -43,7 +49,10 @@ export default function Leaderboard() {
     if (!sorted.length) return;
     const header = "Rank,Sub-county,Overall,Social,Safety,Density,Infrastructure\n";
     const rows = sorted
-      .map((z, i) => `${i + 1},${z.name},${z.score},${z.pillars.social},${z.pillars.safety},${z.pillars.density},${z.pillars.infra}`)
+      .map(
+        (z, i) =>
+          `${i + 1},${z.name},${z.score},${z.pillars.social},${z.pillars.safety},${z.pillars.density},${z.pillars.infra}`,
+      )
       .join("\n");
     const blob = new Blob([header + rows], { type: "text/csv" });
     const a = document.createElement("a");
@@ -131,9 +140,14 @@ export default function Leaderboard() {
                 <span className="text-[11px] tabular-nums text-ink-4 w-5">{i + 1}</span>
                 <span
                   className="w-2.5 h-2.5 rounded-full shrink-0"
-                  style={{ background: scoreColor(z.score), boxShadow: `0 0 8px ${scoreColor(z.score)}55` }}
+                  style={{
+                    background: scoreColor(z.score),
+                    boxShadow: `0 0 8px ${scoreColor(z.score)}55`,
+                  }}
                 />
-                <span className="flex-1 min-w-0 text-[14px] font-medium text-ink-1 truncate">{z.name}</span>
+                <span className="flex-1 min-w-0 text-[14px] font-medium text-ink-1 truncate">
+                  {z.name}
+                </span>
                 <span
                   className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold tabular-nums text-white"
                   style={{ background: scoreColor(z.score) }}
@@ -152,21 +166,35 @@ export default function Leaderboard() {
             <thead>
               <tr className="border-b border-border">
                 <th className="text-left py-2.5 px-2 text-ink-4 font-medium w-10">#</th>
-                <th className="text-left py-2.5 px-2 text-ink-4 font-medium">{t("vitality.subCounty")}</th>
+                <th className="text-left py-2.5 px-2 text-ink-4 font-medium">
+                  {t("vitality.subCounty")}
+                </th>
                 {headers.map((h) => (
                   <th
                     key={h.key}
                     className="text-right py-2.5 px-2 font-medium cursor-pointer select-none transition-colors"
-                    style={{ color: sortBy === h.key ? (h.key === "score" ? "#C0552B" : PILLAR_COLORS[h.key]) : undefined }}
+                    style={{
+                      color:
+                        sortBy === h.key
+                          ? h.key === "score"
+                            ? "#C0552B"
+                            : PILLAR_COLORS[h.key]
+                          : undefined,
+                    }}
                     onClick={() => setSortBy(h.key)}
                   >
                     <span className="inline-flex items-center gap-1 hover:text-ink-2">
                       {h.label}
-                      <ArrowUpDown size={10} className={sortBy === h.key ? "opacity-100" : "opacity-40"} />
+                      <ArrowUpDown
+                        size={10}
+                        className={sortBy === h.key ? "opacity-100" : "opacity-40"}
+                      />
                     </span>
                   </th>
                 ))}
-                <th className="text-right py-2.5 px-2 text-ink-4 font-medium w-24 hidden lg:table-cell">{t("vitality.trend")}</th>
+                <th className="text-right py-2.5 px-2 text-ink-4 font-medium w-24 hidden lg:table-cell">
+                  {t("vitality.trend")}
+                </th>
               </tr>
             </thead>
             <motion.tbody variants={staggerContainer} initial="hidden" animate="visible">
@@ -210,10 +238,16 @@ export default function Leaderboard() {
                             style={{ background: PILLAR_COLORS[key] }}
                             initial={{ width: 0 }}
                             animate={{ width: `${z.pillars[key]}%` }}
-                            transition={{ delay: i * 0.03, duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
+                            transition={{
+                              delay: i * 0.03,
+                              duration: 0.6,
+                              ease: [0.32, 0.72, 0, 1],
+                            }}
                           />
                         </div>
-                        <span className="tabular-nums text-ink-2 w-6 text-right">{z.pillars[key]}</span>
+                        <span className="tabular-nums text-ink-2 w-6 text-right">
+                          {z.pillars[key]}
+                        </span>
                       </div>
                     </td>
                   ))}
@@ -284,7 +318,9 @@ export default function Leaderboard() {
                     {popupZone.score}
                   </div>
                   <div className="flex-1">
-                    <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.1em]">{t("leaderboard.indexTitle")}</div>
+                    <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.1em]">
+                      {t("leaderboard.indexTitle")}
+                    </div>
                     <div className="text-[12px] text-ink-3 mt-1">
                       {t("leaderboard.updatedAgo", { min: popupZone.lastSyncMin })}
                     </div>
@@ -295,8 +331,12 @@ export default function Leaderboard() {
                   {(["social", "safety", "density", "infra"] as PillarKey[]).map((key) => (
                     <div key={key}>
                       <div className="flex items-center justify-between text-[12px] mb-1.5">
-                        <span className="text-ink-3 font-medium">{t(`pillar.${key}.long` as const)}</span>
-                        <span className="tabular-nums text-ink-1 font-semibold">{popupZone.pillars[key]}</span>
+                        <span className="text-ink-3 font-medium">
+                          {t(`pillar.${key}.long` as const)}
+                        </span>
+                        <span className="tabular-nums text-ink-1 font-semibold">
+                          {popupZone.pillars[key]}
+                        </span>
                       </div>
                       <div className="h-1.5 rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
                         <motion.div

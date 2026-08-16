@@ -74,16 +74,86 @@ export default function App() {
         <Route path="/sign-up" element={<SignUpPage />} />
         <Route path="/auth/google/complete" element={<GoogleCompletePage />} />
         <Route path="/public" element={<PublicPortalPage />} />
-        <Route path="/atlas" element={<RequireAuth><AtlasPage /></RequireAuth>} />
-        <Route path="/vitality" element={<RequireAuth><VitalityPage /></RequireAuth>} />
-        <Route path="/compare" element={<RequireAuth><ComparePage /></RequireAuth>} />
-        <Route path="/infrastructure/:projectId?" element={<RequireAuth><InfraPage /></RequireAuth>} />
-        <Route path="/reports" element={<RequireAuth><ReportsPage /></RequireAuth>} />
-        <Route path="/alerts" element={<RequireAuth><AlertsPage /></RequireAuth>} />
-        <Route path="/assistant" element={<RequireAuth><AssistantPage /></RequireAuth>} />
-        <Route path="/settings" element={<RequireAuth><SettingsPage /></RequireAuth>} />
-        <Route path="/investor" element={<RequireInvestor><InvestorPage /></RequireInvestor>} />
-        <Route path="/admin" element={<RequireAdmin><AdminPage /></RequireAdmin>} />
+        <Route
+          path="/atlas"
+          element={
+            <RequireAuth>
+              <AtlasPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/vitality"
+          element={
+            <RequireAuth>
+              <VitalityPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/compare"
+          element={
+            <RequireAuth>
+              <ComparePage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/infrastructure/:projectId?"
+          element={
+            <RequireAuth>
+              <InfraPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/reports"
+          element={
+            <RequireAuth>
+              <ReportsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/alerts"
+          element={
+            <RequireAuth>
+              <AlertsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/assistant"
+          element={
+            <RequireAuth>
+              <AssistantPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <RequireAuth>
+              <SettingsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/investor"
+          element={
+            <RequireInvestor>
+              <InvestorPage />
+            </RequireInvestor>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <RequireAdmin>
+              <AdminPage />
+            </RequireAdmin>
+          }
+        />
         <Route path="*" element={<Navigate to="/atlas" replace />} />
       </Routes>
     </Suspense>

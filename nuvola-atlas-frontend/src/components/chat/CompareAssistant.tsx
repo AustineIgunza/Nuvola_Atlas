@@ -17,14 +17,12 @@ interface Props {
  * placeholder, starter prompts, and mock replies all know what's on screen.
  */
 export default function CompareAssistant({ zones }: Props) {
-  const {
-    activeConversationId, setActive, addConversation,
-    messagesByConv, streaming, error,
-  } = useChatStore();
+  const { activeConversationId, setActive, addConversation, messagesByConv, streaming, error } =
+    useChatStore();
   const { send } = useChatStream();
   const [prompt, setPrompt] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
-  const messages = activeConversationId ? messagesByConv[activeConversationId] ?? [] : [];
+  const messages = activeConversationId ? (messagesByConv[activeConversationId] ?? []) : [];
 
   useEffect(() => {
     if (!listRef.current) return;
@@ -71,13 +69,21 @@ export default function CompareAssistant({ zones }: Props) {
       className="rounded-card border border-border bg-[rgba(255,255,255,0.02)] flex flex-col overflow-hidden max-h-[60vh] lg:max-h-[calc(100vh-2rem)] lg:sticky lg:top-4"
       aria-label="Comparison assistant"
     >
-      <div className="h-[2.5px] shrink-0" style={{ background: `linear-gradient(90deg, ${BRAND.teal}, ${BRAND.gold})` }} />
+      <div
+        className="h-[2.5px] shrink-0"
+        style={{ background: `linear-gradient(90deg, ${BRAND.teal}, ${BRAND.gold})` }}
+      />
       <div className="flex items-center gap-2 px-3 pt-2.5 pb-2 border-b border-border shrink-0">
-        <div className="w-7 h-7 rounded-full grid place-items-center" style={{ background: `${BRAND.teal}22`, color: BRAND.teal }}>
+        <div
+          className="w-7 h-7 rounded-full grid place-items-center"
+          style={{ background: `${BRAND.teal}22`, color: BRAND.teal }}
+        >
           <Sparkles size={13} />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-[9.5px] font-medium text-ink-4 uppercase tracking-[0.1em]">Assistant</div>
+          <div className="text-[9.5px] font-medium text-ink-4 uppercase tracking-[0.1em]">
+            Assistant
+          </div>
           <div className="text-[12px] font-semibold text-ink-1 leading-tight truncate">
             {contextLabel}
           </div>
@@ -125,7 +131,10 @@ export default function CompareAssistant({ zones }: Props) {
       </div>
 
       <form
-        onSubmit={(e) => { e.preventDefault(); doSend(prompt); }}
+        onSubmit={(e) => {
+          e.preventDefault();
+          doSend(prompt);
+        }}
         className="border-t border-border p-2.5 shrink-0"
       >
         <div className="flex items-end gap-2">
@@ -142,8 +151,8 @@ export default function CompareAssistant({ zones }: Props) {
               zoneNames.length >= 2
                 ? `Ask about ${zoneNames[0]} vs ${zoneNames[1]}…`
                 : zoneNames.length === 1
-                ? `Ask about ${zoneNames[0]}…`
-                : "Ask about the compared zones…"
+                  ? `Ask about ${zoneNames[0]}…`
+                  : "Ask about the compared zones…"
             }
             rows={2}
             className="flex-1 resize-none rounded-control bg-[rgba(255,255,255,0.04)] border border-border px-2.5 py-1.5 text-[11px] text-ink-1 placeholder-ink-4 focus:outline-none focus:border-[rgba(255,255,255,0.16)]"
@@ -197,7 +206,13 @@ function buildStarters(zones: Zone[]): string[] {
   ];
 }
 
-function MessageBubble({ message, onFollowup }: { message: ChatMessage; onFollowup: (s: string) => void }) {
+function MessageBubble({
+  message,
+  onFollowup,
+}: {
+  message: ChatMessage;
+  onFollowup: (s: string) => void;
+}) {
   const isUser = message.role === "user";
   const rows = message.resultRows ?? [];
   return (
@@ -210,8 +225,10 @@ function MessageBubble({ message, onFollowup }: { message: ChatMessage; onFollow
         }`}
       >
         {!isUser && message.intent && (
-          <div className="mb-1 inline-flex items-center gap-1 text-[8.5px] font-medium uppercase tracking-[0.08em]"
-            style={{ color: BRAND.teal }}>
+          <div
+            className="mb-1 inline-flex items-center gap-1 text-[8.5px] font-medium uppercase tracking-[0.08em]"
+            style={{ color: BRAND.teal }}
+          >
             <span className="w-1 h-1 rounded-full" style={{ background: BRAND.teal }} />
             {message.intent}
           </div>

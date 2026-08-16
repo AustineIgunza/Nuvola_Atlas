@@ -37,7 +37,10 @@ export default function SignInPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email || !password) { setError("Enter email and password"); return; }
+    if (!email || !password) {
+      setError("Enter email and password");
+      return;
+    }
     setLoading(true);
     setError("");
     setJustRegistered(false);
@@ -51,10 +54,7 @@ export default function SignInPage() {
         setCode("");
         return;
       }
-      signIn(
-        { ...res.user, role: res.user.role as AuthRole | undefined },
-        res.token,
-      );
+      signIn({ ...res.user, role: res.user.role as AuthRole | undefined }, res.token);
       // Investors: seed their firm's watchlist into the local store so
       // the ★ chips render pre-populated across the app. Non-investors
       // never touch the watchlist store, so this branch is inert for them.
@@ -77,13 +77,21 @@ export default function SignInPage() {
   async function handleVerify(e: React.FormEvent) {
     e.preventDefault();
     if (!challenge) return;
-    if (code.length !== 6) { setError("Enter the 6-digit code from your email"); return; }
+    if (code.length !== 6) {
+      setError("Enter the 6-digit code from your email");
+      return;
+    }
     setLoading(true);
     setError("");
     try {
       const res = await twoFactorApi.verify(challenge.token, code);
       signIn(
-        { name: res.user.name, email: res.user.email, role: res.user.role as "viewer" | "partner" | "editor" | "admin", email_verified: res.user.email_verified },
+        {
+          name: res.user.name,
+          email: res.user.email,
+          role: res.user.role as "viewer" | "partner" | "editor" | "admin",
+          email_verified: res.user.email_verified,
+        },
         res.token,
       );
       navigate("/atlas", { replace: true });
@@ -189,7 +197,11 @@ export default function SignInPage() {
             />
 
             {error && (
-              <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-[12px] text-danger">
+              <motion.p
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-[12px] text-danger"
+              >
                 {error}
               </motion.p>
             )}
@@ -205,7 +217,11 @@ export default function SignInPage() {
             <div className="flex items-center justify-between text-[12px]">
               <button
                 type="button"
-                onClick={() => { setChallenge(null); setCode(""); setError(""); }}
+                onClick={() => {
+                  setChallenge(null);
+                  setCode("");
+                  setError("");
+                }}
                 className="text-ink-3 hover:text-ink-2"
               >
                 ← Back
@@ -223,68 +239,89 @@ export default function SignInPage() {
         )}
 
         {!challenge && (
-        <>
-        <div className="mb-4">
-          <GoogleButton />
-        </div>
-        <div className="relative flex items-center gap-3 my-4">
-          <div className="flex-1 h-px bg-border" />
-          <span className="text-[10px] uppercase tracking-[0.15em] text-ink-4">or</span>
-          <div className="flex-1 h-px bg-border" />
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <label htmlFor="email" className="block text-[12px] font-medium text-ink-3 mb-1.5">Email</label>
-            <input
-              id="email" type="email" autoComplete="email" value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full h-11 px-4 rounded-control bg-[rgba(255,255,255,0.06)] border border-border text-ink-1 text-[14px] placeholder:text-ink-4 focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all"
-              placeholder="you@example.com"
-            />
-          </motion.div>
+          <>
+            <div className="mb-4">
+              <GoogleButton />
+            </div>
+            <div className="relative flex items-center gap-3 my-4">
+              <div className="flex-1 h-px bg-border" />
+              <span className="text-[10px] uppercase tracking-[0.15em] text-ink-4">or</span>
+              <div className="flex-1 h-px bg-border" />
+            </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <label htmlFor="email" className="block text-[12px] font-medium text-ink-3 mb-1.5">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full h-11 px-4 rounded-control bg-[rgba(255,255,255,0.06)] border border-border text-ink-1 text-[14px] placeholder:text-ink-4 focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all"
+                  placeholder="you@example.com"
+                />
+              </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
-            <label htmlFor="password" className="block text-[12px] font-medium text-ink-3 mb-1.5">Password</label>
-            <input
-              id="password" type="password" autoComplete="current-password" value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full h-11 px-4 rounded-control bg-[rgba(255,255,255,0.06)] border border-border text-ink-1 text-[14px] placeholder:text-ink-4 focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all"
-              placeholder="Password"
-            />
-          </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 }}
+              >
+                <label
+                  htmlFor="password"
+                  className="block text-[12px] font-medium text-ink-3 mb-1.5"
+                >
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full h-11 px-4 rounded-control bg-[rgba(255,255,255,0.06)] border border-border text-ink-1 text-[14px] placeholder:text-ink-4 focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all"
+                  placeholder="Password"
+                />
+              </motion.div>
 
-          {error && (
-            <motion.p
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-[12px] text-danger"
-            >
-              {error}
-            </motion.p>
-          )}
+              {error && (
+                <motion.p
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-[12px] text-danger"
+                >
+                  {error}
+                </motion.p>
+              )}
 
-          <motion.button
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            whileHover={{ scale: 1.02, boxShadow: "0 8px 25px rgba(192,85,43,0.28)" }}
-            whileTap={{ scale: 0.97 }}
-            type="submit"
-            disabled={loading}
-            className="w-full h-11 rounded-control bg-accent text-white text-[14px] font-semibold hover:brightness-110 disabled:opacity-50 transition-all"
-          >
-            {loading ? (
-              <motion.span
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                className="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-              />
-            ) : (
-              "Continue"
-            )}
-          </motion.button>
-        </form>
-        </>
+              <motion.button
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                whileHover={{ scale: 1.02, boxShadow: "0 8px 25px rgba(192,85,43,0.28)" }}
+                whileTap={{ scale: 0.97 }}
+                type="submit"
+                disabled={loading}
+                className="w-full h-11 rounded-control bg-accent text-white text-[14px] font-semibold hover:brightness-110 disabled:opacity-50 transition-all"
+              >
+                {loading ? (
+                  <motion.span
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    className="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                  />
+                ) : (
+                  "Continue"
+                )}
+              </motion.button>
+            </form>
+          </>
         )}
 
         <motion.p
@@ -294,7 +331,9 @@ export default function SignInPage() {
           className="text-[12px] text-ink-3 mt-5 text-center"
         >
           No account?{" "}
-          <Link to="/sign-up" className="text-accent hover:underline font-medium">Create one</Link>
+          <Link to="/sign-up" className="text-accent hover:underline font-medium">
+            Create one
+          </Link>
         </motion.p>
 
         <motion.p

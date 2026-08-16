@@ -69,11 +69,9 @@ export default function ReportsTable() {
   useEffect(() => {
     if (!zoneParam || !reports || autoOpenedFor === zoneParam) return;
     const forZone = reports.filter((r) => r.zoneId === zoneParam);
-    const pickNewest = (list: Report[]) =>
-      [...list].sort((a, b) => (a.date < b.date ? 1 : -1))[0];
+    const pickNewest = (list: Report[]) => [...list].sort((a, b) => (a.date < b.date ? 1 : -1))[0];
     const target =
-      pickNewest(forZone.filter((r) => r.status === "published")) ??
-      pickNewest(forZone);
+      pickNewest(forZone.filter((r) => r.status === "published")) ?? pickNewest(forZone);
     if (target) setDetailId(target.id);
     setAutoOpenedFor(zoneParam);
   }, [zoneParam, reports, autoOpenedFor]);
@@ -106,13 +104,14 @@ export default function ReportsTable() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
           <div className="flex items-center gap-1.5 flex-wrap relative">
             {FILTER_VALUES.map((v) => {
-              const label = v === "all"
-                ? t("alerts.filter.all")
-                : v === "published"
-                ? t("reports.status.published")
-                : v === "review"
-                ? t("reports.status.review")
-                : t("reports.status.draft");
+              const label =
+                v === "all"
+                  ? t("alerts.filter.all")
+                  : v === "published"
+                    ? t("reports.status.published")
+                    : v === "review"
+                      ? t("reports.status.review")
+                      : t("reports.status.draft");
               return (
                 <motion.button
                   key={v}
@@ -146,7 +145,11 @@ export default function ReportsTable() {
                     ? "border-[color:var(--gold,#E0A82E)] text-[color:var(--gold,#E0A82E)] bg-[rgba(224,168,46,0.10)]"
                     : "border-border text-ink-3 hover:text-ink-1",
                 )}
-                title={watchlistOnly ? t("reports.investorFilter.showAll") : t("reports.investorFilter.showWatchlist")}
+                title={
+                  watchlistOnly
+                    ? t("reports.investorFilter.showAll")
+                    : t("reports.investorFilter.showWatchlist")
+                }
               >
                 <Star size={12} fill={watchlistOnly ? "currentColor" : "none"} />
                 {t("reports.investorFilter.badge")}
@@ -182,11 +185,19 @@ export default function ReportsTable() {
             <thead>
               <tr className="border-b border-border">
                 <th className="text-left py-2.5 px-2 text-ink-4 font-medium">Title</th>
-                <th className="text-left py-2.5 px-2 text-ink-4 font-medium hidden sm:table-cell">Zone</th>
-                <th className="text-left py-2.5 px-2 text-ink-4 font-medium hidden md:table-cell">Author</th>
+                <th className="text-left py-2.5 px-2 text-ink-4 font-medium hidden sm:table-cell">
+                  Zone
+                </th>
+                <th className="text-left py-2.5 px-2 text-ink-4 font-medium hidden md:table-cell">
+                  Author
+                </th>
                 <th className="text-left py-2.5 px-2 text-ink-4 font-medium">Status</th>
-                <th className="text-left py-2.5 px-2 text-ink-4 font-medium hidden sm:table-cell">Date</th>
-                <th className="text-right py-2.5 px-2 text-ink-4 font-medium hidden lg:table-cell">Size</th>
+                <th className="text-left py-2.5 px-2 text-ink-4 font-medium hidden sm:table-cell">
+                  Date
+                </th>
+                <th className="text-right py-2.5 px-2 text-ink-4 font-medium hidden lg:table-cell">
+                  Size
+                </th>
               </tr>
             </thead>
             <motion.tbody
@@ -215,7 +226,9 @@ export default function ReportsTable() {
                         </span>
                       </div>
                     </td>
-                    <td className="py-3 px-2 text-ink-3 hidden sm:table-cell">{zoneName(r.zoneId)}</td>
+                    <td className="py-3 px-2 text-ink-3 hidden sm:table-cell">
+                      {zoneName(r.zoneId)}
+                    </td>
                     <td className="py-3 px-2 text-ink-3 hidden md:table-cell">{r.author}</td>
                     <td className="py-3 px-2">
                       <motion.span
@@ -229,8 +242,12 @@ export default function ReportsTable() {
                         {r.status}
                       </motion.span>
                     </td>
-                    <td className="py-3 px-2 text-ink-3 tabular-nums hidden sm:table-cell">{formatDate(r.date)}</td>
-                    <td className="py-3 px-2 text-right text-ink-4 tabular-nums hidden lg:table-cell">{formatBytes(r.sizeBytes)}</td>
+                    <td className="py-3 px-2 text-ink-3 tabular-nums hidden sm:table-cell">
+                      {formatDate(r.date)}
+                    </td>
+                    <td className="py-3 px-2 text-right text-ink-4 tabular-nums hidden lg:table-cell">
+                      {formatBytes(r.sizeBytes)}
+                    </td>
                   </motion.tr>
                 );
               })}

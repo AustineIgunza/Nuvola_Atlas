@@ -33,7 +33,15 @@ interface AtlasState {
 export const useAtlasStore = create<AtlasState>((set) => ({
   selectedZoneId: null,
   // Vitality choropleth is the signature view — on by default; overlays opt-in.
-  activeLayers: { vitality: true, roads: false, energy: false, density: false, water: false, momentum: false, safety: false },
+  activeLayers: {
+    vitality: true,
+    roads: false,
+    energy: false,
+    density: false,
+    water: false,
+    momentum: false,
+    safety: false,
+  },
   scrubMonthIdx: 11,
   mapStyle: defaultStyleForTheme(useThemeStore.getState().theme),
   compareZoneIds: [],

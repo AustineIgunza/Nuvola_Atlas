@@ -27,14 +27,7 @@ function pillarLabels(): Record<"social" | "safety" | "density" | "infra", strin
   };
 }
 
-type StreamEventName =
-  | "intent"
-  | "sql"
-  | "rows"
-  | "insight_delta"
-  | "followups"
-  | "done"
-  | "error";
+type StreamEventName = "intent" | "sql" | "rows" | "insight_delta" | "followups" | "done" | "error";
 
 interface ServerEvent {
   name: StreamEventName;
@@ -53,12 +46,7 @@ interface ServerEvent {
  */
 export function useChatStream() {
   const abortRef = useRef<AbortController | null>(null);
-  const {
-    appendMessage,
-    updateMessage,
-    setStreaming,
-    setError,
-  } = useChatStore();
+  const { appendMessage, updateMessage, setStreaming, setError } = useChatStore();
 
   const send = useCallback(
     async (conversationId: string, prompt: string) => {
@@ -187,7 +175,7 @@ async function runMockStream(convId: string, msgId: string, prompt: string) {
   const chat = useChatStore.getState();
   const activeConv = chat.conversations.find((c) => c.id === convId);
   const conversationZone = activeConv?.zoneId
-    ? ZONES.find((z) => z.id === activeConv.zoneId) ?? null
+    ? (ZONES.find((z) => z.id === activeConv.zoneId) ?? null)
     : null;
 
   const compareIds = useAtlasStore.getState().compareZoneIds;
@@ -207,7 +195,10 @@ async function runMockStream(convId: string, msgId: string, prompt: string) {
   }
   if (mockData.rows && mockData.rows.length > 0) {
     await wait(220);
-    applyEvent(convId, msgId, { name: "rows", data: { count: mockData.rows.length, preview: mockData.rows } });
+    applyEvent(convId, msgId, {
+      name: "rows",
+      data: { count: mockData.rows.length, preview: mockData.rows },
+    });
   }
 
   for (const chunk of mockData.answer.split(/(\s+)/)) {
@@ -224,10 +215,12 @@ function pickMockIntent(prompt: string, compareZones: Zone[], convZone: Zone | n
   const p = prompt.toLowerCase();
   if (/compare|vs\b|versus|between|side by side|side-by-side/.test(p)) return "comparison";
   if (/why|dropped|fell|rose|caused|gap|weakness|dragging/.test(p)) return "diagnostic";
-  if (/trend|over time|history|last month|last year|last week|last quarter|movement/.test(p)) return "trend";
+  if (/trend|over time|history|last month|last year|last week|last quarter|movement/.test(p))
+    return "trend";
   if (/top|best|worst|leaderboard|ranked|which zones/.test(p)) return "distribution";
   if (/pillar|breakdown|composition|make up|four pillars/.test(p)) return "composition";
-  if (/how does.+score|methodology|explain the score|what does .* mean/.test(p)) return "methodology";
+  if (/how does.+score|methodology|explain the score|what does .* mean/.test(p))
+    return "methodology";
   if (/tell me about|about|overview|what is going on|whats going on|status/.test(p) && convZone) {
     return "composition";
   }
@@ -250,7 +243,12 @@ interface MockAnswer {
   followups: string[];
 }
 
-function mockAnswerFor(intent: string, prompt: string, compareZones: Zone[], convZone: Zone | null): MockAnswer {
+function mockAnswerFor(
+  intent: string,
+  prompt: string,
+  compareZones: Zone[],
+  convZone: Zone | null,
+): MockAnswer {
   // Zone candidates, in priority order:
   //   1. Any zone names explicitly mentioned in the prompt.
   //   2. The compare picker zones (Compare page).
@@ -258,18 +256,20 @@ function mockAnswerFor(intent: string, prompt: string, compareZones: Zone[], con
   //   4. Intent-appropriate fallback so the assistant never dead-ends
   //      with a "pick a zone" boilerplate — it just picks the zone the
   //      user probably meant.
-  const mentioned = ZONES.filter((z) => prompt.toLowerCase().includes(z.name.toLowerCase())).slice(0, 3);
+  const mentioned = ZONES.filter((z) => prompt.toLowerCase().includes(z.name.toLowerCase())).slice(
+    0,
+    3,
+  );
   const explicitZones =
     mentioned.length > 0
       ? mentioned
       : compareZones.length > 0
-      ? compareZones
-      : convZone
-      ? [convZone]
-      : [];
+        ? compareZones
+        : convZone
+          ? [convZone]
+          : [];
 
-  const promptZones =
-    explicitZones.length > 0 ? explicitZones : fallbackZonesForIntent(intent);
+  const promptZones = explicitZones.length > 0 ? explicitZones : fallbackZonesForIntent(intent);
 
   const genericFollowups = [
     tt("chat.followup.whichDriving"),
@@ -380,7 +380,10 @@ function buildComparisonAnswer(zones: Zone[]): MockAnswer {
     const values = ranked.map((z) => `${z.name} ${z.pillars[k]}`).join(", ");
     const spread = ranked[0].pillars[k] - ranked[ranked.length - 1].pillars[k];
     return tt("chat.compare.pillarLine", {
-      pillar: labels[k], values, spread, plural: spread === 1 ? "" : "s",
+      pillar: labels[k],
+      values,
+      spread,
+      plural: spread === 1 ? "" : "s",
     });
   });
 
@@ -392,10 +395,13 @@ function buildComparisonAnswer(zones: Zone[]): MockAnswer {
     .sort((a, b) => b.spread - a.spread)[0];
 
   const opener = tt("chat.compare.opener", {
-    top: top.name, topScore: top.score, gaps: overallGaps.join(" & "),
+    top: top.name,
+    topScore: top.score,
+    gaps: overallGaps.join(" & "),
   });
   const closing = tt("chat.compare.closing", {
-    pillar: labels[widestSpread.key], spread: widestSpread.spread,
+    pillar: labels[widestSpread.key],
+    spread: widestSpread.spread,
   });
   const answer = `${opener}\n\n${pillarLines.join("\n")}\n\n${closing}`;
 
@@ -406,7 +412,10 @@ function buildComparisonAnswer(zones: Zone[]): MockAnswer {
     followups: [
       tt("chat.followup.whyPillarStronger", { zone: top.name, pillar: labels[widestSpread.key] }),
       tt("chat.followup.activeProjectsIn", { zone: sorted[sorted.length - 1].name }),
-      tt("chat.followup.gapMovedThisQuarter", { top: top.name, bottom: sorted[sorted.length - 1].name }),
+      tt("chat.followup.gapMovedThisQuarter", {
+        top: top.name,
+        bottom: sorted[sorted.length - 1].name,
+      }),
     ],
   };
 }
@@ -436,17 +445,21 @@ function buildCompositionAnswer(zones: Zone[]): MockAnswer {
 
   // County-wide average for context — makes the answer feel grounded
   // instead of "here are four numbers in a vacuum".
-  const countyAvg = Math.round(
-    ZONES.reduce((a, zn) => a + zn.score, 0) / ZONES.length,
-  );
+  const countyAvg = Math.round(ZONES.reduce((a, zn) => a + zn.score, 0) / ZONES.length);
   const vsCounty = z.score - countyAvg;
   const rankAbove = ZONES.filter((zn) => zn.score > z.score).length + 1;
 
-  const bandName = z.score >= 70 ? tt("band.strong") : z.score >= 55 ? tt("band.moderate") : tt("band.atRisk");
+  const bandName =
+    z.score >= 70 ? tt("band.strong") : z.score >= 55 ? tt("band.moderate") : tt("band.atRisk");
   const deltaFmt = vsCounty >= 0 ? `+${vsCounty}` : String(vsCounty);
 
   const opener = tt("chat.composition.opener", {
-    zone: z.name, score: z.score, delta: deltaFmt, avg: countyAvg, rank: rankAbove, band: bandName,
+    zone: z.name,
+    score: z.score,
+    delta: deltaFmt,
+    avg: countyAvg,
+    rank: rankAbove,
+    band: bandName,
   });
 
   const pillarLine = (e: (typeof sorted)[number]) => {
@@ -455,7 +468,12 @@ function buildCompositionAnswer(zones: Zone[]): MockAnswer {
       e.delta === 0
         ? tt("chat.composition.deltaFlat")
         : tt("chat.composition.deltaThisQuarter", { sign: e.delta > 0 ? "+" : "", value: e.delta });
-    return tt("chat.composition.pillarLine", { pillar: e.label, value: e.value, arrow, delta: deltaTxt });
+    return tt("chat.composition.pillarLine", {
+      pillar: e.label,
+      value: e.value,
+      arrow,
+      delta: deltaTxt,
+    });
   };
 
   const pillarBreakdown = sorted.map(pillarLine).join("\n");
@@ -497,8 +515,16 @@ function buildDistributionAnswer(): MockAnswer {
     sql: "SELECT name, score FROM zones ORDER BY score DESC LIMIT 5",
     rows: top.map((z) => ({ name: z.name, score: z.score })),
     answer: tt("chat.distribution", {
-      top1: top[0].name, top2: top[1].name, top3: top[2].name, top4: top[3].name, top5: top[4].name,
-      score1: top[0].score, score2: top[1].score, score3: top[2].score, score4: top[3].score, score5: top[4].score,
+      top1: top[0].name,
+      top2: top[1].name,
+      top3: top[2].name,
+      top4: top[3].name,
+      top5: top[4].name,
+      score1: top[0].score,
+      score2: top[1].score,
+      score3: top[2].score,
+      score4: top[3].score,
+      score5: top[4].score,
       spread: top[0].score - top[4].score,
     }),
     followups: [
@@ -531,7 +557,10 @@ function buildFakeTrend(anchor: number): Array<Record<string, unknown>> {
     const d = new Date(start);
     d.setDate(start.getDate() + i);
     const wobble = Math.sin(i / 3) * 1.2 + (Math.random() - 0.5) * 0.6;
-    out.push({ bucket: d.toISOString().slice(0, 10), score: Math.round((anchor + wobble) * 10) / 10 });
+    out.push({
+      bucket: d.toISOString().slice(0, 10),
+      score: Math.round((anchor + wobble) * 10) / 10,
+    });
   }
   return out;
 }
@@ -579,7 +608,10 @@ function buildDiagnosticText(zones: Zone[]): string {
   });
 }
 
-function diagnosticCause(pillar: "social" | "safety" | "density" | "infra", zoneName: string): string {
+function diagnosticCause(
+  pillar: "social" | "safety" | "density" | "infra",
+  zoneName: string,
+): string {
   return tt(`chat.cause.${pillar}` as MessageKey, { zone: zoneName });
 }
 
@@ -590,14 +622,18 @@ function buildSummaryText(zones: Zone[]): string {
   if (zones.length === 1) {
     const [z] = zones;
     return tt("chat.summary.single", {
-      zone: z.name, score: z.score,
-      social: z.pillars.social, safety: z.pillars.safety,
-      density: z.pillars.density, infra: z.pillars.infra,
+      zone: z.name,
+      score: z.score,
+      social: z.pillars.social,
+      safety: z.pillars.safety,
+      density: z.pillars.density,
+      infra: z.pillars.infra,
     });
   }
   const avg = Math.round(zones.reduce((a, z) => a + z.score, 0) / zones.length);
   const names = zones.map((z) => z.name);
-  const tail = names.length > 1 ? `${names.slice(0, -1).join(", ")} & ${names[names.length - 1]}` : names[0];
+  const tail =
+    names.length > 1 ? `${names.slice(0, -1).join(", ")} & ${names[names.length - 1]}` : names[0];
   return tt("chat.summary.multi", { names: tail, avg });
 }
 

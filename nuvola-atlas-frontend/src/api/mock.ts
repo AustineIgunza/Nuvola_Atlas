@@ -51,8 +51,8 @@ function save<T>(key: string, value: T[]): void {
   }
 }
 
-let alerts = load<typeof ALERTS[number]>(ALERTS_KEY, ALERTS);
-let reports = load<typeof REPORTS[number]>(REPORTS_KEY, REPORTS);
+let alerts = load<(typeof ALERTS)[number]>(ALERTS_KEY, ALERTS);
+let reports = load<(typeof REPORTS)[number]>(REPORTS_KEY, REPORTS);
 
 const CHAT_CONVS_KEY = "nuvola_mock_chat_convs_v1";
 let chatConversations = load<ChatConversation>(CHAT_CONVS_KEY, []);
@@ -166,7 +166,10 @@ export const mockApi = {
     await delay();
     return structuredClone(chatConversations);
   },
-  createConversation: async (data: { title?: string; zoneId?: string | null }): Promise<ChatConversation> => {
+  createConversation: async (data: {
+    title?: string;
+    zoneId?: string | null;
+  }): Promise<ChatConversation> => {
     await delay();
     const c: ChatConversation = {
       id: crypto.randomUUID(),
@@ -197,7 +200,12 @@ export const mockApi = {
     return { pillars: structuredClone(METHODOLOGY) };
   },
 
-  register: async (name: string, email: string, _password: string, _passwordConfirmation: string) => {
+  register: async (
+    name: string,
+    email: string,
+    _password: string,
+    _passwordConfirmation: string,
+  ) => {
     await delay();
     return {
       token: "mock-token",
@@ -230,7 +238,8 @@ export const mockApi = {
   signIn: async (email: string, _password: string) => {
     await delay();
     const lc = email.toLowerCase();
-    const isAdmin = lc === "austine@nuvola.dev" || lc.startsWith("admin@") || lc.startsWith("admin-no2fa@");
+    const isAdmin =
+      lc === "austine@nuvola.dev" || lc.startsWith("admin@") || lc.startsWith("admin-no2fa@");
     const challengeOn2fa = lc.startsWith("admin@") && !lc.startsWith("admin-no2fa@");
 
     if (challengeOn2fa) {
@@ -247,25 +256,24 @@ export const mockApi = {
     }
 
     const firm = firmFromEmail(email);
-    const role: "admin" | "editor" | "partner" | "investor" | "viewer" =
-      firm
-        ? "investor"
-        : isAdmin
+    const role: "admin" | "editor" | "partner" | "investor" | "viewer" = firm
+      ? "investor"
+      : isAdmin
         ? "admin"
         : lc.startsWith("editor@")
-        ? "editor"
-        : lc.startsWith("partner@")
-        ? "partner"
-        : "viewer";
+          ? "editor"
+          : lc.startsWith("partner@")
+            ? "partner"
+            : "viewer";
     const inferredName = firm
       ? `${firm.name} · ${lc.startsWith("investor-lead+") ? "Lead" : lc.startsWith("investor-analyst+") ? "Analyst" : "Viewer"}`
       : role === "admin"
-      ? "Mock Admin"
-      : role === "editor"
-      ? "Mock Editor"
-      : role === "partner"
-      ? "Mock Partner"
-      : "Mock Viewer";
+        ? "Mock Admin"
+        : role === "editor"
+          ? "Mock Editor"
+          : role === "partner"
+            ? "Mock Partner"
+            : "Mock Viewer";
 
     return {
       token: "mock-token",
@@ -297,7 +305,13 @@ export const mockApi = {
     return {
       token: "mock-token",
       expires_at: new Date(Date.now() + 480 * 60_000).toISOString(),
-      user: { id: 1, name: "Mock Admin", email: "admin@nuvola.dev", role: "admin" as const, email_verified: true },
+      user: {
+        id: 1,
+        name: "Mock Admin",
+        email: "admin@nuvola.dev",
+        role: "admin" as const,
+        email_verified: true,
+      },
     };
   },
 };

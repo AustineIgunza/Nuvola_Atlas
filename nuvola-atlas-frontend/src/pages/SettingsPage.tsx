@@ -17,10 +17,14 @@ export default function SettingsPage() {
   const theme = useThemeStore((s) => s.theme);
   const setTheme = useThemeStore((s) => s.setTheme);
   const {
-    locale, setLocale,
-    avatarColor, setAvatarColor,
-    displayName, setDisplayName,
-    notifications, setNotification,
+    locale,
+    setLocale,
+    avatarColor,
+    setAvatarColor,
+    displayName,
+    setDisplayName,
+    notifications,
+    setNotification,
   } = usePrefsStore();
 
   return (
@@ -28,8 +32,12 @@ export default function SettingsPage() {
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-[860px] mx-auto p-4 sm:p-6 space-y-4">
           <header>
-            <div className="text-[10px] font-medium text-ink-4 uppercase tracking-[0.12em]">{t("nav.settings")}</div>
-            <h1 className="text-[22px] font-semibold text-ink-1 leading-tight">{t("settings.title")}</h1>
+            <div className="text-[10px] font-medium text-ink-4 uppercase tracking-[0.12em]">
+              {t("nav.settings")}
+            </div>
+            <h1 className="text-[22px] font-semibold text-ink-1 leading-tight">
+              {t("settings.title")}
+            </h1>
             <p className="mt-1.5 text-[12px] text-ink-3 max-w-[68ch]">{t("settings.subtitle")}</p>
           </header>
 
@@ -48,7 +56,11 @@ export default function SettingsPage() {
 
           <LanguageSection t={t} locale={locale} setLocale={setLocale} />
 
-          <NotificationsSection t={t} notifications={notifications} setNotification={setNotification} />
+          <NotificationsSection
+            t={t}
+            notifications={notifications}
+            setNotification={setNotification}
+          />
         </div>
       </div>
     </AppShell>
@@ -92,10 +104,7 @@ function ProfileSection({
   };
 
   return (
-    <Section
-      title={t("settings.profile.title")}
-      description={t("settings.profile.description")}
-    >
+    <Section title={t("settings.profile.title")} description={t("settings.profile.description")}>
       <div className="flex items-start gap-4 mb-4">
         <div
           className="w-16 h-16 rounded-full flex items-center justify-center text-[20px] font-bold text-white shrink-0"
@@ -145,7 +154,8 @@ function ProfileSection({
               aria-pressed={c === avatarColor}
               className={cn(
                 "w-8 h-8 rounded-full transition-transform btn-press relative",
-                c === avatarColor && "ring-2 ring-offset-2 ring-offset-[var(--bg-1,#0b2235)] ring-white/70",
+                c === avatarColor &&
+                  "ring-2 ring-offset-2 ring-offset-[var(--bg-1,#0b2235)] ring-white/70",
               )}
               style={{ background: c }}
             >
@@ -190,14 +200,28 @@ function PasswordSection({ t }: { t: ReturnType<typeof useT> }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
-    if (!current) { setErrorMessage(t("settings.password.wrongCurrent")); setStatus("err"); return; }
-    if (next.length < 8) { setErrorMessage(t("settings.password.tooShort")); setStatus("err"); return; }
-    if (next !== confirm) { setErrorMessage(t("settings.password.mismatch")); setStatus("err"); return; }
+    if (!current) {
+      setErrorMessage(t("settings.password.wrongCurrent"));
+      setStatus("err");
+      return;
+    }
+    if (next.length < 8) {
+      setErrorMessage(t("settings.password.tooShort"));
+      setStatus("err");
+      return;
+    }
+    if (next !== confirm) {
+      setErrorMessage(t("settings.password.mismatch"));
+      setStatus("err");
+      return;
+    }
     setStatus("saving");
     try {
       await api.changePassword(current, next);
       setStatus("ok");
-      setCurrent(""); setNext(""); setConfirm("");
+      setCurrent("");
+      setNext("");
+      setConfirm("");
       window.setTimeout(() => setStatus("idle"), 2000);
     } catch (err) {
       setStatus("err");
@@ -206,10 +230,7 @@ function PasswordSection({ t }: { t: ReturnType<typeof useT> }) {
   };
 
   return (
-    <Section
-      title={t("settings.password.title")}
-      description={t("settings.password.description")}
-    >
+    <Section title={t("settings.password.title")} description={t("settings.password.description")}>
       <form onSubmit={handleSubmit} className="space-y-3">
         <Field label={t("settings.password.current")}>
           <input
@@ -247,9 +268,15 @@ function PasswordSection({ t }: { t: ReturnType<typeof useT> }) {
             disabled={status === "saving"}
             className="inline-flex items-center gap-1.5 rounded-control bg-accent text-white px-3 py-1.5 text-[12px] font-semibold hover:brightness-110 disabled:opacity-50 btn-press"
           >
-            {status === "saving"
-              ? <><Loader2 size={13} className="animate-spin" /> {t("common.loading")}</>
-              : <><Save size={13} /> {t("settings.password.submit")}</>}
+            {status === "saving" ? (
+              <>
+                <Loader2 size={13} className="animate-spin" /> {t("common.loading")}
+              </>
+            ) : (
+              <>
+                <Save size={13} /> {t("settings.password.submit")}
+              </>
+            )}
           </button>
           {status === "ok" && (
             <span className="text-[11px] text-[color:var(--teal,#1F8A78)] inline-flex items-center gap-1">
@@ -303,7 +330,9 @@ function AppearanceSection({
               onClick={() => setTheme(mode)}
               className={cn(
                 "min-w-[90px] h-8 px-3 rounded-chip text-[12px] font-medium transition-colors",
-                theme === mode ? "bg-[rgba(255,255,255,0.12)] text-ink-1" : "text-ink-4 hover:text-ink-2",
+                theme === mode
+                  ? "bg-[rgba(255,255,255,0.12)] text-ink-1"
+                  : "text-ink-4 hover:text-ink-2",
               )}
               aria-pressed={theme === mode}
             >
@@ -337,10 +366,7 @@ function LanguageSection({
   setLocale: (locale: LocaleCode) => void;
 }) {
   return (
-    <Section
-      title={t("settings.language.title")}
-      description={t("settings.language.description")}
-    >
+    <Section title={t("settings.language.title")} description={t("settings.language.description")}>
       <Field label={t("settings.language.picker")}>
         <div className="grid gap-2 sm:grid-cols-2">
           {LOCALES.map((l) => {
@@ -357,10 +383,14 @@ function LanguageSection({
                     : "bg-[rgba(255,255,255,0.02)] border-border hover:bg-[rgba(255,255,255,0.05)]",
                 )}
               >
-                <span className="text-[18px]" aria-hidden>{l.flag}</span>
+                <span className="text-[18px]" aria-hidden>
+                  {l.flag}
+                </span>
                 <span className="flex-1 min-w-0">
                   <span className="block text-[12.5px] font-semibold text-ink-1">{l.name}</span>
-                  <span className="block text-[10px] text-ink-4 uppercase tracking-[0.08em]">{l.code.toUpperCase()}</span>
+                  <span className="block text-[10px] text-ink-4 uppercase tracking-[0.08em]">
+                    {l.code.toUpperCase()}
+                  </span>
                 </span>
                 {active && <Check size={14} className="text-[color:var(--teal,#1F8A78)]" />}
               </button>
@@ -448,7 +478,9 @@ function Field({
 }) {
   return (
     <label className="block space-y-1">
-      <span className="block text-[10.5px] font-medium text-ink-4 uppercase tracking-[0.08em]">{label}</span>
+      <span className="block text-[10.5px] font-medium text-ink-4 uppercase tracking-[0.08em]">
+        {label}
+      </span>
       {children}
       {hint && <span className="block text-[10.5px] text-ink-4">{hint}</span>}
     </label>

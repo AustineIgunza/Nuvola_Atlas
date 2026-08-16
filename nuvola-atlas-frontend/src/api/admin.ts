@@ -119,27 +119,130 @@ const mockMetrics = (): AdminMetrics => ({
 
 const mockAudit = (): AuditPage => ({
   data: [
-    { id: 1042, action: "report.created", resource_type: "Report", resource_id: "r-101", before: null, after: { title: "Westlands Q2 review" }, ip: "203.0.113.5", user_agent: "Mozilla/5.0", created_at: new Date().toISOString(), actor: { id: 1, name: "Joy Nthei", email: "joy@nuvola.dev", role: "admin" } },
-    { id: 1041, action: "auth.sign_in", resource_type: "User", resource_id: "1", before: null, after: null, ip: "203.0.113.5", user_agent: "Mozilla/5.0", created_at: new Date(Date.now() - 3600_000).toISOString(), actor: { id: 1, name: "Joy Nthei", email: "joy@nuvola.dev", role: "admin" } },
-    { id: 1040, action: "api_key.created", resource_type: "PersonalAccessToken", resource_id: "7", before: null, after: { name: "partner pilot — readonly", abilities: ["api:read"] }, ip: "203.0.113.5", user_agent: "Mozilla/5.0", created_at: new Date(Date.now() - 86400_000).toISOString(), actor: { id: 1, name: "Joy Nthei", email: "joy@nuvola.dev", role: "admin" } },
+    {
+      id: 1042,
+      action: "report.created",
+      resource_type: "Report",
+      resource_id: "r-101",
+      before: null,
+      after: { title: "Westlands Q2 review" },
+      ip: "203.0.113.5",
+      user_agent: "Mozilla/5.0",
+      created_at: new Date().toISOString(),
+      actor: { id: 1, name: "Joy Nthei", email: "joy@nuvola.dev", role: "admin" },
+    },
+    {
+      id: 1041,
+      action: "auth.sign_in",
+      resource_type: "User",
+      resource_id: "1",
+      before: null,
+      after: null,
+      ip: "203.0.113.5",
+      user_agent: "Mozilla/5.0",
+      created_at: new Date(Date.now() - 3600_000).toISOString(),
+      actor: { id: 1, name: "Joy Nthei", email: "joy@nuvola.dev", role: "admin" },
+    },
+    {
+      id: 1040,
+      action: "api_key.created",
+      resource_type: "PersonalAccessToken",
+      resource_id: "7",
+      before: null,
+      after: { name: "partner pilot — readonly", abilities: ["api:read"] },
+      ip: "203.0.113.5",
+      user_agent: "Mozilla/5.0",
+      created_at: new Date(Date.now() - 86400_000).toISOString(),
+      actor: { id: 1, name: "Joy Nthei", email: "joy@nuvola.dev", role: "admin" },
+    },
   ],
   meta: { next_cursor: null, prev_cursor: null, per_page: 15 },
 });
 
 const mockUsers = (): AdminUserPage => ({
   data: [
-    { id: 1, name: "Joy Nthei", email: "joy@nuvola.dev", role: "admin", email_verified: true, two_factor_enabled: true, two_factor_locked: false, two_factor_reminded_at: null, partner: null, created_at: new Date(Date.now() - 30 * 86400_000).toISOString() },
-    { id: 2, name: "Ken N'ganga", email: "ken@nuvola.dev", role: "admin", email_verified: true, two_factor_enabled: false, two_factor_locked: false, two_factor_reminded_at: new Date(Date.now() - 3 * 86400_000).toISOString(), partner: null, created_at: new Date(Date.now() - 30 * 86400_000).toISOString() },
-    { id: 3, name: "Austine Igunza", email: "austine@nuvola.dev", role: "editor", email_verified: true, two_factor_enabled: false, two_factor_locked: false, two_factor_reminded_at: null, partner: null, created_at: new Date(Date.now() - 28 * 86400_000).toISOString() },
-    { id: 4, name: "Pilot Partner", email: "pilot@example.test", role: "partner", email_verified: true, two_factor_enabled: false, two_factor_locked: false, two_factor_reminded_at: null, partner: { id: 1, name: "Nairobi County Planning" }, created_at: new Date(Date.now() - 5 * 86400_000).toISOString() },
-    { id: 5, name: "Khillon", email: "khillon@nuvola.dev", role: "admin", email_verified: true, two_factor_enabled: false, two_factor_locked: true, two_factor_reminded_at: new Date(Date.now() - 12 * 86400_000).toISOString(), partner: null, created_at: new Date(Date.now() - 30 * 86400_000).toISOString() },
+    {
+      id: 1,
+      name: "Joy Nthei",
+      email: "joy@nuvola.dev",
+      role: "admin",
+      email_verified: true,
+      two_factor_enabled: true,
+      two_factor_locked: false,
+      two_factor_reminded_at: null,
+      partner: null,
+      created_at: new Date(Date.now() - 30 * 86400_000).toISOString(),
+    },
+    {
+      id: 2,
+      name: "Ken N'ganga",
+      email: "ken@nuvola.dev",
+      role: "admin",
+      email_verified: true,
+      two_factor_enabled: false,
+      two_factor_locked: false,
+      two_factor_reminded_at: new Date(Date.now() - 3 * 86400_000).toISOString(),
+      partner: null,
+      created_at: new Date(Date.now() - 30 * 86400_000).toISOString(),
+    },
+    {
+      id: 3,
+      name: "Austine Igunza",
+      email: "austine@nuvola.dev",
+      role: "editor",
+      email_verified: true,
+      two_factor_enabled: false,
+      two_factor_locked: false,
+      two_factor_reminded_at: null,
+      partner: null,
+      created_at: new Date(Date.now() - 28 * 86400_000).toISOString(),
+    },
+    {
+      id: 4,
+      name: "Pilot Partner",
+      email: "pilot@example.test",
+      role: "partner",
+      email_verified: true,
+      two_factor_enabled: false,
+      two_factor_locked: false,
+      two_factor_reminded_at: null,
+      partner: { id: 1, name: "Nairobi County Planning" },
+      created_at: new Date(Date.now() - 5 * 86400_000).toISOString(),
+    },
+    {
+      id: 5,
+      name: "Khillon",
+      email: "khillon@nuvola.dev",
+      role: "admin",
+      email_verified: true,
+      two_factor_enabled: false,
+      two_factor_locked: true,
+      two_factor_reminded_at: new Date(Date.now() - 12 * 86400_000).toISOString(),
+      partner: null,
+      created_at: new Date(Date.now() - 30 * 86400_000).toISOString(),
+    },
   ],
   meta: { current_page: 1, last_page: 1, per_page: 20, total: 5 },
 });
 
 const mockApiKeys = (): { data: ApiKey[] } => ({
   data: [
-    { id: 7, name: "partner pilot — readonly", abilities: ["api:read"], rate_limit_per_minute: 60, last_used_at: new Date(Date.now() - 2 * 3600_000).toISOString(), expires_at: new Date(Date.now() + 90 * 86400_000).toISOString(), created_at: new Date(Date.now() - 86400_000).toISOString(), user: { id: 4, name: "Pilot Partner", email: "pilot@example.test", role: "partner", partner_id: 1 } },
+    {
+      id: 7,
+      name: "partner pilot — readonly",
+      abilities: ["api:read"],
+      rate_limit_per_minute: 60,
+      last_used_at: new Date(Date.now() - 2 * 3600_000).toISOString(),
+      expires_at: new Date(Date.now() + 90 * 86400_000).toISOString(),
+      created_at: new Date(Date.now() - 86400_000).toISOString(),
+      user: {
+        id: 4,
+        name: "Pilot Partner",
+        email: "pilot@example.test",
+        role: "partner",
+        partner_id: 1,
+      },
+    },
   ],
 });
 
@@ -189,7 +292,24 @@ export const adminApi = {
       // Return a fake token so the wizard UI can show its "copy once" flow.
       return {
         token: `${Math.floor(Math.random() * 1000)}|${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`,
-        data: { id: Math.floor(Math.random() * 1000), name: payload.name, abilities: payload.abilities, rate_limit_per_minute: payload.rate_limit_per_minute ?? null, last_used_at: null, expires_at: payload.expires_in_days ? new Date(Date.now() + payload.expires_in_days * 86400_000).toISOString() : null, created_at: new Date().toISOString(), user: { id: payload.user_id, name: "Mock user", email: "mock@example.test", role: "partner", partner_id: null } },
+        data: {
+          id: Math.floor(Math.random() * 1000),
+          name: payload.name,
+          abilities: payload.abilities,
+          rate_limit_per_minute: payload.rate_limit_per_minute ?? null,
+          last_used_at: null,
+          expires_at: payload.expires_in_days
+            ? new Date(Date.now() + payload.expires_in_days * 86400_000).toISOString()
+            : null,
+          created_at: new Date().toISOString(),
+          user: {
+            id: payload.user_id,
+            name: "Mock user",
+            email: "mock@example.test",
+            role: "partner",
+            partner_id: null,
+          },
+        },
       };
     }
     const res = await fetch(`${BASE}/admin/api-keys`, {
@@ -212,7 +332,16 @@ export const adminApi = {
   updateUserRole: async (id: number, role: string): Promise<AdminUser> => {
     if (USE_MOCK) {
       // mutate the mock list in-place so the UI feels responsive
-      return { id, name: "Mock user", email: "mock@example.test", role, email_verified: true, two_factor_enabled: false, partner: null, created_at: null };
+      return {
+        id,
+        name: "Mock user",
+        email: "mock@example.test",
+        role,
+        email_verified: true,
+        two_factor_enabled: false,
+        partner: null,
+        created_at: null,
+      };
     }
     const res = await fetch(`${BASE}/admin/users/${id}`, {
       method: "PATCH",

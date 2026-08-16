@@ -23,9 +23,7 @@ export function initSentry(): void {
     // Privacy-first: no replay, no PII, no automatic breadcrumb capture of
     // user input. Partners' session data is more sensitive than crash detail.
     sendDefaultPii: false,
-    integrations: [
-      Sentry.browserTracingIntegration(),
-    ],
+    integrations: [Sentry.browserTracingIntegration()],
   });
 }
 

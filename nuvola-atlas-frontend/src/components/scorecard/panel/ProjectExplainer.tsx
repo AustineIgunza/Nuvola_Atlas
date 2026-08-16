@@ -63,7 +63,10 @@ export default function ProjectExplainer({ projectId, onNavigate }: Props) {
       {/* Progress */}
       <Section title="Delivery progress">
         <div className="flex items-baseline gap-2">
-          <span className="text-[26px] font-semibold tabular-nums leading-none" style={{ color: barColor }}>
+          <span
+            className="text-[26px] font-semibold tabular-nums leading-none"
+            style={{ color: barColor }}
+          >
             {p.progress}%
           </span>
           <span className="text-[10px] text-ink-4">
@@ -81,9 +84,8 @@ export default function ProjectExplainer({ projectId, onNavigate }: Props) {
         </div>
         {nextMilestone && (
           <p className="mt-2 text-[10px] text-ink-4 leading-[1.5]">
-            Next milestone:{" "}
-            <span className="text-ink-2 font-medium">{nextMilestone.label}</span> — due{" "}
-            <span className="tabular-nums text-ink-3">{formatDate(nextMilestone.date)}</span>
+            Next milestone: <span className="text-ink-2 font-medium">{nextMilestone.label}</span> —
+            due <span className="tabular-nums text-ink-3">{formatDate(nextMilestone.date)}</span>
           </p>
         )}
         <div className="mt-2.5 grid grid-cols-3 gap-1.5">
@@ -115,10 +117,17 @@ export default function ProjectExplainer({ projectId, onNavigate }: Props) {
                     style={{ background: c, boxShadow: `0 0 6px ${c}66` }}
                   />
                   <div className="flex-1 min-w-0">
-                    <div className="text-[10.5px] text-ink-2 font-medium leading-snug">{a.title}</div>
-                    <div className="text-[9.5px] text-ink-4 mt-0.5">{formatRelative(a.createdAt)}</div>
+                    <div className="text-[10.5px] text-ink-2 font-medium leading-snug">
+                      {a.title}
+                    </div>
+                    <div className="text-[9.5px] text-ink-4 mt-0.5">
+                      {formatRelative(a.createdAt)}
+                    </div>
                   </div>
-                  <ChevronRight size={12} className="shrink-0 mt-0.5 text-ink-4 group-hover:text-ink-2 transition-colors" />
+                  <ChevronRight
+                    size={12}
+                    className="shrink-0 mt-0.5 text-ink-4 group-hover:text-ink-2 transition-colors"
+                  />
                 </button>
               );
             })}

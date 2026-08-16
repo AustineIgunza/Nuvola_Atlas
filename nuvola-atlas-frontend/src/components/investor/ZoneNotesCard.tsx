@@ -60,7 +60,10 @@ export default function ZoneNotesCard({ zoneId, zoneName }: Props) {
     >
       <div className="flex items-center gap-1.5">
         <Lock size={11} style={{ color: BRAND.teal }} />
-        <span className="text-[10.5px] font-medium uppercase tracking-[0.08em]" style={{ color: BRAND.teal }}>
+        <span
+          className="text-[10.5px] font-medium uppercase tracking-[0.08em]"
+          style={{ color: BRAND.teal }}
+        >
           {t("notes.private")}
         </span>
         <span className="text-[10.5px] font-semibold text-ink-1 ml-auto truncate">
@@ -78,7 +81,10 @@ export default function ZoneNotesCard({ zoneId, zoneName }: Props) {
 
       <div className="flex items-center gap-2">
         {saved ? (
-          <span className="inline-flex items-center gap-1 text-[10.5px] font-medium" style={{ color: BRAND.teal }}>
+          <span
+            className="inline-flex items-center gap-1 text-[10.5px] font-medium"
+            style={{ color: BRAND.teal }}
+          >
             <Check size={11} /> {t("notes.saved")}
           </span>
         ) : (

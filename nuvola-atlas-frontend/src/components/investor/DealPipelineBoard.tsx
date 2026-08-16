@@ -3,7 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { ArrowRight, ChevronDown, ChevronRight, Wallet } from "lucide-react";
 import { useAuthStore } from "@/stores/auth";
 import {
-  DEAL_STAGES, loadDeals, updateDealStage, type Deal, type DealStage,
+  DEAL_STAGES,
+  loadDeals,
+  updateDealStage,
+  type Deal,
+  type DealStage,
 } from "@/api/dealPipeline";
 import { ZONES } from "@/api/fixtures";
 import { BRAND } from "@/lib/scoreColor";
@@ -22,7 +26,12 @@ export default function DealPipelineBoard() {
 
   const grouped = useMemo(() => {
     const map: Record<DealStage, Deal[]> = {
-      prospect: [], meeting: [], diligence: [], term_sheet: [], closed: [], passed: [],
+      prospect: [],
+      meeting: [],
+      diligence: [],
+      term_sheet: [],
+      closed: [],
+      passed: [],
     };
     deals.forEach((d) => map[d.stage].push(d));
     return map;
@@ -53,29 +62,43 @@ export default function DealPipelineBoard() {
         <Wallet size={13} style={{ color: BRAND.terracotta }} />
         <h2 className="text-[14px] font-semibold text-ink-1">Deal pipeline</h2>
         <span className="text-[10px] text-ink-4 tracking-[0.06em]">
-          {deals.length} deals · {totalPipelineValue >= 1000
+          {deals.length} deals ·{" "}
+          {totalPipelineValue >= 1000
             ? `KES ${(totalPipelineValue / 1000).toFixed(1)}B in pipeline`
             : `KES ${Math.round(totalPipelineValue)}M in pipeline`}
         </span>
       </div>
 
       {/* Desktop — column view */}
-      <div className="hidden lg:grid gap-2" style={{ gridTemplateColumns: `repeat(${DEAL_STAGES.length}, minmax(0, 1fr))` }}>
+      <div
+        className="hidden lg:grid gap-2"
+        style={{ gridTemplateColumns: `repeat(${DEAL_STAGES.length}, minmax(0, 1fr))` }}
+      >
         {DEAL_STAGES.map((stage) => (
-          <div key={stage.key} className="rounded-control border border-border bg-[rgba(255,255,255,0.02)] p-2 min-h-[240px]">
+          <div
+            key={stage.key}
+            className="rounded-control border border-border bg-[rgba(255,255,255,0.02)] p-2 min-h-[240px]"
+          >
             <div className="flex items-center gap-1.5 mb-2 pb-2 border-b border-border">
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: stage.color }} />
               <span className="text-[10.5px] font-semibold uppercase tracking-[0.06em] text-ink-2 flex-1">
                 {stage.label}
               </span>
-              <span className="text-[10px] text-ink-4 tabular-nums">{grouped[stage.key].length}</span>
+              <span className="text-[10px] text-ink-4 tabular-nums">
+                {grouped[stage.key].length}
+              </span>
             </div>
             <div className="space-y-2">
               {grouped[stage.key].length === 0 ? (
                 <div className="text-[10px] text-ink-4 italic px-1 py-2">Empty</div>
               ) : (
                 grouped[stage.key].map((d) => (
-                  <DealCard key={d.id} deal={d} onOpenZone={() => navigate(`/atlas?zone=${d.zoneId}`)} onPromote={() => promote(d)} />
+                  <DealCard
+                    key={d.id}
+                    deal={d}
+                    onOpenZone={() => navigate(`/atlas?zone=${d.zoneId}`)}
+                    onPromote={() => promote(d)}
+                  />
                 ))
               )}
             </div>
@@ -89,7 +112,10 @@ export default function DealPipelineBoard() {
           const isOpen = expandedStage === stage.key;
           const count = grouped[stage.key].length;
           return (
-            <div key={stage.key} className="rounded-control border border-border bg-[rgba(255,255,255,0.02)]">
+            <div
+              key={stage.key}
+              className="rounded-control border border-border bg-[rgba(255,255,255,0.02)]"
+            >
               <button
                 onClick={() => setExpandedStage(isOpen ? null : stage.key)}
                 className="w-full flex items-center gap-2 px-3 py-2 text-left"
@@ -99,7 +125,11 @@ export default function DealPipelineBoard() {
                   {stage.label}
                 </span>
                 <span className="text-[10.5px] text-ink-4 tabular-nums">{count}</span>
-                {isOpen ? <ChevronDown size={13} className="text-ink-4" /> : <ChevronRight size={13} className="text-ink-4" />}
+                {isOpen ? (
+                  <ChevronDown size={13} className="text-ink-4" />
+                ) : (
+                  <ChevronRight size={13} className="text-ink-4" />
+                )}
               </button>
               {isOpen && (
                 <div className="px-2 pb-2 space-y-2">
@@ -107,7 +137,12 @@ export default function DealPipelineBoard() {
                     <div className="text-[10.5px] text-ink-4 italic px-1 py-2">Empty</div>
                   ) : (
                     grouped[stage.key].map((d) => (
-                      <DealCard key={d.id} deal={d} onOpenZone={() => navigate(`/atlas?zone=${d.zoneId}`)} onPromote={() => promote(d)} />
+                      <DealCard
+                        key={d.id}
+                        deal={d}
+                        onOpenZone={() => navigate(`/atlas?zone=${d.zoneId}`)}
+                        onPromote={() => promote(d)}
+                      />
                     ))
                   )}
                 </div>
@@ -120,25 +155,43 @@ export default function DealPipelineBoard() {
   );
 }
 
-function DealCard({ deal, onOpenZone, onPromote }: { deal: Deal; onOpenZone: () => void; onPromote: () => void }) {
+function DealCard({
+  deal,
+  onOpenZone,
+  onPromote,
+}: {
+  deal: Deal;
+  onOpenZone: () => void;
+  onPromote: () => void;
+}) {
   const zone = ZONES.find((z) => z.id === deal.zoneId);
   return (
     <div className="rounded-control border border-border bg-[rgba(255,255,255,0.03)] p-2.5">
       <div className="flex items-start gap-2">
         <div className="flex-1 min-w-0">
           <div className="text-[11.5px] font-semibold text-ink-1 leading-tight">{deal.title}</div>
-          <button onClick={onOpenZone} className="text-[9.5px] text-ink-3 hover:text-ink-1 truncate transition-colors inline-flex items-center gap-1">
+          <button
+            onClick={onOpenZone}
+            className="text-[9.5px] text-ink-3 hover:text-ink-1 truncate transition-colors inline-flex items-center gap-1"
+          >
             {zone?.name ?? deal.zoneId} <ArrowRight size={9} />
           </button>
         </div>
-        <span className="text-[10.5px] font-semibold tabular-nums shrink-0" style={{ color: BRAND.gold }}>
+        <span
+          className="text-[10.5px] font-semibold tabular-nums shrink-0"
+          style={{ color: BRAND.gold }}
+        >
           {deal.amount}
         </span>
       </div>
-      <div className="mt-1.5 text-[9.5px] text-ink-3 leading-snug line-clamp-2">{deal.nextStep}</div>
+      <div className="mt-1.5 text-[9.5px] text-ink-3 leading-snug line-clamp-2">
+        {deal.nextStep}
+      </div>
       <div className="mt-2 flex items-center gap-2 text-[9px] text-ink-4">
         <span className="truncate">{deal.owner}</span>
-        <span className="ml-auto shrink-0">{new Date(deal.nextStepAt).toLocaleDateString([], { month: "short", day: "numeric" })}</span>
+        <span className="ml-auto shrink-0">
+          {new Date(deal.nextStepAt).toLocaleDateString([], { month: "short", day: "numeric" })}
+        </span>
       </div>
       {deal.stage !== "closed" && deal.stage !== "passed" && (
         <button

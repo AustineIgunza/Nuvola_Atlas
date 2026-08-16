@@ -1,9 +1,6 @@
 import type { ReportStatus } from "@/types";
 
-export const STATUS_STYLES: Record<
-  ReportStatus,
-  { bg: string; text: string; glow: string }
-> = {
+export const STATUS_STYLES: Record<ReportStatus, { bg: string; text: string; glow: string }> = {
   published: {
     bg: "rgba(31,138,120,0.12)",
     text: "#1F8A78",

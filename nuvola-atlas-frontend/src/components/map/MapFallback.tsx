@@ -54,7 +54,9 @@ export default function MapFallback({ zones }: Props) {
           return (
             <g key={z.id} onClick={() => setSelectedZone(z.id)} style={{ cursor: "pointer" }}>
               <motion.circle
-                cx={pos.cx} cy={pos.cy} r={pos.r}
+                cx={pos.cx}
+                cy={pos.cy}
+                r={pos.r}
                 fill={color}
                 initial={{ fillOpacity: 0, r: 0 }}
                 animate={{
@@ -68,10 +70,15 @@ export default function MapFallback({ zones }: Props) {
                 filter={selected ? "url(#glow)" : undefined}
               />
               <motion.text
-                x={pos.cx} y={pos.cy - 6}
+                x={pos.cx}
+                y={pos.cy - 6}
                 textAnchor="middle"
                 className="pointer-events-none"
-                style={{ fontSize: 10, fontWeight: 500, fill: dimmed ? "rgba(255,255,255,0.15)" : "rgba(200,205,214,0.8)" }}
+                style={{
+                  fontSize: 10,
+                  fontWeight: 500,
+                  fill: dimmed ? "rgba(255,255,255,0.15)" : "rgba(200,205,214,0.8)",
+                }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: i * 0.03 + 0.2 }}
@@ -79,10 +86,15 @@ export default function MapFallback({ zones }: Props) {
                 {z.name.length > 12 ? z.name.split(" ").slice(0, 2).join(" ") : z.name}
               </motion.text>
               <motion.text
-                x={pos.cx} y={pos.cy + 9}
+                x={pos.cx}
+                y={pos.cy + 9}
                 textAnchor="middle"
                 className="pointer-events-none tabular-nums"
-                style={{ fontSize: 13, fontWeight: 600, fill: dimmed ? "rgba(255,255,255,0.2)" : "#f4f6fa" }}
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  fill: dimmed ? "rgba(255,255,255,0.2)" : "#f4f6fa",
+                }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: i * 0.03 + 0.25 }}
@@ -101,14 +113,26 @@ export default function MapFallback({ zones }: Props) {
         transition={{ delay: 0.5 }}
         className="absolute top-3 left-3 z-10 glass rounded-chip px-3 py-1.5"
       >
-        <span className="text-[11px] text-ink-3">Map fallback - set VITE_MAPBOX_TOKEN for Mapbox</span>
+        <span className="text-[11px] text-ink-3">
+          Map fallback - set VITE_MAPBOX_TOKEN for Mapbox
+        </span>
       </motion.div>
 
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="absolute bottom-20 sm:bottom-16 left-3 sm:left-4 z-10">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="absolute bottom-20 sm:bottom-16 left-3 sm:left-4 z-10"
+      >
         <Legend />
       </motion.div>
 
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-10">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-10"
+      >
         <TimeScrubber />
       </motion.div>
     </div>

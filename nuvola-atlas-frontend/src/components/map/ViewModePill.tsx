@@ -4,11 +4,7 @@ import { cn } from "@/lib/cn";
 import { springSettle } from "@/lib/motion";
 import { useUIStore } from "@/stores/ui";
 import { useThemeStore } from "@/stores/theme";
-import {
-  BASEMAP_STYLES,
-  MAP_STYLES,
-  defaultStyleForTheme,
-} from "./atlas-map.constants";
+import { BASEMAP_STYLES, MAP_STYLES, defaultStyleForTheme } from "./atlas-map.constants";
 
 const VIEW_MODES = ["Map", "Satellite", "Terrain"] as const;
 type ViewMode = (typeof VIEW_MODES)[number];
@@ -73,9 +69,7 @@ export default function ViewModePill({ panelOpen }: Props) {
             aria-label={mode}
             className={cn(
               "relative flex items-center gap-1.5 h-7 px-2.5 rounded-full text-[11.5px] font-medium transition-colors",
-              isActive
-                ? "text-navy"
-                : "text-navy/60 hover:text-navy/85",
+              isActive ? "text-navy" : "text-navy/60 hover:text-navy/85",
             )}
           >
             {isActive && (

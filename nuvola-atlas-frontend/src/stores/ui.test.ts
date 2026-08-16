@@ -6,7 +6,15 @@ describe("atlas store", () => {
   beforeEach(() => {
     useAtlasStore.setState({
       selectedZoneId: null,
-      activeLayers: { vitality: true, roads: false, energy: false, density: false, water: false, momentum: false, safety: false },
+      activeLayers: {
+        vitality: true,
+        roads: false,
+        energy: false,
+        density: false,
+        water: false,
+        momentum: false,
+        safety: false,
+      },
       scrubMonthIdx: 11,
       mapStyle: "mapbox://styles/mapbox/light-v11",
     });

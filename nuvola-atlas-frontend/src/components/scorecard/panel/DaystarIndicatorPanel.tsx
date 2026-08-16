@@ -49,9 +49,9 @@ export default function DaystarIndicatorPanel({ zoneId, showAttribution }: Props
       className="space-y-2"
     >
       <p className="text-[10px] text-ink-4 leading-[1.55]">
-        The 12 Vitality indicators the Daystar University data pipeline delivers per
-        sub-county. Rows fill in as ingestion coverage rolls out; a field-verified badge
-        confirms a ground officer has spot-checked the value.
+        The 12 Vitality indicators the Daystar University data pipeline delivers per sub-county.
+        Rows fill in as ingestion coverage rolls out; a field-verified badge confirms a ground
+        officer has spot-checked the value.
       </p>
 
       <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[9.5px]">
@@ -143,14 +143,17 @@ export function DaystarAttribution() {
     >
       <div className="flex items-center gap-1.5">
         <BadgeCheck size={12} style={{ color: BRAND.teal }} className="shrink-0" />
-        <span className="text-[10px] font-semibold uppercase tracking-[0.08em]" style={{ color: BRAND.teal }}>
+        <span
+          className="text-[10px] font-semibold uppercase tracking-[0.08em]"
+          style={{ color: BRAND.teal }}
+        >
           Data partner · Daystar University
         </span>
       </div>
       <p className="mt-1.5 text-[10.5px] text-ink-2 leading-[1.55]">
-        The 12-indicator analytical layer is delivered under Navuuna&apos;s data-access
-        partnership with Daystar University. Indicators arrive incrementally; zones show
-        a partial-data marker until the full set is delivered.
+        The 12-indicator analytical layer is delivered under Navuuna&apos;s data-access partnership
+        with Daystar University. Indicators arrive incrementally; zones show a partial-data marker
+        until the full set is delivered.
       </p>
     </div>
   );

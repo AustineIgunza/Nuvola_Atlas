@@ -1,7 +1,14 @@
 import { motion } from "framer-motion";
 import {
-  Activity, AlertOctagon, Cpu, Database, Gauge, GitBranch,
-  Radio, Server, Zap,
+  Activity,
+  AlertOctagon,
+  Cpu,
+  Database,
+  Gauge,
+  GitBranch,
+  Radio,
+  Server,
+  Zap,
 } from "lucide-react";
 import { BRAND } from "@/lib/scoreColor";
 
@@ -21,19 +28,79 @@ interface Health {
 }
 
 const SERVICES: Health[] = [
-  { label: "Laravel API", value: "99.98%", status: "green", hint: "30-day uptime · Fly.io ams", icon: Server },
-  { label: "PostgreSQL", value: "8 ms", status: "green", hint: "p50 query latency · Supabase pooler :6543", icon: Database },
-  { label: "Reverb websocket", value: "3 open", status: "green", hint: "Live map sessions on zones.* channels", icon: Radio },
-  { label: "Queue depth", value: "0 waiting", status: "green", hint: "Sync queue — no backlog", icon: Gauge },
-  { label: "Ingestion FastAPI", value: "no traffic", status: "amber", hint: "Awaiting Daystar cutover (Aug 15 ETA)", icon: Cpu },
-  { label: "Sentry error rate", value: "0.1%", status: "green", hint: "Last 24h · 3 issues, 0 critical", icon: AlertOctagon },
+  {
+    label: "Laravel API",
+    value: "99.98%",
+    status: "green",
+    hint: "30-day uptime · Fly.io ams",
+    icon: Server,
+  },
+  {
+    label: "PostgreSQL",
+    value: "8 ms",
+    status: "green",
+    hint: "p50 query latency · Supabase pooler :6543",
+    icon: Database,
+  },
+  {
+    label: "Reverb websocket",
+    value: "3 open",
+    status: "green",
+    hint: "Live map sessions on zones.* channels",
+    icon: Radio,
+  },
+  {
+    label: "Queue depth",
+    value: "0 waiting",
+    status: "green",
+    hint: "Sync queue — no backlog",
+    icon: Gauge,
+  },
+  {
+    label: "Ingestion FastAPI",
+    value: "no traffic",
+    status: "amber",
+    hint: "Awaiting Daystar cutover (Aug 15 ETA)",
+    icon: Cpu,
+  },
+  {
+    label: "Sentry error rate",
+    value: "0.1%",
+    status: "green",
+    hint: "Last 24h · 3 issues, 0 critical",
+    icon: AlertOctagon,
+  },
 ];
 
 const RECENT_DEPLOYS = [
-  { sha: "6d41f8f", author: "Austine", when: "just now", branch: "main", note: "mobile nav pill + i18n sweep" },
-  { sha: "87b191f", author: "Austine", when: "18 min ago", branch: "main", note: "locale-aware chat, auto-collapse sidebar" },
-  { sha: "7f6fafa", author: "Austine", when: "42 min ago", branch: "main", note: "admin mobile layout cutoffs" },
-  { sha: "83efc1b", author: "Austine", when: "1h ago", branch: "main", note: "watchlist chip, announcements" },
+  {
+    sha: "6d41f8f",
+    author: "Austine",
+    when: "just now",
+    branch: "main",
+    note: "mobile nav pill + i18n sweep",
+  },
+  {
+    sha: "87b191f",
+    author: "Austine",
+    when: "18 min ago",
+    branch: "main",
+    note: "locale-aware chat, auto-collapse sidebar",
+  },
+  {
+    sha: "7f6fafa",
+    author: "Austine",
+    when: "42 min ago",
+    branch: "main",
+    note: "admin mobile layout cutoffs",
+  },
+  {
+    sha: "83efc1b",
+    author: "Austine",
+    when: "1h ago",
+    branch: "main",
+    note: "watchlist chip, announcements",
+  },
 ];
 
 const REGIONS = [
@@ -77,7 +144,9 @@ export default function SystemHealthPanel() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[11.5px] font-semibold text-ink-1 truncate">{s.label}</span>
+                      <span className="text-[11.5px] font-semibold text-ink-1 truncate">
+                        {s.label}
+                      </span>
                       <span
                         className="ml-auto w-1.5 h-1.5 rounded-full shrink-0 pulse-glow"
                         style={{ background: color, boxShadow: `0 0 6px ${color}88` }}
@@ -86,7 +155,9 @@ export default function SystemHealthPanel() {
                     <div className="text-[13.5px] font-bold tabular-nums" style={{ color }}>
                       {s.value}
                     </div>
-                    <div className="text-[9.5px] text-ink-4 leading-tight truncate mt-0.5">{s.hint}</div>
+                    <div className="text-[9.5px] text-ink-4 leading-tight truncate mt-0.5">
+                      {s.hint}
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -144,7 +215,9 @@ export default function SystemHealthPanel() {
                     className="w-1.5 h-1.5 rounded-full shrink-0"
                     style={{ background: color, boxShadow: `0 0 6px ${color}88` }}
                   />
-                  <span className="text-[12px] font-semibold text-ink-1 truncate flex-1">{r.name}</span>
+                  <span className="text-[12px] font-semibold text-ink-1 truncate flex-1">
+                    {r.name}
+                  </span>
                   <span
                     className="text-[9.5px] font-semibold uppercase tracking-[0.08em] shrink-0"
                     style={{ color }}
@@ -153,7 +226,9 @@ export default function SystemHealthPanel() {
                   </span>
                 </div>
                 <div className="mt-1 text-[10.5px] text-ink-3">{r.role}</div>
-                <div className="mt-0.5 text-[10.5px] text-ink-4 tabular-nums">Latency {r.latency}</div>
+                <div className="mt-0.5 text-[10.5px] text-ink-4 tabular-nums">
+                  Latency {r.latency}
+                </div>
               </div>
             );
           })}

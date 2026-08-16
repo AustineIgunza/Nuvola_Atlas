@@ -30,31 +30,37 @@ export default function MethodologyEditor() {
   const [saved, setSaved] = useState(false);
 
   const weightsSum = draft.social + draft.safety + draft.density + draft.infra;
-  const normalized = weightsSum > 0
-    ? {
-        social: draft.social / weightsSum,
-        safety: draft.safety / weightsSum,
-        density: draft.density / weightsSum,
-        infra: draft.infra / weightsSum,
-      }
-    : CURRENT_WEIGHTS;
+  const normalized =
+    weightsSum > 0
+      ? {
+          social: draft.social / weightsSum,
+          safety: draft.safety / weightsSum,
+          density: draft.density / weightsSum,
+          infra: draft.infra / weightsSum,
+        }
+      : CURRENT_WEIGHTS;
 
-  const changed = PILLAR_KEYS.some((k) => normalized[k].toFixed(3) !== CURRENT_WEIGHTS[k].toFixed(3));
+  const changed = PILLAR_KEYS.some(
+    (k) => normalized[k].toFixed(3) !== CURRENT_WEIGHTS[k].toFixed(3),
+  );
 
   // Projected score under proposed weights = sum(pillar * proposed weight).
   // Zone.score is already the current-weights composite, so we just recompute.
-  const projected = useMemo(() =>
-    zones.map((z: Zone) => {
-      const nextScore = Math.round(
-        z.pillars.social * normalized.social +
-          z.pillars.safety * normalized.safety +
-          z.pillars.density * normalized.density +
-          z.pillars.infra * normalized.infra,
-      );
-      return { z, currentScore: z.score, nextScore, delta: nextScore - z.score };
-    })
-    .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta)),
-  [zones, normalized]);
+  const projected = useMemo(
+    () =>
+      zones
+        .map((z: Zone) => {
+          const nextScore = Math.round(
+            z.pillars.social * normalized.social +
+              z.pillars.safety * normalized.safety +
+              z.pillars.density * normalized.density +
+              z.pillars.infra * normalized.infra,
+          );
+          return { z, currentScore: z.score, nextScore, delta: nextScore - z.score };
+        })
+        .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta)),
+    [zones, normalized],
+  );
 
   const canPublish = changed && confirmToken.trim().toLowerCase() === "publish";
 
@@ -87,14 +93,14 @@ export default function MethodologyEditor() {
           {PILLAR_KEYS.map((k) => (
             <div key={k}>
               <div className="flex items-center gap-2 mb-1">
-                <span
-                  className="w-2 h-2 rounded-full"
-                  style={{ background: PILLAR_COLORS[k] }}
-                />
+                <span className="w-2 h-2 rounded-full" style={{ background: PILLAR_COLORS[k] }} />
                 <span className="text-[10.5px] font-medium text-ink-2 flex-1 truncate">
                   {PILLAR_LABELS[k]}
                 </span>
-                <span className="text-[11px] font-semibold tabular-nums" style={{ color: PILLAR_COLORS[k] }}>
+                <span
+                  className="text-[11px] font-semibold tabular-nums"
+                  style={{ color: PILLAR_COLORS[k] }}
+                >
                   {(normalized[k] * 100).toFixed(1)}%
                 </span>
               </div>
@@ -139,14 +145,16 @@ export default function MethodologyEditor() {
           </div>
           {saved && (
             <div className="mt-2 text-[10.5px]" style={{ color: BRAND.teal }}>
-              Preview saved locally. Publish to production will queue a RecalculateAllZones job once the Phase E migrations ship.
+              Preview saved locally. Publish to production will queue a RecalculateAllZones job once
+              the Phase E migrations ship.
             </div>
           )}
           {changed && !saved && (
             <div className="mt-2 flex items-start gap-1.5 text-[10px] text-ink-4">
               <AlertTriangle size={10} className="shrink-0 mt-0.5" style={{ color: BRAND.gold }} />
               <span>
-                A publish creates a new methodology_versions row and recomputes every zone. Snapshots under the previous version are preserved.
+                A publish creates a new methodology_versions row and recomputes every zone.
+                Snapshots under the previous version are preserved.
               </span>
             </div>
           )}
@@ -181,7 +189,8 @@ export default function MethodologyEditor() {
             </thead>
             <tbody>
               {projected.map(({ z, currentScore, nextScore, delta }) => {
-                const dColor = delta > 0 ? BRAND.teal : delta < 0 ? BRAND.rose : "rgba(255,255,255,0.4)";
+                const dColor =
+                  delta > 0 ? BRAND.teal : delta < 0 ? BRAND.rose : "rgba(255,255,255,0.4)";
                 return (
                   <tr key={z.id} className="border-t border-border">
                     <td className="px-2 py-1.5 text-ink-1 font-medium">{z.name}</td>
@@ -190,10 +199,18 @@ export default function MethodologyEditor() {
                         {z.pillars[k]}
                       </td>
                     ))}
-                    <td className="px-2 py-1.5 text-right tabular-nums text-ink-2">{currentScore}</td>
-                    <td className="px-2 py-1.5 text-right tabular-nums text-ink-1 font-semibold">{nextScore}</td>
-                    <td className="px-2 py-1.5 text-right tabular-nums font-semibold" style={{ color: dColor }}>
-                      {delta > 0 ? "+" : ""}{delta}
+                    <td className="px-2 py-1.5 text-right tabular-nums text-ink-2">
+                      {currentScore}
+                    </td>
+                    <td className="px-2 py-1.5 text-right tabular-nums text-ink-1 font-semibold">
+                      {nextScore}
+                    </td>
+                    <td
+                      className="px-2 py-1.5 text-right tabular-nums font-semibold"
+                      style={{ color: dColor }}
+                    >
+                      {delta > 0 ? "+" : ""}
+                      {delta}
                     </td>
                   </tr>
                 );

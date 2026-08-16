@@ -112,7 +112,10 @@ export default function AlertExplainer({ alertId, onNavigate }: Props) {
                   <span className="text-[10.5px] font-semibold tabular-nums shrink-0 text-ink-3">
                     {p.progress}%
                   </span>
-                  <ChevronRight size={12} className="shrink-0 text-ink-4 group-hover:text-ink-2 transition-colors" />
+                  <ChevronRight
+                    size={12}
+                    className="shrink-0 text-ink-4 group-hover:text-ink-2 transition-colors"
+                  />
                 </button>
               );
             })}

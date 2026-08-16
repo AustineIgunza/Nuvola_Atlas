@@ -17,9 +17,16 @@ export const twoFactorApi = {
   /** Sends a 6-digit code to the authenticated user's email. */
   emailStart: async (): Promise<EmailStartResponse> => {
     if (USE_MOCK) {
-      return { message: "Mock: code 123456 (no email sent).", email_hint: "you@example.test", expires_in_seconds: 300 };
+      return {
+        message: "Mock: code 123456 (no email sent).",
+        email_hint: "you@example.test",
+        expires_in_seconds: 300,
+      };
     }
-    const res = await fetch(`${BASE}/auth/2fa/email/start`, { method: "POST", headers: authHeaders() });
+    const res = await fetch(`${BASE}/auth/2fa/email/start`, {
+      method: "POST",
+      headers: authHeaders(),
+    });
     return handleResponse<EmailStartResponse>(res);
   },
 
@@ -51,8 +58,9 @@ export const twoFactorApi = {
   /** Sign-in challenge: exchange challenge_token + code for a real Sanctum token. */
   verify: async (challenge_token: string, code: string): Promise<VerifyResponse> => {
     if (USE_MOCK) {
-      return (mockApi as unknown as { verifyTwoFactor: (t: string, c: string) => Promise<VerifyResponse> })
-        .verifyTwoFactor(challenge_token, code);
+      return (
+        mockApi as unknown as { verifyTwoFactor: (t: string, c: string) => Promise<VerifyResponse> }
+      ).verifyTwoFactor(challenge_token, code);
     }
     const res = await fetch(`${BASE}/auth/2fa/verify`, {
       method: "POST",

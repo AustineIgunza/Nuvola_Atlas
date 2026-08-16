@@ -21,9 +21,18 @@ export default function SignUpPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name || !email || !password) { setError("All fields are required"); return; }
-    if (password.length < 8) { setError("Password must be at least 8 characters"); return; }
-    if (password !== confirm) { setError("Passwords do not match"); return; }
+    if (!name || !email || !password) {
+      setError("All fields are required");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
+    if (password !== confirm) {
+      setError("Passwords do not match");
+      return;
+    }
     setLoading(true);
     setError("");
     try {
@@ -85,40 +94,82 @@ export default function SignUpPage() {
           <div className="flex-1 h-px bg-border" />
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28 }}>
-            <label htmlFor="name" className="block text-[12px] font-medium text-ink-3 mb-1.5">Full name</label>
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.28 }}
+          >
+            <label htmlFor="name" className="block text-[12px] font-medium text-ink-3 mb-1.5">
+              Full name
+            </label>
             <input
-              id="name" type="text" autoComplete="name" value={name}
+              id="name"
+              type="text"
+              autoComplete="name"
+              value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full h-11 px-4 rounded-control bg-[rgba(255,255,255,0.06)] border border-border text-ink-1 text-[14px] placeholder:text-ink-4 focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all"
               placeholder="Your name"
             />
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <label htmlFor="reg-email" className="block text-[12px] font-medium text-ink-3 mb-1.5">Email</label>
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <label htmlFor="reg-email" className="block text-[12px] font-medium text-ink-3 mb-1.5">
+              Email
+            </label>
             <input
-              id="reg-email" type="email" autoComplete="email" value={email}
+              id="reg-email"
+              type="email"
+              autoComplete="email"
+              value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full h-11 px-4 rounded-control bg-[rgba(255,255,255,0.06)] border border-border text-ink-1 text-[14px] placeholder:text-ink-4 focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all"
               placeholder="you@example.com"
             />
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32 }}>
-            <label htmlFor="reg-password" className="block text-[12px] font-medium text-ink-3 mb-1.5">Password</label>
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.32 }}
+          >
+            <label
+              htmlFor="reg-password"
+              className="block text-[12px] font-medium text-ink-3 mb-1.5"
+            >
+              Password
+            </label>
             <input
-              id="reg-password" type="password" autoComplete="new-password" value={password}
+              id="reg-password"
+              type="password"
+              autoComplete="new-password"
+              value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full h-11 px-4 rounded-control bg-[rgba(255,255,255,0.06)] border border-border text-ink-1 text-[14px] placeholder:text-ink-4 focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all"
               placeholder="Min 8 characters"
             />
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.34 }}>
-            <label htmlFor="reg-confirm" className="block text-[12px] font-medium text-ink-3 mb-1.5">Confirm password</label>
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.34 }}
+          >
+            <label
+              htmlFor="reg-confirm"
+              className="block text-[12px] font-medium text-ink-3 mb-1.5"
+            >
+              Confirm password
+            </label>
             <input
-              id="reg-confirm" type="password" autoComplete="new-password" value={confirm}
+              id="reg-confirm"
+              type="password"
+              autoComplete="new-password"
+              value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               className="w-full h-11 px-4 rounded-control bg-[rgba(255,255,255,0.06)] border border-border text-ink-1 text-[14px] placeholder:text-ink-4 focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all"
               placeholder="Repeat password"
@@ -164,7 +215,9 @@ export default function SignUpPage() {
           className="text-[12px] text-ink-3 mt-5 text-center"
         >
           Already have an account?{" "}
-          <Link to="/sign-in" className="text-accent hover:underline font-medium">Sign in</Link>
+          <Link to="/sign-in" className="text-accent hover:underline font-medium">
+            Sign in
+          </Link>
         </motion.p>
 
         <motion.p

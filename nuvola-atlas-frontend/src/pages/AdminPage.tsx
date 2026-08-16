@@ -33,7 +33,11 @@ export default function AdminPage() {
   const [tab, setTab] = useState<AdminTab>("overview");
   const [twoFactorMode, setTwoFactorMode] = useState(false);
 
-  const { data: metrics, isLoading, error } = useQuery({
+  const {
+    data: metrics,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["admin", "metrics"],
     queryFn: adminApi.metrics,
     staleTime: 30_000,
@@ -140,7 +144,11 @@ export default function AdminPage() {
                   <MetricCard
                     label="Vitality trend"
                     value={vitalityLatest != null ? vitalityLatest.toFixed(1) : "—"}
-                    hint={historyPoints && historyPoints.length > 0 ? `12-month avg, latest ${historyPoints[historyPoints.length - 1].month}` : "12-month avg"}
+                    hint={
+                      historyPoints && historyPoints.length > 0
+                        ? `12-month avg, latest ${historyPoints[historyPoints.length - 1].month}`
+                        : "12-month avg"
+                    }
                     spark={vitalitySeries}
                     sparkColor="#1F8A78"
                     sparkAriaLabel="12-month county-wide Vitality trend"
@@ -149,19 +157,25 @@ export default function AdminPage() {
                     label="Admins on 2FA"
                     value={`${metrics.admins_with_two_factor}/${metrics.admins_total}`}
                     tone={
-                      metrics.admins_total > 0 && metrics.admins_with_two_factor === metrics.admins_total
+                      metrics.admins_total > 0 &&
+                      metrics.admins_with_two_factor === metrics.admins_total
                         ? "success"
                         : "warning"
                     }
                     hint={
-                      metrics.admins_total > 0 && metrics.admins_with_two_factor === metrics.admins_total
+                      metrics.admins_total > 0 &&
+                      metrics.admins_with_two_factor === metrics.admins_total
                         ? "all admins protected"
                         : "enrolment incomplete"
                     }
                   />
                   <MetricCard
                     label="Snapshot"
-                    value={new Date(metrics.generated_at).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                    value={new Date(metrics.generated_at).toLocaleTimeString(undefined, {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                    })}
                     hint="server time"
                   />
                 </div>

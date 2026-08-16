@@ -14,7 +14,10 @@ export type Ring = Point[];
 export type BBox = [number, number, number, number]; // [minX, minY, maxX, maxY]
 
 export function computeBBox(points: Point[], pad = 0.03): BBox {
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  let minX = Infinity,
+    minY = Infinity,
+    maxX = -Infinity,
+    maxY = -Infinity;
   for (const [x, y] of points) {
     if (x < minX) minX = x;
     if (y < minY) minY = y;

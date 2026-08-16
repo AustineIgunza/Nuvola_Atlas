@@ -39,10 +39,7 @@ export default function MetricCard({
   return (
     <motion.div
       whileHover={{ y: -2 }}
-      className={cn(
-        "glass rounded-control p-4 ring-1 transition-shadow",
-        TONE_RING[tone],
-      )}
+      className={cn("glass rounded-control p-4 ring-1 transition-shadow", TONE_RING[tone])}
     >
       <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.08em]">{label}</div>
       <div className="mt-1 flex items-end justify-between gap-2">

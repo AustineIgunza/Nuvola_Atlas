@@ -26,10 +26,24 @@ export function generateVitalityCells(zones: Zone[]) {
 
 export function generateRoadFeatures(zones: Zone[]) {
   const pairs = [
-    [0, 1], [1, 2], [2, 3], [0, 5], [5, 4], [4, 7],
-    [7, 10], [10, 8], [8, 6], [1, 12], [12, 11],
-    [3, 14], [14, 13], [13, 3], [15, 4], [15, 5],
-    [1, 16], [16, 15],
+    [0, 1],
+    [1, 2],
+    [2, 3],
+    [0, 5],
+    [5, 4],
+    [4, 7],
+    [7, 10],
+    [10, 8],
+    [8, 6],
+    [1, 12],
+    [12, 11],
+    [3, 14],
+    [14, 13],
+    [13, 3],
+    [15, 4],
+    [15, 5],
+    [1, 16],
+    [16, 15],
   ];
   return pairs
     .filter(([a, b]) => a < zones.length && b < zones.length)
@@ -124,8 +138,21 @@ export function generateWaterFeatures(zones: Zone[]) {
   const idx = new Map(zones.map((z, i) => [i, z] as const));
   // Reticulation spine — source zones in the west/north feeding eastward.
   const mains = [
-    [0, 1], [1, 2], [2, 3], [3, 4], [0, 15], [15, 14], [14, 13],
-    [15, 16], [5, 7], [7, 6], [13, 12], [12, 10], [10, 11], [10, 8], [9, 10],
+    [0, 1],
+    [1, 2],
+    [2, 3],
+    [3, 4],
+    [0, 15],
+    [15, 14],
+    [14, 13],
+    [15, 16],
+    [5, 7],
+    [7, 6],
+    [13, 12],
+    [12, 10],
+    [10, 11],
+    [10, 8],
+    [9, 10],
   ];
 
   const mainFeatures = mains
@@ -296,12 +323,25 @@ export function addSourcesAndLayers(
 
   // --- Vitality choropleth (added first → bottom-most; overlays draw above) ---
   m.addLayer({
-    id: "vitality-fill", type: "fill", source: "vitality",
+    id: "vitality-fill",
+    type: "fill",
+    source: "vitality",
     paint: {
       // Stops mirror the score ramp in scoreColor.ts (SCORE_GRADIENT_CSS).
       "fill-color": [
-        "interpolate", ["linear"], ["get", "score"],
-        0, "#B23A2E", 30, "#C0552B", 55, "#E0A82E", 78, "#3F9E72", 100, "#1F8A78",
+        "interpolate",
+        ["linear"],
+        ["get", "score"],
+        0,
+        "#B23A2E",
+        30,
+        "#C0552B",
+        55,
+        "#E0A82E",
+        78,
+        "#3F9E72",
+        100,
+        "#1F8A78",
       ],
       "fill-opacity": active.vitality
         ? ["case", ["boolean", ["feature-state", "hover"], false], 0.3, 0.16]
@@ -309,32 +349,57 @@ export function addSourcesAndLayers(
     },
   });
   m.addLayer({
-    id: "roads-line", type: "line", source: "roads",
+    id: "roads-line",
+    type: "line",
+    source: "roads",
     layout: { "line-cap": "round", "line-join": "round" },
-    paint: { "line-color": BRAND.terracotta, "line-width": 3, "line-dasharray": [1.5, 2.5], "line-opacity": active.roads ? 0.85 : 0 },
+    paint: {
+      "line-color": BRAND.terracotta,
+      "line-width": 3,
+      "line-dasharray": [1.5, 2.5],
+      "line-opacity": active.roads ? 0.85 : 0,
+    },
   });
-  m.addLayer({
-    id: "roads-glow", type: "line", source: "roads",
-    layout: { "line-cap": "round", "line-join": "round" },
-    paint: { "line-color": BRAND.terracotta, "line-width": 8, "line-blur": 6, "line-opacity": active.roads ? 0.25 : 0 },
-  }, "roads-line");
+  m.addLayer(
+    {
+      id: "roads-glow",
+      type: "line",
+      source: "roads",
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: {
+        "line-color": BRAND.terracotta,
+        "line-width": 8,
+        "line-blur": 6,
+        "line-opacity": active.roads ? 0.25 : 0,
+      },
+    },
+    "roads-line",
+  );
   // Invisible thicker hit-target so touch on mobile is reliable. Opacity 0 but
   // still receives click/tap events. Width tuned to a finger-tip.
   m.addLayer({
-    id: "roads-touch", type: "line", source: "roads",
+    id: "roads-touch",
+    type: "line",
+    source: "roads",
     paint: { "line-color": "#000", "line-width": 22, "line-opacity": 0 },
   });
 
   m.addLayer({
-    id: "grid-outer", type: "circle", source: "grid",
+    id: "grid-outer",
+    type: "circle",
+    source: "grid",
     paint: {
-      "circle-radius": 12, "circle-color": "transparent", "circle-stroke-width": 2,
+      "circle-radius": 12,
+      "circle-color": "transparent",
+      "circle-stroke-width": 2,
       "circle-stroke-color": ["case", ["==", ["get", "status"], "active"], BRAND.gold, BRAND.steel],
       "circle-stroke-opacity": active.energy ? 0.9 : 0,
     },
   });
   m.addLayer({
-    id: "grid-inner", type: "circle", source: "grid",
+    id: "grid-inner",
+    type: "circle",
+    source: "grid",
     paint: {
       "circle-radius": 5,
       "circle-color": ["case", ["==", ["get", "status"], "active"], BRAND.gold, BRAND.steel],
@@ -343,34 +408,56 @@ export function addSourcesAndLayers(
   });
   // Larger invisible hit-target above the visible grid circles for tap accuracy.
   m.addLayer({
-    id: "grid-touch", type: "circle", source: "grid",
+    id: "grid-touch",
+    type: "circle",
+    source: "grid",
     paint: { "circle-radius": 22, "circle-color": "#000", "circle-opacity": 0 },
   });
 
   m.addLayer({
-    id: "density-heat", type: "heatmap", source: "density",
+    id: "density-heat",
+    type: "heatmap",
+    source: "density",
     paint: {
-      "heatmap-weight": ["get", "weight"], "heatmap-intensity": 1.2,
-      "heatmap-radius": 35, "heatmap-opacity": active.density ? 0.65 : 0,
+      "heatmap-weight": ["get", "weight"],
+      "heatmap-intensity": 1.2,
+      "heatmap-radius": 35,
+      "heatmap-opacity": active.density ? 0.65 : 0,
       "heatmap-color": [
-        "interpolate", ["linear"], ["heatmap-density"],
-        0, "rgba(62,110,147,0)", 0.3, "rgba(62,110,147,0.28)",
-        0.6, "rgba(62,110,147,0.55)", 1, "rgba(62,110,147,0.9)",
+        "interpolate",
+        ["linear"],
+        ["heatmap-density"],
+        0,
+        "rgba(62,110,147,0)",
+        0.3,
+        "rgba(62,110,147,0.28)",
+        0.6,
+        "rgba(62,110,147,0.55)",
+        1,
+        "rgba(62,110,147,0.9)",
       ],
     },
   });
   m.addLayer({
-    id: "density-circles", type: "circle", source: "density", minzoom: 13,
+    id: "density-circles",
+    type: "circle",
+    source: "density",
+    minzoom: 13,
     paint: {
       "circle-radius": ["interpolate", ["linear"], ["zoom"], 13, 4, 16, 8],
-      "circle-color": BRAND.steel, "circle-opacity": active.density ? 0.5 : 0,
-      "circle-stroke-width": 1, "circle-stroke-color": BRAND.steel, "circle-stroke-opacity": active.density ? 0.3 : 0,
+      "circle-color": BRAND.steel,
+      "circle-opacity": active.density ? 0.5 : 0,
+      "circle-stroke-width": 1,
+      "circle-stroke-color": BRAND.steel,
+      "circle-stroke-opacity": active.density ? 0.3 : 0,
     },
   });
   // Invisible fat-circle hit surface so the density heatmap is clickable at any
   // zoom (density-circles alone only appears above zoom 13).
   m.addLayer({
-    id: "density-touch", type: "circle", source: "density",
+    id: "density-touch",
+    type: "circle",
+    source: "density",
     paint: { "circle-radius": 38, "circle-color": "#000", "circle-opacity": 0 },
   });
 
@@ -378,22 +465,42 @@ export function addSourcesAndLayers(
   // Trunk mains: soft glow under a dashed pipe line. Deeper teal = lower access
   // (more urgent). Width also grows with need so priority mains read heavier.
   m.addLayer({
-    id: "water-main-glow", type: "line", source: "water",
+    id: "water-main-glow",
+    type: "line",
+    source: "water",
     filter: ["==", ["get", "kind"], "main"],
     layout: { "line-cap": "round", "line-join": "round" },
     paint: {
-      "line-color": ["interpolate", ["linear"], ["get", "access"], 35, BRAND.tealDeep, 90, BRAND.teal],
+      "line-color": [
+        "interpolate",
+        ["linear"],
+        ["get", "access"],
+        35,
+        BRAND.tealDeep,
+        90,
+        BRAND.teal,
+      ],
       "line-width": ["interpolate", ["linear"], ["get", "need"], 0, 6, 1, 12],
       "line-blur": 6,
       "line-opacity": active.water ? 0.22 : 0,
     },
   });
   m.addLayer({
-    id: "water-main", type: "line", source: "water",
+    id: "water-main",
+    type: "line",
+    source: "water",
     filter: ["==", ["get", "kind"], "main"],
     layout: { "line-cap": "round", "line-join": "round" },
     paint: {
-      "line-color": ["interpolate", ["linear"], ["get", "access"], 35, BRAND.tealDeep, 90, BRAND.teal],
+      "line-color": [
+        "interpolate",
+        ["linear"],
+        ["get", "access"],
+        35,
+        BRAND.tealDeep,
+        90,
+        BRAND.teal,
+      ],
       "line-width": ["interpolate", ["linear"], ["get", "need"], 0, 2, 1, 4],
       "line-dasharray": [2, 1.6],
       "line-opacity": active.water ? 0.85 : 0,
@@ -402,18 +509,24 @@ export function addSourcesAndLayers(
   // Environmental halo on the zone hub — larger + more opaque where unmet need
   // is greater, so the weakest-access zones glow strongest.
   m.addLayer({
-    id: "water-halo", type: "circle", source: "water",
+    id: "water-halo",
+    type: "circle",
+    source: "water",
     filter: ["==", ["get", "kind"], "hub"],
     paint: {
       "circle-radius": ["interpolate", ["linear"], ["get", "need"], 0, 16, 1, 42],
       "circle-color": BRAND.teal,
       "circle-blur": 1,
-      "circle-opacity": active.water ? ["interpolate", ["linear"], ["get", "need"], 0, 0.06, 1, 0.28] : 0,
+      "circle-opacity": active.water
+        ? ["interpolate", ["linear"], ["get", "need"], 0, 0.06, 1, 0.28]
+        : 0,
     },
   });
   // Communal water-point taps — the scattered network nodes.
   m.addLayer({
-    id: "water-tap", type: "circle", source: "water",
+    id: "water-tap",
+    type: "circle",
+    source: "water",
     filter: ["==", ["get", "kind"], "tap"],
     paint: {
       "circle-radius": ["interpolate", ["linear"], ["zoom"], 11, 2.5, 15, 5],
@@ -426,7 +539,9 @@ export function addSourcesAndLayers(
   });
   // Zone hub core.
   m.addLayer({
-    id: "water-core", type: "circle", source: "water",
+    id: "water-core",
+    type: "circle",
+    source: "water",
     filter: ["==", ["get", "kind"], "hub"],
     paint: {
       "circle-radius": ["interpolate", ["linear"], ["get", "need"], 0, 5, 1, 12],
@@ -439,7 +554,9 @@ export function addSourcesAndLayers(
   });
   // Real sanitation facilities — larger square-shouldered nodes at true markers.
   m.addLayer({
-    id: "water-facility", type: "circle", source: "water",
+    id: "water-facility",
+    type: "circle",
+    source: "water",
     filter: ["==", ["get", "kind"], "facility"],
     paint: {
       "circle-radius": 8,
@@ -453,7 +570,9 @@ export function addSourcesAndLayers(
   // Dashed opportunity ring — only on hubs where trunk sewerage is not viable
   // and a decentralized-sanitation solution applies.
   m.addLayer({
-    id: "water-opportunity", type: "circle", source: "water",
+    id: "water-opportunity",
+    type: "circle",
+    source: "water",
     filter: ["all", ["==", ["get", "kind"], "hub"], ["==", ["get", "opportunity"], true]],
     paint: {
       "circle-radius": ["interpolate", ["linear"], ["get", "need"], 0, 16, 1, 26],
@@ -465,19 +584,25 @@ export function addSourcesAndLayers(
   });
   // Invisible hit targets — a wide line for mains, wide circles for the nodes.
   m.addLayer({
-    id: "water-main-touch", type: "line", source: "water",
+    id: "water-main-touch",
+    type: "line",
+    source: "water",
     filter: ["==", ["get", "kind"], "main"],
     paint: { "line-color": "#000", "line-width": 18, "line-opacity": 0 },
   });
   m.addLayer({
-    id: "water-touch", type: "circle", source: "water",
+    id: "water-touch",
+    type: "circle",
+    source: "water",
     filter: ["in", ["get", "kind"], ["literal", ["hub", "facility"]]],
     paint: { "circle-radius": 22, "circle-color": "#000", "circle-opacity": 0 },
   });
 
   // --- Project Momentum ---
   m.addLayer({
-    id: "momentum-glow", type: "circle", source: "momentum",
+    id: "momentum-glow",
+    type: "circle",
+    source: "momentum",
     paint: {
       "circle-radius": ["interpolate", ["linear"], ["get", "progress"], 0, 12, 100, 32],
       "circle-color": ["case", ["==", ["get", "status"], "stalled"], BRAND.rose, BRAND.gold],
@@ -486,11 +611,15 @@ export function addSourcesAndLayers(
     },
   });
   m.addLayer({
-    id: "momentum-core", type: "circle", source: "momentum",
+    id: "momentum-core",
+    type: "circle",
+    source: "momentum",
     paint: {
       "circle-radius": ["interpolate", ["linear"], ["get", "progress"], 0, 4, 100, 13],
-      "circle-color": ["case",
-        ["==", ["get", "status"], "stalled"], BRAND.rose,
+      "circle-color": [
+        "case",
+        ["==", ["get", "status"], "stalled"],
+        BRAND.rose,
         ["interpolate", ["linear"], ["get", "progress"], 0, BRAND.goldDeep, 100, BRAND.gold],
       ],
       "circle-opacity": active.momentum ? 0.92 : 0,
@@ -500,7 +629,9 @@ export function addSourcesAndLayers(
     },
   });
   m.addLayer({
-    id: "momentum-touch", type: "circle", source: "momentum",
+    id: "momentum-touch",
+    type: "circle",
+    source: "momentum",
     paint: { "circle-radius": 20, "circle-color": "#000", "circle-opacity": 0 },
   });
 
@@ -508,19 +639,28 @@ export function addSourcesAndLayers(
   // Cool steel over secure wards, gold across watch corridors, terracotta/rose
   // over at-risk zones.
   m.addLayer({
-    id: "safety-heat", type: "heatmap", source: "safety",
+    id: "safety-heat",
+    type: "heatmap",
+    source: "safety",
     paint: {
       "heatmap-weight": ["get", "weight"],
       "heatmap-intensity": 1.3,
       "heatmap-radius": 42,
       "heatmap-opacity": active.safety ? 0.7 : 0,
       "heatmap-color": [
-        "interpolate", ["linear"], ["heatmap-density"],
-        0, "rgba(178,58,46,0)",
-        0.15, "rgba(62,110,147,0.28)",
-        0.4, "rgba(224,168,46,0.55)",
-        0.7, "rgba(192,85,43,0.75)",
-        1, "rgba(178,58,46,0.9)",
+        "interpolate",
+        ["linear"],
+        ["heatmap-density"],
+        0,
+        "rgba(178,58,46,0)",
+        0.15,
+        "rgba(62,110,147,0.28)",
+        0.4,
+        "rgba(224,168,46,0.55)",
+        0.7,
+        "rgba(192,85,43,0.75)",
+        1,
+        "rgba(178,58,46,0.9)",
       ],
     },
   });
@@ -529,7 +669,9 @@ export function addSourcesAndLayers(
   // inside a hot zone lands on a hit point that carries the zone's `zoneId`,
   // which the popup hook uses to open the side panel.
   m.addLayer({
-    id: "safety-touch", type: "circle", source: "safety",
+    id: "safety-touch",
+    type: "circle",
+    source: "safety",
     paint: { "circle-radius": 40, "circle-color": "#000", "circle-opacity": 0 },
   });
 }

@@ -28,7 +28,11 @@ export function useMapStyle(
     // becomes a silent no-op.
     // (the two font fields are required by SetStyleOptions despite being
     // optional at runtime — an upstream typing wart; undefined = unset)
-    m.setStyle(mapStyle, { diff: false, localFontFamily: undefined, localIdeographFontFamily: undefined });
+    m.setStyle(mapStyle, {
+      diff: false,
+      localFontFamily: undefined,
+      localIdeographFontFamily: undefined,
+    });
     m.once("style.load", () => {
       if (!m.getSource("roads")) {
         addSourcesAndLayers(m, zones, useUIStore.getState().activeLayers);

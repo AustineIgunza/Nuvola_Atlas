@@ -6,10 +6,7 @@ export default function Legend() {
       <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.08em] mb-2">
         Vitality Index
       </div>
-      <div
-        className="h-2 rounded-full mb-1.5"
-        style={{ background: SCORE_GRADIENT_CSS }}
-      />
+      <div className="h-2 rounded-full mb-1.5" style={{ background: SCORE_GRADIENT_CSS }} />
       <div className="flex justify-between text-[10px] text-ink-4 tabular-nums">
         <span>Low risk-ready</span>
         <span>50</span>

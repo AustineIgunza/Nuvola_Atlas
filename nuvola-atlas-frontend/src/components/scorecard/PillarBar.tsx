@@ -36,7 +36,8 @@ export default function PillarBar({ pillarKey, score, delta, index }: Props) {
             delta >= 0 ? "text-success" : "text-danger",
           )}
         >
-          {delta >= 0 ? "+" : ""}{delta}
+          {delta >= 0 ? "+" : ""}
+          {delta}
         </span>
       </div>
       <div className="mt-1 h-[3px] rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">

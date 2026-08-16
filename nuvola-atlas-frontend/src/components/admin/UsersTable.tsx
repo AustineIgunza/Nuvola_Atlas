@@ -21,7 +21,12 @@ export default function UsersTable() {
   const t = useT();
   const [q, setQ] = useState("");
   const [openMenuFor, setOpenMenuFor] = useState<number | null>(null);
-  const [impersonateTarget, setImpersonateTarget] = useState<{ id: number; name: string; email: string; role: string } | null>(null);
+  const [impersonateTarget, setImpersonateTarget] = useState<{
+    id: number;
+    name: string;
+    email: string;
+    role: string;
+  } | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const currentUser = useAuthStore((s) => s.user);
   const currentUserEmail = currentUser?.email;
@@ -34,8 +39,7 @@ export default function UsersTable() {
   });
 
   const updateRole = useMutation({
-    mutationFn: ({ id, role }: { id: number; role: string }) =>
-      adminApi.updateUserRole(id, role),
+    mutationFn: ({ id, role }: { id: number; role: string }) => adminApi.updateUserRole(id, role),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin", "users"] });
       qc.invalidateQueries({ queryKey: ["admin", "metrics"] });
@@ -66,7 +70,9 @@ export default function UsersTable() {
       />
 
       {isLoading && <div className="text-[13px] text-ink-3 py-6 text-center">Loading users…</div>}
-      {isError && <div className="text-[13px] text-danger py-6 text-center">Failed to load users.</div>}
+      {isError && (
+        <div className="text-[13px] text-danger py-6 text-center">Failed to load users.</div>
+      )}
 
       {data && (
         <div className="glass rounded-control overflow-hidden">
@@ -83,7 +89,10 @@ export default function UsersTable() {
             </thead>
             <tbody>
               {data.data.map((u) => (
-                <tr key={u.id} className="border-t border-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.02)]">
+                <tr
+                  key={u.id}
+                  className="border-t border-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.02)]"
+                >
                   <td className="px-3 py-2 text-ink-1">{u.name}</td>
                   <td className="px-3 py-2 text-ink-3">{u.email}</td>
                   <td className="px-3 py-2 relative">
@@ -160,13 +169,24 @@ export default function UsersTable() {
                       </>
                     )}
                   </td>
-                  <td className="px-3 py-2 text-[12px] text-ink-3">{u.email_verified ? "verified" : "pending"}</td>
+                  <td className="px-3 py-2 text-[12px] text-ink-3">
+                    {u.email_verified ? "verified" : "pending"}
+                  </td>
                   <td className="px-3 py-2 text-ink-3">
                     <div className="flex items-center gap-2">
-                      <span className="flex-1 truncate">{u.partner?.name ?? <span className="text-ink-4">—</span>}</span>
+                      <span className="flex-1 truncate">
+                        {u.partner?.name ?? <span className="text-ink-4">—</span>}
+                      </span>
                       {u.email !== currentUserEmail && (
                         <button
-                          onClick={() => setImpersonateTarget({ id: u.id, name: u.name, email: u.email, role: u.role })}
+                          onClick={() =>
+                            setImpersonateTarget({
+                              id: u.id,
+                              name: u.name,
+                              email: u.email,
+                              role: u.role,
+                            })
+                          }
                           className="inline-flex items-center gap-1 text-[11px] font-medium text-ink-3 hover:text-accent transition-colors shrink-0"
                           title={t("impersonate.button")}
                         >
@@ -180,7 +200,9 @@ export default function UsersTable() {
               ))}
               {data.data.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-3 py-6 text-center text-ink-4">No users match this search.</td>
+                  <td colSpan={6} className="px-3 py-6 text-center text-ink-4">
+                    No users match this search.
+                  </td>
                 </tr>
               )}
             </tbody>
@@ -255,7 +277,11 @@ function ImpersonationModal({
               {t("impersonate.subtitle")}
             </p>
           </div>
-          <button onClick={onClose} className="text-ink-4 hover:text-ink-2" aria-label={t("common.close")}>
+          <button
+            onClick={onClose}
+            className="text-ink-4 hover:text-ink-2"
+            aria-label={t("common.close")}
+          >
             <X size={15} />
           </button>
         </div>
@@ -263,7 +289,9 @@ function ImpersonationModal({
         <div className="rounded-control bg-[rgba(255,255,255,0.04)] p-3 space-y-0.5">
           <div className="text-[10px] text-ink-4 uppercase tracking-[0.08em]">Target</div>
           <div className="text-[12.5px] text-ink-1 font-medium">{target.name}</div>
-          <div className="text-[10.5px] text-ink-3">{target.email} · {target.role}</div>
+          <div className="text-[10.5px] text-ink-3">
+            {target.email} · {target.role}
+          </div>
         </div>
 
         <label className="block">

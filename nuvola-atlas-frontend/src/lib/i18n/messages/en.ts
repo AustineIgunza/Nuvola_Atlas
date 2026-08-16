@@ -77,7 +77,8 @@ export const en = {
   "settings.profile.saved": "Profile saved.",
 
   "settings.password.title": "Change password",
-  "settings.password.description": "Rotate your sign-in password. You'll stay signed in on this device.",
+  "settings.password.description":
+    "Rotate your sign-in password. You'll stay signed in on this device.",
   "settings.password.current": "Current password",
   "settings.password.new": "New password",
   "settings.password.confirm": "Confirm new password",
@@ -91,12 +92,14 @@ export const en = {
   "settings.appearance.description": "Theme and motion.",
   "settings.appearance.theme": "Theme",
   "settings.appearance.reducedMotion": "Reduced motion",
-  "settings.appearance.reducedMotionHint": "Fade in place of movement — helps with vestibular sensitivity.",
+  "settings.appearance.reducedMotionHint":
+    "Fade in place of movement — helps with vestibular sensitivity.",
 
   "settings.language.title": "Language",
   "settings.language.description": "The interface language for Navuuna Atlas.",
   "settings.language.picker": "Choose language",
-  "settings.language.fallbackNote": "Any string we haven't translated yet falls back to English so nothing breaks.",
+  "settings.language.fallbackNote":
+    "Any string we haven't translated yet falls back to English so nothing breaks.",
 
   "settings.notifications.title": "Notifications",
   "settings.notifications.description": "What Navuuna is allowed to send you.",
@@ -166,7 +169,8 @@ export const en = {
   // ── Compare page ────────────────────────────────────────────────────────
   "compare.kicker": "Compare",
   "compare.title": "Side-by-side zone comparison",
-  "compare.subtitle": "Pick up to {max} Nairobi sub-counties to compare their Vitality Score, pillar breakdown, and score history side by side.",
+  "compare.subtitle":
+    "Pick up to {max} Nairobi sub-counties to compare their Vitality Score, pillar breakdown, and score history side by side.",
   "compare.pick": "Pick a zone above to start.",
   "compare.newButton": "New comparison",
   "compare.newButton.short": "New",
@@ -240,11 +244,13 @@ export const en = {
   "impersonate.start": "Start session",
   "impersonate.active": "Impersonating {name}",
   "impersonate.end": "End impersonation",
-  "impersonate.subtitle": "Every action taken during this session is recorded to the audit trail with your admin ID and this reason.",
+  "impersonate.subtitle":
+    "Every action taken during this session is recorded to the audit trail with your admin ID and this reason.",
 
   // ── Content CMS ─────────────────────────────────────────────────────────
   "cms.title": "Content Management",
-  "cms.subtitle": "Editorial copy shown on public + methodology surfaces. Every save creates a revision.",
+  "cms.subtitle":
+    "Editorial copy shown on public + methodology surfaces. Every save creates a revision.",
   "cms.pick": "Pick a block to edit",
   "cms.blocks.methodology": "Methodology · Overview",
   "cms.blocks.social": "Pillar · Social Wellbeing",
@@ -294,12 +300,15 @@ export const en = {
   "vitality.subtitle": "How Navuuna scores every sub-county from 0 to 100 across four pillars.",
   "vitality.pillars.title": "The four pillars",
   "vitality.compose.title": "How the composite is built",
-  "vitality.compose.body": "Each pillar averages its non-null indicators. The composite averages the four pillars — a fully-missing pillar is skipped, never zero-biased.",
+  "vitality.compose.body":
+    "Each pillar averages its non-null indicators. The composite averages the four pillars — a fully-missing pillar is skipped, never zero-biased.",
   "vitality.rules.title": "Rules",
-  "vitality.rules.item1": "Every indicator is a 0–100 normalized value or NULL (\"Awaiting data\").",
+  "vitality.rules.item1": 'Every indicator is a 0–100 normalized value or NULL ("Awaiting data").',
   "vitality.rules.item2": "Pillar score = simple average of the pillar's non-null indicators.",
-  "vitality.rules.item3": "Composite = simple average of pillars that have at least one non-null indicator.",
-  "vitality.rules.item4": "Missing indicators are excluded from the average — never treated as zero.",
+  "vitality.rules.item3":
+    "Composite = simple average of pillars that have at least one non-null indicator.",
+  "vitality.rules.item4":
+    "Missing indicators are excluded from the average — never treated as zero.",
   "vitality.leaderboard": "Vitality Leaderboard",
   "vitality.overall": "Overall",
   "vitality.subCounty": "Sub-county",
@@ -340,7 +349,8 @@ export const en = {
   "esgLens.turnOn": "Turn ESG lens on",
   "esgLens.turnOff": "Turn ESG lens off",
   "compare.capitalAllocation.title": "Capital-allocation lens",
-  "compare.capitalAllocation.subtitle": "Zones ranked on Safety × Infrastructure × Rule-of-Law composite",
+  "compare.capitalAllocation.subtitle":
+    "Zones ranked on Safety × Infrastructure × Rule-of-Law composite",
   "compare.capitalAllocation.rank": "#{rank}",
   "reports.investorFilter.badge": "Watchlist only",
   "reports.investorFilter.showAll": "Show all reports",
@@ -395,7 +405,8 @@ export const en = {
   "infra.detail.nextMilestone": "Next milestone: {label}, due {date}",
   "infra.detail.overdueTag": " · overdue",
   "infra.detail.allMilestonesDone": "All {count} milestones are confirmed complete.",
-  "infra.detail.stalledWarning": "Delivery is flagged as stalled — field verification is pending. The milestones below reflect the last confirmed on-the-ground status.",
+  "infra.detail.stalledWarning":
+    "Delivery is flagged as stalled — field verification is pending. The milestones below reflect the last confirmed on-the-ground status.",
   "infra.detail.viewOnAtlas": "View {zone} on the Atlas",
   "infra.detail.detailsLabel": "Project details",
   "infra.detail.detailsAria": "{name} details",
@@ -426,7 +437,8 @@ export const en = {
   "chat.followup.safetyWeakest": "Where is Safety weakest across the county?",
   "chat.followup.whyPillarStronger": "Why is {zone}'s {pillar} pillar stronger?",
   "chat.followup.activeProjectsIn": "Which infrastructure projects are active in {zone}?",
-  "chat.followup.gapMovedThisQuarter": "How has the gap between {top} and {bottom} moved this quarter?",
+  "chat.followup.gapMovedThisQuarter":
+    "How has the gap between {top} and {bottom} moved this quarter?",
   "chat.followup.whyWeakPoint": "Why is {pillar} the weak point in {zone}?",
   "chat.followup.compareCountyAvg": "Compare {zone} to the county average",
   "chat.followup.projectsBehindScore": "Which infrastructure projects are behind {zone}'s score?",
@@ -441,39 +453,64 @@ export const en = {
   "chat.followup.pillarMostContrib": "Which pillar contributes most to the overall score?",
   "chat.followup.pillarsDisagree": "Show me a zone where the pillars disagree",
   "chat.followup.dataOrigin": "Where does the underlying data come from?",
-  "chat.compare.needSecond": "Pick a second zone in the picker above and I'll walk through all four pillars side by side — Social Wellbeing, Safety & Security, Density & Scaling, and Infrastructure & Environment.",
+  "chat.compare.needSecond":
+    "Pick a second zone in the picker above and I'll walk through all four pillars side by side — Social Wellbeing, Safety & Security, Density & Scaling, and Infrastructure & Environment.",
   "chat.compare.opener": "{top} leads overall at {topScore}, {gaps}.",
   "chat.compare.gap": "{gap} pt{plural} ahead of {name}",
   "chat.compare.pillarLine": "• {pillar}: {values} — spread of {spread} pt{plural}.",
-  "chat.compare.closing": "The four pillars split the story: {pillar} is where these zones diverge most ({spread} pt spread), so if you're prioritising, that's the pillar to interrogate first.",
-  "chat.composition.needZone": "Pick a zone or mention one by name and I'll break down its four Vitality pillars — Social Wellbeing, Safety & Security, Density & Scaling, and Infrastructure & Environment.",
-  "chat.composition.opener": "**{zone}** scores **{score}/100** overall — that's {delta} vs. the Nairobi average ({avg}) and puts it at rank #{rank} of the 17 sub-counties. Readiness band: **{band}**.",
+  "chat.compare.closing":
+    "The four pillars split the story: {pillar} is where these zones diverge most ({spread} pt spread), so if you're prioritising, that's the pillar to interrogate first.",
+  "chat.composition.needZone":
+    "Pick a zone or mention one by name and I'll break down its four Vitality pillars — Social Wellbeing, Safety & Security, Density & Scaling, and Infrastructure & Environment.",
+  "chat.composition.opener":
+    "**{zone}** scores **{score}/100** overall — that's {delta} vs. the Nairobi average ({avg}) and puts it at rank #{rank} of the 17 sub-counties. Readiness band: **{band}**.",
   "chat.composition.pillarLine": "• **{pillar}** — {value}/100 {arrow} ({delta})",
   "chat.composition.deltaFlat": "flat",
   "chat.composition.deltaThisQuarter": "{sign}{value} this quarter",
   "chat.composition.strongLabel": "**Strongest — {pillar}.**",
   "chat.composition.weakLabel": "**Weakest — {pillar}.**",
-  "chat.strong.social": "{zone} has above-average access to healthcare, education, and connectivity — a workforce and community that can absorb new infrastructure without training gaps.",
-  "chat.strong.safety": "Physical and legal safety are the anchor here. Low incident density along transit corridors, and rule-of-law indicators that make long-horizon contracts defensible.",
-  "chat.strong.density": "{zone} still has headroom for growth — the density-to-capacity ratio hasn't tipped into over-saturation, so new development doesn't fight land costs.",
-  "chat.strong.infra": "Infrastructure and environmental safeguards are already documented — ESIA transparency, resource sovereignty, and lifecycle mandates are on paper and defensible.",
-  "chat.weak.social": "This is the pillar to fund alongside any new project in {zone} — healthcare access, digital connectivity, or education-capacity gaps will otherwise leak into operational risk in year 2–3.",
-  "chat.weak.safety": "Safety needs closing before the next round of investment. It usually shows up as physical-security incidents or rule-of-law drift; the alerts feed is where a diagnostic reveals which one.",
-  "chat.weak.density": "{zone} is over-saturated relative to its current infrastructure — new capital tends to lose margin to land costs and permit friction. Fund density-lifting projects (transit, water mains) first.",
-  "chat.weak.infra": "The paper trail is thin — ESIAs, waste mandates, or sovereign-immunity carve-outs are missing or non-public. Budget legal + policy work into any project brief here.",
-  "chat.distribution": "{top1} and {top2} share the lead at {score1}/{score2}. {top3} follows at {score3}, then {top4} ({score4}) and {top5} ({score5}). The top five sit within {spread} points — Nairobi's strongest sub-counties are clustered rather than pulled apart by any single runaway leader.",
-  "chat.trend": "{zone} has held between {low} and {high} over the last 30 days. The overall trajectory is best described as stable, with a small recent uptick coming from the Infrastructure pillar. No sudden movements to flag.",
-  "chat.methodology": "The Vitality Score aggregates four pillars — Social Wellbeing, Safety & Security, Density & Scaling, and Infrastructure & Environment — each on a 0–100 scale, and blends them into an overall zone score. The exact weightings are held in the methodology paper rather than exposed in the UI, but every input is versioned in a snapshot table so any score you see can be traced back to the reading that produced it.",
-  "chat.summary.needZone": "Pick a zone or two from the compare picker and I'll walk through their four Vitality pillars. Without a specific zone in view, I can only speak to county averages.",
-  "chat.summary.single": "{zone} sits at {score}/100 overall. Social Wellbeing {social}, Safety {safety}, Density {density}, Infrastructure {infra}. Ask about any pillar and I can go deeper.",
-  "chat.summary.multi": "You're comparing {names}. Their overall Vitality scores average {avg}. Ask \"compare across all four pillars\" for the full breakdown, or narrow to a single pillar for a deeper look.",
-  "chat.diagnostic.stable": "Every zone in Nairobi is roughly stable this quarter — the softest moves are inside noise. Ask about a specific pillar to go deeper.",
-  "chat.diagnostic.drop": "**{zone}** — the specific pillar to look at is **{worstPillar}**, which moved {worstDelta} this quarter. The best mover was {bestPillar} at {bestDelta}, so the net Vitality Score of {score} is only mildly affected by the drop. \n\n**Likely cause.** {cause} The alerts feed for {zone} usually names the exact project or incident behind a move this size — worth checking before you commit to a diagnosis.\n\nOn the standing weak side, **{weakestPillar}** at {weakestValue}/100 is the pillar that structurally holds {zone} back, regardless of quarter-over-quarter movement.",
-  "chat.diagnostic.growth": "**{zone}** did not drop on any of the four pillars this quarter — the softest move was {worstPillar} at {worstDelta}, and the strongest was {bestPillar} at {bestDelta}. Growth is broad-based, not driven by a single pillar. \n\nOn the standing weak side, **{weakestPillar}** at {weakestValue}/100 is the pillar that keeps the composite from climbing further — {weakExplain}",
-  "chat.cause.social": "Drops on Social Wellbeing typically track a workforce or health-service disruption — clinic closures, teacher-strike days, or a mobile-broadband coverage regression.",
-  "chat.cause.safety": "Safety drops of this magnitude almost always track a physical-security incident cluster (a set of vandalism or crime reports) or a rule-of-law event flagged by NPS. Around {zone} specifically, transit-corridor incidents are the usual cause.",
-  "chat.cause.density": "Density drops read as either a population-pressure spike (housing shortage widening) or a corridor congestion event — the AM/PM peak transit times are the tell.",
-  "chat.cause.infra": "Infrastructure drops mean an ESIA has expired or been pulled, a resource-sovereignty carve-out has been renegotiated, or waste/lifecycle mandate enforcement has slipped.",
+  "chat.strong.social":
+    "{zone} has above-average access to healthcare, education, and connectivity — a workforce and community that can absorb new infrastructure without training gaps.",
+  "chat.strong.safety":
+    "Physical and legal safety are the anchor here. Low incident density along transit corridors, and rule-of-law indicators that make long-horizon contracts defensible.",
+  "chat.strong.density":
+    "{zone} still has headroom for growth — the density-to-capacity ratio hasn't tipped into over-saturation, so new development doesn't fight land costs.",
+  "chat.strong.infra":
+    "Infrastructure and environmental safeguards are already documented — ESIA transparency, resource sovereignty, and lifecycle mandates are on paper and defensible.",
+  "chat.weak.social":
+    "This is the pillar to fund alongside any new project in {zone} — healthcare access, digital connectivity, or education-capacity gaps will otherwise leak into operational risk in year 2–3.",
+  "chat.weak.safety":
+    "Safety needs closing before the next round of investment. It usually shows up as physical-security incidents or rule-of-law drift; the alerts feed is where a diagnostic reveals which one.",
+  "chat.weak.density":
+    "{zone} is over-saturated relative to its current infrastructure — new capital tends to lose margin to land costs and permit friction. Fund density-lifting projects (transit, water mains) first.",
+  "chat.weak.infra":
+    "The paper trail is thin — ESIAs, waste mandates, or sovereign-immunity carve-outs are missing or non-public. Budget legal + policy work into any project brief here.",
+  "chat.distribution":
+    "{top1} and {top2} share the lead at {score1}/{score2}. {top3} follows at {score3}, then {top4} ({score4}) and {top5} ({score5}). The top five sit within {spread} points — Nairobi's strongest sub-counties are clustered rather than pulled apart by any single runaway leader.",
+  "chat.trend":
+    "{zone} has held between {low} and {high} over the last 30 days. The overall trajectory is best described as stable, with a small recent uptick coming from the Infrastructure pillar. No sudden movements to flag.",
+  "chat.methodology":
+    "The Vitality Score aggregates four pillars — Social Wellbeing, Safety & Security, Density & Scaling, and Infrastructure & Environment — each on a 0–100 scale, and blends them into an overall zone score. The exact weightings are held in the methodology paper rather than exposed in the UI, but every input is versioned in a snapshot table so any score you see can be traced back to the reading that produced it.",
+  "chat.summary.needZone":
+    "Pick a zone or two from the compare picker and I'll walk through their four Vitality pillars. Without a specific zone in view, I can only speak to county averages.",
+  "chat.summary.single":
+    "{zone} sits at {score}/100 overall. Social Wellbeing {social}, Safety {safety}, Density {density}, Infrastructure {infra}. Ask about any pillar and I can go deeper.",
+  "chat.summary.multi":
+    'You\'re comparing {names}. Their overall Vitality scores average {avg}. Ask "compare across all four pillars" for the full breakdown, or narrow to a single pillar for a deeper look.',
+  "chat.diagnostic.stable":
+    "Every zone in Nairobi is roughly stable this quarter — the softest moves are inside noise. Ask about a specific pillar to go deeper.",
+  "chat.diagnostic.drop":
+    "**{zone}** — the specific pillar to look at is **{worstPillar}**, which moved {worstDelta} this quarter. The best mover was {bestPillar} at {bestDelta}, so the net Vitality Score of {score} is only mildly affected by the drop. \n\n**Likely cause.** {cause} The alerts feed for {zone} usually names the exact project or incident behind a move this size — worth checking before you commit to a diagnosis.\n\nOn the standing weak side, **{weakestPillar}** at {weakestValue}/100 is the pillar that structurally holds {zone} back, regardless of quarter-over-quarter movement.",
+  "chat.diagnostic.growth":
+    "**{zone}** did not drop on any of the four pillars this quarter — the softest move was {worstPillar} at {worstDelta}, and the strongest was {bestPillar} at {bestDelta}. Growth is broad-based, not driven by a single pillar. \n\nOn the standing weak side, **{weakestPillar}** at {weakestValue}/100 is the pillar that keeps the composite from climbing further — {weakExplain}",
+  "chat.cause.social":
+    "Drops on Social Wellbeing typically track a workforce or health-service disruption — clinic closures, teacher-strike days, or a mobile-broadband coverage regression.",
+  "chat.cause.safety":
+    "Safety drops of this magnitude almost always track a physical-security incident cluster (a set of vandalism or crime reports) or a rule-of-law event flagged by NPS. Around {zone} specifically, transit-corridor incidents are the usual cause.",
+  "chat.cause.density":
+    "Density drops read as either a population-pressure spike (housing shortage widening) or a corridor congestion event — the AM/PM peak transit times are the tell.",
+  "chat.cause.infra":
+    "Infrastructure drops mean an ESIA has expired or been pulled, a resource-sovereignty carve-out has been renegotiated, or waste/lifecycle mandate enforcement has slipped.",
   "chat.errorGeneric": "Sorry — that request could not be sent.",
   "chat.errorEnded": "The chat stream ended unexpectedly.",
 
@@ -491,7 +528,8 @@ export const en = {
   "scorecard.back": "Back",
   "scorecard.askShort": "Ask about {zone}",
   "scorecard.askAria": "Ask assistant about {zone}",
-  "scorecard.askPrompt": "Tell me about {zone} — what's driving the Vitality score and where are the biggest gaps across the four pillars?",
+  "scorecard.askPrompt":
+    "Tell me about {zone} — what's driving the Vitality score and where are the biggest gaps across the four pillars?",
   "scorecard.deltaThisQuarter": "{arrow} {value} pts this quarter",
   "scorecard.lastSyncShort": "Last sync {min} min ago",
   "scorecard.howComputed": "How this score is computed",
@@ -503,7 +541,8 @@ export const en = {
   "scorecard.infra.title": "Infrastructure · {count} {noun}",
   "scorecard.infra.noun.one": "project",
   "scorecard.infra.noun.many": "projects",
-  "scorecard.infra.empty": "No tracked infrastructure projects in {zone} yet — new KURA / KPLC / KeNHA works will appear here as they are ingested.",
+  "scorecard.infra.empty":
+    "No tracked infrastructure projects in {zone} yet — new KURA / KPLC / KeNHA works will appear here as they are ingested.",
   "scorecard.alerts.title": "Active alerts · {count}",
   "scorecard.alerts.empty": "No active alerts for this zone — monitoring feeds are quiet.",
   "scorecard.viewAll": "View all →",

@@ -3,8 +3,16 @@ import { useNavigate, Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import {
-  ArrowRight, Building2, Download, Sparkles, Star, TrendingDown, TrendingUp,
-  AlertTriangle, Layers, Compass,
+  ArrowRight,
+  Building2,
+  Download,
+  Sparkles,
+  Star,
+  TrendingDown,
+  TrendingUp,
+  AlertTriangle,
+  Layers,
+  Compass,
 } from "lucide-react";
 import AppShell from "@/components/chrome/AppShell";
 import DealPipelineBoard from "@/components/investor/DealPipelineBoard";
@@ -39,7 +47,10 @@ export default function InvestorPage() {
   if (!firm) return <Navigate to="/atlas" replace />;
 
   const watchlistZones = useMemo(
-    () => firm.watchlist.map((id) => zones.find((z) => z.id === id)).filter((z): z is Zone => Boolean(z)),
+    () =>
+      firm.watchlist
+        .map((id) => zones.find((z) => z.id === id))
+        .filter((z): z is Zone => Boolean(z)),
     [firm.watchlist, zones],
   );
   const nonWatchlistZones = useMemo(
@@ -67,11 +78,12 @@ export default function InvestorPage() {
   // pillars a VC prioritises for a defensible thesis. Not exposed as a knob
   // yet — that's the /investor page settings feature slated for later.
   const investorScore = (z: Zone) =>
-    z.pillars.safety * 0.35 + z.pillars.infra * 0.35 + z.pillars.social * 0.15 + z.pillars.density * 0.15;
+    z.pillars.safety * 0.35 +
+    z.pillars.infra * 0.35 +
+    z.pillars.social * 0.15 +
+    z.pillars.density * 0.15;
 
-  const rankedPortfolio = [...watchlistZones].sort(
-    (a, b) => investorScore(b) - investorScore(a),
-  );
+  const rankedPortfolio = [...watchlistZones].sort((a, b) => investorScore(b) - investorScore(a));
 
   const opportunities = useMemo(() => {
     // Tier-specific heuristic:
@@ -98,11 +110,13 @@ export default function InvestorPage() {
               <div className="text-[10px] font-medium text-ink-4 uppercase tracking-[0.12em] flex items-center gap-1.5">
                 <Building2 size={11} /> {firm.name} · {firm.tier} tier
               </div>
-              <h1 className="text-[24px] font-semibold text-ink-1 leading-tight">Investor Dashboard</h1>
+              <h1 className="text-[24px] font-semibold text-ink-1 leading-tight">
+                Investor Dashboard
+              </h1>
               <p className="mt-1.5 text-[12px] text-ink-3 max-w-[68ch]">
-                Your firm's Nairobi portfolio at a glance. Watchlisted zones roll up here;
-                the atlas, comparisons, and reports carry the same data with an
-                ESG-lens applied to every scorecard.
+                Your firm's Nairobi portfolio at a glance. Watchlisted zones roll up here; the
+                atlas, comparisons, and reports carry the same data with an ESG-lens applied to
+                every scorecard.
               </p>
             </div>
             <button
@@ -178,9 +192,11 @@ export default function InvestorPage() {
               <Sparkles size={13} style={{ color: BRAND.gold }} />
               <h2 className="text-[14px] font-semibold text-ink-1">Top opportunities</h2>
               <span className="text-[10px] text-ink-4 tracking-[0.06em]">
-                {firm.tier === "basic" ? "Ranked by Vitality — safest positions"
-                : firm.tier === "sovereign" ? "Ranked by quarter-over-quarter momentum"
-                : "Ranked by capital-allocation lens — zones you don't yet watch"}
+                {firm.tier === "basic"
+                  ? "Ranked by Vitality — safest positions"
+                  : firm.tier === "sovereign"
+                    ? "Ranked by quarter-over-quarter momentum"
+                    : "Ranked by capital-allocation lens — zones you don't yet watch"}
               </span>
             </div>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -204,7 +220,9 @@ export default function InvestorPage() {
               </span>
             </div>
             {activeAlertsForFirm.length === 0 ? (
-              <div className="text-[11.5px] text-ink-4 italic">No open alerts on your watchlist.</div>
+              <div className="text-[11.5px] text-ink-4 italic">
+                No open alerts on your watchlist.
+              </div>
             ) : (
               <ul className="space-y-1.5">
                 {activeAlertsForFirm.slice(0, 6).map((a) => {
@@ -252,7 +270,14 @@ export default function InvestorPage() {
   );
 }
 
-function KpiTile({ label, value, suffix, accent, delta, deltaLabel }: {
+function KpiTile({
+  label,
+  value,
+  suffix,
+  accent,
+  delta,
+  deltaLabel,
+}: {
   label: string;
   value: number;
   suffix?: string;
@@ -268,9 +293,7 @@ function KpiTile({ label, value, suffix, accent, delta, deltaLabel }: {
       transition={springSettle}
       className="rounded-card border border-border bg-[rgba(255,255,255,0.03)] p-3.5"
     >
-      <div className="text-[9.5px] font-medium text-ink-4 uppercase tracking-[0.1em]">
-        {label}
-      </div>
+      <div className="text-[9.5px] font-medium text-ink-4 uppercase tracking-[0.1em]">{label}</div>
       <div className="mt-1 flex items-baseline gap-1.5">
         <span className="text-[28px] font-semibold tabular-nums" style={{ color: accent }}>
           {value}
@@ -278,10 +301,14 @@ function KpiTile({ label, value, suffix, accent, delta, deltaLabel }: {
         {suffix && <span className="text-[11px] text-ink-4">{suffix}</span>}
       </div>
       {trend && (
-        <div className="mt-1.5 flex items-center gap-1 text-[10.5px]" style={{ color: delta! >= 0 ? BRAND.teal : BRAND.rose }}>
+        <div
+          className="mt-1.5 flex items-center gap-1 text-[10.5px]"
+          style={{ color: delta! >= 0 ? BRAND.teal : BRAND.rose }}
+        >
           {trend === "up" ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
           <span className="font-semibold">
-            {delta! >= 0 ? "+" : ""}{delta}
+            {delta! >= 0 ? "+" : ""}
+            {delta}
           </span>
           <span className="text-ink-4 ml-1">{deltaLabel}</span>
         </div>
@@ -291,7 +318,11 @@ function KpiTile({ label, value, suffix, accent, delta, deltaLabel }: {
 }
 
 function PortfolioRow({
-  zone, rank, investorScore, projects, onOpen,
+  zone,
+  rank,
+  investorScore,
+  projects,
+  onOpen,
 }: {
   zone: Zone;
   rank: number;
@@ -300,7 +331,9 @@ function PortfolioRow({
   onOpen: () => void;
 }) {
   const projectCount = projects.filter((p) => p.zoneId === zone.id).length;
-  const activeProjects = projects.filter((p) => p.zoneId === zone.id && p.status === "active").length;
+  const activeProjects = projects.filter(
+    (p) => p.zoneId === zone.id && p.status === "active",
+  ).length;
   return (
     <button
       onClick={onOpen}
@@ -319,7 +352,10 @@ function PortfolioRow({
       <div className="hidden sm:flex gap-2 shrink-0">
         {PILLAR_KEYS.map((k) => (
           <div key={k} className="flex flex-col items-center">
-            <span className="text-[11.5px] font-semibold tabular-nums" style={{ color: PILLAR_COLORS[k] }}>
+            <span
+              className="text-[11.5px] font-semibold tabular-nums"
+              style={{ color: PILLAR_COLORS[k] }}
+            >
               {zone.pillars[k]}
             </span>
             <span className="text-[8.5px] text-ink-4">{PILLAR_SHORT[k]}</span>
@@ -327,7 +363,10 @@ function PortfolioRow({
         ))}
       </div>
       <div className="w-12 sm:w-14 text-right shrink-0">
-        <div className="text-[15px] sm:text-[16px] font-semibold tabular-nums" style={{ color: scoreColor(zone.score) }}>
+        <div
+          className="text-[15px] sm:text-[16px] font-semibold tabular-nums"
+          style={{ color: scoreColor(zone.score) }}
+        >
           {investorScore}
         </div>
         <div className="text-[8.5px] text-ink-4">lens</div>
@@ -358,7 +397,10 @@ function OpportunityCard({ zone, onOpen }: { zone: Zone; onOpen: () => void }) {
       <div className="mt-2 grid grid-cols-4 gap-1">
         {PILLAR_KEYS.map((k) => (
           <div key={k} className="rounded-chip bg-[rgba(255,255,255,0.03)] p-1 text-center">
-            <div className="text-[10px] font-semibold tabular-nums" style={{ color: PILLAR_COLORS[k] }}>
+            <div
+              className="text-[10px] font-semibold tabular-nums"
+              style={{ color: PILLAR_COLORS[k] }}
+            >
               {zone.pillars[k]}
             </div>
             <div className="text-[8px] text-ink-4">{PILLAR_SHORT[k]}</div>
@@ -372,7 +414,11 @@ function OpportunityCard({ zone, onOpen }: { zone: Zone; onOpen: () => void }) {
   );
 }
 
-function FirmThesisCard({ firm }: { firm: NonNullable<ReturnType<typeof useAuthStore.getState>["user"]>["firm"] }) {
+function FirmThesisCard({
+  firm,
+}: {
+  firm: NonNullable<ReturnType<typeof useAuthStore.getState>["user"]>["firm"];
+}) {
   if (!firm) return null;
   return (
     <section className="rounded-card border border-border bg-[rgba(31,138,120,0.06)] p-4 sm:p-5">
@@ -390,8 +436,8 @@ function FirmThesisCard({ firm }: { firm: NonNullable<ReturnType<typeof useAuthS
         {firm.tier === "sovereign"
           ? "County-wide corridor programme — every ward is tracked. Portfolio ranking surfaces the ones moving fastest."
           : firm.tier === "deal"
-          ? "Impact-first deal team. Portfolio balances high-Vitality zones against social-pillar-recoverable zones for blended-finance positions."
-          : "Digital-first growth thesis. Portfolio favours connectivity + density signals over pure Vitality rank."}
+            ? "Impact-first deal team. Portfolio balances high-Vitality zones against social-pillar-recoverable zones for blended-finance positions."
+            : "Digital-first growth thesis. Portfolio favours connectivity + density signals over pure Vitality rank."}
       </p>
     </section>
   );

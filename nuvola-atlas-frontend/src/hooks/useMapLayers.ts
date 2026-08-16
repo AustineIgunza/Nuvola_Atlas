@@ -52,7 +52,11 @@ export function useMapLayers(
         }
         if (active.water && m.getLayer("water-opportunity")) {
           // Breathe the opportunity ring so decentralized-sanitation zones pulse.
-          m.setPaintProperty("water-opportunity", "circle-stroke-opacity", 0.55 + Math.sin(t * 1.6) * 0.3);
+          m.setPaintProperty(
+            "water-opportunity",
+            "circle-stroke-opacity",
+            0.55 + Math.sin(t * 1.6) * 0.3,
+          );
           if (m.getLayer("water-main-glow")) {
             m.setPaintProperty("water-main-glow", "line-opacity", 0.16 + Math.sin(t * 1.3) * 0.1);
           }
@@ -115,7 +119,11 @@ export function useMapLayers(
       }
       if (m.getLayer("density-circles")) {
         m.setPaintProperty("density-circles", "circle-opacity", activeLayers.density ? 0.5 : 0);
-        m.setPaintProperty("density-circles", "circle-stroke-opacity", activeLayers.density ? 0.3 : 0);
+        m.setPaintProperty(
+          "density-circles",
+          "circle-stroke-opacity",
+          activeLayers.density ? 0.3 : 0,
+        );
       }
       if (m.getLayer("water-main-glow")) {
         m.setPaintProperty("water-main-glow", "line-opacity", activeLayers.water ? 0.22 : 0);
@@ -127,9 +135,7 @@ export function useMapLayers(
         m.setPaintProperty(
           "water-halo",
           "circle-opacity",
-          activeLayers.water
-            ? ["interpolate", ["linear"], ["get", "need"], 0, 0.06, 1, 0.28]
-            : 0,
+          activeLayers.water ? ["interpolate", ["linear"], ["get", "need"], 0, 0.06, 1, 0.28] : 0,
         );
       }
       if (m.getLayer("water-tap")) {
@@ -145,14 +151,22 @@ export function useMapLayers(
         m.setPaintProperty("water-facility", "circle-stroke-opacity", activeLayers.water ? 0.9 : 0);
       }
       if (m.getLayer("water-opportunity")) {
-        m.setPaintProperty("water-opportunity", "circle-stroke-opacity", activeLayers.water ? 0.85 : 0);
+        m.setPaintProperty(
+          "water-opportunity",
+          "circle-stroke-opacity",
+          activeLayers.water ? 0.85 : 0,
+        );
       }
       if (m.getLayer("momentum-glow")) {
         m.setPaintProperty("momentum-glow", "circle-opacity", activeLayers.momentum ? 0.28 : 0);
       }
       if (m.getLayer("momentum-core")) {
         m.setPaintProperty("momentum-core", "circle-opacity", activeLayers.momentum ? 0.92 : 0);
-        m.setPaintProperty("momentum-core", "circle-stroke-opacity", activeLayers.momentum ? 0.6 : 0);
+        m.setPaintProperty(
+          "momentum-core",
+          "circle-stroke-opacity",
+          activeLayers.momentum ? 0.6 : 0,
+        );
       }
       if (m.getLayer("safety-heat")) {
         m.setPaintProperty("safety-heat", "heatmap-opacity", activeLayers.safety ? 0.7 : 0);

@@ -9,7 +9,15 @@ interface Props {
   onLayers: () => void;
 }
 
-function ControlBtn({ onClick, label, children }: { onClick: () => void; label: string; children: React.ReactNode }) {
+function ControlBtn({
+  onClick,
+  label,
+  children,
+}: {
+  onClick: () => void;
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <motion.button
       onClick={onClick}
@@ -32,10 +40,18 @@ export default function MapControls({ onZoomIn, onZoomOut, onLocate, onLayers }:
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.2, ...springSettle }}
     >
-      <ControlBtn onClick={onZoomIn} label="Zoom in"><Plus size={16} /></ControlBtn>
-      <ControlBtn onClick={onZoomOut} label="Zoom out"><Minus size={16} /></ControlBtn>
-      <ControlBtn onClick={onLocate} label="Re-center on Nairobi"><Locate size={16} /></ControlBtn>
-      <ControlBtn onClick={onLayers} label="Toggle layers"><Layers size={16} /></ControlBtn>
+      <ControlBtn onClick={onZoomIn} label="Zoom in">
+        <Plus size={16} />
+      </ControlBtn>
+      <ControlBtn onClick={onZoomOut} label="Zoom out">
+        <Minus size={16} />
+      </ControlBtn>
+      <ControlBtn onClick={onLocate} label="Re-center on Nairobi">
+        <Locate size={16} />
+      </ControlBtn>
+      <ControlBtn onClick={onLayers} label="Toggle layers">
+        <Layers size={16} />
+      </ControlBtn>
     </motion.div>
   );
 }

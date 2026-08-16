@@ -23,21 +23,81 @@ export interface IndicatorDef {
 }
 
 export const INDICATORS: IndicatorDef[] = [
-  { key: "healthcare_access", label: "Healthcare access", pillar: "social", description: "Distance to nearest Level 4+ facility, weighted by facility capacity" },
-  { key: "education_access", label: "Education access", pillar: "social", description: "Primary + secondary catchment coverage, TSC teacher density" },
-  { key: "digital_connectivity", label: "Digital connectivity", pillar: "social", description: "Mobile broadband coverage, median downlink speed" },
+  {
+    key: "healthcare_access",
+    label: "Healthcare access",
+    pillar: "social",
+    description: "Distance to nearest Level 4+ facility, weighted by facility capacity",
+  },
+  {
+    key: "education_access",
+    label: "Education access",
+    pillar: "social",
+    description: "Primary + secondary catchment coverage, TSC teacher density",
+  },
+  {
+    key: "digital_connectivity",
+    label: "Digital connectivity",
+    pillar: "social",
+    description: "Mobile broadband coverage, median downlink speed",
+  },
 
-  { key: "crime_rates", label: "Crime rates", pillar: "safety", description: "NPS reported incidents per 1,000 residents, 90-day trailing" },
-  { key: "emergency_response", label: "Emergency response", pillar: "safety", description: "Median police + ambulance response time" },
-  { key: "disaster_exposure", label: "Disaster exposure", pillar: "safety", description: "Flood, fire and structural risk against NDMA hazard layers" },
+  {
+    key: "crime_rates",
+    label: "Crime rates",
+    pillar: "safety",
+    description: "NPS reported incidents per 1,000 residents, 90-day trailing",
+  },
+  {
+    key: "emergency_response",
+    label: "Emergency response",
+    pillar: "safety",
+    description: "Median police + ambulance response time",
+  },
+  {
+    key: "disaster_exposure",
+    label: "Disaster exposure",
+    pillar: "safety",
+    description: "Flood, fire and structural risk against NDMA hazard layers",
+  },
 
-  { key: "population_density", label: "Population density", pillar: "density", description: "Persons per km² from KNBS 2019 census, adjusted for growth" },
-  { key: "congestion", label: "Congestion", pillar: "density", description: "Mean AM/PM peak transit time on the corridor network" },
-  { key: "housing_pressure", label: "Housing pressure", pillar: "density", description: "Rent-to-income ratio and formal housing shortfall" },
+  {
+    key: "population_density",
+    label: "Population density",
+    pillar: "density",
+    description: "Persons per km² from KNBS 2019 census, adjusted for growth",
+  },
+  {
+    key: "congestion",
+    label: "Congestion",
+    pillar: "density",
+    description: "Mean AM/PM peak transit time on the corridor network",
+  },
+  {
+    key: "housing_pressure",
+    label: "Housing pressure",
+    pillar: "density",
+    description: "Rent-to-income ratio and formal housing shortfall",
+  },
 
-  { key: "road_quality", label: "Road quality", pillar: "infra", description: "Paved road share, KURA condition audit, IRI where available" },
-  { key: "energy_reliability", label: "Energy reliability", pillar: "infra", description: "KPLC outage minutes per month, transformer density" },
-  { key: "waste_management", label: "Waste management", pillar: "infra", description: "Formal collection coverage and dump-site proximity" },
+  {
+    key: "road_quality",
+    label: "Road quality",
+    pillar: "infra",
+    description: "Paved road share, KURA condition audit, IRI where available",
+  },
+  {
+    key: "energy_reliability",
+    label: "Energy reliability",
+    pillar: "infra",
+    description: "KPLC outage minutes per month, transformer density",
+  },
+  {
+    key: "waste_management",
+    label: "Waste management",
+    pillar: "infra",
+    description: "Formal collection coverage and dump-site proximity",
+  },
 ];
 
 export const INDICATOR_COUNT = INDICATORS.length;
@@ -110,7 +170,11 @@ export interface ZoneIndicatorSummary {
  * officer. We derive verification deterministically from the indicator
  * key + zone id so the badges are stable across renders and re-mounts.
  */
-function verificationFor(zoneId: string, key: string, avail: IndicatorAvailability): IndicatorVerification {
+function verificationFor(
+  zoneId: string,
+  key: string,
+  avail: IndicatorAvailability,
+): IndicatorVerification {
   if (avail !== "delivered") return "pending";
   // deterministic pseudo-hash — stable per (zone, indicator)
   let h = 0;

@@ -45,13 +45,16 @@ export function useLiveData(): void {
 
     // Real Reverb takes over when VITE_USE_REVERB=true and the backend is
     // reachable; falls back to the mock pulse for offline / no-server dev.
-    api.getZones().then((zones) => {
-      if (cancelled) return;
-      const zoneIds = zones.map((z) => z.id);
-      stopPulse = useReverbEnabled()
-        ? startReverbSubscription(zoneIds)
-        : startMockPulse(zoneIds);
-    }).catch(() => { /* zones fetch will retry via TanStack */ });
+    api
+      .getZones()
+      .then((zones) => {
+        if (cancelled) return;
+        const zoneIds = zones.map((z) => z.id);
+        stopPulse = useReverbEnabled() ? startReverbSubscription(zoneIds) : startMockPulse(zoneIds);
+      })
+      .catch(() => {
+        /* zones fetch will retry via TanStack */
+      });
 
     return () => {
       cancelled = true;

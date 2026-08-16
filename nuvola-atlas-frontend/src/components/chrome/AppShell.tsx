@@ -46,7 +46,9 @@ export default function AppShell({ children }: Props) {
             edge-to-edge because the pill has its own glass background and
             the 64 px reserved strip would otherwise crop the map. Safe-area
             handled by MobileTabBar itself. */}
-        <main className={`flex-1 ${isAtlas ? "overflow-hidden" : "overflow-y-auto pr-16 md:pr-0"}`}>{children}</main>
+        <main className={`flex-1 ${isAtlas ? "overflow-hidden" : "overflow-y-auto pr-16 md:pr-0"}`}>
+          {children}
+        </main>
       </div>
       <MobileTabBar />
       <SearchModal />

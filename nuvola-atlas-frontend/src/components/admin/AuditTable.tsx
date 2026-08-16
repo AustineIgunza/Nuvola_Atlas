@@ -87,8 +87,12 @@ export default function AuditTable() {
         </button>
       </div>
 
-      {isLoading && <div className="text-[13px] text-ink-3 py-6 text-center">Loading audit log…</div>}
-      {isError && <div className="text-[13px] text-danger py-6 text-center">Failed to load audit log.</div>}
+      {isLoading && (
+        <div className="text-[13px] text-ink-3 py-6 text-center">Loading audit log…</div>
+      )}
+      {isError && (
+        <div className="text-[13px] text-danger py-6 text-center">Failed to load audit log.</div>
+      )}
 
       {data && (
         <div className="glass rounded-control overflow-hidden">
@@ -104,7 +108,10 @@ export default function AuditTable() {
             </thead>
             <tbody>
               {data.data.map((row: AuditEntry) => (
-                <tr key={row.id} className="border-t border-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.02)]">
+                <tr
+                  key={row.id}
+                  className="border-t border-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.02)]"
+                >
                   <td className="px-3 py-2 text-ink-3 tabular-nums">{fmtTime(row.created_at)}</td>
                   <td className="px-3 py-2 text-ink-2">
                     {row.actor ? (
@@ -116,12 +123,20 @@ export default function AuditTable() {
                       <span className="text-ink-4">system</span>
                     )}
                   </td>
-                  <td className={cn("px-3 py-2 font-medium tabular-nums", ACTION_COLOR[row.action] ?? "text-ink-2")}>
+                  <td
+                    className={cn(
+                      "px-3 py-2 font-medium tabular-nums",
+                      ACTION_COLOR[row.action] ?? "text-ink-2",
+                    )}
+                  >
                     {row.action}
                   </td>
                   <td className="px-3 py-2 text-ink-3">
                     {row.resource_type ? (
-                      <span>{row.resource_type}{row.resource_id ? ` #${row.resource_id}` : ""}</span>
+                      <span>
+                        {row.resource_type}
+                        {row.resource_id ? ` #${row.resource_id}` : ""}
+                      </span>
                     ) : (
                       <span className="text-ink-4">—</span>
                     )}
@@ -131,7 +146,9 @@ export default function AuditTable() {
               ))}
               {data.data.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-3 py-6 text-center text-ink-4">No events match this filter.</td>
+                  <td colSpan={5} className="px-3 py-6 text-center text-ink-4">
+                    No events match this filter.
+                  </td>
                 </tr>
               )}
             </tbody>

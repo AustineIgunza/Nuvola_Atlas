@@ -56,9 +56,7 @@ function makeEcho(): Echo<"reverb"> {
           body: JSON.stringify({ socket_id: socketId, channel_name: channel.name }),
         })
           .then((res) =>
-            res.ok
-              ? res.json()
-              : Promise.reject(new Error(`Channel auth failed (${res.status})`)),
+            res.ok ? res.json() : Promise.reject(new Error(`Channel auth failed (${res.status})`)),
           )
           .then((data) => callback(null, data))
           .catch((err: Error) => callback(err, null));

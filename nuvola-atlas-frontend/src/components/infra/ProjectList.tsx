@@ -31,7 +31,9 @@ export default function ProjectList({ selectedId, onSelect }: Props) {
 
   const filtered = projects?.filter((p) => typeFilter === "all" || p.type === typeFilter) ?? [];
 
-  function zoneName(id: string) { return zones?.find((z) => z.id === id)?.name ?? id; }
+  function zoneName(id: string) {
+    return zones?.find((z) => z.id === id)?.name ?? id;
+  }
 
   return (
     <div className="glass-strong rounded-card p-4 h-full overflow-y-auto">

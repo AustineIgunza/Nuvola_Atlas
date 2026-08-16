@@ -45,7 +45,12 @@ export default function ContentCms() {
   };
 
   const restore = (rev: Revision) => {
-    if (!window.confirm("Restore this revision as the current published copy? A new revision will snapshot the current version.")) return;
+    if (
+      !window.confirm(
+        "Restore this revision as the current published copy? A new revision will snapshot the current version.",
+      )
+    )
+      return;
     setDraftBody(rev.bodyMd);
   };
 
@@ -141,7 +146,9 @@ export default function ContentCms() {
                         <div className="text-[9.5px] text-ink-4">
                           {r.savedBy} · {new Date(r.savedAt).toLocaleString()}
                         </div>
-                        <div className="text-[10.5px] text-ink-2 line-clamp-2 mt-0.5">{r.bodyMd}</div>
+                        <div className="text-[10.5px] text-ink-2 line-clamp-2 mt-0.5">
+                          {r.bodyMd}
+                        </div>
                       </div>
                       <button
                         onClick={() => restore(r)}

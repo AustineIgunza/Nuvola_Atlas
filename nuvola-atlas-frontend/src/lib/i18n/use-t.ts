@@ -13,8 +13,5 @@ export type TFunction = (key: MessageKey, vars?: TVars) => string;
  */
 export function useT(): TFunction {
   const locale = usePrefsStore((s) => s.locale);
-  return useCallback(
-    (key: MessageKey, vars?: TVars) => translate(locale, key, vars),
-    [locale],
-  );
+  return useCallback((key: MessageKey, vars?: TVars) => translate(locale, key, vars), [locale]);
 }

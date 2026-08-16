@@ -5,17 +5,29 @@ import { X } from "lucide-react";
 import { useUIStore } from "@/stores/ui";
 import { api } from "@/api";
 import { PILLAR_COLORS } from "@/lib/scoreColor";
-import { springSettle, modalBackdrop, modalContent, staggerContainer, staggerItem } from "@/lib/motion";
+import {
+  springSettle,
+  modalBackdrop,
+  modalContent,
+  staggerContainer,
+  staggerItem,
+} from "@/lib/motion";
 
 export default function MethodologyModal() {
   const open = useUIStore((s) => s.methodOpen);
   const close = useUIStore((s) => s.closeMethod);
 
-  const { data } = useQuery({ queryKey: ["methodology"], queryFn: api.getMethodology, enabled: open });
+  const { data } = useQuery({
+    queryKey: ["methodology"],
+    queryFn: api.getMethodology,
+    enabled: open,
+  });
 
   useEffect(() => {
     if (!open) return;
-    function onKey(e: KeyboardEvent) { if (e.key === "Escape") close(); }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") close();
+    }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, close]);
@@ -24,7 +36,15 @@ export default function MethodologyModal() {
     <AnimatePresence>
       {open && (
         <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <motion.div variants={modalBackdrop} initial="hidden" animate="visible" exit="exit" transition={{ duration: 0.2 }} className="absolute inset-0 bg-black/60" onClick={close} />
+          <motion.div
+            variants={modalBackdrop}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 bg-black/60"
+            onClick={close}
+          />
           <motion.div
             variants={modalContent}
             initial="hidden"
@@ -61,9 +81,10 @@ export default function MethodologyModal() {
               transition={{ delay: 0.15 }}
               className="text-[13px] text-ink-3 mb-4 leading-relaxed"
             >
-              The UE Vitality Index produces a single 0-100 readiness score per sub-county, built from four pillars.
-              Each pillar combines several sub-metrics sourced from Kenyan government data, international indices, and ground-truth
-              verification carried on the Asase layer — Navuuna's live infrastructure map.
+              The UE Vitality Index produces a single 0-100 readiness score per sub-county, built
+              from four pillars. Each pillar combines several sub-metrics sourced from Kenyan
+              government data, international indices, and ground-truth verification carried on the
+              Asase layer — Navuuna's live infrastructure map.
             </motion.p>
 
             <motion.div
@@ -76,18 +97,24 @@ export default function MethodologyModal() {
                 Freedom Index — the analytical core
               </div>
               <p className="text-[12px] text-ink-2 leading-relaxed">
-                The Vitality Score operationalizes Amartya Sen's <em>Development as Freedom</em>: readiness as the expansion of
-                real freedoms — economic opportunity, safety, social wellbeing, and environmental security. Verified
-                ground-truth in, one comparable readiness signal out.
+                The Vitality Score operationalizes Amartya Sen's <em>Development as Freedom</em>:
+                readiness as the expansion of real freedoms — economic opportunity, safety, social
+                wellbeing, and environmental security. Verified ground-truth in, one comparable
+                readiness signal out.
               </p>
               <p className="text-[11px] text-ink-4 mt-2 leading-relaxed">
-                The precise weighting and combination logic across pillars is proprietary to Navuuna and validated
-                against publicly documented data feeds. Pillar definitions and data sources are open; the composite
-                methodology is not.
+                The precise weighting and combination logic across pillars is proprietary to Navuuna
+                and validated against publicly documented data feeds. Pillar definitions and data
+                sources are open; the composite methodology is not.
               </p>
             </motion.div>
 
-            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-4">
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              animate="visible"
+              className="space-y-4"
+            >
               {data?.pillars.map((pillar) => (
                 <motion.div
                   key={pillar.key}
@@ -106,11 +133,16 @@ export default function MethodologyModal() {
                     </motion.div>
                     <h3 className="text-[14px] font-semibold text-ink-1">{pillar.name}</h3>
                   </div>
-                  <p className="text-[12px] text-ink-3 mb-3 leading-relaxed">{pillar.description}</p>
+                  <p className="text-[12px] text-ink-3 mb-3 leading-relaxed">
+                    {pillar.description}
+                  </p>
                   <div className="space-y-2">
                     {pillar.subMetrics.map((sm) => (
                       <div key={sm.key} className="flex items-start gap-2 text-[12px]">
-                        <div className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" style={{ background: PILLAR_COLORS[pillar.key] }} />
+                        <div
+                          className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
+                          style={{ background: PILLAR_COLORS[pillar.key] }}
+                        />
                         <div>
                           <span className="font-medium text-ink-2">{sm.label}</span>
                           <span className="text-ink-4"> - {sm.description}</span>

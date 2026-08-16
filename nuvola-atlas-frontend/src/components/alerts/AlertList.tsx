@@ -18,7 +18,11 @@ export default function AlertList() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
-  const { data: alerts, isLoading, isError } = useQuery({ queryKey: ["alerts"], queryFn: api.getAlerts });
+  const {
+    data: alerts,
+    isLoading,
+    isError,
+  } = useQuery({ queryKey: ["alerts"], queryFn: api.getAlerts });
   const { data: zones } = useQuery({ queryKey: ["zones"], queryFn: api.getZones });
   const { data: projects } = useQuery({ queryKey: ["projects"], queryFn: api.getProjects });
 
@@ -27,17 +31,25 @@ export default function AlertList() {
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: ["alerts"] });
       const prev = queryClient.getQueryData(["alerts"]);
-      queryClient.setQueryData(["alerts"], (old: typeof alerts) => old?.map((a) => ({ ...a, read: true })));
+      queryClient.setQueryData(["alerts"], (old: typeof alerts) =>
+        old?.map((a) => ({ ...a, read: true })),
+      );
       return { prev };
     },
-    onError: (_, __, ctx) => { if (ctx?.prev) queryClient.setQueryData(["alerts"], ctx.prev); },
+    onError: (_, __, ctx) => {
+      if (ctx?.prev) queryClient.setQueryData(["alerts"], ctx.prev);
+    },
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["alerts"] }),
   });
 
   const filtered = alerts?.filter((a) => filter === "all" || a.severity === filter) ?? [];
   const selectedAlert = alerts?.find((a) => a.id === selectedId);
-  function zoneName(id: string | null) { return id ? (zones?.find((z) => z.id === id)?.name ?? id) : t("alerts.systemWide"); }
-  function projectName(id: string) { return projects?.find((p) => p.id === id)?.name ?? id; }
+  function zoneName(id: string | null) {
+    return id ? (zones?.find((z) => z.id === id)?.name ?? id) : t("alerts.systemWide");
+  }
+  function projectName(id: string) {
+    return projects?.find((p) => p.id === id)?.name ?? id;
+  }
 
   function labelFor(v: AlertSeverity | "all"): string {
     if (v === "all") return t("alerts.filter.all");
@@ -49,7 +61,11 @@ export default function AlertList() {
   if (isLoading) {
     return (
       <div className="glass-strong rounded-card p-8 flex items-center justify-center">
-        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full" />
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full"
+        />
       </div>
     );
   }
@@ -58,7 +74,12 @@ export default function AlertList() {
     return (
       <div className="glass-strong rounded-card p-8 text-center">
         <p className="text-danger text-[13px] mb-2">{t("alerts.loadFailed")}</p>
-        <button onClick={() => queryClient.invalidateQueries({ queryKey: ["alerts"] })} className="text-accent text-[12px] hover:underline">{t("common.retry")}</button>
+        <button
+          onClick={() => queryClient.invalidateQueries({ queryKey: ["alerts"] })}
+          className="text-accent text-[12px] hover:underline"
+        >
+          {t("common.retry")}
+        </button>
       </div>
     );
   }
@@ -84,7 +105,11 @@ export default function AlertList() {
                 )}
               >
                 {filter === v && (
-                  <motion.div layoutId="alert-filter" className="absolute inset-0 bg-accent rounded-chip glow-accent" transition={springSettle} />
+                  <motion.div
+                    layoutId="alert-filter"
+                    className="absolute inset-0 bg-accent rounded-chip glow-accent"
+                    transition={springSettle}
+                  />
                 )}
                 <span className="relative z-10">{labelFor(v)}</span>
               </motion.button>
@@ -125,7 +150,11 @@ export default function AlertList() {
         open={!!selectedAlert}
         onClose={() => setSelectedId(null)}
         label={t("alert.detailLabel")}
-        ariaLabel={selectedAlert ? `${selectedAlert.title} — ${t("alert.detailLabel")}` : t("alert.detailLabel")}
+        ariaLabel={
+          selectedAlert
+            ? `${selectedAlert.title} — ${t("alert.detailLabel")}`
+            : t("alert.detailLabel")
+        }
       >
         {selectedAlert && (
           <AlertDetail

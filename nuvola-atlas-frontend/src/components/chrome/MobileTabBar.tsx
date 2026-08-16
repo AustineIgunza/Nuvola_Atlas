@@ -3,8 +3,18 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Map, BarChart3, HardHat, FileText, Bell, Briefcase, Sparkles, Shield,
-  MoreHorizontal, Settings, LogOut, Info,
+  Map,
+  BarChart3,
+  HardHat,
+  FileText,
+  Bell,
+  Briefcase,
+  Sparkles,
+  Shield,
+  MoreHorizontal,
+  Settings,
+  LogOut,
+  Info,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
@@ -153,18 +163,28 @@ export default function MobileTabBar() {
             <MoreItem
               icon={<Info size={16} />}
               label={t("sidebar.howComputed")}
-              onClick={() => { openMethod(); setMoreOpen(false); }}
+              onClick={() => {
+                openMethod();
+                setMoreOpen(false);
+              }}
             />
             <MoreItem
               icon={<Settings size={16} />}
               label={t("nav.settings")}
-              onClick={() => { navigate("/settings"); setMoreOpen(false); }}
+              onClick={() => {
+                navigate("/settings");
+                setMoreOpen(false);
+              }}
             />
             <MoreItem
               icon={<LogOut size={16} />}
               label={t("nav.signOut")}
               danger
-              onClick={() => { signOut(); navigate("/sign-in"); setMoreOpen(false); }}
+              onClick={() => {
+                signOut();
+                navigate("/sign-in");
+                setMoreOpen(false);
+              }}
             />
           </motion.div>
         )}
@@ -189,7 +209,9 @@ function MoreItem({
       onClick={onClick}
       className={cn(
         "w-full flex items-center gap-3 h-11 px-3 rounded-control text-[13px] font-medium transition-colors",
-        danger ? "text-danger hover:bg-[rgba(211,64,46,0.08)]" : "text-ink-2 hover:bg-[rgba(255,255,255,0.05)]",
+        danger
+          ? "text-danger hover:bg-[rgba(211,64,46,0.08)]"
+          : "text-ink-2 hover:bg-[rgba(255,255,255,0.05)]",
       )}
     >
       <span className="w-5 shrink-0">{icon}</span>

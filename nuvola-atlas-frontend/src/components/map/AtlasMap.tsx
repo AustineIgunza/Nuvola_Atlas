@@ -39,7 +39,14 @@ export default function AtlasMap({ zones }: Props) {
     setSearchParams({}, { replace: true });
     const m = mapRef.current;
     if (m) {
-      m.flyTo({ center: NAIROBI, zoom: INITIAL_ZOOM, pitch: 15, bearing: 0, duration: 1200, essential: true });
+      m.flyTo({
+        center: NAIROBI,
+        zoom: INITIAL_ZOOM,
+        pitch: 15,
+        bearing: 0,
+        duration: 1200,
+        essential: true,
+      });
     }
   }
 
@@ -74,9 +81,10 @@ export default function AtlasMap({ zones }: Props) {
                 text-[10px] sm:text-[12px] font-medium tracking-[-0.01em]
                 transition-all duration-[450ms] flex items-center gap-1 sm:gap-2
                 min-h-[36px] sm:min-h-0
-                ${on
-                  ? "layer-pill--on bg-navy text-bone shadow-[0_4px_14px_rgba(11,34,53,0.28)]"
-                  : "layer-pill--off bg-bone/90 text-navy/60 shadow-[0_1px_4px_rgba(11,34,53,0.10)] hover:bg-bone"
+                ${
+                  on
+                    ? "layer-pill--on bg-navy text-bone shadow-[0_4px_14px_rgba(11,34,53,0.28)]"
+                    : "layer-pill--off bg-bone/90 text-navy/60 shadow-[0_1px_4px_rgba(11,34,53,0.10)] hover:bg-bone"
                 }
               `}
             >

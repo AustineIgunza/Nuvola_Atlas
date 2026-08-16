@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { AlertTriangle, Info, Plus, ShieldAlert, Trash2, X } from "lucide-react";
-import { announcementsApi, type Announcement, type AnnouncementSeverity, type AnnouncementScope } from "@/api/announcements";
+import {
+  announcementsApi,
+  type Announcement,
+  type AnnouncementSeverity,
+  type AnnouncementScope,
+} from "@/api/announcements";
 import { FIRMS } from "@/api/firms";
 import { BRAND } from "@/lib/scoreColor";
 
@@ -85,8 +90,10 @@ export default function AnnouncementsManager() {
 }
 
 function SeverityIcon({ severity }: { severity: AnnouncementSeverity }) {
-  if (severity === "critical") return <ShieldAlert size={14} className="shrink-0" style={{ color: BRAND.rose }} />;
-  if (severity === "warning") return <AlertTriangle size={14} className="shrink-0" style={{ color: BRAND.gold }} />;
+  if (severity === "critical")
+    return <ShieldAlert size={14} className="shrink-0" style={{ color: BRAND.rose }} />;
+  if (severity === "warning")
+    return <AlertTriangle size={14} className="shrink-0" style={{ color: BRAND.gold }} />;
   return <Info size={14} className="shrink-0" style={{ color: BRAND.teal }} />;
 }
 
@@ -95,9 +102,10 @@ function ScopeBadge({ scope }: { scope: AnnouncementScope }) {
     scope.kind === "global"
       ? "Global"
       : scope.kind === "role"
-      ? `Role: ${scope.role}`
-      : `Firm: ${FIRMS.find((f) => f.id === scope.firmId)?.name ?? scope.firmId}`;
-  const color = scope.kind === "global" ? BRAND.steel : scope.kind === "role" ? BRAND.teal : BRAND.gold;
+        ? `Role: ${scope.role}`
+        : `Firm: ${FIRMS.find((f) => f.id === scope.firmId)?.name ?? scope.firmId}`;
+  const color =
+    scope.kind === "global" ? BRAND.steel : scope.kind === "role" ? BRAND.teal : BRAND.gold;
   return (
     <span
       className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-[0.06em]"
@@ -119,7 +127,9 @@ function ComposeModal({
   const [body, setBody] = useState("");
   const [severity, setSeverity] = useState<AnnouncementSeverity>("info");
   const [scopeKind, setScopeKind] = useState<"global" | "role" | "firm">("global");
-  const [role, setRole] = useState<"viewer" | "partner" | "investor" | "editor" | "admin">("investor");
+  const [role, setRole] = useState<"viewer" | "partner" | "investor" | "editor" | "admin">(
+    "investor",
+  );
   const [firmId, setFirmId] = useState<string>(FIRMS[0]?.id ?? "");
   const [endsAt, setEndsAt] = useState("");
   const [dismissible, setDismissible] = useState(true);
@@ -130,8 +140,8 @@ function ComposeModal({
       scopeKind === "global"
         ? { kind: "global" }
         : scopeKind === "role"
-        ? { kind: "role", role }
-        : { kind: "firm", firmId };
+          ? { kind: "role", role }
+          : { kind: "firm", firmId };
     onSave({
       id: `ann-${Date.now().toString(36)}`,
       title: title.trim(),
@@ -157,7 +167,9 @@ function ComposeModal({
         </div>
 
         <label className="block">
-          <span className="block text-[10px] text-ink-4 uppercase tracking-[0.08em] mb-1">Title</span>
+          <span className="block text-[10px] text-ink-4 uppercase tracking-[0.08em] mb-1">
+            Title
+          </span>
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -167,7 +179,9 @@ function ComposeModal({
         </label>
 
         <label className="block">
-          <span className="block text-[10px] text-ink-4 uppercase tracking-[0.08em] mb-1">Body</span>
+          <span className="block text-[10px] text-ink-4 uppercase tracking-[0.08em] mb-1">
+            Body
+          </span>
           <textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
@@ -179,7 +193,9 @@ function ComposeModal({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label className="block">
-            <span className="block text-[10px] text-ink-4 uppercase tracking-[0.08em] mb-1">Severity</span>
+            <span className="block text-[10px] text-ink-4 uppercase tracking-[0.08em] mb-1">
+              Severity
+            </span>
             <select
               value={severity}
               onChange={(e) => setSeverity(e.target.value as AnnouncementSeverity)}
@@ -192,7 +208,9 @@ function ComposeModal({
           </label>
 
           <label className="block">
-            <span className="block text-[10px] text-ink-4 uppercase tracking-[0.08em] mb-1">Ends at (optional)</span>
+            <span className="block text-[10px] text-ink-4 uppercase tracking-[0.08em] mb-1">
+              Ends at (optional)
+            </span>
             <input
               type="date"
               value={endsAt}
@@ -203,7 +221,9 @@ function ComposeModal({
         </div>
 
         <div>
-          <span className="block text-[10px] text-ink-4 uppercase tracking-[0.08em] mb-1">Scope</span>
+          <span className="block text-[10px] text-ink-4 uppercase tracking-[0.08em] mb-1">
+            Scope
+          </span>
           <div className="flex gap-1.5 mb-2">
             {(["global", "role", "firm"] as const).map((k) => (
               <button

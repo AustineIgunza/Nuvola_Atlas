@@ -19,8 +19,11 @@ export default function AlertCard({ alert: a, selected, onSelect, zoneName }: Pr
   const impact = IMPACT_STYLES[a.impactLevel] ?? IMPACT_STYLES.moderate;
   const sevColor = SEVERITY_COLORS[a.severity];
   const severityLabel = t(
-    a.severity === "high" ? "alerts.severity.high" :
-    a.severity === "medium" ? "alerts.severity.medium" : "alerts.severity.low",
+    a.severity === "high"
+      ? "alerts.severity.high"
+      : a.severity === "medium"
+        ? "alerts.severity.medium"
+        : "alerts.severity.low",
   );
   const kindKey = KIND_LABEL_KEYS[a.kind];
 
@@ -32,9 +35,7 @@ export default function AlertCard({ alert: a, selected, onSelect, zoneName }: Pr
       exit={{ opacity: 0, scale: 0.95, x: -20, transition: { duration: 0.2 } }}
       className={cn(
         "relative rounded-card border transition-all overflow-hidden",
-        selected
-          ? "border-accent/40 bg-[rgba(192,85,43,0.04)]"
-          : "border-border",
+        selected ? "border-accent/40 bg-[rgba(192,85,43,0.04)]" : "border-border",
         a.read && !selected && "opacity-55",
       )}
     >
@@ -56,7 +57,10 @@ export default function AlertCard({ alert: a, selected, onSelect, zoneName }: Pr
             <div className="flex items-center gap-2 flex-wrap">
               <span
                 className="px-2 py-0.5 rounded text-[9px] font-bold uppercase text-white"
-                style={{ background: sevColor, boxShadow: `0 0 10px ${sevColor}55, 0 0 4px ${sevColor}30` }}
+                style={{
+                  background: sevColor,
+                  boxShadow: `0 0 10px ${sevColor}55, 0 0 4px ${sevColor}30`,
+                }}
               >
                 {severityLabel}
               </span>
@@ -70,7 +74,9 @@ export default function AlertCard({ alert: a, selected, onSelect, zoneName }: Pr
                 {kindKey ? t(kindKey) : a.kind}
               </span>
             </div>
-            <span className="text-[11px] text-ink-4 tabular-nums shrink-0">{formatRelative(a.createdAt)}</span>
+            <span className="text-[11px] text-ink-4 tabular-nums shrink-0">
+              {formatRelative(a.createdAt)}
+            </span>
           </div>
 
           <div className="flex items-center gap-2 mb-1">
@@ -85,7 +91,10 @@ export default function AlertCard({ alert: a, selected, onSelect, zoneName }: Pr
 
         {!a.read && (
           <div className="absolute top-3 right-3">
-            <div className="w-2.5 h-2.5 rounded-full bg-accent" style={{ boxShadow: "0 0 10px rgba(192,85,43,0.5)" }} />
+            <div
+              className="w-2.5 h-2.5 rounded-full bg-accent"
+              style={{ boxShadow: "0 0 10px rgba(192,85,43,0.5)" }}
+            />
           </div>
         )}
       </button>

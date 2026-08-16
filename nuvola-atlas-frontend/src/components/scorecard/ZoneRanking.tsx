@@ -46,17 +46,21 @@ export default function ZoneRanking({ currentZone }: Props) {
               )}
             >
               <span className="text-ink-4 font-bold w-4 text-right tabular-nums">{i + 1}</span>
-              <div className="flex-1 min-w-0 truncate text-ink-2 font-medium">
-                {z.name}
-              </div>
+              <div className="flex-1 min-w-0 truncate text-ink-2 font-medium">{z.name}</div>
               <div className="flex items-center gap-1.5 shrink-0">
                 <div className="w-[40px] h-[3px] rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all"
-                    style={{ width: `${z.score}%`, background: color, boxShadow: `0 0 4px ${color}55` }}
+                    style={{
+                      width: `${z.score}%`,
+                      background: color,
+                      boxShadow: `0 0 4px ${color}55`,
+                    }}
                   />
                 </div>
-                <span className="font-semibold tabular-nums" style={{ color }}>{z.score}</span>
+                <span className="font-semibold tabular-nums" style={{ color }}>
+                  {z.score}
+                </span>
               </div>
             </div>
           );

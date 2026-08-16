@@ -2,8 +2,21 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Map, BarChart3, HardHat, FileText, Bell, LogOut, Shield, GitCompareArrows,
-  ChevronRight, Info, Menu, X, Sparkles, Settings as SettingsIcon, Briefcase,
+  Map,
+  BarChart3,
+  HardHat,
+  FileText,
+  Bell,
+  LogOut,
+  Shield,
+  GitCompareArrows,
+  ChevronRight,
+  Info,
+  Menu,
+  X,
+  Sparkles,
+  Settings as SettingsIcon,
+  Briefcase,
   Building2,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
@@ -37,7 +50,13 @@ const NAV: ReadonlyArray<{
   requiresAdmin: boolean;
   showFor?: "investor";
 }> = [
-  { path: "/investor", labelKey: "nav.investor", icon: Briefcase, requiresAdmin: false, showFor: "investor" },
+  {
+    path: "/investor",
+    labelKey: "nav.investor",
+    icon: Briefcase,
+    requiresAdmin: false,
+    showFor: "investor",
+  },
   { path: "/atlas", labelKey: "nav.atlas", icon: Map, requiresAdmin: false },
   { path: "/vitality", labelKey: "nav.vitality", icon: BarChart3, requiresAdmin: false },
   { path: "/compare", labelKey: "nav.compare", icon: GitCompareArrows, requiresAdmin: false },
@@ -110,7 +129,10 @@ export default function Sidebar() {
       <div className="flex items-start gap-3 px-4 py-2.5 border-b border-border shrink-0">
         <Link
           to="/atlas"
-          onClick={() => { setSelectedZone(null); setMobileOpen(false); }}
+          onClick={() => {
+            setSelectedZone(null);
+            setMobileOpen(false);
+          }}
           className="flex items-center gap-2.5 min-w-0 flex-1 rounded-control -mx-1 px-1 py-1 hover:bg-[rgba(255,255,255,0.04)] transition-colors btn-press"
           aria-label="Navuuna — go to map"
         >
@@ -177,9 +199,7 @@ export default function Sidebar() {
                 transition={springSettle}
                 className={cn(
                   "w-full flex items-center gap-3 h-10 px-3 rounded-control text-[13.5px] transition-colors relative overflow-hidden",
-                  active
-                    ? "text-accent font-bold"
-                    : "text-ink-2 hover:text-ink-1 font-semibold",
+                  active ? "text-accent font-bold" : "text-ink-2 hover:text-ink-1 font-semibold",
                 )}
               >
                 {active && (
@@ -226,10 +246,7 @@ export default function Sidebar() {
                     >
                       <div className="flex items-start gap-2">
                         <span
-                          className={cn(
-                            "w-2 h-2 rounded-full mt-1 shrink-0",
-                            on && "pulse-glow",
-                          )}
+                          className={cn("w-2 h-2 rounded-full mt-1 shrink-0", on && "pulse-glow")}
                           style={{
                             background: layer.color,
                             boxShadow: on ? `0 0 8px ${layer.color}` : undefined,
@@ -277,9 +294,7 @@ export default function Sidebar() {
                           {formatSyncAge(layer.lastSyncMin, t)}
                         </span>
                       </div>
-                      <div className="mt-1 text-[9px] text-ink-4 truncate">
-                        {layer.source}
-                      </div>
+                      <div className="mt-1 text-[9px] text-ink-4 truncate">{layer.source}</div>
                     </div>
                   );
                 })}
@@ -324,7 +339,10 @@ export default function Sidebar() {
                   >
                     <motion.div
                       className="w-2 h-2 rounded-full shrink-0"
-                      style={{ background: scoreColor(z.score), boxShadow: `0 0 6px ${scoreColor(z.score)}66` }}
+                      style={{
+                        background: scoreColor(z.score),
+                        boxShadow: `0 0 6px ${scoreColor(z.score)}66`,
+                      }}
                       animate={selectedZoneId === z.id ? { scale: [1, 1.3, 1] } : {}}
                       transition={{ duration: 0.4 }}
                     />
@@ -353,11 +371,14 @@ export default function Sidebar() {
                 user.role === "admin"
                   ? "sidebar.role.admin"
                   : user.role === "investor"
-                  ? "sidebar.role.investor"
-                  : "sidebar.role.viewer",
+                    ? "sidebar.role.investor"
+                    : "sidebar.role.viewer",
               )}
               {user.firm && (
-                <span className="ml-auto px-1.5 py-0.5 rounded-full text-[8px] font-bold" style={{ background: "rgba(31,138,120,0.15)", color: "rgb(31,138,120)" }}>
+                <span
+                  className="ml-auto px-1.5 py-0.5 rounded-full text-[8px] font-bold"
+                  style={{ background: "rgba(31,138,120,0.15)", color: "rgb(31,138,120)" }}
+                >
                   {user.firm.tier}
                 </span>
               )}
@@ -378,7 +399,10 @@ export default function Sidebar() {
           </motion.button>
         )}
         <motion.button
-          onClick={() => { signOut(); navigate("/sign-in"); }}
+          onClick={() => {
+            signOut();
+            navigate("/sign-in");
+          }}
           whileHover={{ x: 2 }}
           whileTap={{ scale: 0.97 }}
           className="w-full flex items-center gap-3 h-8 px-3 rounded-control text-[12px] text-ink-4 hover:text-danger transition-colors"
@@ -393,10 +417,7 @@ export default function Sidebar() {
             className="w-full flex items-center justify-center h-8 rounded-control text-ink-4 hover:text-ink-3 transition-colors"
             aria-label={collapsed ? t("sidebar.expandSidebar") : t("sidebar.collapseSidebar")}
           >
-            <motion.div
-              animate={{ rotate: collapsed ? 0 : 180 }}
-              transition={springSettle}
-            >
+            <motion.div animate={{ rotate: collapsed ? 0 : 180 }} transition={springSettle}>
               <ChevronRight size={14} />
             </motion.div>
           </motion.button>

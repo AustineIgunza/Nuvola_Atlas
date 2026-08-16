@@ -7,10 +7,7 @@ import { springSettle } from "@/lib/motion";
 import { useUIStore } from "@/stores/ui";
 import { useChromeStore } from "@/stores/chrome";
 import { useThemeStore } from "@/stores/theme";
-import {
-  BASEMAP_STYLES,
-  defaultStyleForTheme,
-} from "@/components/map/atlas-map.constants";
+import { BASEMAP_STYLES, defaultStyleForTheme } from "@/components/map/atlas-map.constants";
 import { useEffect } from "react";
 import { api } from "@/api";
 import { useT } from "@/lib/i18n/use-t";
@@ -64,7 +61,10 @@ export default function TopBar() {
             isAtlas ? "hidden sm:flex" : "flex",
           )}
         >
-          <div className="w-1.5 h-1.5 rounded-full bg-success pulse-glow glow-success" style={{ color: "#1F8A78" }} />
+          <div
+            className="w-1.5 h-1.5 rounded-full bg-success pulse-glow glow-success"
+            style={{ color: "#1F8A78" }}
+          />
           <span className="text-[11px] font-medium text-success">{t("topbar.live")}</span>
         </motion.div>
       </div>
@@ -81,7 +81,7 @@ export default function TopBar() {
               "w-9 h-9 flex items-center justify-center rounded-control transition-colors",
               chatOpen
                 ? "text-ink-1 bg-[rgba(31,138,120,0.14)]"
-                : "text-ink-3 hover:text-ink-2 hover:bg-[rgba(255,255,255,0.05)]"
+                : "text-ink-3 hover:text-ink-2 hover:bg-[rgba(255,255,255,0.05)]",
             )}
             aria-label={chatOpen ? t("topbar.closeAssistant") : t("topbar.openAssistant")}
             aria-pressed={chatOpen}
@@ -107,7 +107,11 @@ export default function TopBar() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.92 }}
           className="relative w-9 h-9 flex items-center justify-center rounded-control text-ink-3 hover:text-ink-2 hover:bg-[rgba(255,255,255,0.05)] transition-colors"
-          aria-label={unread > 0 ? t("topbar.notificationsWithCount", { count: unread }) : t("topbar.notificationsAria")}
+          aria-label={
+            unread > 0
+              ? t("topbar.notificationsWithCount", { count: unread })
+              : t("topbar.notificationsAria")
+          }
         >
           <Bell size={16} />
           <AnimatePresence>

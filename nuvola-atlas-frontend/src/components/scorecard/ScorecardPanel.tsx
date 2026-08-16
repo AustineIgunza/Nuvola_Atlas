@@ -22,13 +22,25 @@ function headerMeta(view: PanelView, zone: Zone, t: TFunction): { kicker: string
     case "index":
       return { kicker: zone.name, title: t("scorecard.header.indexTitle") };
     case "pillar":
-      return { kicker: t("scorecard.header.pillarKicker", { zone: zone.name }), title: t(`pillar.${view.key}.long` as const) };
+      return {
+        kicker: t("scorecard.header.pillarKicker", { zone: zone.name }),
+        title: t(`pillar.${view.key}.long` as const),
+      };
     case "water":
-      return { kicker: t("scorecard.header.waterKicker", { zone: zone.name }), title: t("scorecard.header.waterTitle") };
+      return {
+        kicker: t("scorecard.header.waterKicker", { zone: zone.name }),
+        title: t("scorecard.header.waterTitle"),
+      };
     case "project":
-      return { kicker: t("scorecard.header.projectKicker", { zone: zone.name }), title: t("scorecard.header.projectTitle") };
+      return {
+        kicker: t("scorecard.header.projectKicker", { zone: zone.name }),
+        title: t("scorecard.header.projectTitle"),
+      };
     case "alert":
-      return { kicker: t("scorecard.header.alertKicker", { zone: zone.name }), title: t("scorecard.header.alertTitle") };
+      return {
+        kicker: t("scorecard.header.alertKicker", { zone: zone.name }),
+        title: t("scorecard.header.alertTitle"),
+      };
   }
 }
 
@@ -119,9 +131,7 @@ export default function ScorecardPanel({ zone }: Props) {
     // Pass the zone id so the seeded conversation carries context;
     // follow-up prompts in the same conversation then default to this
     // zone even if the user types a bare "and what about safety?".
-    navigate(
-      `/assistant?ask=${encodeURIComponent(prompt)}&zone=${encodeURIComponent(zone.id)}`,
-    );
+    navigate(`/assistant?ask=${encodeURIComponent(prompt)}&zone=${encodeURIComponent(zone.id)}`);
   };
 
   const askCta = (
@@ -136,7 +146,9 @@ export default function ScorecardPanel({ zone }: Props) {
       aria-label={t("scorecard.askAria", { zone: zone.name })}
     >
       <Sparkles size={13} />
-      <span className="text-[11.5px] font-semibold">{t("scorecard.askShort", { zone: zone.name })}</span>
+      <span className="text-[11.5px] font-semibold">
+        {t("scorecard.askShort", { zone: zone.name })}
+      </span>
     </button>
   );
 
@@ -161,7 +173,10 @@ export default function ScorecardPanel({ zone }: Props) {
         <div className="text-[9.5px] font-medium text-ink-4 uppercase tracking-[0.1em] truncate">
           {meta.kicker}
         </div>
-        <div className="text-[15px] font-semibold text-ink-1 leading-tight truncate" title={meta.title}>
+        <div
+          className="text-[15px] font-semibold text-ink-1 leading-tight truncate"
+          title={meta.title}
+        >
           {meta.title}
         </div>
       </div>

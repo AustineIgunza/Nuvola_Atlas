@@ -70,7 +70,10 @@ export default function AnnouncementsBanner() {
             exit={{ opacity: 0, x: 24, height: 0, marginBottom: 0 }}
             transition={{ type: "spring", stiffness: 260, damping: 30 }}
             className="pointer-events-auto rounded-card border shadow-modal p-3 backdrop-blur-md glass-strong"
-            style={{ borderColor: severityBorder(a.severity), background: severityBackground(a.severity) }}
+            style={{
+              borderColor: severityBorder(a.severity),
+              background: severityBackground(a.severity),
+            }}
           >
             <div className="flex items-start gap-2">
               <SeverityIcon severity={a.severity} />
@@ -96,8 +99,10 @@ export default function AnnouncementsBanner() {
 }
 
 function SeverityIcon({ severity }: { severity: Announcement["severity"] }) {
-  if (severity === "critical") return <ShieldAlert size={13} className="shrink-0" style={{ color: "#D3402E" }} />;
-  if (severity === "warning") return <AlertTriangle size={13} className="shrink-0" style={{ color: "#E0A82E" }} />;
+  if (severity === "critical")
+    return <ShieldAlert size={13} className="shrink-0" style={{ color: "#D3402E" }} />;
+  if (severity === "warning")
+    return <AlertTriangle size={13} className="shrink-0" style={{ color: "#E0A82E" }} />;
   return <Info size={13} className="shrink-0" style={{ color: "#1F8A78" }} />;
 }
 

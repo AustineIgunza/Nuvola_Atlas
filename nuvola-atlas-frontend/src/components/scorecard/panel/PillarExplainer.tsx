@@ -20,7 +20,10 @@ const TREND_TEXT: Record<string, string> = {
 };
 
 /** Which Atlas layer best visualizes each pillar. */
-const PILLAR_LAYER: Record<PillarKey, { layer: "water" | "safety" | "density" | "roads"; label: string }> = {
+const PILLAR_LAYER: Record<
+  PillarKey,
+  { layer: "water" | "safety" | "density" | "roads"; label: string }
+> = {
   social: { layer: "water", label: "Water & Sanitation" },
   safety: { layer: "safety", label: "Safety & Security" },
   density: { layer: "density", label: "Density" },
@@ -40,7 +43,10 @@ export default function PillarExplainer({ zone, pillarKey, onNavigate }: Props) 
   const band = scoreBand(score);
   const [openIdx, setOpenIdx] = useState<number | null>(0);
 
-  const { data: methodology } = useQuery({ queryKey: ["methodology"], queryFn: api.getMethodology });
+  const { data: methodology } = useQuery({
+    queryKey: ["methodology"],
+    queryFn: api.getMethodology,
+  });
   const { data: projects } = useQuery({ queryKey: ["projects"], queryFn: api.getProjects });
   const { data: alerts } = useQuery({ queryKey: ["alerts"], queryFn: api.getAlerts });
 
@@ -113,7 +119,10 @@ export default function PillarExplainer({ zone, pillarKey, onNavigate }: Props) 
                   <span className="flex-1 min-w-0 text-[11px] text-ink-2 font-medium truncate">
                     {sm.label}
                   </span>
-                  <span className="text-[11.5px] font-semibold tabular-nums shrink-0" style={{ color }}>
+                  <span
+                    className="text-[11.5px] font-semibold tabular-nums shrink-0"
+                    style={{ color }}
+                  >
                     {sm.score}
                   </span>
                   <Chip color={sl.color}>{sl.text}</Chip>
@@ -179,7 +188,10 @@ export default function PillarExplainer({ zone, pillarKey, onNavigate }: Props) 
                 {wp.accessPct}% safe access · {wp.contextLabel}
               </div>
             </div>
-            <ChevronRight size={12} className="shrink-0 text-ink-4 group-hover:text-ink-2 transition-colors" />
+            <ChevronRight
+              size={12}
+              className="shrink-0 text-ink-4 group-hover:text-ink-2 transition-colors"
+            />
           </button>
           <Section>
             <ActivityFeed zoneId={zone.id} />
@@ -204,10 +216,17 @@ export default function PillarExplainer({ zone, pillarKey, onNavigate }: Props) 
                       style={{ background: c, boxShadow: `0 0 6px ${c}66` }}
                     />
                     <div className="flex-1 min-w-0">
-                      <div className="text-[10.5px] text-ink-2 font-medium leading-snug">{a.title}</div>
-                      <div className="text-[9.5px] text-ink-4 mt-0.5">{formatRelative(a.createdAt)}</div>
+                      <div className="text-[10.5px] text-ink-2 font-medium leading-snug">
+                        {a.title}
+                      </div>
+                      <div className="text-[9.5px] text-ink-4 mt-0.5">
+                        {formatRelative(a.createdAt)}
+                      </div>
                     </div>
-                    <ChevronRight size={12} className="shrink-0 mt-0.5 text-ink-4 group-hover:text-ink-2 transition-colors" />
+                    <ChevronRight
+                      size={12}
+                      className="shrink-0 mt-0.5 text-ink-4 group-hover:text-ink-2 transition-colors"
+                    />
                   </button>
                 );
               })}
@@ -239,7 +258,10 @@ export default function PillarExplainer({ zone, pillarKey, onNavigate }: Props) 
                     <span className="text-[10.5px] font-semibold tabular-nums shrink-0 text-ink-3">
                       {p.progress}%
                     </span>
-                    <ChevronRight size={12} className="shrink-0 text-ink-4 group-hover:text-ink-2 transition-colors" />
+                    <ChevronRight
+                      size={12}
+                      className="shrink-0 text-ink-4 group-hover:text-ink-2 transition-colors"
+                    />
                   </button>
                 );
               })}
@@ -263,7 +285,10 @@ export default function PillarExplainer({ zone, pillarKey, onNavigate }: Props) 
         </Section>
       )}
 
-      <LayerHintButton layer={PILLAR_LAYER[pillarKey].layer} label={PILLAR_LAYER[pillarKey].label} />
+      <LayerHintButton
+        layer={PILLAR_LAYER[pillarKey].layer}
+        label={PILLAR_LAYER[pillarKey].label}
+      />
     </div>
   );
 }

@@ -56,7 +56,11 @@ export async function handleResponse<T>(res: Response): Promise<T> {
   }
   if (!res.ok) {
     let body: unknown = null;
-    try { body = await res.json(); } catch { /* non-JSON body */ }
+    try {
+      body = await res.json();
+    } catch {
+      /* non-JSON body */
+    }
     throw new Error(pickErrorMessage(body, res.status));
   }
   return res.json();

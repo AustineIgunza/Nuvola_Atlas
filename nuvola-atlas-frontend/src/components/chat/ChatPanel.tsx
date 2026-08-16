@@ -35,18 +35,30 @@ export default function ChatPanel() {
   }, []);
 
   const {
-    conversations, setConversations, addConversation, removeConversation,
-    activeConversationId, setActive, messagesByConv, streaming, error,
+    conversations,
+    setConversations,
+    addConversation,
+    removeConversation,
+    activeConversationId,
+    setActive,
+    messagesByConv,
+    streaming,
+    error,
   } = useChatStore();
   const { send } = useChatStream();
 
   const [prompt, setPrompt] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
-  const messages = activeConversationId ? messagesByConv[activeConversationId] ?? [] : [];
+  const messages = activeConversationId ? (messagesByConv[activeConversationId] ?? []) : [];
 
   useEffect(() => {
     if (!chatOpen) return;
-    api.listConversations().then(setConversations).catch(() => { /* offline is ok */ });
+    api
+      .listConversations()
+      .then(setConversations)
+      .catch(() => {
+        /* offline is ok */
+      });
   }, [chatOpen, setConversations]);
 
   useEffect(() => {
@@ -66,7 +78,10 @@ export default function ChatPanel() {
     if (!text.trim() || streaming) return;
     let convId = activeConversationId;
     if (!convId) {
-      const c = await api.createConversation({ title: text.slice(0, 60), zoneId: selectedZoneId ?? null });
+      const c = await api.createConversation({
+        title: text.slice(0, 60),
+        zoneId: selectedZoneId ?? null,
+      });
       addConversation(c);
       setActive(c.id);
       convId = c.id;
@@ -76,21 +91,28 @@ export default function ChatPanel() {
   };
 
   const removeConv = async (id: string) => {
-    await api.deleteConversation(id).catch(() => { /* offline is ok */ });
+    await api.deleteConversation(id).catch(() => {
+      /* offline is ok */
+    });
     removeConversation(id);
   };
 
   const body = (
     <>
       <div className="flex items-center gap-2 px-3.5 pt-3 pb-2.5 border-b border-border shrink-0">
-        <div className="w-7 h-7 rounded-full grid place-items-center" style={{ background: `${BRAND.teal}22`, color: BRAND.teal }}>
+        <div
+          className="w-7 h-7 rounded-full grid place-items-center"
+          style={{ background: `${BRAND.teal}22`, color: BRAND.teal }}
+        >
           <MessageCircleQuestion size={14} />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-[9.5px] font-medium text-ink-4 uppercase tracking-[0.1em]">Ask Navuuna</div>
+          <div className="text-[9.5px] font-medium text-ink-4 uppercase tracking-[0.1em]">
+            Ask Navuuna
+          </div>
           <div className="text-[13px] font-semibold text-ink-1 leading-tight truncate">
             {activeConversationId
-              ? conversations.find((c) => c.id === activeConversationId)?.title ?? "Chat"
+              ? (conversations.find((c) => c.id === activeConversationId)?.title ?? "Chat")
               : "New conversation"}
           </div>
         </div>
@@ -124,7 +146,10 @@ export default function ChatPanel() {
             >
               <span className="truncate max-w-[100px]">{c.title ?? "Untitled"}</span>
               <span
-                onClick={(e) => { e.stopPropagation(); removeConv(c.id); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeConv(c.id);
+                }}
                 className="opacity-40 hover:opacity-80 cursor-pointer"
                 role="button"
                 aria-label={`Delete ${c.title ?? "conversation"}`}
@@ -140,9 +165,8 @@ export default function ChatPanel() {
         {messages.length === 0 ? (
           <div className="space-y-2.5 pt-4">
             <p className="text-[11px] text-ink-3 leading-relaxed">
-              Ask a question about Nairobi zones. I write live Postgres queries against the
-              Vitality Index dataset and explain what I find. Every query is bounded and
-              read-only.
+              Ask a question about Nairobi zones. I write live Postgres queries against the Vitality
+              Index dataset and explain what I find. Every query is bounded and read-only.
             </p>
             <div className="space-y-1.5">
               <div className="text-[9px] text-ink-4 uppercase tracking-[0.08em]">Try</div>
@@ -168,7 +192,10 @@ export default function ChatPanel() {
       </div>
 
       <form
-        onSubmit={(e) => { e.preventDefault(); doSend(prompt); }}
+        onSubmit={(e) => {
+          e.preventDefault();
+          doSend(prompt);
+        }}
         className="border-t border-border p-2.5 shrink-0"
       >
         <div className="flex items-end gap-2">
@@ -182,9 +209,7 @@ export default function ChatPanel() {
               }
             }}
             placeholder={
-              selectedZoneId
-                ? `Ask about ${selectedZoneId} or any zone…`
-                : "Ask about any zone…"
+              selectedZoneId ? `Ask about ${selectedZoneId} or any zone…` : "Ask about any zone…"
             }
             rows={2}
             className="flex-1 resize-none rounded-control bg-[rgba(255,255,255,0.04)] border border-border px-2.5 py-1.5 text-[11px] text-ink-1 placeholder-ink-4 focus:outline-none focus:border-[rgba(255,255,255,0.16)]"
@@ -267,7 +292,13 @@ export default function ChatPanel() {
   );
 }
 
-function MessageBubble({ message, onFollowup }: { message: ChatMessage; onFollowup: (s: string) => void }) {
+function MessageBubble({
+  message,
+  onFollowup,
+}: {
+  message: ChatMessage;
+  onFollowup: (s: string) => void;
+}) {
   const isUser = message.role === "user";
   const rows = message.resultRows ?? [];
   return (
@@ -280,8 +311,10 @@ function MessageBubble({ message, onFollowup }: { message: ChatMessage; onFollow
         }`}
       >
         {!isUser && message.intent && (
-          <div className="mb-1 inline-flex items-center gap-1 text-[8.5px] font-medium uppercase tracking-[0.08em]"
-            style={{ color: BRAND.teal }}>
+          <div
+            className="mb-1 inline-flex items-center gap-1 text-[8.5px] font-medium uppercase tracking-[0.08em]"
+            style={{ color: BRAND.teal }}
+          >
             <span className="w-1 h-1 rounded-full" style={{ background: BRAND.teal }} />
             {message.intent}
           </div>

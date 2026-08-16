@@ -7,13 +7,7 @@
 
 const STORAGE_PREFIX = "nuvola_deals_v1_";
 
-export type DealStage =
-  | "prospect"
-  | "meeting"
-  | "diligence"
-  | "term_sheet"
-  | "closed"
-  | "passed";
+export type DealStage = "prospect" | "meeting" | "diligence" | "term_sheet" | "closed" | "passed";
 
 export const DEAL_STAGES: { key: DealStage; label: string; color: string }[] = [
   { key: "prospect", label: "Prospect", color: "#5C7C99" },
@@ -49,7 +43,8 @@ const SEED_BY_FIRM: Record<string, Deal[]> = {
       owner: "Njoki Wanjiru",
       nextStep: "Environmental & Social IA review",
       nextStepAt: "2026-07-25T09:00:00Z",
-      thesis: "High infrastructure pillar. Corridor densification lifts three adjacent sub-counties.",
+      thesis:
+        "High infrastructure pillar. Corridor densification lifts three adjacent sub-counties.",
       createdAt: "2026-06-04T10:00:00Z",
       updatedAt: "2026-07-11T14:30:00Z",
     },

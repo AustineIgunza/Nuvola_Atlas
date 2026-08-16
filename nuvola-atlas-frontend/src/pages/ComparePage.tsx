@@ -42,7 +42,8 @@ export default function ComparePage() {
   const [range, setRange] = useState<HistoryRange>("week");
 
   const selected = useMemo(
-    () => selectedIds.map((id) => zones.find((z) => z.id === id)).filter((z): z is Zone => Boolean(z)),
+    () =>
+      selectedIds.map((id) => zones.find((z) => z.id === id)).filter((z): z is Zone => Boolean(z)),
     [selectedIds, zones],
   );
 
@@ -91,11 +92,15 @@ export default function ComparePage() {
           <div className="min-w-0">
             <header className="mb-5 flex items-start gap-3">
               <div className="flex-1 min-w-0">
-                <div className="text-[10px] font-medium text-ink-4 uppercase tracking-[0.12em]">Compare</div>
-                <h1 className="text-[22px] font-semibold text-ink-1 leading-tight">Side-by-side zone comparison</h1>
+                <div className="text-[10px] font-medium text-ink-4 uppercase tracking-[0.12em]">
+                  Compare
+                </div>
+                <h1 className="text-[22px] font-semibold text-ink-1 leading-tight">
+                  Side-by-side zone comparison
+                </h1>
                 <p className="mt-1.5 text-[12px] text-ink-3 max-w-[68ch]">
-                  Pick up to {MAX_ZONES} Nairobi sub-counties to compare their Vitality Score, pillar
-                  breakdown, and score history side by side.
+                  Pick up to {MAX_ZONES} Nairobi sub-counties to compare their Vitality Score,
+                  pillar breakdown, and score history side by side.
                 </p>
               </div>
               <button
@@ -208,7 +213,10 @@ function ZonePicker({
 
 function ScoreGrid({ zones }: { zones: Zone[] }) {
   return (
-    <div className="mt-4 grid gap-3" style={{ gridTemplateColumns: `repeat(${zones.length}, minmax(0, 1fr))` }}>
+    <div
+      className="mt-4 grid gap-3"
+      style={{ gridTemplateColumns: `repeat(${zones.length}, minmax(0, 1fr))` }}
+    >
       {zones.map((z, i) => {
         const color = scoreColor(z.score);
         return (
@@ -224,7 +232,10 @@ function ScoreGrid({ zones }: { zones: Zone[] }) {
               </span>
               <span className="text-[10px] text-ink-4">/100</span>
               <span className="ml-auto inline-flex items-center gap-1 text-[9.5px] font-medium">
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: SERIES_COLORS[i] }} />
+                <span
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ background: SERIES_COLORS[i] }}
+                />
                 Series {i + 1}
               </span>
             </div>
@@ -238,18 +249,20 @@ function ScoreGrid({ zones }: { zones: Zone[] }) {
 function PillarGrid({ zones }: { zones: Zone[] }) {
   return (
     <div className="mt-3 rounded-card border border-border p-3 bg-[rgba(255,255,255,0.02)]">
-      <div className="text-[10px] text-ink-4 uppercase tracking-[0.08em] mb-2">Pillar breakdown</div>
+      <div className="text-[10px] text-ink-4 uppercase tracking-[0.08em] mb-2">
+        Pillar breakdown
+      </div>
       <div className="space-y-2">
         {PILLAR_KEYS.map((k) => (
           <div key={k}>
             <div className="flex items-center gap-2 text-[10.5px] mb-0.5">
-              <span
-                className="w-2 h-2 rounded-full"
-                style={{ background: PILLAR_COLORS[k] }}
-              />
+              <span className="w-2 h-2 rounded-full" style={{ background: PILLAR_COLORS[k] }} />
               <span className="text-ink-2">{PILLAR_SHORT[k]}</span>
             </div>
-            <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${zones.length}, minmax(0, 1fr))` }}>
+            <div
+              className="grid gap-1"
+              style={{ gridTemplateColumns: `repeat(${zones.length}, minmax(0, 1fr))` }}
+            >
               {zones.map((z, i) => (
                 <div key={z.id} className="flex items-center gap-1.5">
                   <div className="flex-1 h-1.5 rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
@@ -262,7 +275,9 @@ function PillarGrid({ zones }: { zones: Zone[] }) {
                       }}
                     />
                   </div>
-                  <span className="text-[10px] tabular-nums text-ink-2 w-6 text-right">{z.pillars[k]}</span>
+                  <span className="text-[10px] tabular-nums text-ink-2 w-6 text-right">
+                    {z.pillars[k]}
+                  </span>
                 </div>
               ))}
             </div>
@@ -298,9 +313,7 @@ function CapitalAllocationRow({ zones }: { zones: Zone[] }) {
       <div className="text-[10px] text-ink-4 uppercase tracking-[0.08em] mb-1">
         {t("compare.capitalAllocation.title")}
       </div>
-      <div className="text-[10.5px] text-ink-3 mb-2">
-        {t("compare.capitalAllocation.subtitle")}
-      </div>
+      <div className="text-[10.5px] text-ink-3 mb-2">{t("compare.capitalAllocation.subtitle")}</div>
       <div className="space-y-1.5">
         {ranked.map(({ z, composite }, i) => (
           <div key={z.id} className="flex items-center gap-2 text-[11px]">
@@ -361,7 +374,9 @@ function TrendCard({
                 key={r.key}
                 onClick={() => onRange(r.key)}
                 className={`px-2 py-0.5 rounded-full text-[9.5px] font-medium transition-colors ${
-                  range === r.key ? "bg-[rgba(255,255,255,0.14)] text-ink-1" : "text-ink-4 hover:text-ink-2"
+                  range === r.key
+                    ? "bg-[rgba(255,255,255,0.14)] text-ink-1"
+                    : "text-ink-4 hover:text-ink-2"
                 }`}
                 aria-pressed={range === r.key}
               >
@@ -371,9 +386,16 @@ function TrendCard({
           </div>
         </div>
       </div>
-      <ComparisonChart zones={zones} range={range} forecastOn={forecastOn} pillarOverlay={pillarOverlay} />
+      <ComparisonChart
+        zones={zones}
+        range={range}
+        forecastOn={forecastOn}
+        pillarOverlay={pillarOverlay}
+      />
       <div className="mt-2 flex flex-wrap items-center gap-1">
-        <span className="text-[9px] text-ink-4 uppercase tracking-[0.08em] mr-1">Pillar overlay</span>
+        <span className="text-[9px] text-ink-4 uppercase tracking-[0.08em] mr-1">
+          Pillar overlay
+        </span>
         <button
           onClick={() => setPillarOverlay(null)}
           className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9.5px] font-medium transition-colors border ${
@@ -411,8 +433,13 @@ function TrendCard({
 function DeltaGrid({ zones }: { zones: Zone[] }) {
   return (
     <div className="mt-3 rounded-card border border-border p-3 bg-[rgba(255,255,255,0.02)]">
-      <div className="text-[10px] text-ink-4 uppercase tracking-[0.08em] mb-2">Quarter-over-quarter change</div>
-      <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${zones.length}, minmax(0, 1fr))` }}>
+      <div className="text-[10px] text-ink-4 uppercase tracking-[0.08em] mb-2">
+        Quarter-over-quarter change
+      </div>
+      <div
+        className="grid gap-3"
+        style={{ gridTemplateColumns: `repeat(${zones.length}, minmax(0, 1fr))` }}
+      >
         {zones.map((z, i) => {
           const total = z.deltas.social + z.deltas.safety + z.deltas.density + z.deltas.infra;
           const avg = Math.round(total / 4);
@@ -420,7 +447,10 @@ function DeltaGrid({ zones }: { zones: Zone[] }) {
           return (
             <div key={z.id} className="rounded-control bg-[rgba(255,255,255,0.03)] p-2.5">
               <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: SERIES_COLORS[i] }} />
+                <span
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ background: SERIES_COLORS[i] }}
+                />
                 <span className="text-[10.5px] text-ink-3 truncate">{z.name}</span>
                 <span className="ml-auto text-[11px] font-semibold tabular-nums" style={{ color }}>
                   {avg >= 0 ? "▲" : "▼"} {Math.abs(avg)}
@@ -431,10 +461,16 @@ function DeltaGrid({ zones }: { zones: Zone[] }) {
                   const d = z.deltas[k];
                   const c = d >= 0 ? BRAND.teal : BRAND.rose;
                   return (
-                    <div key={k} className="rounded-chip bg-[rgba(255,255,255,0.02)] py-1 text-center">
-                      <div className="text-ink-4 uppercase tracking-[0.05em]">{PILLAR_SHORT[k]}</div>
+                    <div
+                      key={k}
+                      className="rounded-chip bg-[rgba(255,255,255,0.02)] py-1 text-center"
+                    >
+                      <div className="text-ink-4 uppercase tracking-[0.05em]">
+                        {PILLAR_SHORT[k]}
+                      </div>
                       <div className="tabular-nums font-medium" style={{ color: c }}>
-                        {d >= 0 ? "+" : ""}{d}
+                        {d >= 0 ? "+" : ""}
+                        {d}
                       </div>
                     </div>
                   );
@@ -453,16 +489,28 @@ function WaterGrid({ zones }: { zones: Zone[] }) {
     <div className="mt-3 rounded-card border border-border p-3 bg-[rgba(255,255,255,0.02)]">
       <div className="flex items-center gap-1.5 mb-2">
         <Droplets size={12} style={{ color: BRAND.teal }} />
-        <div className="text-[10px] text-ink-4 uppercase tracking-[0.08em]">Water &amp; Sanitation · SDG 6</div>
+        <div className="text-[10px] text-ink-4 uppercase tracking-[0.08em]">
+          Water &amp; Sanitation · SDG 6
+        </div>
       </div>
-      <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${zones.length}, minmax(0, 1fr))` }}>
+      <div
+        className="grid gap-3"
+        style={{ gridTemplateColumns: `repeat(${zones.length}, minmax(0, 1fr))` }}
+      >
         {zones.map((z, i) => {
           const wp = waterProfile(z);
           const accent = wp.opportunity ? BRAND.teal : BRAND.steel;
           return (
-            <div key={z.id} className="rounded-control p-2.5 border" style={{ background: `${accent}0F`, borderColor: `${accent}33` }}>
+            <div
+              key={z.id}
+              className="rounded-control p-2.5 border"
+              style={{ background: `${accent}0F`, borderColor: `${accent}33` }}
+            >
               <div className="flex items-center gap-1.5 mb-1.5">
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: SERIES_COLORS[i] }} />
+                <span
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ background: SERIES_COLORS[i] }}
+                />
                 <span className="text-[10.5px] text-ink-2 font-medium truncate">{z.name}</span>
               </div>
               <div className="grid grid-cols-3 gap-1 mb-1.5">
@@ -471,7 +519,10 @@ function WaterGrid({ zones }: { zones: Zone[] }) {
                 <StatCell value={`${wp.waitMin}m`} label="Queue" />
               </div>
               <div className="text-[9px] text-ink-3 leading-tight">
-                <span className="font-semibold px-1.5 py-0.5 rounded-full mr-1" style={{ background: accent, color: BRAND.bone }}>
+                <span
+                  className="font-semibold px-1.5 py-0.5 rounded-full mr-1"
+                  style={{ background: accent, color: BRAND.bone }}
+                >
                   {wp.solutionTag}
                 </span>
                 {wp.contextLabel}
@@ -498,9 +549,14 @@ function ProjectsGrid({ zones, projects }: { zones: Zone[]; projects: Project[] 
     <div className="mt-3 rounded-card border border-border p-3 bg-[rgba(255,255,255,0.02)]">
       <div className="flex items-center gap-1.5 mb-2">
         <HardHat size={12} style={{ color: BRAND.terracotta }} />
-        <div className="text-[10px] text-ink-4 uppercase tracking-[0.08em]">Infrastructure projects</div>
+        <div className="text-[10px] text-ink-4 uppercase tracking-[0.08em]">
+          Infrastructure projects
+        </div>
       </div>
-      <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${zones.length}, minmax(0, 1fr))` }}>
+      <div
+        className="grid gap-3"
+        style={{ gridTemplateColumns: `repeat(${zones.length}, minmax(0, 1fr))` }}
+      >
         {zones.map((z, i) => {
           const zoneProjects = projects.filter((p) => p.zoneId === z.id);
           const active = zoneProjects.filter((p) => p.status === "active").length;
@@ -509,7 +565,10 @@ function ProjectsGrid({ zones, projects }: { zones: Zone[]; projects: Project[] 
           return (
             <div key={z.id} className="rounded-control bg-[rgba(255,255,255,0.03)] p-2.5">
               <div className="flex items-center gap-1.5 mb-1.5">
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: SERIES_COLORS[i] }} />
+                <span
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ background: SERIES_COLORS[i] }}
+                />
                 <span className="text-[10.5px] text-ink-2 font-medium truncate">{z.name}</span>
                 <span className="ml-auto text-[11px] font-semibold tabular-nums text-ink-1">
                   {zoneProjects.length}
@@ -577,7 +636,10 @@ function AlertsGrid({ zones, alerts }: { zones: Zone[]; alerts: AlertItem[] }) {
         <AlertTriangle size={12} style={{ color: BRAND.gold }} />
         <div className="text-[10px] text-ink-4 uppercase tracking-[0.08em]">Active alerts</div>
       </div>
-      <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${zones.length}, minmax(0, 1fr))` }}>
+      <div
+        className="grid gap-3"
+        style={{ gridTemplateColumns: `repeat(${zones.length}, minmax(0, 1fr))` }}
+      >
         {zones.map((z, i) => {
           const zoneAlerts = alerts.filter((a) => a.zoneId === z.id);
           const bySeverity: Record<AlertSeverity, number> = {
@@ -588,7 +650,10 @@ function AlertsGrid({ zones, alerts }: { zones: Zone[]; alerts: AlertItem[] }) {
           return (
             <div key={z.id} className="rounded-control bg-[rgba(255,255,255,0.03)] p-2.5">
               <div className="flex items-center gap-1.5 mb-1.5">
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: SERIES_COLORS[i] }} />
+                <span
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ background: SERIES_COLORS[i] }}
+                />
                 <span className="text-[10.5px] text-ink-2 font-medium truncate">{z.name}</span>
                 <span className="ml-auto text-[11px] font-semibold tabular-nums text-ink-1">
                   {zoneAlerts.length}
@@ -626,7 +691,10 @@ function AlertsGrid({ zones, alerts }: { zones: Zone[]; alerts: AlertItem[] }) {
 }
 
 function ComparisonChart({
-  zones, range, forecastOn = false, pillarOverlay = null,
+  zones,
+  range,
+  forecastOn = false,
+  pillarOverlay = null,
 }: {
   zones: Zone[];
   range: HistoryRange;
@@ -673,7 +741,10 @@ function ComparisonChart({
     const anchorPointCount = anchor.points.length;
     const maxForecastLen = Math.max(...forecasts.map((f) => f.data?.points.length ?? 0));
     for (let idx = 0; idx < maxForecastLen; idx++) {
-      const row: Record<string, unknown> = { label: "+" + (idx + 1) + (range === "day" ? "h" : "d"), phase: "forecast" };
+      const row: Record<string, unknown> = {
+        label: "+" + (idx + 1) + (range === "day" ? "h" : "d"),
+        phase: "forecast",
+      };
       forecasts.forEach((f, i) => {
         const point = f.data?.points[idx];
         if (!point) return;
@@ -696,7 +767,18 @@ function ComparisonChart({
     }
     return [...historical, ...projected];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [s1.data, s2.data, s3.data, f1.data, f2.data, f3.data, range, ready, forecastOn, pillarOverlay]);
+  }, [
+    s1.data,
+    s2.data,
+    s3.data,
+    f1.data,
+    f2.data,
+    f3.data,
+    range,
+    ready,
+    forecastOn,
+    pillarOverlay,
+  ]);
 
   if (!ready) {
     return <div className="h-[220px] rounded-control bg-[rgba(255,255,255,0.03)] animate-pulse" />;
@@ -714,7 +796,12 @@ function ComparisonChart({
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={merged} margin={{ top: 8, right: 12, bottom: 4, left: 0 }}>
           <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} />
-          <XAxis dataKey="label" tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }} axisLine={false} tickLine={false} />
+          <XAxis
+            dataKey="label"
+            tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }}
+            axisLine={false}
+            tickLine={false}
+          />
           <YAxis
             domain={[0, 100]}
             tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }}
@@ -724,7 +811,12 @@ function ComparisonChart({
             ticks={[0, 50, 100]}
           />
           <Tooltip
-            contentStyle={{ background: "rgba(11,34,53,0.94)", border: `1px solid ${BRAND.navyRaised}`, borderRadius: 6, fontSize: 11 }}
+            contentStyle={{
+              background: "rgba(11,34,53,0.94)",
+              border: `1px solid ${BRAND.navyRaised}`,
+              borderRadius: 6,
+              fontSize: 11,
+            }}
             labelStyle={{ color: "rgba(255,255,255,0.7)" }}
             formatter={(value: unknown, key: unknown) => {
               const k = String(key);
@@ -758,19 +850,21 @@ function ComparisonChart({
               connectNulls
             />
           ))}
-          {forecastOn && !pillarOverlay && zones.map((_z, i) => (
-            <Line
-              key={`f${i}`}
-              type="monotone"
-              dataKey={`f${i}`}
-              stroke={SERIES_COLORS[i]}
-              strokeWidth={1.2}
-              strokeDasharray="4 3"
-              dot={false}
-              connectNulls
-              legendType="none"
-            />
-          ))}
+          {forecastOn &&
+            !pillarOverlay &&
+            zones.map((_z, i) => (
+              <Line
+                key={`f${i}`}
+                type="monotone"
+                dataKey={`f${i}`}
+                stroke={SERIES_COLORS[i]}
+                strokeWidth={1.2}
+                strokeDasharray="4 3"
+                dot={false}
+                connectNulls
+                legendType="none"
+              />
+            ))}
         </LineChart>
       </ResponsiveContainer>
     </div>

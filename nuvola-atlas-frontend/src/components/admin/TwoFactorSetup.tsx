@@ -49,8 +49,8 @@ export default function TwoFactorSetup({ onComplete }: Props) {
         <div>
           <h2 className="text-[16px] font-semibold text-ink-1">Two-factor authentication</h2>
           <p className="text-[12px] text-ink-3 mt-0.5">
-            We'll email you a 6-digit code each time you sign in. Admin accounts
-            must enrol before the dashboard is reachable.
+            We'll email you a 6-digit code each time you sign in. Admin accounts must enrol before
+            the dashboard is reachable.
           </p>
         </div>
       </header>
@@ -82,7 +82,8 @@ export default function TwoFactorSetup({ onComplete }: Props) {
             <div className="flex items-start gap-2">
               <Mail size={14} className="text-accent mt-0.5 shrink-0" />
               <div className="text-[12px] text-ink-2">
-                Code sent to <span className="font-mono text-ink-1">{emailHint}</span>. It expires in 5 minutes.
+                Code sent to <span className="font-mono text-ink-1">{emailHint}</span>. It expires
+                in 5 minutes.
               </div>
             </div>
           </div>

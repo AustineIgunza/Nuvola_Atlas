@@ -56,9 +56,10 @@ function hydrateZone(z: Partial<Zone> & { id: string; name: string; score: numbe
     density: z.deltas?.density ?? fallbackDeltas.density,
     infra: z.deltas?.infra ?? fallbackDeltas.infra,
   };
-  const centroid: [number, number] = Array.isArray(z.centroid) && z.centroid.length === 2
-    ? (z.centroid as [number, number])
-    : (mock?.centroid ?? [36.82, -1.283]);
+  const centroid: [number, number] =
+    Array.isArray(z.centroid) && z.centroid.length === 2
+      ? (z.centroid as [number, number])
+      : (mock?.centroid ?? [36.82, -1.283]);
 
   return {
     ...(mock ?? {}),
@@ -84,7 +85,10 @@ export const remoteApi = {
   getAlerts: () => get<AlertItem[]>("/alerts"),
 
   markAllRead: async (): Promise<{ ok: true }> => {
-    const res = await fetch(`${BASE}/alerts/mark-all-read`, { method: "POST", headers: authHeaders() });
+    const res = await fetch(`${BASE}/alerts/mark-all-read`, {
+      method: "POST",
+      headers: authHeaders(),
+    });
     return handleResponse<{ ok: true }>(res);
   },
 
@@ -108,7 +112,10 @@ export const remoteApi = {
     get<ZoneForecast>(`/zones/${id}/forecast?horizon=${horizon}`),
 
   listConversations: () => get<ChatConversation[]>(`/chat/conversations`),
-  createConversation: async (data: { title?: string; zoneId?: string | null }): Promise<ChatConversation> => {
+  createConversation: async (data: {
+    title?: string;
+    zoneId?: string | null;
+  }): Promise<ChatConversation> => {
     const res = await fetch(`${BASE}/chat/conversations`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders() },
@@ -132,18 +139,31 @@ export const remoteApi = {
     const res = await fetch(`${BASE}/auth/change-password`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders() },
-      body: JSON.stringify({ current_password: currentPassword, password: newPassword, password_confirmation: newPassword }),
+      body: JSON.stringify({
+        current_password: currentPassword,
+        password: newPassword,
+        password_confirmation: newPassword,
+      }),
     });
     return handleResponse<{ ok: true }>(res);
   },
 
-  register: async (name: string, email: string, password: string, password_confirmation: string) => {
+  register: async (
+    name: string,
+    email: string,
+    password: string,
+    password_confirmation: string,
+  ) => {
     const res = await fetch(`${BASE}/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password, password_confirmation }),
     });
-    return handleResponse<{ token: string; expires_at: string; user: { id: number; name: string; email: string; role: string } }>(res);
+    return handleResponse<{
+      token: string;
+      expires_at: string;
+      user: { id: number; name: string; email: string; role: string };
+    }>(res);
   },
 
   signIn: async (email: string, password: string) => {
@@ -155,7 +175,10 @@ export const remoteApi = {
     // Backend may return either a real token, or a 2FA challenge — the
     // discriminator is `requires_two_factor`. SignInPage branches on it.
     return handleResponse<
-      | { token: string; user: { name: string; email: string; role?: string; email_verified?: boolean } }
+      | {
+          token: string;
+          user: { name: string; email: string; role?: string; email_verified?: boolean };
+        }
       | { requires_two_factor: true; channel: "email"; challenge_token: string; email_hint: string }
     >(res);
   },

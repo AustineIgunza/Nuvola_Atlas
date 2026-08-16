@@ -24,11 +24,7 @@ function interpolate(template: string, vars: TVars): string {
 }
 
 /** Resolve a key for a locale, falling back to English, then interpolating. */
-export function translate(
-  locale: LocaleCode,
-  key: MessageKey,
-  vars?: TVars,
-): string {
+export function translate(locale: LocaleCode, key: MessageKey, vars?: TVars): string {
   const raw = TABLES[locale]?.[key] ?? en[key];
   return vars ? interpolate(raw, vars) : raw;
 }

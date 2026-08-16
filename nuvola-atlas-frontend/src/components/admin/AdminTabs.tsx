@@ -2,8 +2,16 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/cn";
 
 export type AdminTab =
-  | "overview" | "audit" | "users" | "api-keys" | "firms" | "data"
-  | "methodology" | "announcements" | "health" | "content";
+  | "overview"
+  | "audit"
+  | "users"
+  | "api-keys"
+  | "firms"
+  | "data"
+  | "methodology"
+  | "announcements"
+  | "health"
+  | "content";
 
 const TABS: { id: AdminTab; label: string }[] = [
   { id: "overview", label: "Overview" },

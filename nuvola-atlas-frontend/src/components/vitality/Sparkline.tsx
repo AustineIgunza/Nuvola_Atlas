@@ -7,12 +7,7 @@ interface Props {
   color?: string;
 }
 
-export default function Sparkline({
-  points,
-  width = 80,
-  height = 24,
-  color,
-}: Props) {
+export default function Sparkline({ points, width = 80, height = 24, color }: Props) {
   if (points.length < 2) return null;
 
   const min = Math.min(...points);
@@ -24,9 +19,7 @@ export default function Sparkline({
     y: height - ((p - min) / range) * (height - 4) - 2,
   }));
 
-  const d = coords
-    .map((c, i) => (i === 0 ? `M${c.x},${c.y}` : `L${c.x},${c.y}`))
-    .join(" ");
+  const d = coords.map((c, i) => (i === 0 ? `M${c.x},${c.y}` : `L${c.x},${c.y}`)).join(" ");
 
   const last = coords[coords.length - 1];
   const c = color ?? scoreColor(points[points.length - 1]);

@@ -6,17 +6,67 @@ import { BRAND } from "@/lib/scoreColor";
 import type { Zone } from "@/types";
 
 const FEEDS: { name: string; source: string; expectedFreqMin: number; lastMinAgo: number }[] = [
-  { name: "Daystar", source: "Daystar University data-access partnership", expectedFreqMin: 60 * 24, lastMinAgo: 42 },
+  {
+    name: "Daystar",
+    source: "Daystar University data-access partnership",
+    expectedFreqMin: 60 * 24,
+    lastMinAgo: 42,
+  },
   { name: "KURA", source: "Kenya Urban Roads Authority", expectedFreqMin: 60 * 24, lastMinAgo: 9 },
-  { name: "KeNHA", source: "Kenya National Highways Authority", expectedFreqMin: 60 * 24, lastMinAgo: 18 },
-  { name: "KPLC", source: "Kenya Power & Lighting Company", expectedFreqMin: 60 * 6, lastMinAgo: 6 },
-  { name: "KETRACO", source: "Kenya Electricity Transmission Company", expectedFreqMin: 60 * 24, lastMinAgo: 33 },
-  { name: "NPS", source: "National Police Service quarterly reports", expectedFreqMin: 60 * 24 * 90, lastMinAgo: 60 * 24 * 45 },
-  { name: "KNBS", source: "Kenya National Bureau of Statistics", expectedFreqMin: 60 * 24 * 365, lastMinAgo: 60 * 24 * 30 },
-  { name: "NEMA", source: "National Environment Management Authority", expectedFreqMin: 60 * 24 * 30, lastMinAgo: 60 * 24 * 3 },
-  { name: "NCWSC", source: "Nairobi City Water & Sewerage Company", expectedFreqMin: 60 * 24, lastMinAgo: 12 },
-  { name: "Athi Water", source: "Athi Water Works Development Agency", expectedFreqMin: 60 * 24, lastMinAgo: 20 },
-  { name: "ICTA", source: "ICT Authority connectivity feeds", expectedFreqMin: 60 * 6, lastMinAgo: 4 },
+  {
+    name: "KeNHA",
+    source: "Kenya National Highways Authority",
+    expectedFreqMin: 60 * 24,
+    lastMinAgo: 18,
+  },
+  {
+    name: "KPLC",
+    source: "Kenya Power & Lighting Company",
+    expectedFreqMin: 60 * 6,
+    lastMinAgo: 6,
+  },
+  {
+    name: "KETRACO",
+    source: "Kenya Electricity Transmission Company",
+    expectedFreqMin: 60 * 24,
+    lastMinAgo: 33,
+  },
+  {
+    name: "NPS",
+    source: "National Police Service quarterly reports",
+    expectedFreqMin: 60 * 24 * 90,
+    lastMinAgo: 60 * 24 * 45,
+  },
+  {
+    name: "KNBS",
+    source: "Kenya National Bureau of Statistics",
+    expectedFreqMin: 60 * 24 * 365,
+    lastMinAgo: 60 * 24 * 30,
+  },
+  {
+    name: "NEMA",
+    source: "National Environment Management Authority",
+    expectedFreqMin: 60 * 24 * 30,
+    lastMinAgo: 60 * 24 * 3,
+  },
+  {
+    name: "NCWSC",
+    source: "Nairobi City Water & Sewerage Company",
+    expectedFreqMin: 60 * 24,
+    lastMinAgo: 12,
+  },
+  {
+    name: "Athi Water",
+    source: "Athi Water Works Development Agency",
+    expectedFreqMin: 60 * 24,
+    lastMinAgo: 20,
+  },
+  {
+    name: "ICTA",
+    source: "ICT Authority connectivity feeds",
+    expectedFreqMin: 60 * 6,
+    lastMinAgo: 4,
+  },
 ];
 
 function stalenessBucket(lastMinAgo: number, expectedFreqMin: number): "fresh" | "amber" | "stale" {
@@ -89,7 +139,11 @@ export default function DataFeedsMatrix() {
                   Zone
                 </th>
                 {INDICATORS.map((ind) => (
-                  <th key={ind.key} className="text-center px-1.5 py-1.5 font-medium min-w-[42px]" title={ind.label}>
+                  <th
+                    key={ind.key}
+                    className="text-center px-1.5 py-1.5 font-medium min-w-[42px]"
+                    title={ind.label}
+                  >
                     {ind.label.split(" ").slice(0, 2).join(" ")}
                   </th>
                 ))}
@@ -106,13 +160,19 @@ export default function DataFeedsMatrix() {
                     </td>
                     {summary.states.map((s) => {
                       const icon =
-                        s.availability === "delivered"
-                          ? <BadgeCheck size={11} style={{ color: BRAND.teal }} />
-                          : s.availability === "pending"
-                          ? <CircleDashed size={11} style={{ color: BRAND.gold }} />
-                          : <Clock size={11} style={{ color: BRAND.steel }} />;
+                        s.availability === "delivered" ? (
+                          <BadgeCheck size={11} style={{ color: BRAND.teal }} />
+                        ) : s.availability === "pending" ? (
+                          <CircleDashed size={11} style={{ color: BRAND.gold }} />
+                        ) : (
+                          <Clock size={11} style={{ color: BRAND.steel }} />
+                        );
                       return (
-                        <td key={s.key} className="text-center px-1 py-1.5" title={`${s.label} · ${s.availability}`}>
+                        <td
+                          key={s.key}
+                          className="text-center px-1 py-1.5"
+                          title={`${s.label} · ${s.availability}`}
+                        >
                           <span className="inline-flex">{icon}</span>
                         </td>
                       );

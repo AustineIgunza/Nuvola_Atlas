@@ -58,13 +58,14 @@ export default function MintApiKeyModal({ open, onClose }: Props) {
   });
 
   const mint = useMutation({
-    mutationFn: () => adminApi.mintApiKey({
-      user_id: userId!,
-      name,
-      abilities,
-      expires_in_days: expiresInDays,
-      rate_limit_per_minute: rateLimit,
-    }),
+    mutationFn: () =>
+      adminApi.mintApiKey({
+        user_id: userId!,
+        name,
+        abilities,
+        expires_in_days: expiresInDays,
+        rate_limit_per_minute: rateLimit,
+      }),
     onSuccess: (res) => {
       setMinted(res);
       qc.invalidateQueries({ queryKey: ["admin", "api-keys"] });
@@ -230,9 +231,7 @@ export default function MintApiKeyModal({ open, onClose }: Props) {
                   </Field>
 
                   {mint.isError && (
-                    <div className="text-[12px] text-danger">
-                      {(mint.error as Error).message}
-                    </div>
+                    <div className="text-[12px] text-danger">{(mint.error as Error).message}</div>
                   )}
                 </div>
               ) : (
@@ -242,9 +241,9 @@ export default function MintApiKeyModal({ open, onClose }: Props) {
                       Copy this token now — it cannot be shown again.
                     </div>
                     <div className="mt-1 text-[11px] text-ink-3">
-                      Share over a secure channel (1Password vault entry, signed
-                      email, in-person). Treat it like a password: rotate on
-                      suspicion, revoke if a partner reports loss.
+                      Share over a secure channel (1Password vault entry, signed email, in-person).
+                      Treat it like a password: rotate on suspicion, revoke if a partner reports
+                      loss.
                     </div>
                   </div>
 

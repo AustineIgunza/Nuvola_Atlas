@@ -61,7 +61,10 @@ export default function WaterExplainer({ zone, onNavigate }: Props) {
             <div className="text-[10px] font-medium text-ink-4 uppercase tracking-[0.08em]">
               Unmet water &amp; sanitation need
             </div>
-            <div className="text-[22px] font-semibold tabular-nums leading-tight" style={{ color: accent }}>
+            <div
+              className="text-[22px] font-semibold tabular-nums leading-tight"
+              style={{ color: accent }}
+            >
               {wp.needPct}
               <span className="text-[12px] text-ink-4 font-medium">/100</span>
             </div>
@@ -106,7 +109,11 @@ export default function WaterExplainer({ zone, onNavigate }: Props) {
         {wp.opportunity && (
           <div
             className="mt-2.5 rounded-control border px-2 py-1.5 text-[10px] leading-[1.5]"
-            style={{ background: `${BRAND.teal}0F`, borderColor: `${BRAND.teal}33`, color: BRAND.teal }}
+            style={{
+              background: `${BRAND.teal}0F`,
+              borderColor: `${BRAND.teal}33`,
+              color: BRAND.teal,
+            }}
           >
             Flagged as a decentralized-sanitation investment opportunity — context-fit systems here
             deliver SDG 6 outcomes faster and cheaper than extending the trunk network.
@@ -138,7 +145,10 @@ export default function WaterExplainer({ zone, onNavigate }: Props) {
                 style={
                   recommended
                     ? { background: `${BRAND.teal}0F`, borderColor: `${BRAND.teal}40` }
-                    : { background: "rgba(255,255,255,0.02)", borderColor: "rgba(255,255,255,0.08)" }
+                    : {
+                        background: "rgba(255,255,255,0.02)",
+                        borderColor: "rgba(255,255,255,0.08)",
+                      }
                 }
               >
                 <div className="flex items-center gap-1.5">
@@ -177,7 +187,10 @@ export default function WaterExplainer({ zone, onNavigate }: Props) {
                   </div>
                   <div className="text-[9px] text-ink-4 truncate">{note}</div>
                 </div>
-                <ChevronRight size={12} className="shrink-0 text-ink-4 group-hover:text-ink-2 transition-colors" />
+                <ChevronRight
+                  size={12}
+                  className="shrink-0 text-ink-4 group-hover:text-ink-2 transition-colors"
+                />
               </button>
             );
           })}

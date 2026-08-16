@@ -75,7 +75,10 @@ export default function ReportDetail({ report, zoneName }: Props) {
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <span
-            className={cn("px-2.5 py-0.5 rounded-full text-[10px] font-semibold capitalize", status.glow)}
+            className={cn(
+              "px-2.5 py-0.5 rounded-full text-[10px] font-semibold capitalize",
+              status.glow,
+            )}
             style={{ background: status.bg, color: status.text }}
           >
             {report.status}
@@ -100,7 +103,11 @@ export default function ReportDetail({ report, zoneName }: Props) {
       </div>
 
       {report.executiveSummary && (
-        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+        >
           <h3 className="text-[13px] font-semibold text-ink-2 mb-2">Executive Summary</h3>
           <p className="text-[13px] text-ink-3 leading-relaxed bg-[rgba(255,255,255,0.03)] rounded-control p-3 border border-border/30">
             {report.executiveSummary}
@@ -123,7 +130,11 @@ export default function ReportDetail({ report, zoneName }: Props) {
       )}
 
       {pillarFocus.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
           <h3 className="text-[13px] font-semibold text-ink-2 mb-2 flex items-center gap-1.5">
             <Layers size={13} className="text-ink-4" />
             Pillar Focus
@@ -144,14 +155,21 @@ export default function ReportDetail({ report, zoneName }: Props) {
       )}
 
       {tags.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.12 }}
+        >
           <h3 className="text-[13px] font-semibold text-ink-2 mb-2 flex items-center gap-1.5">
             <Tag size={13} className="text-ink-4" />
             Tags
           </h3>
           <div className="flex items-center gap-1.5 flex-wrap">
             {tags.map((tag, i) => (
-              <span key={i} className="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-accent/10 text-accent">
+              <span
+                key={i}
+                className="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-accent/10 text-accent"
+              >
                 {tag}
               </span>
             ))}
@@ -160,7 +178,12 @@ export default function ReportDetail({ report, zoneName }: Props) {
       )}
 
       {sections.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="space-y-4">
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="space-y-4"
+        >
           <h3 className="text-[13px] font-semibold text-ink-2">Report Sections</h3>
           {sections.map((section, i) => (
             <motion.div
@@ -172,9 +195,9 @@ export default function ReportDetail({ report, zoneName }: Props) {
             >
               <h4 className="text-[13px] font-semibold text-ink-1 mb-1.5">{section.heading}</h4>
               <div className="text-[12px] text-ink-3 leading-relaxed space-y-2">
-                {section.content.split("\n").map((para, j) =>
-                  para.trim() ? <p key={j}>{para}</p> : null,
-                )}
+                {section.content
+                  .split("\n")
+                  .map((para, j) => (para.trim() ? <p key={j}>{para}</p> : null))}
               </div>
             </motion.div>
           ))}

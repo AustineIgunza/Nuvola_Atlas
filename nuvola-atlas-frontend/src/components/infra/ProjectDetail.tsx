@@ -12,7 +12,12 @@ import { SEVERITY_COLORS, IMPACT_STYLES } from "@/components/alerts/alerts.const
 import Timeline from "./Timeline";
 import type { Project } from "@/types";
 
-const TYPE_COLORS: Record<string, string> = { road: "#C0552B", energy: "#E0A82E", grid: "#1F8A78", water: "#176B5D" };
+const TYPE_COLORS: Record<string, string> = {
+  road: "#C0552B",
+  energy: "#E0A82E",
+  grid: "#1F8A78",
+  water: "#176B5D",
+};
 
 const STATUS_KEYS: Record<Project["status"], MessageKey> = {
   active: "infra.status.active",
@@ -139,7 +144,9 @@ export default function ProjectDetail({ project }: Props) {
             whileHover={{ scale: 1.02 }}
             className="glass rounded-control p-3.5"
           >
-            <div className="text-[10px] text-ink-4 uppercase tracking-[0.06em] mb-1">{kv.label}</div>
+            <div className="text-[10px] text-ink-4 uppercase tracking-[0.06em] mb-1">
+              {kv.label}
+            </div>
             <div className="text-[16px] font-semibold text-ink-1 tabular-nums">{kv.value}</div>
           </motion.div>
         ))}
@@ -159,7 +166,9 @@ export default function ProjectDetail({ project }: Props) {
         <div className="h-2 rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
           <motion.div
             className="h-full rounded-full"
-            style={{ background: project.status === "stalled" ? BRAND.rose : TYPE_COLORS[project.type] }}
+            style={{
+              background: project.status === "stalled" ? BRAND.rose : TYPE_COLORS[project.type],
+            }}
             initial={{ width: 0 }}
             animate={{ width: `${project.progress}%` }}
             transition={{ delay: 0.35, duration: 0.8, ease: [0.32, 0.72, 0, 1] }}
@@ -211,7 +220,10 @@ export default function ProjectDetail({ project }: Props) {
           </div>
         </div>
 
-        <p className="mt-3 text-[12px] font-medium leading-snug" style={{ color: analysis.verdict.color }}>
+        <p
+          className="mt-3 text-[12px] font-medium leading-snug"
+          style={{ color: analysis.verdict.color }}
+        >
           {analysis.verdict.text}
         </p>
 
@@ -219,11 +231,17 @@ export default function ProjectDetail({ project }: Props) {
           <p>
             {analysis.daysToEta >= 0 ? (
               <span>
-                {t("infra.detail.daysToEta", { days: analysis.daysToEta, eta: formatDate(project.eta) })}
+                {t("infra.detail.daysToEta", {
+                  days: analysis.daysToEta,
+                  eta: formatDate(project.eta),
+                })}
               </span>
             ) : (
               <span style={{ color: BRAND.rose }}>
-                {t("infra.detail.overdueBy", { days: Math.abs(analysis.daysToEta), eta: formatDate(project.eta) })}
+                {t("infra.detail.overdueBy", {
+                  days: Math.abs(analysis.daysToEta),
+                  eta: formatDate(project.eta),
+                })}
               </span>
             )}
           </p>
@@ -270,7 +288,9 @@ export default function ProjectDetail({ project }: Props) {
         transition={{ delay: 0.35 }}
         className="mb-6"
       >
-        <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.08em] mb-4">{t("infra.detail.milestones")}</div>
+        <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.08em] mb-4">
+          {t("infra.detail.milestones")}
+        </div>
         <Timeline milestones={project.milestones} />
       </motion.div>
 
@@ -297,12 +317,18 @@ export default function ProjectDetail({ project }: Props) {
                 >
                   <span
                     className="w-2 h-2 rounded-full shrink-0 mt-1"
-                    style={{ background: SEVERITY_COLORS[a.severity], boxShadow: `0 0 6px ${SEVERITY_COLORS[a.severity]}66` }}
+                    style={{
+                      background: SEVERITY_COLORS[a.severity],
+                      boxShadow: `0 0 6px ${SEVERITY_COLORS[a.severity]}66`,
+                    }}
                   />
                   <div className="min-w-0 flex-1">
                     <div className="text-[12px] font-medium text-ink-1 leading-snug">{a.title}</div>
                     <div className="text-[10.5px] text-ink-4 mt-0.5">
-                      {t("alert.linked.impactSuffix", { level: impactShort, relative: formatRelative(a.createdAt) })}
+                      {t("alert.linked.impactSuffix", {
+                        level: impactShort,
+                        relative: formatRelative(a.createdAt),
+                      })}
                     </div>
                   </div>
                 </div>

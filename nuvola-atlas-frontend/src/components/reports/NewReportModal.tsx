@@ -31,9 +31,20 @@ const PRIORITIES = [
 const PILLAR_KEYS: PillarKey[] = ["social", "safety", "density", "infra"];
 
 const SUGGESTED_TAGS = [
-  "quarterly", "baseline", "county-wide", "infrastructure", "road-progress",
-  "energy", "smart-grid", "density", "informal-settlement", "safety",
-  "environmental", "ESIA", "survey", "urban-planning",
+  "quarterly",
+  "baseline",
+  "county-wide",
+  "infrastructure",
+  "road-progress",
+  "energy",
+  "smart-grid",
+  "density",
+  "informal-settlement",
+  "safety",
+  "environmental",
+  "ESIA",
+  "survey",
+  "urban-planning",
 ];
 
 export default function NewReportModal({ open, onClose }: Props) {
@@ -70,9 +81,7 @@ export default function NewReportModal({ open, onClose }: Props) {
   }
 
   function togglePillar(key: PillarKey) {
-    setPillarFocus((prev) =>
-      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
-    );
+    setPillarFocus((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
   }
 
   function addTag(tag: string) {
@@ -125,7 +134,11 @@ export default function NewReportModal({ open, onClose }: Props) {
             {/* Scrollable body */}
             <div className="overflow-y-auto flex-1 px-6 py-5 space-y-5">
               {/* Title */}
-              <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 }}
+              >
                 <label className="block text-[12px] font-medium text-ink-3 mb-1.5">Title *</label>
                 <input
                   value={title}
@@ -150,23 +163,37 @@ export default function NewReportModal({ open, onClose }: Props) {
                     className="w-full h-10 px-3 rounded-control bg-[rgba(255,255,255,0.06)] border border-border text-ink-1 text-[13px] focus:border-accent transition-all"
                   >
                     <option value="">All zones</option>
-                    {zones?.map((z) => <option key={z.id} value={z.id}>{z.name}</option>)}
+                    {zones?.map((z) => (
+                      <option key={z.id} value={z.id}>
+                        {z.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[12px] font-medium text-ink-3 mb-1.5">Report Type</label>
+                  <label className="block text-[12px] font-medium text-ink-3 mb-1.5">
+                    Report Type
+                  </label>
                   <select
                     value={type}
                     onChange={(e) => setType(e.target.value)}
                     className="w-full h-10 px-3 rounded-control bg-[rgba(255,255,255,0.06)] border border-border text-ink-1 text-[13px] focus:border-accent transition-all"
                   >
-                    {REPORT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                    {REPORT_TYPES.map((t) => (
+                      <option key={t.value} value={t.value}>
+                        {t.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </motion.div>
 
               {/* Priority */}
-              <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
                 <label className="block text-[12px] font-medium text-ink-3 mb-2">Priority</label>
                 <div className="flex gap-2">
                   {PRIORITIES.map((p) => (
@@ -180,12 +207,16 @@ export default function NewReportModal({ open, onClose }: Props) {
                           ? "text-white border-transparent"
                           : "text-ink-3 border-border hover:border-border-strong",
                       )}
-                      style={priority === p.value ? {
-                        background: `${p.color}25`,
-                        color: p.color,
-                        boxShadow: `0 0 10px ${p.color}33`,
-                        borderColor: `${p.color}44`,
-                      } : {}}
+                      style={
+                        priority === p.value
+                          ? {
+                              background: `${p.color}25`,
+                              color: p.color,
+                              boxShadow: `0 0 10px ${p.color}33`,
+                              borderColor: `${p.color}44`,
+                            }
+                          : {}
+                      }
                     >
                       {p.label}
                     </motion.button>
@@ -194,8 +225,14 @@ export default function NewReportModal({ open, onClose }: Props) {
               </motion.div>
 
               {/* Pillar Focus */}
-              <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
-                <label className="block text-[12px] font-medium text-ink-3 mb-2">Pillar Focus</label>
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.12 }}
+              >
+                <label className="block text-[12px] font-medium text-ink-3 mb-2">
+                  Pillar Focus
+                </label>
                 <div className="flex flex-wrap gap-2">
                   {PILLAR_KEYS.map((pk) => {
                     const active = pillarFocus.includes(pk);
@@ -207,14 +244,20 @@ export default function NewReportModal({ open, onClose }: Props) {
                         onClick={() => togglePillar(pk)}
                         className={cn(
                           "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium border transition-all",
-                          active ? "border-transparent" : "border-border text-ink-3 hover:border-border-strong",
+                          active
+                            ? "border-transparent"
+                            : "border-border text-ink-3 hover:border-border-strong",
                         )}
-                        style={active ? {
-                          background: `${color}18`,
-                          color,
-                          boxShadow: `0 0 8px ${color}33`,
-                          borderColor: `${color}33`,
-                        } : {}}
+                        style={
+                          active
+                            ? {
+                                background: `${color}18`,
+                                color,
+                                boxShadow: `0 0 8px ${color}33`,
+                                borderColor: `${color}33`,
+                              }
+                            : {}
+                        }
                       >
                         <span
                           className="w-2 h-2 rounded-full transition-opacity"
@@ -228,7 +271,11 @@ export default function NewReportModal({ open, onClose }: Props) {
               </motion.div>
 
               {/* Tags */}
-              <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }}>
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.14 }}
+              >
                 <label className="block text-[12px] font-medium text-ink-3 mb-1.5">Tags</label>
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {tags.map((tag) => (
@@ -239,7 +286,10 @@ export default function NewReportModal({ open, onClose }: Props) {
                       className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-accent/10 text-accent"
                     >
                       {tag}
-                      <button onClick={() => removeTag(tag)} className="hover:text-white transition-colors">
+                      <button
+                        onClick={() => removeTag(tag)}
+                        className="hover:text-white transition-colors"
+                      >
                         <X size={10} />
                       </button>
                     </motion.span>
@@ -249,27 +299,38 @@ export default function NewReportModal({ open, onClose }: Props) {
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addTag(tagInput); }
+                    if (e.key === "Enter" || e.key === ",") {
+                      e.preventDefault();
+                      addTag(tagInput);
+                    }
                   }}
                   className="w-full h-9 px-3 rounded-control bg-[rgba(255,255,255,0.06)] border border-border text-ink-1 text-[12px] placeholder:text-ink-4 focus:border-accent transition-all"
                   placeholder="Type and press Enter to add"
                 />
                 <div className="flex flex-wrap gap-1 mt-2">
-                  {SUGGESTED_TAGS.filter((t) => !tags.includes(t)).slice(0, 8).map((t) => (
-                    <button
-                      key={t}
-                      onClick={() => addTag(t)}
-                      className="px-2 py-0.5 rounded-full text-[10px] text-ink-4 bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.08)] hover:text-ink-3 transition-colors"
-                    >
-                      + {t}
-                    </button>
-                  ))}
+                  {SUGGESTED_TAGS.filter((t) => !tags.includes(t))
+                    .slice(0, 8)
+                    .map((t) => (
+                      <button
+                        key={t}
+                        onClick={() => addTag(t)}
+                        className="px-2 py-0.5 rounded-full text-[10px] text-ink-4 bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.08)] hover:text-ink-3 transition-colors"
+                      >
+                        + {t}
+                      </button>
+                    ))}
                 </div>
               </motion.div>
 
               {/* Executive Summary */}
-              <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16 }}>
-                <label className="block text-[12px] font-medium text-ink-3 mb-1.5">Executive Summary</label>
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.16 }}
+              >
+                <label className="block text-[12px] font-medium text-ink-3 mb-1.5">
+                  Executive Summary
+                </label>
                 <textarea
                   value={summary}
                   onChange={(e) => setSummary(e.target.value)}

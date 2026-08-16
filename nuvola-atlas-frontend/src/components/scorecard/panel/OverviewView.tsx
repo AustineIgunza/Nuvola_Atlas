@@ -97,14 +97,17 @@ export default function OverviewView({ zone, onNavigate }: Props) {
     triggerDownload(blob, `${zone.id}-vitality-report.txt`);
   }, [zone, wp]);
 
-  const serverExport = useCallback(async (format: "txt" | "pdf" | "docx") => {
-    const res = await fetch(`${BASE}/zones/${zone.id}/export?format=${format}`, {
-      headers: authHeaders(),
-    });
-    if (!res.ok) throw new Error(`Export failed (${res.status})`);
-    const blob = await res.blob();
-    triggerDownload(blob, `${zone.id}-vitality-report.${format}`);
-  }, [zone.id]);
+  const serverExport = useCallback(
+    async (format: "txt" | "pdf" | "docx") => {
+      const res = await fetch(`${BASE}/zones/${zone.id}/export?format=${format}`, {
+        headers: authHeaders(),
+      });
+      if (!res.ok) throw new Error(`Export failed (${res.status})`);
+      const blob = await res.blob();
+      triggerDownload(blob, `${zone.id}-vitality-report.${format}`);
+    },
+    [zone.id],
+  );
 
   const handleExport = useCallback(
     async (format: "txt" | "pdf" | "docx") => {
@@ -148,13 +151,21 @@ export default function OverviewView({ zone, onNavigate }: Props) {
                   color: totalDelta >= 0 ? BRAND.teal : BRAND.rose,
                 }}
               >
-                {t("scorecard.deltaThisQuarter", { arrow: totalDelta >= 0 ? "▲" : "▼", value: Math.abs(totalDelta) })}
+                {t("scorecard.deltaThisQuarter", {
+                  arrow: totalDelta >= 0 ? "▲" : "▼",
+                  value: Math.abs(totalDelta),
+                })}
               </span>
               <IndicatorAvailabilityChip zoneId={zone.id} />
             </div>
-            <p className="text-[10px] text-ink-4 mt-1">{t("scorecard.lastSyncShort", { min: zone.lastSyncMin })}</p>
+            <p className="text-[10px] text-ink-4 mt-1">
+              {t("scorecard.lastSyncShort", { min: zone.lastSyncMin })}
+            </p>
           </div>
-          <ChevronRight size={14} className="shrink-0 text-ink-4 group-hover:text-ink-2 transition-colors" />
+          <ChevronRight
+            size={14}
+            className="shrink-0 text-ink-4 group-hover:text-ink-2 transition-colors"
+          />
         </div>
         <div className="mt-2 flex items-center gap-1.5 text-[10px] text-ink-4">
           <Info size={10} className="shrink-0" />
@@ -179,9 +190,17 @@ export default function OverviewView({ zone, onNavigate }: Props) {
             className="group w-full flex items-center gap-1 text-left rounded-control px-1.5 hover:bg-[rgba(255,255,255,0.05)] transition-colors"
           >
             <div className="flex-1 min-w-0">
-              <PillarBar pillarKey={key} score={zone.pillars[key]} delta={zone.deltas[key]} index={i} />
+              <PillarBar
+                pillarKey={key}
+                score={zone.pillars[key]}
+                delta={zone.deltas[key]}
+                index={i}
+              />
             </div>
-            <ChevronRight size={13} className="shrink-0 text-ink-4 group-hover:text-ink-2 transition-colors" />
+            <ChevronRight
+              size={13}
+              className="shrink-0 text-ink-4 group-hover:text-ink-2 transition-colors"
+            />
           </button>
         ))}
       </Section>
@@ -203,7 +222,10 @@ export default function OverviewView({ zone, onNavigate }: Props) {
           <span className="ml-auto shrink-0">
             <Chip color={waterAccent}>{wp.contextLabel}</Chip>
           </span>
-          <ChevronRight size={13} className="shrink-0 text-ink-4 group-hover:text-ink-2 transition-colors" />
+          <ChevronRight
+            size={13}
+            className="shrink-0 text-ink-4 group-hover:text-ink-2 transition-colors"
+          />
         </div>
         <div className="mt-2 grid grid-cols-3 gap-1.5">
           <StatCell value={`${wp.accessPct}%`} label={t("scorecard.water.safeAccess")} />
@@ -227,7 +249,9 @@ export default function OverviewView({ zone, onNavigate }: Props) {
       <Section
         title={t("scorecard.infra.title", {
           count: zoneProjects.length,
-          noun: t(zoneProjects.length === 1 ? "scorecard.infra.noun.one" : "scorecard.infra.noun.many"),
+          noun: t(
+            zoneProjects.length === 1 ? "scorecard.infra.noun.one" : "scorecard.infra.noun.many",
+          ),
         })}
         action={
           <button
@@ -254,16 +278,26 @@ export default function OverviewView({ zone, onNavigate }: Props) {
                       {p.name}
                     </div>
                     <Chip color={st.color}>{st.label}</Chip>
-                    <ChevronRight size={12} className="shrink-0 text-ink-4 group-hover:text-ink-2 transition-colors" />
+                    <ChevronRight
+                      size={12}
+                      className="shrink-0 text-ink-4 group-hover:text-ink-2 transition-colors"
+                    />
                   </div>
                   <div className="mt-1.5 flex items-center gap-2">
                     <div className="flex-1 h-[3px] rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
                       <div
                         className="h-full rounded-full"
-                        style={{ width: `${p.progress}%`, background: barColor, boxShadow: `0 0 4px ${barColor}55` }}
+                        style={{
+                          width: `${p.progress}%`,
+                          background: barColor,
+                          boxShadow: `0 0 4px ${barColor}55`,
+                        }}
                       />
                     </div>
-                    <span className="text-[10.5px] font-semibold tabular-nums shrink-0" style={{ color: barColor }}>
+                    <span
+                      className="text-[10.5px] font-semibold tabular-nums shrink-0"
+                      style={{ color: barColor }}
+                    >
                       {p.progress}%
                     </span>
                   </div>
@@ -306,24 +340,29 @@ export default function OverviewView({ zone, onNavigate }: Props) {
                       style={{ background: color, boxShadow: `0 0 6px ${color}66` }}
                     />
                     <div className="flex-1 min-w-0">
-                      <div className="text-[11px] text-ink-2 font-medium leading-snug">{a.title}</div>
+                      <div className="text-[11px] text-ink-2 font-medium leading-snug">
+                        {a.title}
+                      </div>
                       <div className="mt-1 flex items-center gap-1.5 text-[9.5px] text-ink-4">
                         <span className="capitalize">
-                          <Chip color={IMPACT_COLOR[a.impactLevel] ?? BRAND.steel}>{a.impactLevel}</Chip>
+                          <Chip color={IMPACT_COLOR[a.impactLevel] ?? BRAND.steel}>
+                            {a.impactLevel}
+                          </Chip>
                         </span>
                         <span>{formatRelative(a.createdAt)}</span>
                       </div>
                     </div>
-                    <ChevronRight size={12} className="shrink-0 mt-0.5 text-ink-4 group-hover:text-ink-2 transition-colors" />
+                    <ChevronRight
+                      size={12}
+                      className="shrink-0 mt-0.5 text-ink-4 group-hover:text-ink-2 transition-colors"
+                    />
                   </div>
                 </button>
               );
             })}
           </div>
         ) : (
-          <p className="text-[10.5px] text-ink-4 leading-[1.5]">
-            {t("scorecard.alerts.empty")}
-          </p>
+          <p className="text-[10.5px] text-ink-4 leading-[1.5]">{t("scorecard.alerts.empty")}</p>
         )}
       </Section>
 
@@ -381,7 +420,15 @@ export default function OverviewView({ zone, onNavigate }: Props) {
                   onClick={() => handleExport(f)}
                   className="w-full text-left px-2.5 py-1.5 rounded-chip text-[10.5px] text-ink-2 hover:bg-[rgba(255,255,255,0.06)] transition-colors flex items-center justify-between"
                 >
-                  <span>{t(f === "pdf" ? "scorecard.export.pdf" : f === "docx" ? "scorecard.export.docx" : "scorecard.export.txt")}</span>
+                  <span>
+                    {t(
+                      f === "pdf"
+                        ? "scorecard.export.pdf"
+                        : f === "docx"
+                          ? "scorecard.export.docx"
+                          : "scorecard.export.txt",
+                    )}
+                  </span>
                   <span className="text-[8.5px] text-ink-4 uppercase">.{f}</span>
                 </button>
               ))}

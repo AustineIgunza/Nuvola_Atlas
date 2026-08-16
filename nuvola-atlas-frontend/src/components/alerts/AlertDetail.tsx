@@ -21,8 +21,11 @@ export default function AlertDetail({ alert: a, zoneName, projectName }: Props) 
   const impact = IMPACT_STYLES[a.impactLevel] ?? IMPACT_STYLES.moderate;
   const sevColor = SEVERITY_COLORS[a.severity];
   const severityLabel = t(
-    a.severity === "high" ? "alerts.severity.high" :
-    a.severity === "medium" ? "alerts.severity.medium" : "alerts.severity.low",
+    a.severity === "high"
+      ? "alerts.severity.high"
+      : a.severity === "medium"
+        ? "alerts.severity.medium"
+        : "alerts.severity.low",
   );
   const kindKey = KIND_LABEL_KEYS[a.kind];
 
@@ -37,7 +40,10 @@ export default function AlertDetail({ alert: a, zoneName, projectName }: Props) 
       <div className="flex items-center gap-2 mb-3 flex-wrap">
         <span
           className="px-2 py-0.5 rounded text-[10px] font-bold uppercase text-white"
-          style={{ background: sevColor, boxShadow: `0 0 10px ${sevColor}55, 0 0 4px ${sevColor}30` }}
+          style={{
+            background: sevColor,
+            boxShadow: `0 0 10px ${sevColor}55, 0 0 4px ${sevColor}30`,
+          }}
         >
           {severityLabel}
         </span>

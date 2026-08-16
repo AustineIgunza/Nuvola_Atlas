@@ -33,9 +33,9 @@ export default function ApiKeysTable() {
     <div className="space-y-3">
       <div className="flex items-start justify-between gap-3">
         <p className="text-[12px] text-ink-4 flex-1">
-          Long-lived bearer tokens issued to programmatic partners. Plaintext
-          tokens are shown only at mint time — there is no way to recover one
-          after that. Revoke and reissue if a partner reports loss.
+          Long-lived bearer tokens issued to programmatic partners. Plaintext tokens are shown only
+          at mint time — there is no way to recover one after that. Revoke and reissue if a partner
+          reports loss.
         </p>
         <button
           onClick={() => setMintOpen(true)}
@@ -48,8 +48,12 @@ export default function ApiKeysTable() {
 
       <MintApiKeyModal open={mintOpen} onClose={() => setMintOpen(false)} />
 
-      {isLoading && <div className="text-[13px] text-ink-3 py-6 text-center">Loading API keys…</div>}
-      {isError && <div className="text-[13px] text-danger py-6 text-center">Failed to load API keys.</div>}
+      {isLoading && (
+        <div className="text-[13px] text-ink-3 py-6 text-center">Loading API keys…</div>
+      )}
+      {isError && (
+        <div className="text-[13px] text-danger py-6 text-center">Failed to load API keys.</div>
+      )}
 
       {data && (
         <div className="glass rounded-control overflow-hidden">
@@ -67,7 +71,10 @@ export default function ApiKeysTable() {
             </thead>
             <tbody>
               {data.map((k: ApiKey) => (
-                <tr key={k.id} className="border-t border-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.02)]">
+                <tr
+                  key={k.id}
+                  className="border-t border-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.02)]"
+                >
                   <td className="px-3 py-2 text-ink-1">{k.name}</td>
                   <td className="px-3 py-2 text-ink-3">
                     {k.user ? (
@@ -79,9 +86,15 @@ export default function ApiKeysTable() {
                       <span className="text-ink-4">—</span>
                     )}
                   </td>
-                  <td className="px-3 py-2 text-ink-3 text-[12px] tabular-nums">{k.abilities.join(", ")}</td>
                   <td className="px-3 py-2 text-ink-3 text-[12px] tabular-nums">
-                    {k.rate_limit_per_minute ? `${k.rate_limit_per_minute} / min` : <span className="text-ink-4">Unlimited</span>}
+                    {k.abilities.join(", ")}
+                  </td>
+                  <td className="px-3 py-2 text-ink-3 text-[12px] tabular-nums">
+                    {k.rate_limit_per_minute ? (
+                      `${k.rate_limit_per_minute} / min`
+                    ) : (
+                      <span className="text-ink-4">Unlimited</span>
+                    )}
                   </td>
                   <td className="px-3 py-2 text-ink-3 text-[12px]">{fmtTime(k.last_used_at)}</td>
                   <td className="px-3 py-2 text-ink-3 text-[12px]">{fmtTime(k.expires_at)}</td>
@@ -115,7 +128,9 @@ export default function ApiKeysTable() {
               ))}
               {data.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-3 py-6 text-center text-ink-4">No active API keys.</td>
+                  <td colSpan={7} className="px-3 py-6 text-center text-ink-4">
+                    No active API keys.
+                  </td>
                 </tr>
               )}
             </tbody>

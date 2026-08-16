@@ -47,7 +47,9 @@ export function useMapInstance() {
     const ro = new ResizeObserver(resize);
     ro.observe(container);
 
-    const onVisible = () => { if (document.visibilityState === "visible") resize(); };
+    const onVisible = () => {
+      if (document.visibilityState === "visible") resize();
+    };
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("orientationchange", resize);
     window.addEventListener("resize", resize);

@@ -28,7 +28,11 @@ export function subscribe(fn: Listener): () => void {
 
 export function emit(event: LiveEvent): void {
   listeners.forEach((fn) => {
-    try { fn(event); } catch { /* swallow listener errors */ }
+    try {
+      fn(event);
+    } catch {
+      /* swallow listener errors */
+    }
   });
 }
 

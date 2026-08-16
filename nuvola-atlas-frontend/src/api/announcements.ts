@@ -34,8 +34,7 @@ const SEED: Announcement[] = [
   {
     id: "ann-pilot-live",
     title: "Nairobi Pilot: Live",
-    body:
-      "The pilot deployment covers all 17 sub-counties. Vitality Scores are live; Daystar delivery is inbound and the '9 of 13 indicators active' chip tracks per-zone rollout.",
+    body: "The pilot deployment covers all 17 sub-counties. Vitality Scores are live; Daystar delivery is inbound and the '9 of 13 indicators active' chip tracks per-zone rollout.",
     severity: "info",
     scope: { kind: "global" },
     startsAt: "2026-07-01T00:00:00Z",
@@ -47,8 +46,7 @@ const SEED: Announcement[] = [
   {
     id: "ann-daystar-slip",
     title: "Daystar delivery ETA: Aug 15",
-    body:
-      "Devyan confirmed the ingestion cutover window with Daystar this morning. Investor watchlists will start seeing real indicator freshness at the mid-August window.",
+    body: "Devyan confirmed the ingestion cutover window with Daystar this morning. Investor watchlists will start seeing real indicator freshness at the mid-August window.",
     severity: "warning",
     scope: { kind: "role", role: "investor" },
     startsAt: "2026-07-12T00:00:00Z",
@@ -60,8 +58,7 @@ const SEED: Announcement[] = [
   {
     id: "ann-methodology-v11",
     title: "Methodology v1.1 preview open",
-    body:
-      "Preview the diff for the proposed weights change under Admin → Methodology. Publish is gated on typed 'publish' confirmation and triggers RecalculateAllZones.",
+    body: "Preview the diff for the proposed weights change under Admin → Methodology. Publish is gated on typed 'publish' confirmation and triggers RecalculateAllZones.",
     severity: "info",
     scope: { kind: "role", role: "admin" },
     startsAt: "2026-07-10T00:00:00Z",
