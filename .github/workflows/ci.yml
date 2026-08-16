@@ -13,18 +13,53 @@ concurrency:
 
 jobs:
   # ----------------------------------------------------------------------------
+  # Which services did this PR actually touch?
+  #
+  # The previous guards tested `contains(toJson(pull_request.changed_files), ...)`
+  # against a directory name. `changed_files` is an integer count, not a file
+  # list, so `toJson` produced something like "7" and every contains() was
+  # false — CI skipped on every pull request and only ever ran after a merge
+  # to main. Resolving the paths properly is the whole point of the gate.
+  #
+  # The filter only runs on pull_request, where it resolves changed paths from
+  # the API without needing a checkout. Push events skip it and run everything.
+  # ----------------------------------------------------------------------------
+  changes:
+    name: Detect changed paths
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+      ingestion: ${{ steps.filter.outputs.ingestion }}
+    steps:
+      - uses: dorny/paths-filter@v3
+        id: filter
+        if: github.event_name == 'pull_request'
+        with:
+          filters: |
+            shared: &shared
+              - '.github/workflows/**'
+              - 'docker-compose*.yml'
+            backend:
+              - *shared
+              - 'nuvola-atlas-backend/**'
+            frontend:
+              - *shared
+              - 'nuvola-atlas-frontend/**'
+            ingestion:
+              - *shared
+              - 'nuvola-atlas-ingestion/**'
+
+  # ----------------------------------------------------------------------------
   # Backend — Laravel 11 + PostgreSQL 16 + PostGIS 3.4
   # ----------------------------------------------------------------------------
   backend:
     name: Backend — phpunit + smoke checks
     runs-on: ubuntu-latest
+    needs: changes
 
-    # Skip when the PR doesn't touch the backend or shared infra. Push events
-    # to main always run so the protection on main stays meaningful.
-    if: |
-      github.event_name == 'push' ||
-      contains(toJson(github.event.pull_request.changed_files), 'nuvola-atlas-backend') ||
-      contains(toJson(github.event.pull_request.changed_files), '.github/workflows')
+    # Pushes to main always run everything so branch protection stays meaningful.
+    if: github.event_name == 'push' || needs.changes.outputs.backend == 'true'
 
     services:
       postgres:
@@ -114,11 +149,9 @@ jobs:
   frontend:
     name: Frontend — tsc + vitest + build
     runs-on: ubuntu-latest
+    needs: changes
 
-    if: |
-      github.event_name == 'push' ||
-      contains(toJson(github.event.pull_request.changed_files), 'nuvola-atlas-frontend') ||
-      contains(toJson(github.event.pull_request.changed_files), '.github/workflows')
+    if: github.event_name == 'push' || needs.changes.outputs.frontend == 'true'
 
     defaults:
       run:
@@ -151,11 +184,9 @@ jobs:
   ingestion:
     name: Ingestion — ruff + mypy + pytest
     runs-on: ubuntu-latest
+    needs: changes
 
-    if: |
-      github.event_name == 'push' ||
-      contains(toJson(github.event.pull_request.changed_files), 'nuvola-atlas-ingestion') ||
-      contains(toJson(github.event.pull_request.changed_files), '.github/workflows')
+    if: github.event_name == 'push' || needs.changes.outputs.ingestion == 'true'
 
     defaults:
       run:
