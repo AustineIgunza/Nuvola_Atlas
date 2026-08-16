@@ -106,12 +106,30 @@ shipped, so the schema is ready.
 - [ ] Admin tab UI alongside Content and Announcements.
 - [ ] Scoping test: a firm-scoped report must not surface to another firm.
 
-### A5. Flip the backend CI gate
-`.github/workflows/ci.yml` still carries `continue-on-error` on the backend
-phpunit job, from when the suite was red against the indicator schema. It is
-247/247 green now, so the guard is protecting nothing and hiding regressions.
-- [ ] Set `continue-on-error: false`.
-- [ ] Confirm CI provisions Postgres + PostGIS the way `phpunit.xml` expects.
+### A5. Backend CI gate — done, and the original entry was wrong
+This item claimed `continue-on-error` sat on the backend phpunit job. It never
+did; phpunit has always run blocking. The two flags were on **Pint** and
+**PHPStan**, and the real defect was worse than a flag: `pint --dirty --test`
+derives its file list from uncommitted working-tree changes, and a fresh CI
+checkout has none, so it inspected zero files and passed unconditionally.
+- [x] Pint now runs repo-wide and blocks (`ec07fd6`), after the two formatting
+      passes in `1d351f6` (formatting) and `b189d43` (`declare_strict_types`,
+      split out because it changes scalar coercion, not layout).
+- [x] Confirmed CI provisions Postgres + PostGIS the way `phpunit.xml` expects:
+      the workflow's `postgis/postgis:16-3.4` service publishes 5434 with
+      db/user/password `nuvola_atlas_test` / `nuvola` / `nuvola_secret`, which
+      is exactly what `phpunit.xml` force-overrides to, and a `CREATE EXTENSION
+      postgis` step stands in for the local `docker/postgres/init.sql`.
+- [ ] PHPStan stays informational: **158 violations at level 5**, across 41
+      files. 100 of them are `property.notFound` — Larastan not resolving
+      Eloquent's dynamic attributes (`Model::$id`, `Model::$name`). Adding
+      `@property` docblocks to the models would clear roughly two thirds of the
+      debt in one pass. Do not lower the level to go green.
+- [ ] Level 6 probed, not adopted: **303 violations**. The entire +145 delta is
+      missing type annotations (`missingType.iterableValue` 53,
+      `missingType.generics` 48, `missingType.return` 23, plus 21 unresolvable
+      return types). Every level-5 category holds at its level-5 count, so
+      level 6 surfaces no new genuine bugs — it is an annotation project.
 
 ### A6. Object storage decision (Cloudflare R2 vs Vercel Blob)
 Blocks nothing today because briefs are written to local disk, which does not
