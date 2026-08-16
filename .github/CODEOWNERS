@@ -1,0 +1,26 @@
+# Ownership follows the service table in README.md. GitHub requests review
+# from the owner automatically when a PR touches their paths.
+#
+# Last matching rule wins, so order matters: general first, specific last.
+
+# Anything not claimed below reaches the two people with commit history here.
+*                           @AustineIgunza @khillon-makwana
+
+# React 18 + Vite SPA — Austine
+/nuvola-atlas-frontend/     @AustineIgunza
+/NuvolaAtlasPrototype.jsx   @AustineIgunza
+
+# Laravel 13 JSON API — Khillon
+/nuvola-atlas-backend/      @khillon-makwana
+
+# FastAPI ingestion and the n8n glue — Devyan.
+# Left unassigned deliberately: Devyan has no commits in this repo, so his
+# GitHub handle is not verifiable from git history, and CODEOWNERS fails
+# silently on an unknown account — the rule matches nothing and no review is
+# ever requested. Fill both lines in once the handle is confirmed.
+# /nuvola-atlas-ingestion/  @<devyan-handle>
+# /infra/n8n/               @<devyan-handle>
+
+# CI and this file itself: both maintainers, since a bad workflow change
+# disables the checks for everyone.
+/.github/                   @AustineIgunza @khillon-makwana
