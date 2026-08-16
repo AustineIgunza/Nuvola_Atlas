@@ -1,0 +1,41 @@
+# Mirrors the formatters so an editor and a CI run never disagree:
+# Pint (PSR-12) for PHP, Prettier for the frontend, ruff for ingestion.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+# nuvola-atlas-frontend/.prettierrc.json — tabWidth 2, printWidth 100
+[*.{ts,tsx,js,jsx,mjs,cjs,css,json,jsonc}]
+indent_size = 2
+max_line_length = 100
+
+[*.{yml,yaml}]
+indent_size = 2
+
+# nuvola-atlas-ingestion/pyproject.toml — ruff line-length 100
+[*.py]
+indent_size = 4
+max_line_length = 100
+
+[*.php]
+indent_size = 4
+
+[*.md]
+# Two trailing spaces are a hard line break in Markdown.
+trim_trailing_whitespace = false
+
+[Makefile]
+indent_style = tab
+
+# Frozen design spec — do not reformat. See CLAUDE.md.
+[NuvolaAtlasPrototype.jsx]
+indent_style = unset
+indent_size = unset
+trim_trailing_whitespace = false
+insert_final_newline = unset

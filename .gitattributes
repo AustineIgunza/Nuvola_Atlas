@@ -1,0 +1,29 @@
+# Normalise line endings in the index regardless of contributor OS. Working
+# trees still follow core.autocrlf, so Windows checkouts stay CRLF.
+* text=auto
+
+# These are read by Linux — a CRLF shebang fails with "bad interpreter: ^M",
+# and supervisor/nginx/psql are equally unforgiving. They must be LF in the
+# working tree too, not just in the index.
+*.sh        text eol=lf
+*.conf      text eol=lf
+*.sql       text eol=lf
+Dockerfile  text eol=lf
+
+# Never touched by the CRLF machinery.
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.gif    binary
+*.ico    binary
+*.webp   binary
+*.woff   binary
+*.woff2  binary
+*.ttf    binary
+*.otf    binary
+*.pdf    binary
+*.docx   binary
+
+# Generated — keep them out of diffs and language stats.
+package-lock.json  linguist-generated=true -diff
+composer.lock      linguist-generated=true -diff
