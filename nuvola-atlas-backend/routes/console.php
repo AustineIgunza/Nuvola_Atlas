@@ -19,3 +19,8 @@ Schedule::command('nuvola:alert-stale-feeds')->dailyAt('02:30');
 // Weekly pre-generation of LP-style firm briefs so /investor/brief hits
 // a warm PDF instead of re-rendering. Runs at Sunday 03:15 UTC (06:15 EAT).
 Schedule::command('nuvola:pregen-firm-briefs')->weeklyOn(0, '03:15');
+
+// Phase C — overnight rebuild of the pre-aggregated county rollup, then
+// the 30-day raw-payload retention sweep.
+Schedule::command('nuvola:refresh-county-rollup')->dailyAt('03:00');
+Schedule::command('nuvola:prune-ingestion-payloads')->dailyAt('03:45');

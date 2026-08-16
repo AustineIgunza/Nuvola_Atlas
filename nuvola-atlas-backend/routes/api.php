@@ -78,6 +78,7 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
     Route::get('reports', [ReportController::class, 'index']);
     Route::get('history', [HistoryController::class, 'index']);
     Route::get('vitality/methodology', [VitalityController::class, 'methodology']);
+    Route::get('vitality/county', [VitalityController::class, 'county']);
 
     Route::middleware('throttle:auth')->group(function () {
         Route::post('auth/sign-in', [AuthController::class, 'signIn']);

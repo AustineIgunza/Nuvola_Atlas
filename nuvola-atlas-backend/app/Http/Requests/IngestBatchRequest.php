@@ -16,7 +16,8 @@ class IngestBatchRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        // Authorization is handled by the EnsureInternalSecret middleware
+        // Authorization is handled by the `internal.secret` middleware
+        // (VerifyInternalSecret) on the route itself — see routes/api.php.
         return true;
     }
 
