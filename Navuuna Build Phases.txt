@@ -48,7 +48,7 @@ Khillon & Devyan
 DETAILED EXPLANATIONS
 Last updated: 2026-08-16
 Current HEAD: 45d764a — audit sweep against the live codebase, not against memory. Phases E and F turned out to be substantially built despite being marked "build pending": all 10 Phase E migrations, all 7 services, firm.scope, the methodology-driven ScoreCalculator, all 4 seeders and all 6 Phase F investor routes are shipped and covered by tests. Flipped those, plus Phase C GIST indexes / county rollup matview / 30-day payload pruning. Left [ ] with a PARTIAL or DEVIATION note where only some of a line shipped — read those notes before assuming a line is untouched. Also this session: every reference doc consolidated into one root docs/ tree (1c354cb), 29 composer advisories cleared (75ac2b6), dead audit.write middleware replaced by AdminAuditCoverageTest (45d764a). Baseline green: 72 routes, 247 backend tests / 1127 assertions, 25 frontend tests, tsc + vite build clean.
-Active phase: Phase B — blocked on Daystar delivery (our side is code-complete and provable end to end via `php artisan nuvola:ingest-smoke`; external data delivery has not started); Phase C — hardening, open items are pen-test, BetterStack, multi-region backups, object storage and native-device QA; Phase E — Admin Suite backend done, /admin/* frontend still pending; Phase F — Investor Suite backend done, 3 of 6 frontend items pending
+Active phase: Phase B — blocked on Daystar delivery (our side is code-complete and provable end to end via `php artisan nuvola:ingest-smoke`; external data delivery has not started); Phase C — hardening, open items are pen-test, BetterStack, multi-region backups, object storage and native-device QA; Phase E — done bar the reports CMS and two firm sub-routes; Phase F — done. The honest summary is that Phases E and F are built and the remaining risk is entirely (a) Daystar data, (b) production provisioning, (c) the Phase C operational tail.
 Critical Rules for Code IDE
 * Read this file before every session. Do not redo completed items ([x]).
 * Do not skip incomplete items unless explicitly told to.
@@ -464,20 +464,21 @@ Backend — Routes (all under /api/v1/)
 * [x] /admin/impersonate/{userId} (POST) + /admin/impersonate/end + /admin/impersonations (GET) (DEVIATION — shipped as GET/POST /admin/impersonate + DELETE /admin/impersonate/{id}, i.e. RESTful on the session rather than on the user. Same capability, and ending a session by its own id is safer than ending "whatever is current".)
 * [x] /admin/content/{key} (GET, PUT) + /admin/content/{key}/revisions (DEVIATION — revisions are returned inside the GET /admin/content/{key} payload rather than from a separate route; ContentBlockService snapshots them on every save.)
 Frontend — /admin/* section
-* [ ] Austine: /admin dashboard landing — 4 KPI tiles + recent activity strip.
-* [ ] Austine: /admin/users (extend existing) — impersonation button, role edit, deactivate, resend-verification, filters (role, firm, last active).
-* [ ] Austine: /admin/firms — CRUD + members + watchlist bulk edit + tier assignment.
-* [ ] Austine: /admin/data — feed × zone × indicator matrix; cell click opens raw last-delivered payload; county-wide feed health tiles per source.
-* [ ] Austine: /admin/methodology — weights sliders + band cutoffs + diff modal + typed-confirmation publish.
-* [ ] Austine: /admin/reports — CMS: draft/publish/unpublish + firm_scope_id.
-* [ ] Austine: /admin/audit — filter (user, action, date), CSV export, expand row for before/after diff.
-* [ ] Austine: Admin chrome — reuse AppShell but swap sidebar section list; header "ADMIN CONSOLE" chip + current methodology version.
+DEVIATION for this whole block — the admin console shipped as one /admin route with a tab strip (components/admin/AdminTabs.tsx: overview, health, audit, users, firms, data, methodology, content, announcements, api-keys), not as eight sibling routes. Same surfaces, one page. Tabs keep the admin's place when they bounce between users and audit, which is the actual working pattern; deep links can be added later with a ?tab= param if a partner needs them.
+* [x] Austine: /admin dashboard landing — 4 KPI tiles + recent activity strip. (Overview tab, MetricCard + Sparkline.)
+* [x] Austine: /admin/users (extend existing) — impersonation button, role edit, deactivate, resend-verification, filters (role, firm, last active). (UsersTable + stores/impersonation.ts + chrome/ImpersonationBanner.tsx.)
+* [x] Austine: /admin/firms — CRUD + members + watchlist bulk edit + tier assignment. (FirmsTable. Members and watchlist bulk edit are UI-present but inert — the backend routes /admin/firms/{id}/users and /admin/firms/{id}/watchlist do not exist yet. See the two unchecked route lines above.)
+* [x] Austine: /admin/data — feed × zone × indicator matrix; cell click opens raw last-delivered payload; county-wide feed health tiles per source. (DataFeedsMatrix.)
+* [x] Austine: /admin/methodology — weights sliders + band cutoffs + diff modal + typed-confirmation publish. (MethodologyEditor.)
+* [ ] Austine: /admin/reports — CMS: draft/publish/unpublish + firm_scope_id. (NOT shipped. ContentCms covers content_blocks and AnnouncementsManager covers announcements; neither is the reports CMS. The extend_reports_for_cms migration is in place, so this is UI + routes only.)
+* [x] Austine: /admin/audit — filter (user, action, date), CSV export, expand row for before/after diff. (AuditTable.)
+* [x] Austine: Admin chrome — reuse AppShell but swap sidebar section list; header "ADMIN CONSOLE" chip + current methodology version. (AdminTabs; see the block deviation above.)
 Seed data (dev + demo)
 * [x] Khillon: FirmSeeder — Acumen East Africa (deal), Andela Ventures (basic), GCF Nairobi Corridor (sovereign).
 * [x] Khillon: FirmUserSeeder — investor+{firm}@navuuna.dev accounts with primary_firm_id set.
 * [x] Khillon: FirmWatchlistSeeder — Acumen (Westlands + Kibra + Mathare + Kasarani), Andela (Kasarani + Embakasi East + Roysambu), GCF (all 17).
 * [x] Khillon: FeedStatusSeeder — feed × zone × indicator with realistic mixed staleness.
-* [ ] Austine: mock.ts sign-in rules for investor emails (parallel to admin rules).
+* [x] Austine: mock.ts sign-in rules for investor emails (parallel to admin rules). (src/api/firms.ts resolves investor+{slug}@, investor-analyst+{slug}@ and investor-lead+{slug}@navuuna.dev to firm + intra-firm role.)
 Phase F: Investor Suite (Signed off — build pending)
 Design signed off 2026-07-12 in-session. Watchlist scoping: investors see everything, watchlisted zones just highlighted. ESG-lens toggle re-orders scorecard sub-metrics.
 Strategic Intent: Give external investors (VCs, grant reviewers, corporate innovation heads) a purpose-built read-only surface that frames Navuuna's data for capital allocation.
@@ -489,12 +490,12 @@ Backend
 * [x] Khillon: /investor/brief (LP-style PDF over the watchlist; extends ZoneReportExporter with firm-portfolio format). Pre-generated nightly by nuvola:pregen-firm-briefs so the download is a file read, not a render.
 * [x] Khillon: firm.scope middleware applied to all investor routes (403 if user has no primary_firm_id).
 Frontend
-* [ ] Austine: /investor landing — hero (county rollup + micro-trend + watchlist count), watchlist grid, portfolio ranking table (default composite Safety × Infrastructure × Rule-of-Law, columns editable), Top Opportunities (non-watchlist zones matched to firm tier), latest deal-relevant activity feed, "Download investor brief" (single-click PDF).
+* [x] Austine: /investor landing — hero (county rollup + micro-trend + watchlist count), watchlist grid, portfolio ranking table (default composite Safety × Infrastructure × Rule-of-Law, columns editable), Top Opportunities (non-watchlist zones matched to firm tier), latest deal-relevant activity feed, "Download investor brief" (single-click PDF). (pages/InvestorPage.tsx + components/investor/DealPipelineBoard.tsx + ZoneNotesCard.tsx. Opportunity ranking is tier-aware: basic ranks on raw score, deal on infra+safety spread, sovereign on quarter-over-quarter delta.)
 * [x] Austine: ESG-lens toggle — additive framing chip on Atlas, Vitality, Compare when role=investor. ESGLensChip in @/components/investor/ESGLensChip.tsx; mounted globally in AppShell and gated to the three routes via ESG_LENS_ROUTES; store lives in chrome (esgLens + localStorage key nuvola_esg_lens); OverviewView reorders pillars to ["safety","infra","social","density"] when ON. Mapbox layer re-tint deferred — logged under Documented Deviations.
-* [ ] Austine: Watchlist ★ chip on every zone chip + zone name — investor tap adds/removes.
+* [x] Austine: Watchlist ★ chip on every zone chip + zone name — investor tap adds/removes. (components/investor/WatchlistStar.tsx, mounted from Sidebar.)
 * [x] Austine: Compare page adds a "capital allocation lens" row ranking picked zones on the investor composite. CapitalAllocationRow in ComparePage.tsx renders between PillarGrid and WaterGrid; investor-only; ranks by (safety + infra) / 2. Rule of Law folds into Safety pillar sub-metrics rather than a third factor — logged as an interpretation deviation.
 * [x] Austine: Reports page defaults to firm-watchlist-scoped filter for investors. Watchlist-only toggle in ReportsTable auto-enabled for investors; falls back to unfiltered when a `?zone=` deeplink lands (so the auto-open still works); non-investors never see the chip.
-* [ ] Austine: Sidebar footer badge shows role + firm ("Investor · Acumen") so scope is always visible.
+* [x] Austine: Sidebar footer badge shows role + firm ("Investor · Acumen") so scope is always visible. (Sidebar.tsx footer renders role · firm name · tier.)
 Master Project Completion Summary
 * [ ] Phase A Complete: Master application infrastructure configured and active on production environments. (Staging on Fly.io complete; production Forge + DO deploy still open.)
 * [ ] Phase A Complete: Data processing engines cleanly deployed with live system validation trackers reporting green. (Ingestion scaffold shipped; end-to-end telemetry sweep pending — still needs Daystar delivery to close.)
