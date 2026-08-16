@@ -9,11 +9,11 @@ use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 /**
- * Phase B — /api/health/ingestion answers "is data still arriving", which is
+ * Phase B — /api/health/intake answers "is data still arriving", which is
  * a different question from /api/health's "is the app up". Only silence is
  * an outage; bad data is a 200 that says so.
  */
-class IngestionHealthTest extends TestCase
+class IntakeHealthTest extends TestCase
 {
     private function log(string $source, int $minutesAgo, bool $accepted = true): void
     {
@@ -32,7 +32,7 @@ class IngestionHealthTest extends TestCase
 
     public function test_a_channel_that_has_never_delivered_is_stalled(): void
     {
-        $this->getJson('/api/health/ingestion')
+        $this->getJson('/api/health/intake')
             ->assertStatus(503)
             ->assertJsonPath('status', 'stalled')
             ->assertJsonPath('last_batch_at', null)
@@ -44,7 +44,7 @@ class IngestionHealthTest extends TestCase
     {
         $this->log('daystar', minutesAgo: 30);
 
-        $this->getJson('/api/health/ingestion')
+        $this->getJson('/api/health/intake')
             ->assertOk()
             ->assertJsonPath('status', 'ok')
             ->assertJsonPath('minutes_since_last_batch', 30)
@@ -57,7 +57,7 @@ class IngestionHealthTest extends TestCase
     {
         $this->log('daystar', minutesAgo: 1441);
 
-        $this->getJson('/api/health/ingestion')
+        $this->getJson('/api/health/intake')
             ->assertStatus(503)
             ->assertJsonPath('status', 'stalled')
             ->assertJsonPath('minutes_since_last_batch', 1441)
@@ -70,7 +70,7 @@ class IngestionHealthTest extends TestCase
         $this->log('daystar', minutesAgo: 10);
         $this->log('daystar', minutesAgo: 5, accepted: false);
 
-        $this->getJson('/api/health/ingestion')
+        $this->getJson('/api/health/intake')
             ->assertOk()
             ->assertJsonPath('status', 'degraded')
             ->assertJsonPath('batches_last_24h.accepted', 1)
@@ -81,7 +81,7 @@ class IngestionHealthTest extends TestCase
     {
         $this->log(DataIngestionLog::SMOKE_SOURCE_PREFIX.'20260816T0900Z-abcd', minutesAgo: 1);
 
-        $this->getJson('/api/health/ingestion')
+        $this->getJson('/api/health/intake')
             ->assertStatus(503)
             ->assertJsonPath('status', 'stalled')
             ->assertJsonPath('last_batch_at', null)
@@ -93,7 +93,7 @@ class IngestionHealthTest extends TestCase
         config(['ingestion.stall_after_minutes' => 60]);
         $this->log('daystar', minutesAgo: 90);
 
-        $this->getJson('/api/health/ingestion')
+        $this->getJson('/api/health/intake')
             ->assertStatus(503)
             ->assertJsonPath('status', 'stalled')
             ->assertJsonPath('stall_after_minutes', 60);

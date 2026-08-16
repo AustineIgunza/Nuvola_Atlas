@@ -37,7 +37,10 @@ use Illuminate\Support\Facades\Route;
 
 // Unversioned operational endpoints
 Route::get('health', [HealthController::class, 'index']);
-Route::get('health/ingestion', [HealthController::class, 'ingestion']);
+// "intake", not "ingestion": the FastAPI service already owns
+// /api/health/ingestion on its own host, and two identically-named health
+// endpoints meaning different things is a trap at 2am.
+Route::get('health/intake', [HealthController::class, 'intake']);
 
 // Phase B — FastAPI → Laravel ingestion channel. Guarded by
 // X-Internal-Secret only; never accepts a bearer token.

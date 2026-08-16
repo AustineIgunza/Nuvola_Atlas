@@ -30,9 +30,11 @@ class HealthController extends Controller
     }
 
     /**
-     * Ingestion-channel health, for uptime monitors watching the
+     * Intake-channel health, for uptime monitors watching the
      * FastAPI → Laravel hop specifically. `/api/health` answers "is the
-     * app up"; this answers "is data still arriving".
+     * app up"; this answers "is data still arriving". The ingestion
+     * service has its own `/api/health/ingestion` covering the other end
+     * of the same hop.
      *
      * Only `stalled` returns 503 — a rejected batch or an overdue feed is
      * a data-quality problem for the team to chase, not an outage, so it
@@ -42,7 +44,7 @@ class HealthController extends Controller
      * endpoint lets the caller supply `received_at`, so it is the one
      * timestamp a misconfigured publisher could use to fake freshness.
      */
-    public function ingestion(FeedStatusService $feeds): JsonResponse
+    public function intake(FeedStatusService $feeds): JsonResponse
     {
         $stallAfter = (int) config('ingestion.stall_after_minutes');
         $now = now();
