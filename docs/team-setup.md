@@ -128,13 +128,22 @@ SESSION_DRIVER=file
 QUEUE_CONNECTION=sync     # or database if you want the queue tables
 ```
 
-Two gotchas:
+Three gotchas:
 1. `CACHE_STORE=file` is the safe default. `database` requires the `cache`
    table and `sqlite` requires the `pdo_sqlite` PHP extension — if either
    is missing, every request 500s. `file` avoids both traps.
 2. If you set `CACHE_STORE` after `artisan serve` is already running, kill
    the server and restart it. Laravel caches the boot config per request
    but the built-in server holds on to the first read of `.env`.
+3. **Do not keep a `.env.local` in the backend directory.** `artisan serve`
+   exports `APP_ENV` to the server it spawns, and Laravel then loads
+   `.env.{APP_ENV}` *instead of* `.env`. With `APP_ENV=local` and a
+   `.env.local` present, your entire Postgres block is silently ignored,
+   `DB_CONNECTION` falls back to the framework default of `sqlite`, and
+   `/api/health` reports `could not find driver` — while `php artisan` on the
+   command line keeps working, because nothing exports `APP_ENV` there. The
+   Vercel CLI drops exactly such a file when run from the wrong directory.
+   Reproduce it with `APP_ENV=local php artisan db:show`.
 
 ### Create the database + run migrations
 

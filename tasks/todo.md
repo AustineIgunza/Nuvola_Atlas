@@ -31,8 +31,11 @@ it."* It is:
 1. **We have never run on real data.** Every score on screen traces back to
    fixtures. The ingestion channel is provably correct end to end
    (`php artisan nuvola:ingest-smoke`) but has never carried a Daystar byte.
-2. **We have never run in production.** Staging is on Fly.io; the Forge + DO +
-   Supabase target is scripted but unprovisioned.
+2. **We have never run in production.** The Supabase half is further along than
+   this file previously claimed: the project exists, PostGIS 3.3 is installed,
+   and the app schema is live — local dev already points `DB_HOST` at it. What
+   is missing is the application tier (DO droplet via Forge) and a migration
+   ledger that matches the repo. See A0.
 3. **The operational tail is thin.** No pen test, no alerting destination, no
    restore drill, no object storage decision.
 
@@ -45,7 +48,27 @@ Everything below is ordered against those three.
 Ordered. Do them top-down; each is a slice ending in a commit and a green
 five-check baseline.
 
-### A1. Close the firms tab's inert controls — **do first**
+### A0. Reconcile the Supabase migration ledger — **do first**
+`migrate:status` against Supabase reports two pending migrations, and they are
+pending for two different reasons:
+- `2026_07_17_153850_create_data_ingestion_logs_table` — the table **already
+  exists** in the database but has no row in `migrations`. A plain
+  `php artisan migrate` will abort on "relation already exists".
+- `2026_08_16_000001_add_spatial_index_rollup_and_payload_retention` — genuinely
+  never applied. The GIST index, the county rollup matview and the payload
+  retention trigger are absent in Supabase, so proximity queries there are still
+  sequential scans and the KDPA redaction path does not exist.
+
+- [ ] Establish how `data_ingestion_logs` was created outside the ledger before
+      writing anything — an out-of-band schema change is the thing that makes
+      every later migration untrustworthy.
+- [ ] Reconcile with `migrate --pretend` first, then insert the missing ledger
+      row (or re-run the migration against a scratch branch) — do not guess.
+- [ ] Apply `2026_08_16_000001` and verify the matview refreshes concurrently.
+- [ ] Then decide whether prod migrations run from Forge deploy hooks or by hand.
+      Right now nothing runs them, which is why the drift went unnoticed.
+
+### A1. Close the firms tab's inert controls
 The admin Firms tab renders member management and watchlist bulk edit, but
 `/admin/firms/{id}/users` and `/admin/firms/{id}/watchlist` do not exist. The UI
 calls into nothing. This is the only place in the app where a control lies to
@@ -111,9 +134,10 @@ each one blocks a chunk of Track C. Full detail lives in
 [`docs/ops/CREDENTIALS-NEEDED.md`](../docs/ops/CREDENTIALS-NEEDED.md) — that
 file is the ledger; this is the summary.
 
-- [ ] **Provision production** — DO droplet via Forge, Supabase Postgres +
-      PostGIS, `nuvola_app` role, env paste, deploy, smoke `/api/health`.
-      *Unblocks: everything in Track C.*
+- [ ] **Provision the application tier** — DO droplet via Forge, `nuvola_app`
+      role, env paste, deploy, smoke `/api/health`. The Supabase database is
+      already provisioned with PostGIS 3.3 and the app schema, so this is the
+      remaining half, not the whole job. *Unblocks: everything in Track C.*
 - [ ] **Supabase AES-at-rest toggle.** *Unblocks: the KDPA compliance claim.*
 - [ ] **Sentry DSNs** (backend + ingestion). *Unblocks: error tracking.*
 - [ ] **GitHub branch protection on `main`.** *Unblocks: the CI gate meaning anything.*
