@@ -102,7 +102,6 @@ return Application::configure(basePath: dirname(__DIR__))
         );
 
         $middleware->web(append: [
-            \App\Http\Middleware\HandleInertiaRequests::class,
             \App\Http\Middleware\SecurityHeaders::class,
         ]);
         // Token-based auth (Bearer) — no stateful/CSRF needed
@@ -122,7 +121,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'internal.secret' => \App\Http\Middleware\VerifyInternalSecret::class,
             'ingest.secret' => \App\Http\Middleware\VerifyInternalSecret::class,
         ]);
-        $middleware->redirectGuestsTo(fn (Request $request) => $request->is('api/*') ? null : route('login'));
+        // Headless: there is no login page to bounce anyone to, and naming a
+        // route that does not exist would turn every unauthenticated request
+        // into a 500. Always answer 401 instead.
+        $middleware->redirectGuestsTo(fn () => null);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(function (Request $request, \Throwable $e) {

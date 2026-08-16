@@ -1,13 +1,23 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
+declare(strict_types=1);
 
-Route::get('/', fn () => Inertia::render('Atlas'));
-Route::get('/atlas', fn () => Inertia::render('Atlas'));
-Route::get('/vitality', fn () => Inertia::render('Vitality'));
-Route::get('/infrastructure/{id?}', fn () => Inertia::render('Infrastructure'));
-Route::get('/reports', fn () => Inertia::render('Reports'));
-Route::get('/alerts', fn () => Inertia::render('Alerts'));
-Route::get('/sign-in', fn () => Inertia::render('SignIn'));
-Route::get('/sign-up', fn () => Inertia::render('SignUp'));
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Navuuna's backend is headless — the SPA lives in nuvola-atlas-frontend and
+| deploys separately. There are no server-rendered pages. This file still
+| exists because signed URLs (email verification, password reset) resolve
+| through the web stack.
+|
+*/
+
+Route::get('/', fn (): JsonResponse => response()->json([
+    'service' => 'navuuna-api',
+    'health' => rtrim((string) config('app.url'), '/').'/api/health',
+]));
