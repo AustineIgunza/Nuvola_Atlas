@@ -18,6 +18,16 @@ class Zone extends Model
 
     protected $guarded = [];
 
+    /**
+     * Pillar deltas batch-loaded by PillarDeltaCalculator before rendering.
+     * A plain property rather than an attribute so Eloquent never tries to
+     * persist it; null means "not loaded", which ZoneResource reports as
+     * unknown rather than as no movement.
+     *
+     * @var array{deltas: array{social: ?int, safety: ?int, density: ?int, infra: ?int}, windowDays: ?int}|null
+     */
+    public ?array $pillarDelta = null;
+
     public function scopeWithCentroid($query)
     {
         return $query->selectRaw('*, ST_X(centroid::geometry) as lon, ST_Y(centroid::geometry) as lat');

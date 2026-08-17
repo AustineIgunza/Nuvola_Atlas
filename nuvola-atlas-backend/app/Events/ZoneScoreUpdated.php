@@ -6,6 +6,7 @@ namespace App\Events;
 
 use App\Http\Resources\ZoneResource;
 use App\Models\Zone;
+use App\Services\PillarDeltaCalculator;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -33,8 +34,9 @@ class ZoneScoreUpdated implements ShouldBroadcast
 
     public function broadcastWith(): array
     {
-        return (new ZoneResource(
-            $this->zone->loadMissing('layers')
-        ))->resolve();
+        $zone = $this->zone->loadMissing('layers');
+        $zone->pillarDelta = (new PillarDeltaCalculator)->forZones([$zone])[$zone->id] ?? null;
+
+        return (new ZoneResource($zone))->resolve();
     }
 }

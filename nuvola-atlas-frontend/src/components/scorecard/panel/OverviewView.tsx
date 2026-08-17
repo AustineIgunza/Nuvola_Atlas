@@ -5,6 +5,7 @@ import { ChevronRight, Droplets, Info, Download, ChevronDown } from "lucide-reac
 import { BASE, USE_MOCK, authHeaders } from "@/api/client";
 import { api } from "@/api";
 import { BRAND } from "@/lib/scoreColor";
+import { averageDelta } from "@/lib/deltas";
 import { waterProfile } from "@/lib/waterSanitation";
 import { formatRelative } from "@/lib/format";
 import { useT } from "@/lib/i18n/use-t";
@@ -50,9 +51,7 @@ export default function OverviewView({ zone, onNavigate }: Props) {
   const wp = waterProfile(zone);
   const waterAccent = wp.opportunity ? BRAND.teal : BRAND.steel;
 
-  const totalDelta = Math.round(
-    (zone.deltas.social + zone.deltas.safety + zone.deltas.density + zone.deltas.infra) / 4,
-  );
+  const totalDelta = averageDelta(zone.deltas);
 
   const sources = [
     { source: "KNBS Population", fresh: true, age: "2 days" },
@@ -145,18 +144,25 @@ export default function OverviewView({ zone, onNavigate }: Props) {
               {t("scorecard.header.indexTitle")}
             </div>
             <div className="mt-1 flex flex-wrap items-center gap-1.5">
-              <span
-                className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium"
-                style={{
-                  background: totalDelta >= 0 ? "rgba(31,138,120,0.12)" : "rgba(211,64,46,0.12)",
-                  color: totalDelta >= 0 ? BRAND.teal : BRAND.rose,
-                }}
-              >
-                {t("scorecard.deltaThisQuarter", {
-                  arrow: totalDelta >= 0 ? "▲" : "▼",
-                  value: Math.abs(totalDelta),
-                })}
-              </span>
+              {totalDelta === null || zone.deltaWindowDays === null ? (
+                <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium bg-[rgba(255,255,255,0.05)] text-ink-4">
+                  {t("scorecard.deltaUnknown")}
+                </span>
+              ) : (
+                <span
+                  className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium"
+                  style={{
+                    background: totalDelta >= 0 ? "rgba(31,138,120,0.12)" : "rgba(211,64,46,0.12)",
+                    color: totalDelta >= 0 ? BRAND.teal : BRAND.rose,
+                  }}
+                >
+                  {t("scorecard.deltaOverDays", {
+                    arrow: totalDelta >= 0 ? "▲" : "▼",
+                    value: Math.abs(totalDelta),
+                    days: zone.deltaWindowDays,
+                  })}
+                </span>
+              )}
               <IndicatorAvailabilityChip zoneId={zone.id} />
             </div>
             <p className="text-[10px] text-ink-4 mt-1">

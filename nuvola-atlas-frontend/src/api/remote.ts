@@ -2,6 +2,7 @@ import { BASE, authHeaders, handleResponse } from "./client";
 import { ZONES as MOCK_ZONES } from "./fixtures";
 import type {
   Zone,
+  PillarDeltas,
   Project,
   AlertItem,
   Report,
@@ -53,11 +54,20 @@ function hydrateZone(z: Partial<Zone> & { id: string; name: string; score: numbe
   const _hydrated: string[] = [];
 
   const pillars = { social: 0, safety: 0, density: 0, infra: 0 };
-  const deltas = { social: 0, safety: 0, density: 0, infra: 0 };
   for (const k of PILLAR_KEYS) {
     pillars[k] = fill(_hydrated, `pillars.${k}`, z.pillars?.[k], mock?.pillars[k] ?? z.score);
-    deltas[k] = fill(_hydrated, `deltas.${k}`, z.deltas?.[k], mock?.deltas[k] ?? 0);
   }
+
+  // Deltas are deliberately NOT hydrated. A pillar score can be estimated and
+  // labelled as such; a direction of travel cannot — substituting a fixture
+  // would put an arrow on screen for a movement that was never measured.
+  // Null flows straight through and renders as no delta at all.
+  const deltas: PillarDeltas = {
+    social: z.deltas?.social ?? null,
+    safety: z.deltas?.safety ?? null,
+    density: z.deltas?.density ?? null,
+    infra: z.deltas?.infra ?? null,
+  };
 
   const centroid =
     Array.isArray(z.centroid) && z.centroid.length === 2
@@ -68,6 +78,7 @@ function hydrateZone(z: Partial<Zone> & { id: string; name: string; score: numbe
     ...z,
     pillars,
     deltas,
+    deltaWindowDays: z.deltaWindowDays ?? null,
     centroid,
     lastSyncMin: fill(_hydrated, "lastSyncMin", z.lastSyncMin, mock?.lastSyncMin ?? 0),
     ...(_hydrated.length > 0 ? { _hydrated } : {}),

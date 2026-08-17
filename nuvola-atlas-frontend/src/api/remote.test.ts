@@ -98,6 +98,22 @@ describe("hydrateZone", () => {
     expect(zone._hydrated).not.toContain("score");
   });
 
+  it("passes a null delta straight through instead of substituting a fixture", async () => {
+    // A pillar score can be synthesised and labelled "estimated"; a direction
+    // of travel cannot — an arrow on screen for a movement nobody measured is
+    // a claim, not a placeholder. Deltas therefore skip hydration entirely.
+    const mock = MOCK_ZONES.find((m) => m.id === "westlands")!;
+    expect(mock.deltas.social).not.toBeNull(); // otherwise this proves nothing
+
+    vi.stubGlobal("fetch", () => jsonResponse({ id: "westlands", name: "Westlands", score: 71 }));
+
+    const zone = await remoteApi.getZone("westlands");
+
+    expect(zone.deltas).toEqual({ social: null, safety: null, density: null, infra: null });
+    expect(zone.deltaWindowDays).toBeNull();
+    expect(zone._hydrated ?? []).not.toContain("deltas.social");
+  });
+
   it("warns once per response, not once per zone", async () => {
     vi.stubGlobal("fetch", () =>
       jsonResponse([zoneWithNullPillars("westlands"), zoneWithNullPillars("starehe")]),

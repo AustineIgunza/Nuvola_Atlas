@@ -3,6 +3,7 @@ import { BASE, USE_MOCK_CHAT, authHeaders } from "@/api/client";
 import { useChatStore } from "@/stores/chat";
 import { useAtlasStore } from "@/stores/atlas";
 import { ZONES } from "@/api/fixtures";
+import { totalDelta } from "@/lib/deltas";
 import { translate } from "@/lib/i18n/translate";
 import type { MessageKey, TVars } from "@/lib/i18n/translate";
 import { usePrefsStore } from "@/stores/prefs";
@@ -328,9 +329,13 @@ function fallbackZonesForIntent(intent: string): Zone[] {
     return [sortedByScore[0], sortedByScore[sortedByScore.length - 1]];
   }
   if (intent === "diagnostic") {
+    // Zones with no measured movement sort last — "worst mover" has to mean
+    // a zone we watched move down, not one we never watched at all.
     const worstMover = [...ZONES].sort((a, b) => {
-      const totalA = a.deltas.social + a.deltas.safety + a.deltas.density + a.deltas.infra;
-      const totalB = b.deltas.social + b.deltas.safety + b.deltas.density + b.deltas.infra;
+      const totalA = totalDelta(a.deltas);
+      const totalB = totalDelta(b.deltas);
+      if (totalA === null) return totalB === null ? 0 : 1;
+      if (totalB === null) return -1;
       return totalA - totalB;
     })[0];
     return [worstMover];
@@ -463,16 +468,23 @@ function buildCompositionAnswer(zones: Zone[]): MockAnswer {
   });
 
   const pillarLine = (e: (typeof sorted)[number]) => {
-    const arrow = e.delta > 0 ? "▲" : e.delta < 0 ? "▼" : "◆";
-    const deltaTxt =
-      e.delta === 0
-        ? tt("chat.composition.deltaFlat")
-        : tt("chat.composition.deltaThisQuarter", { sign: e.delta > 0 ? "+" : "", value: e.delta });
+    const d = e.delta;
+    const days = z.deltaWindowDays;
+    const movement =
+      d === null || days === null
+        ? { arrow: "·", text: tt("chat.composition.deltaUnknown") }
+        : {
+            arrow: d > 0 ? "▲" : d < 0 ? "▼" : "◆",
+            text:
+              d === 0
+                ? tt("chat.composition.deltaFlat")
+                : tt("chat.composition.deltaOverDays", { sign: d > 0 ? "+" : "", value: d, days }),
+          };
     return tt("chat.composition.pillarLine", {
       pillar: e.label,
       value: e.value,
-      arrow,
-      delta: deltaTxt,
+      arrow: movement.arrow,
+      delta: movement.text,
     });
   };
 
@@ -579,9 +591,23 @@ function buildDiagnosticText(zones: Zone[]): string {
     value: z.pillars[k],
     d: z.deltas[k],
   }));
-  const worstMove = [...entries].sort((a, b) => a.d - b.d)[0];
-  const bestMove = [...entries].sort((a, b) => b.d - a.d)[0];
   const weakest = [...entries].sort((a, b) => a.value - b.value)[0];
+
+  // Naming a best and worst mover requires movement we actually measured.
+  // Unmeasured pillars are dropped rather than treated as having held flat,
+  // and a zone with none of them gets told so instead of a diagnosis.
+  const moved = entries.filter((e): e is typeof e & { d: number } => e.d !== null);
+  const days = z.deltaWindowDays;
+  if (moved.length === 0 || days === null) {
+    return tt("chat.diagnostic.noMovement", {
+      zone: z.name,
+      weakestPillar: weakest.label,
+      weakestValue: weakest.value,
+    });
+  }
+
+  const worstMove = [...moved].sort((a, b) => a.d - b.d)[0];
+  const bestMove = [...moved].sort((a, b) => b.d - a.d)[0];
 
   if (worstMove.d < 0) {
     return tt("chat.diagnostic.drop", {
@@ -591,6 +617,7 @@ function buildDiagnosticText(zones: Zone[]): string {
       bestPillar: bestMove.label,
       bestDelta: `${bestMove.d >= 0 ? "+" : ""}${bestMove.d}`,
       score: z.score,
+      days,
       cause: diagnosticCause(worstMove.key, z.name),
       weakestPillar: weakest.label,
       weakestValue: weakest.value,
@@ -602,6 +629,7 @@ function buildDiagnosticText(zones: Zone[]): string {
     worstDelta: `${worstMove.d >= 0 ? "+" : ""}${worstMove.d}`,
     bestPillar: bestMove.label,
     bestDelta: `${bestMove.d >= 0 ? "+" : ""}${bestMove.d}`,
+    days,
     weakestPillar: weakest.label,
     weakestValue: weakest.value,
     weakExplain: weakInterpretation(weakest.key, z),

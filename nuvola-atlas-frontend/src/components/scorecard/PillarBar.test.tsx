@@ -20,4 +20,20 @@ describe("PillarBar estimated state", () => {
     expect(screen.queryByLabelText(/estimated/i)).not.toBeInTheDocument();
     expect(screen.getByText("+3")).toBeInTheDocument();
   });
+
+  it("shows no movement for an unmeasured delta rather than a flat zero", () => {
+    render(<PillarBar pillarKey="social" score={64} delta={null} index={0} />);
+
+    expect(screen.getByText("—")).toBeInTheDocument();
+    expect(screen.queryByText("0")).not.toBeInTheDocument();
+    // The score itself was measured, so it must not pick up the estimated mark.
+    expect(screen.queryByLabelText(/estimated/i)).not.toBeInTheDocument();
+  });
+
+  it("keeps a genuine no-change reading distinct from an unmeasured one", () => {
+    render(<PillarBar pillarKey="social" score={64} delta={0} index={0} />);
+
+    expect(screen.getByText("+0")).toBeInTheDocument();
+    expect(screen.queryByText("—")).not.toBeInTheDocument();
+  });
 });

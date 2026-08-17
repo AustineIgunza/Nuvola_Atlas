@@ -63,15 +63,19 @@ export default function PillarExplainer({ zone, pillarKey, onNavigate }: Props) 
           <span className="text-[30px] font-semibold tabular-nums leading-none" style={{ color }}>
             {score}
           </span>
-          <span
-            className={cn(
-              "text-[10px] font-medium tabular-nums",
-              delta >= 0 ? "text-success" : "text-danger",
-            )}
-          >
-            {delta >= 0 ? "+" : ""}
-            {delta} qtr
-          </span>
+          {delta === null || zone.deltaWindowDays === null ? (
+            <span className="text-[10px] font-medium text-ink-4">no trend yet</span>
+          ) : (
+            <span
+              className={cn(
+                "text-[10px] font-medium tabular-nums",
+                delta >= 0 ? "text-success" : "text-danger",
+              )}
+            >
+              {delta >= 0 ? "+" : ""}
+              {delta} / {zone.deltaWindowDays}d
+            </span>
+          )}
           <span className="ml-auto">
             <Chip color={band.color}>{band.label}</Chip>
           </span>

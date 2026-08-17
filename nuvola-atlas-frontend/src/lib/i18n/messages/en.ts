@@ -179,7 +179,8 @@ export const en = {
   "compare.range.week": "Week",
   "compare.range.month": "Month",
   "compare.pillarBreakdown": "Pillar breakdown",
-  "compare.deltas": "Quarter-over-quarter change",
+  "compare.deltas": "Change over the measured window",
+  "compare.deltasNone": "Not enough history",
   "compare.water": "Water & Sanitation · SDG 6",
   "compare.infra": "Infrastructure projects",
   "compare.alerts": "Active alerts",
@@ -466,7 +467,8 @@ export const en = {
     "**{zone}** scores **{score}/100** overall — that's {delta} vs. the Nairobi average ({avg}) and puts it at rank #{rank} of the 17 sub-counties. Readiness band: **{band}**.",
   "chat.composition.pillarLine": "• **{pillar}** — {value}/100 {arrow} ({delta})",
   "chat.composition.deltaFlat": "flat",
-  "chat.composition.deltaThisQuarter": "{sign}{value} this quarter",
+  "chat.composition.deltaOverDays": "{sign}{value} over {days}d",
+  "chat.composition.deltaUnknown": "no trend yet",
   "chat.composition.strongLabel": "**Strongest — {pillar}.**",
   "chat.composition.weakLabel": "**Weakest — {pillar}.**",
   "chat.strong.social":
@@ -499,10 +501,12 @@ export const en = {
     'You\'re comparing {names}. Their overall Vitality scores average {avg}. Ask "compare across all four pillars" for the full breakdown, or narrow to a single pillar for a deeper look.',
   "chat.diagnostic.stable":
     "Every zone in Nairobi is roughly stable this quarter — the softest moves are inside noise. Ask about a specific pillar to go deeper.",
+  "chat.diagnostic.noMovement":
+    "There isn't enough history for **{zone}** yet to say which pillar moved — measuring a direction of travel needs at least two score snapshots. What I can say is that **{weakestPillar}** at {weakestValue}/100 is its weakest pillar today.",
   "chat.diagnostic.drop":
-    "**{zone}** — the specific pillar to look at is **{worstPillar}**, which moved {worstDelta} this quarter. The best mover was {bestPillar} at {bestDelta}, so the net Vitality Score of {score} is only mildly affected by the drop. \n\n**Likely cause.** {cause} The alerts feed for {zone} usually names the exact project or incident behind a move this size — worth checking before you commit to a diagnosis.\n\nOn the standing weak side, **{weakestPillar}** at {weakestValue}/100 is the pillar that structurally holds {zone} back, regardless of quarter-over-quarter movement.",
+    "**{zone}** — the specific pillar to look at is **{worstPillar}**, which moved {worstDelta} over the last {days} days. The best mover was {bestPillar} at {bestDelta}, so the net Vitality Score of {score} is only mildly affected by the drop. \n\n**Likely cause.** {cause} The alerts feed for {zone} usually names the exact project or incident behind a move this size — worth checking before you commit to a diagnosis.\n\nOn the standing weak side, **{weakestPillar}** at {weakestValue}/100 is the pillar that structurally holds {zone} back, regardless of recent movement.",
   "chat.diagnostic.growth":
-    "**{zone}** did not drop on any of the four pillars this quarter — the softest move was {worstPillar} at {worstDelta}, and the strongest was {bestPillar} at {bestDelta}. Growth is broad-based, not driven by a single pillar. \n\nOn the standing weak side, **{weakestPillar}** at {weakestValue}/100 is the pillar that keeps the composite from climbing further — {weakExplain}",
+    "**{zone}** did not drop on any measured pillar over the last {days} days — the softest move was {worstPillar} at {worstDelta}, and the strongest was {bestPillar} at {bestDelta}. Growth is broad-based, not driven by a single pillar. \n\nOn the standing weak side, **{weakestPillar}** at {weakestValue}/100 is the pillar that keeps the composite from climbing further — {weakExplain}",
   "chat.cause.social":
     "Drops on Social Wellbeing typically track a workforce or health-service disruption — clinic closures, teacher-strike days, or a mobile-broadband coverage regression.",
   "chat.cause.safety":
@@ -530,7 +534,8 @@ export const en = {
   "scorecard.askAria": "Ask assistant about {zone}",
   "scorecard.askPrompt":
     "Tell me about {zone} — what's driving the Vitality score and where are the biggest gaps across the four pillars?",
-  "scorecard.deltaThisQuarter": "{arrow} {value} pts this quarter",
+  "scorecard.deltaOverDays": "{arrow} {value} pts over {days}d",
+  "scorecard.deltaUnknown": "Trend not yet measurable",
   "scorecard.lastSyncShort": "Last sync {min} min ago",
   "scorecard.howComputed": "How this score is computed",
 

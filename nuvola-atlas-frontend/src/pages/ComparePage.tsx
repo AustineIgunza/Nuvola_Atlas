@@ -23,6 +23,7 @@ import { useZoneHistory } from "@/hooks/useZoneHistory";
 import { useZoneForecast } from "@/hooks/useZoneForecast";
 import { waterProfile } from "@/lib/waterSanitation";
 import { BRAND, PILLAR_COLORS, PILLAR_SHORT, scoreColor } from "@/lib/scoreColor";
+import { averageDelta } from "@/lib/deltas";
 import type { AlertItem, AlertSeverity, HistoryRange, PillarKey, Project, Zone } from "@/types";
 
 const MAX_ZONES = 3;
@@ -434,16 +435,15 @@ function DeltaGrid({ zones }: { zones: Zone[] }) {
   return (
     <div className="mt-3 rounded-card border border-border p-3 bg-[rgba(255,255,255,0.02)]">
       <div className="text-[10px] text-ink-4 uppercase tracking-[0.08em] mb-2">
-        Quarter-over-quarter change
+        Change over the measured window
       </div>
       <div
         className="grid gap-3"
         style={{ gridTemplateColumns: `repeat(${zones.length}, minmax(0, 1fr))` }}
       >
         {zones.map((z, i) => {
-          const total = z.deltas.social + z.deltas.safety + z.deltas.density + z.deltas.infra;
-          const avg = Math.round(total / 4);
-          const color = avg >= 0 ? BRAND.teal : BRAND.rose;
+          const avg = averageDelta(z.deltas);
+          const color = avg === null ? BRAND.steel : avg >= 0 ? BRAND.teal : BRAND.rose;
           return (
             <div key={z.id} className="rounded-control bg-[rgba(255,255,255,0.03)] p-2.5">
               <div className="flex items-center gap-1.5">
@@ -453,13 +453,13 @@ function DeltaGrid({ zones }: { zones: Zone[] }) {
                 />
                 <span className="text-[10.5px] text-ink-3 truncate">{z.name}</span>
                 <span className="ml-auto text-[11px] font-semibold tabular-nums" style={{ color }}>
-                  {avg >= 0 ? "▲" : "▼"} {Math.abs(avg)}
+                  {avg === null ? "—" : `${avg >= 0 ? "▲" : "▼"} ${Math.abs(avg)}`}
                 </span>
               </div>
               <div className="mt-1.5 grid grid-cols-4 gap-1 text-[9px]">
                 {PILLAR_KEYS.map((k) => {
                   const d = z.deltas[k];
-                  const c = d >= 0 ? BRAND.teal : BRAND.rose;
+                  const c = d === null ? BRAND.steel : d >= 0 ? BRAND.teal : BRAND.rose;
                   return (
                     <div
                       key={k}
@@ -469,8 +469,7 @@ function DeltaGrid({ zones }: { zones: Zone[] }) {
                         {PILLAR_SHORT[k]}
                       </div>
                       <div className="tabular-nums font-medium" style={{ color: c }}>
-                        {d >= 0 ? "+" : ""}
-                        {d}
+                        {d === null ? "—" : `${d >= 0 ? "+" : ""}${d}`}
                       </div>
                     </div>
                   );

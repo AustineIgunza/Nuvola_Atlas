@@ -8,7 +8,8 @@ import type { PillarKey } from "@/types";
 interface Props {
   pillarKey: PillarKey;
   score: number;
-  delta: number;
+  /** Null when history cannot support a direction of travel. */
+  delta: number | null;
   index: number;
   /** The API returned null for this pillar and the client filled it in. */
   estimated?: boolean;
@@ -34,8 +35,9 @@ export default function PillarBar({ pillarKey, score, delta, index, estimated }:
           {estimated ? <EstimatedMark>{score}</EstimatedMark> : score}
         </span>
         {/* A trend on a value we had to invent would be inventing a second
-            thing. Estimated pillars get no delta at all. */}
-        {estimated ? (
+            thing. Estimated pillars get no delta at all, and neither do
+            pillars whose history is too thin to measure movement. */}
+        {estimated || delta === null ? (
           <span className="text-[10px] font-medium tabular-nums shrink-0 text-ink-4">—</span>
         ) : (
           <span

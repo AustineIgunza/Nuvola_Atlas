@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Resources;
 
 use App\Models\Zone;
+use App\Services\PillarDeltaCalculator;
 use App\Services\ScoreCalculator;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -15,13 +16,12 @@ class ZoneResource extends JsonResource
     {
         // Pillars are derived from indicators on the fly — the storage swap
         // (pillars → 13 indicators) means the pillar columns no longer exist.
-        // Deltas are still stubbed until a v2 snapshot-diff pipeline lands;
-        // returning zeros keeps the wire format intact for the frontend.
         $calc = new ScoreCalculator;
         /** @var Zone $zone */
         $zone = $this->resource;
         $pillars = $calc->pillarScores($zone);
         $missing = $calc->missingIndicators($zone);
+        $delta = $zone->pillarDelta ?? PillarDeltaCalculator::unknown();
 
         return [
             'id' => $this->id,
@@ -33,12 +33,8 @@ class ZoneResource extends JsonResource
                 'density' => $pillars['density'],
                 'infra' => $pillars['infra'],
             ],
-            'deltas' => [
-                'social' => 0,
-                'safety' => 0,
-                'density' => 0,
-                'infra' => 0,
-            ],
+            'deltas' => $delta['deltas'],
+            'deltaWindowDays' => $delta['windowDays'],
             'missingIndicators' => $missing,
             'indicatorsActive' => 13 - count($missing),
             'indicatorsTotal' => 13,

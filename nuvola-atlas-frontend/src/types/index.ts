@@ -7,12 +7,27 @@ export interface PillarScores {
   infra: number;
 }
 
+/**
+ * A delta is a claim about direction, so it is null whenever the history
+ * cannot support one — fewer than two snapshots in the window, or a pillar
+ * that had no score at either end. Null must render as no movement shown,
+ * never as a zero and never as a flat arrow.
+ */
+export interface PillarDeltas {
+  social: number | null;
+  safety: number | null;
+  density: number | null;
+  infra: number | null;
+}
+
 export interface Zone {
   id: string;
   name: string;
   score: number;
   pillars: PillarScores;
-  deltas: PillarScores;
+  deltas: PillarDeltas;
+  /** Real age in days of the baseline the deltas were measured against. */
+  deltaWindowDays: number | null;
   centroid: [number, number];
   lastSyncMin: number;
   /**

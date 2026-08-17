@@ -19,6 +19,7 @@ import DealPipelineBoard from "@/components/investor/DealPipelineBoard";
 import { api } from "@/api";
 import { useAuthStore } from "@/stores/auth";
 import { BRAND, PILLAR_COLORS, PILLAR_SHORT, scoreColor } from "@/lib/scoreColor";
+import { totalDelta } from "@/lib/deltas";
 import { springSettle } from "@/lib/motion";
 import type { Zone, Project, AlertItem, PillarKey } from "@/types";
 
@@ -89,14 +90,22 @@ export default function InvestorPage() {
     // Tier-specific heuristic:
     //   basic     — highest overall Vitality (safest bets)
     //   deal      — high infra + safety spread from watchlist thesis
-    //   sovereign — largest score deltas quarter-over-quarter (change opportunities)
+    //   sovereign — largest measured movement (change opportunities)
     if (firm.tier === "basic") {
       return [...nonWatchlistZones].sort((a, b) => b.score - a.score).slice(0, 5);
     }
     if (firm.tier === "sovereign") {
-      const delta = (z: Zone) =>
-        z.deltas.social + z.deltas.safety + z.deltas.density + z.deltas.infra;
-      return [...nonWatchlistZones].sort((a, b) => delta(b) - delta(a)).slice(0, 5);
+      // A zone whose movement was never measured is not a mover; it sorts
+      // last rather than being read as having moved by zero.
+      return [...nonWatchlistZones]
+        .sort((a, b) => {
+          const da = totalDelta(a.deltas);
+          const db = totalDelta(b.deltas);
+          if (da === null) return db === null ? 0 : 1;
+          if (db === null) return -1;
+          return db - da;
+        })
+        .slice(0, 5);
     }
     return [...nonWatchlistZones].sort((a, b) => investorScore(b) - investorScore(a)).slice(0, 5);
   }, [nonWatchlistZones, firm.tier]);

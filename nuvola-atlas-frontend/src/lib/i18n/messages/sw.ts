@@ -185,7 +185,8 @@ export const sw: Partial<Record<MessageKey, string>> = {
   "compare.range.week": "Wiki",
   "compare.range.month": "Mwezi",
   "compare.pillarBreakdown": "Uchambuzi wa nguzo",
-  "compare.deltas": "Mabadiliko ya robo hii",
+  "compare.deltas": "Mabadiliko katika kipindi kilichopimwa",
+  "compare.deltasNone": "Historia haitoshi",
   "compare.water": "Maji na Usafi · SDG 6",
   "compare.infra": "Miradi ya miundombinu",
   "compare.alerts": "Arifa hai",
@@ -477,7 +478,8 @@ export const sw: Partial<Record<MessageKey, string>> = {
     "**{zone}** inapata alama **{score}/100** kwa jumla — hii ni {delta} dhidi ya wastani wa Nairobi ({avg}) na inaiweka katika nafasi ya #{rank} kati ya wilaya ndogo 17. Kiwango cha utayari: **{band}**.",
   "chat.composition.pillarLine": "• **{pillar}** — {value}/100 {arrow} ({delta})",
   "chat.composition.deltaFlat": "haijabadilika",
-  "chat.composition.deltaThisQuarter": "{sign}{value} robo hii",
+  "chat.composition.deltaOverDays": "{sign}{value} kwa siku {days}",
+  "chat.composition.deltaUnknown": "hakuna mwelekeo bado",
   "chat.composition.strongLabel": "**Imara zaidi — {pillar}.**",
   "chat.composition.weakLabel": "**Dhaifu zaidi — {pillar}.**",
   "chat.strong.social":
@@ -510,10 +512,12 @@ export const sw: Partial<Record<MessageKey, string>> = {
     'Unaunga {names}. Alama zao za Uhai za jumla ni wastani wa {avg}. Uliza "linganisha katika nguzo zote nne" kwa uchambuzi kamili, au bana kwa nguzo moja kwa mtazamo wa kina zaidi.',
   "chat.diagnostic.stable":
     "Kila eneo la Nairobi lina utulivu wa kadiri robo hii — mabadiliko madogo yako ndani ya kelele. Uliza kuhusu nguzo maalum ili kuingia ndani zaidi.",
+  "chat.diagnostic.noMovement":
+    "Hakuna historia ya kutosha kwa **{zone}** bado kusema ni nguzo ipi iliyosogea — kupima mwelekeo kunahitaji angalau picha mbili za alama. Ninachoweza kusema ni kwamba **{weakestPillar}** kwa {weakestValue}/100 ndiyo nguzo yake dhaifu zaidi leo.",
   "chat.diagnostic.drop":
-    "**{zone}** — nguzo maalum ya kuangalia ni **{worstPillar}**, iliyosogea {worstDelta} robo hii. Msogezaji bora alikuwa {bestPillar} kwa {bestDelta}, kwa hivyo Alama ya Uhai ya {score} imeathirika kidogo tu. \n\n**Sababu inayowezekana.** {cause} Mkondo wa arifa wa {zone} kwa kawaida hutaja mradi au tukio kamili nyuma ya mabadiliko ya ukubwa huu — inafaa kuangalia kabla ya kuamini utambuzi.\n\nUpande wa udhaifu unaosimama, **{weakestPillar}** kwa {weakestValue}/100 ni nguzo inayoshikilia {zone} kimuundo, bila kujali mabadiliko ya robo baada ya robo.",
+    "**{zone}** — nguzo maalum ya kuangalia ni **{worstPillar}**, iliyosogea {worstDelta} katika siku {days} zilizopita. Msogezaji bora alikuwa {bestPillar} kwa {bestDelta}, kwa hivyo Alama ya Uhai ya {score} imeathirika kidogo tu. \n\n**Sababu inayowezekana.** {cause} Mkondo wa arifa wa {zone} kwa kawaida hutaja mradi au tukio kamili nyuma ya mabadiliko ya ukubwa huu — inafaa kuangalia kabla ya kuamini utambuzi.\n\nUpande wa udhaifu unaosimama, **{weakestPillar}** kwa {weakestValue}/100 ni nguzo inayoshikilia {zone} kimuundo, bila kujali mabadiliko ya hivi karibuni.",
   "chat.diagnostic.growth":
-    "**{zone}** haikushuka katika nguzo zozote za nne robo hii — mabadiliko madogo zaidi yalikuwa {worstPillar} kwa {worstDelta}, na yaliyo imara zaidi yalikuwa {bestPillar} kwa {bestDelta}. Ukuaji ni wa msingi mpana, si unaosukumwa na nguzo moja. \n\nUpande wa udhaifu unaosimama, **{weakestPillar}** kwa {weakestValue}/100 ni nguzo inayozuia jumla isipande zaidi — {weakExplain}",
+    "**{zone}** haikushuka katika nguzo yoyote iliyopimwa katika siku {days} zilizopita — mabadiliko madogo zaidi yalikuwa {worstPillar} kwa {worstDelta}, na yaliyo imara zaidi yalikuwa {bestPillar} kwa {bestDelta}. Ukuaji ni wa msingi mpana, si unaosukumwa na nguzo moja. \n\nUpande wa udhaifu unaosimama, **{weakestPillar}** kwa {weakestValue}/100 ni nguzo inayozuia jumla isipande zaidi — {weakExplain}",
   "chat.cause.social":
     "Kushuka kwa Ustawi wa Jamii kwa kawaida hufuata usumbufu wa nguvu kazi au huduma ya afya — kufungwa kwa zahanati, siku za mgomo wa walimu, au kupungua kwa mtandao wa simu.",
   "chat.cause.safety":
@@ -541,7 +545,8 @@ export const sw: Partial<Record<MessageKey, string>> = {
   "scorecard.askAria": "Uliza msaidizi kuhusu {zone}",
   "scorecard.askPrompt":
     "Nieleze kuhusu {zone} — ni nini kinachoongoza alama ya Uhai na ni wapi kuna mapengo makubwa katika nguzo nne?",
-  "scorecard.deltaThisQuarter": "{arrow} pointi {value} robo hii",
+  "scorecard.deltaOverDays": "{arrow} pointi {value} kwa siku {days}",
+  "scorecard.deltaUnknown": "Mwelekeo bado haujapimika",
   "scorecard.lastSyncShort": "Ilisasishwa dakika {min} zilizopita",
   "scorecard.howComputed": "Jinsi alama hii inavyokokotolewa",
 
