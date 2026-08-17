@@ -12,6 +12,26 @@ export interface AdminMetrics {
   generated_at: string;
 }
 
+/**
+ * `not_monitored` is not a degraded state — it means the value cannot be
+ * obtained from inside the API process at all, and the panel must render a
+ * dash for it rather than a number.
+ */
+export type HealthStatus = "ok" | "degraded" | "down" | "not_monitored";
+
+export interface HealthCheck {
+  key: string;
+  status: HealthStatus;
+  value: string | number | null;
+  unit: string | null;
+  detail: string;
+}
+
+export interface SystemHealth {
+  checks: HealthCheck[];
+  measured_at: string;
+}
+
 export interface AuditEntry {
   id: number;
   action: string;
@@ -255,6 +275,29 @@ export const adminApi = {
   metrics: async (): Promise<AdminMetrics> => {
     if (USE_MOCK) return mockMetrics();
     const r = await getJson<{ data: AdminMetrics }>("/admin/metrics");
+    return r.data;
+  },
+
+  systemHealth: async (): Promise<SystemHealth> => {
+    // No mock fixture on purpose. In mock mode there is no API process to
+    // measure, and inventing six green rows is exactly the defect this
+    // endpoint exists to remove.
+    if (USE_MOCK) {
+      return {
+        measured_at: new Date().toISOString(),
+        checks: [
+          {
+            key: "mock_mode",
+            status: "not_monitored",
+            value: null,
+            unit: null,
+            detail:
+              "The frontend is running on mock data (VITE_USE_REMOTE_API is not set), so there is no live system to report on.",
+          },
+        ],
+      };
+    }
+    const r = await getJson<{ data: SystemHealth }>("/admin/system-health");
     return r.data;
   },
 

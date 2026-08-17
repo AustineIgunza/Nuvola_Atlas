@@ -10,6 +10,7 @@ use App\Http\Controllers\AdminFirmController;
 use App\Http\Controllers\AdminImpersonateController;
 use App\Http\Controllers\AdminMethodologyController;
 use App\Http\Controllers\AdminMetricsController;
+use App\Http\Controllers\AdminSystemHealthController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AlertController;
 use App\Http\Controllers\AssistantAgentController;
@@ -166,6 +167,11 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
         Route::middleware(['role:admin', 'admin.two_factor'])->prefix('admin')->group(function () {
             Route::get('metrics', [AdminMetricsController::class, 'index']);
             Route::get('metrics/audit-volume', [AdminMetricsController::class, 'auditVolume']);
+
+            // Operator telemetry. Deliberately not folded into the public
+            // /api/health, which stays a thin liveness probe — queue depth and
+            // migration state are internal detail.
+            Route::get('system-health', [AdminSystemHealthController::class, 'index']);
 
             Route::get('audit', [AdminAuditController::class, 'index']);
             Route::get('audit/export', [AdminAuditController::class, 'export']);
