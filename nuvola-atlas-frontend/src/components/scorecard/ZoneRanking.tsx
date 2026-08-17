@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/cn";
 import { api } from "@/api";
 import { scoreColor } from "@/lib/scoreColor";
+import { hasEstimates } from "@/lib/hydrated";
+import { useT } from "@/lib/i18n/use-t";
 import type { Zone } from "@/types";
 
 interface Props {
@@ -11,6 +13,7 @@ interface Props {
 
 export default function ZoneRanking({ currentZone }: Props) {
   const { data: allZones } = useQuery({ queryKey: ["zones"], queryFn: api.getZones });
+  const t = useT();
 
   if (!allZones || allZones.length < 2) return null;
 
@@ -46,7 +49,19 @@ export default function ZoneRanking({ currentZone }: Props) {
               )}
             >
               <span className="text-ink-4 font-bold w-4 text-right tabular-nums">{i + 1}</span>
-              <div className="flex-1 min-w-0 truncate text-ink-2 font-medium">{z.name}</div>
+              <div className="flex-1 min-w-0 truncate text-ink-2 font-medium">
+                {z.name}
+                {hasEstimates(z) && (
+                  <span
+                    title={t("estimated.zoneBadge")}
+                    aria-label={t("estimated.zoneBadge")}
+                    data-testid="estimated-badge"
+                    className="ml-1 text-ink-4"
+                  >
+                    ~
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-1.5 shrink-0">
                 <div className="w-[40px] h-[3px] rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
                   <div

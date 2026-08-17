@@ -15,6 +15,13 @@ export interface Zone {
   deltas: PillarScores;
   centroid: [number, number];
   lastSyncMin: number;
+  /**
+   * Dotted paths of fields the client synthesised because the API returned
+   * null — `pillars.social`, `centroid`, and so on. Set by `hydrateZone` in
+   * remote mode. Anything listed here is an estimate and must not be
+   * rendered as though it were measured.
+   */
+  _hydrated?: string[];
 }
 
 export type InfraType = "road" | "energy" | "grid" | "water";

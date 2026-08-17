@@ -17,6 +17,7 @@ import IndicatorAvailabilityChip from "./IndicatorAvailabilityChip";
 import DaystarIndicatorPanel from "./DaystarIndicatorPanel";
 import { Section, Chip, StatCell, SEVERITY_COLOR, IMPACT_COLOR, STATUS_STYLE } from "./bits";
 import ZoneNotesCard from "@/components/investor/ZoneNotesCard";
+import { isEstimated } from "@/lib/hydrated";
 import { useChromeStore } from "@/stores/chrome";
 import { useAuthStore, isInvestor } from "@/stores/auth";
 import type { PanelView } from "./panel-types";
@@ -195,6 +196,7 @@ export default function OverviewView({ zone, onNavigate }: Props) {
                 score={zone.pillars[key]}
                 delta={zone.deltas[key]}
                 index={i}
+                estimated={isEstimated(zone, `pillars.${key}`)}
               />
             </div>
             <ChevronRight

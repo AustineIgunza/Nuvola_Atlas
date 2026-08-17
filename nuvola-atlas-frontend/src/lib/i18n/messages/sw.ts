@@ -544,6 +544,9 @@ export const sw: Partial<Record<MessageKey, string>> = {
   "scorecard.deltaThisQuarter": "{arrow} pointi {value} robo hii",
   "scorecard.lastSyncShort": "Ilisasishwa dakika {min} zilizopita",
   "scorecard.howComputed": "Jinsi alama hii inavyokokotolewa",
+
+  "estimated.tooltip": "Kadirio — hakuna data iliyopimwa kwa kiashiria hiki",
+  "estimated.zoneBadge": "Ina thamani zilizokadiriwa",
   "scorecard.water.safeAccess": "Ufikiaji salama",
   "scorecard.water.sharedPoints": "Vituo vya pamoja",
   "scorecard.water.medianQueue": "Wastani wa foleni",

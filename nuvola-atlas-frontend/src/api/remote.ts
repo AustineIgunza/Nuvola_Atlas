@@ -24,57 +24,82 @@ async function get<T>(path: string): Promise<T> {
   return json as T;
 }
 
+const PILLAR_KEYS = ["social", "safety", "density", "infra"] as const;
+
 /**
- * Backfill any missing / null fields on a Zone from the mock fixtures so
- * the UI never crashes when the deployed backend is thin on data (no
- * indicators seeded → pillars come back as {social:null, ...}, no
- * centroid → coordinate math throws).
+ * Substitute a value for one the API returned as null, recording the field
+ * so the UI can mark it. Returns the API value untouched when it has one.
+ */
+function fill<T>(hydrated: string[], path: string, actual: T | null | undefined, fallback: T): T {
+  if (actual !== null && actual !== undefined) return actual;
+  hydrated.push(path);
+  return fallback;
+}
+
+/**
+ * Fill the gaps a thin backend leaves, so the UI does not crash: a zone with
+ * no indicators seeded returns `pillars: {social: null, ...}`, and a zone
+ * with no geometry returns a null centroid that breaks the coordinate math.
  *
- * If a mock counterpart exists we use it wholesale for the missing
- * fields; otherwise we synthesise safe defaults from the zone's overall
- * score. Effectively: the UI degrades gracefully to a mock-shaped
- * response, never to a broken one.
+ * Every substituted field is recorded in `_hydrated`. That list is what makes
+ * this honest rather than a lie: the number on screen is a fixture, and the
+ * scorecard renders it struck through with an "estimated" tooltip instead of
+ * as a measurement. The previous version spread the whole mock zone in as the
+ * base object, so a fixture could surface in any field the API omitted, with
+ * nothing anywhere to say it had.
  */
 function hydrateZone(z: Partial<Zone> & { id: string; name: string; score: number }): Zone {
   const mock = MOCK_ZONES.find((m) => m.id === z.id);
-  const fallbackPillars = mock?.pillars ?? {
-    social: z.score,
-    safety: z.score,
-    density: z.score,
-    infra: z.score,
-  };
-  const pillars = {
-    social: z.pillars?.social ?? fallbackPillars.social,
-    safety: z.pillars?.safety ?? fallbackPillars.safety,
-    density: z.pillars?.density ?? fallbackPillars.density,
-    infra: z.pillars?.infra ?? fallbackPillars.infra,
-  };
-  const fallbackDeltas = mock?.deltas ?? { social: 0, safety: 0, density: 0, infra: 0 };
-  const deltas = {
-    social: z.deltas?.social ?? fallbackDeltas.social,
-    safety: z.deltas?.safety ?? fallbackDeltas.safety,
-    density: z.deltas?.density ?? fallbackDeltas.density,
-    infra: z.deltas?.infra ?? fallbackDeltas.infra,
-  };
-  const centroid: [number, number] =
+  const _hydrated: string[] = [];
+
+  const pillars = { social: 0, safety: 0, density: 0, infra: 0 };
+  const deltas = { social: 0, safety: 0, density: 0, infra: 0 };
+  for (const k of PILLAR_KEYS) {
+    pillars[k] = fill(_hydrated, `pillars.${k}`, z.pillars?.[k], mock?.pillars[k] ?? z.score);
+    deltas[k] = fill(_hydrated, `deltas.${k}`, z.deltas?.[k], mock?.deltas[k] ?? 0);
+  }
+
+  const centroid =
     Array.isArray(z.centroid) && z.centroid.length === 2
       ? (z.centroid as [number, number])
-      : (mock?.centroid ?? [36.82, -1.283]);
+      : fill<[number, number]>(_hydrated, "centroid", null, mock?.centroid ?? [36.82, -1.283]);
 
   return {
-    ...(mock ?? {}),
     ...z,
     pillars,
     deltas,
     centroid,
-    lastSyncMin: z.lastSyncMin ?? mock?.lastSyncMin ?? 0,
+    lastSyncMin: fill(_hydrated, "lastSyncMin", z.lastSyncMin, mock?.lastSyncMin ?? 0),
+    ...(_hydrated.length > 0 ? { _hydrated } : {}),
   } as Zone;
 }
 
-export const remoteApi = {
-  getZones: async () => (await get<Zone[]>("/zones")).map(hydrateZone),
+/**
+ * One line per response, not one per zone — a 17-zone list with no indicators
+ * seeded would otherwise bury the console.
+ */
+function warnHydrated(zones: Zone[]): void {
+  const affected = zones.filter((z) => z._hydrated?.length);
+  if (affected.length === 0) return;
+  console.warn(
+    `[navuuna] ${affected.length} zone(s) returned null fields; the values shown for these are ` +
+      `client-side estimates, not measurements: ` +
+      affected.map((z) => `${z.id} (${z._hydrated!.join(", ")})`).join("; "),
+  );
+}
 
-  getZone: async (id: string) => hydrateZone(await get<Zone>(`/zones/${id}`)),
+export const remoteApi = {
+  getZones: async () => {
+    const zones = (await get<Zone[]>("/zones")).map(hydrateZone);
+    warnHydrated(zones);
+    return zones;
+  },
+
+  getZone: async (id: string) => {
+    const zone = hydrateZone(await get<Zone>(`/zones/${id}`));
+    warnHydrated([zone]);
+    return zone;
+  },
 
   getZoneActivity: (id: string) => get<ActivityEntry[]>(`/zones/${id}/activity`),
 

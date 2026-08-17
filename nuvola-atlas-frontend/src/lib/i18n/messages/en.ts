@@ -533,6 +533,10 @@ export const en = {
   "scorecard.deltaThisQuarter": "{arrow} {value} pts this quarter",
   "scorecard.lastSyncShort": "Last sync {min} min ago",
   "scorecard.howComputed": "How this score is computed",
+
+  // Shown wherever the API returned null and the client filled the gap.
+  "estimated.tooltip": "Estimated — no measured data for this indicator",
+  "estimated.zoneBadge": "Contains estimated values",
   "scorecard.water.safeAccess": "Safe access",
   "scorecard.water.sharedPoints": "Shared points",
   "scorecard.water.medianQueue": "Median queue",
