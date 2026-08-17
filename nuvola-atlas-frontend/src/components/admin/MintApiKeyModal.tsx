@@ -173,8 +173,14 @@ export default function MintApiKeyModal({ open, onClose }: Props) {
                   <Field label="Abilities">
                     <div className="space-y-2">
                       {ABILITIES.map((a) => (
-                        <label key={a.value} className="flex items-start gap-2 cursor-pointer">
+                        <label
+                          key={a.value}
+                          htmlFor={`ability-${a.value}`}
+                          aria-label={a.label}
+                          className="flex items-start gap-2 cursor-pointer"
+                        >
                           <input
+                            id={`ability-${a.value}`}
                             type="checkbox"
                             checked={abilities.includes(a.value)}
                             onChange={() => toggleAbility(a.value)}

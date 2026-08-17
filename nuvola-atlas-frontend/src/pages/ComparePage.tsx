@@ -715,9 +715,6 @@ function ComparisonChart({
   const forecasts = [f1, f2, f3].slice(0, zones.length);
   const ready = series.every((s) => s.data);
 
-  // Series key — either the composite score, or one pillar-name field per point.
-  const seriesKey = pillarOverlay ?? "score";
-
   const merged = useMemo(() => {
     if (!ready) return [];
     const anchor = series[0].data!;

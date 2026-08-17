@@ -6,6 +6,7 @@ import { useChatStore } from "@/stores/chat";
 import { useChromeStore } from "@/stores/chrome";
 import { useUIStore } from "@/stores/ui";
 import { useChatStream } from "@/hooks/useChatStream";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { BRAND } from "@/lib/scoreColor";
 import { springSettle, modalBackdrop, panelSlideUp } from "@/lib/motion";
 import type { ChatMessage } from "@/types";
@@ -23,16 +24,7 @@ export default function ChatPanel() {
   const selectedZoneId = useUIStore((s) => s.selectedZoneId);
   const reduced = useReducedMotion();
 
-  const [isMobile, setIsMobile] = useState(
-    () => typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches,
-  );
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 1023px)");
-    setIsMobile(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
+  const isMobile = useMediaQuery("(max-width: 1023px)");
 
   const {
     conversations,
@@ -135,28 +127,25 @@ export default function ChatPanel() {
       {conversations.length > 0 && (
         <div className="px-2 py-1.5 border-b border-border shrink-0 overflow-x-auto whitespace-nowrap flex gap-1.5">
           {conversations.slice(0, 8).map((c) => (
-            <button
+            <div
               key={c.id}
-              onClick={() => setActive(c.id)}
               className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[9.5px] transition-colors ${
                 activeConversationId === c.id
                   ? "bg-[rgba(255,255,255,0.14)] text-ink-1"
                   : "bg-[rgba(255,255,255,0.04)] text-ink-3 hover:text-ink-1"
               }`}
             >
-              <span className="truncate max-w-[100px]">{c.title ?? "Untitled"}</span>
-              <span
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removeConv(c.id);
-                }}
-                className="opacity-40 hover:opacity-80 cursor-pointer"
-                role="button"
+              <button onClick={() => setActive(c.id)} className="truncate max-w-[100px]">
+                {c.title ?? "Untitled"}
+              </button>
+              <button
+                onClick={() => removeConv(c.id)}
+                className="opacity-40 hover:opacity-80"
                 aria-label={`Delete ${c.title ?? "conversation"}`}
               >
                 <Trash2 size={10} />
-              </span>
-            </button>
+              </button>
+            </div>
           ))}
         </div>
       )}

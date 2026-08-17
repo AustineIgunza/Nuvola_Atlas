@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { scoreColor, SCORE_GRADIENT_CSS } from "@/lib/scoreColor";
+import { scoreColor } from "@/lib/scoreColor";
 
 interface Props {
   score: number;

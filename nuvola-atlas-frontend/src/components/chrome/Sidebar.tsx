@@ -32,6 +32,7 @@ import WatchlistStar from "@/components/investor/WatchlistStar";
 import { useT } from "@/lib/i18n/use-t";
 import type { MessageKey } from "@/lib/i18n/translate";
 import { useState, useEffect } from "react";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 function formatSyncAge(minutes: number, t: ReturnType<typeof useT>): string {
   if (minutes < 1) return t("sidebar.syncAge.justNow");
@@ -90,17 +91,7 @@ export default function Sidebar() {
 
   // Mobile drawer state
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(
-    () => typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches,
-  );
-
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 768px)");
-    setIsMobile(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   // Close mobile drawer on route change
   useEffect(() => {

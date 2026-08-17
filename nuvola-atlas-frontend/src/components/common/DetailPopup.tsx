@@ -3,6 +3,7 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { X, Maximize2, Minimize2 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { springSettle, panelSlideUp, modalBackdrop, fadeIn } from "@/lib/motion";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 interface Props {
   open: boolean;
@@ -23,9 +24,7 @@ export default function DetailPopup({ open, onClose, label, ariaLabel, wide, chi
   // Detail popups open expanded by default — the rich content reads best at the
   // wide width; the collapse button narrows it for a side-by-side-with-map view.
   const [expanded, setExpanded] = useState(true);
-  const [isMobile, setIsMobile] = useState(
-    () => typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches,
-  );
+  const isMobile = useMediaQuery("(max-width: 1023px)");
 
   // A fresh popup always reopens expanded.
   useEffect(() => {
@@ -38,14 +37,6 @@ export default function DetailPopup({ open, onClose, label, ariaLabel, wide, chi
   const frozen = useRef(children);
   if (open) frozen.current = children;
   const content = open ? children : frozen.current;
-
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 1023px)");
-    setIsMobile(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
 
   useEffect(() => {
     if (!open) return;

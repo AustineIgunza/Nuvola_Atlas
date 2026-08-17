@@ -293,39 +293,39 @@ export default function AssistantPage() {
                     conversations.map((c) => {
                       const active = activeConversationId === c.id;
                       return (
-                        <button
+                        <div
                           key={c.id}
-                          onClick={() => {
-                            setActive(c.id);
-                            setHistoryOpen(false);
-                          }}
-                          className={`w-full flex items-start gap-2 px-2.5 py-2 rounded-control text-left transition-colors ${
+                          className={`w-full flex items-start gap-2 px-2.5 py-2 rounded-control transition-colors ${
                             active
                               ? "bg-[rgba(192,85,43,0.14)] text-ink-1"
                               : "text-ink-2 hover:bg-[rgba(255,255,255,0.04)]"
                           }`}
                         >
-                          <MessageCircle size={12} className="mt-0.5 shrink-0 opacity-70" />
-                          <div className="min-w-0 flex-1">
-                            <div className="text-[11.5px] font-medium truncate">
-                              {c.title ?? t("common.new")}
-                            </div>
-                            <div className="text-[9.5px] text-ink-4">
-                              {formatRelative(c.updatedAt)}
-                            </div>
-                          </div>
-                          <span
-                            role="button"
-                            aria-label={t("common.delete")}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeConv(c.id);
+                          <button
+                            onClick={() => {
+                              setActive(c.id);
+                              setHistoryOpen(false);
                             }}
-                            className="w-6 h-6 flex items-center justify-center rounded-full text-ink-4 hover:text-danger"
+                            className="flex items-start gap-2 min-w-0 flex-1 text-left"
+                          >
+                            <MessageCircle size={12} className="mt-0.5 shrink-0 opacity-70" />
+                            <div className="min-w-0 flex-1">
+                              <div className="text-[11.5px] font-medium truncate">
+                                {c.title ?? t("common.new")}
+                              </div>
+                              <div className="text-[9.5px] text-ink-4">
+                                {formatRelative(c.updatedAt)}
+                              </div>
+                            </div>
+                          </button>
+                          <button
+                            aria-label={t("common.delete")}
+                            onClick={() => removeConv(c.id)}
+                            className="w-6 h-6 flex items-center justify-center rounded-full text-ink-4 hover:text-danger shrink-0"
                           >
                             <Trash2 size={11} />
-                          </span>
-                        </button>
+                          </button>
+                        </div>
                       );
                     })
                   )}

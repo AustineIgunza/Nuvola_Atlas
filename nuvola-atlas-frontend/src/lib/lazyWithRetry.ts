@@ -36,9 +36,9 @@ function isChunkLoadError(err: unknown): boolean {
   );
 }
 
-export function lazyWithRetry<T extends { default: React.ComponentType<any> }>(
-  factory: () => Promise<T>,
-): React.LazyExoticComponent<T["default"]> {
+export function lazyWithRetry<P>(
+  factory: () => Promise<{ default: React.ComponentType<P> }>,
+): React.LazyExoticComponent<React.ComponentType<P>> {
   return lazy(async () => {
     try {
       return await factory();

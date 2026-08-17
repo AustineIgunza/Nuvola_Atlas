@@ -139,8 +139,14 @@ export default function NewReportModal({ open, onClose }: Props) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 }}
               >
-                <label className="block text-[12px] font-medium text-ink-3 mb-1.5">Title *</label>
+                <label
+                  htmlFor="report-title"
+                  className="block text-[12px] font-medium text-ink-3 mb-1.5"
+                >
+                  Title *
+                </label>
                 <input
+                  id="report-title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   className="w-full h-10 px-3 rounded-control bg-[rgba(255,255,255,0.06)] border border-border text-ink-1 text-[13px] placeholder:text-ink-4 focus:border-accent transition-all"
@@ -156,8 +162,14 @@ export default function NewReportModal({ open, onClose }: Props) {
                 className="grid grid-cols-2 gap-3"
               >
                 <div>
-                  <label className="block text-[12px] font-medium text-ink-3 mb-1.5">Zone</label>
+                  <label
+                    htmlFor="report-zone"
+                    className="block text-[12px] font-medium text-ink-3 mb-1.5"
+                  >
+                    Zone
+                  </label>
                   <select
+                    id="report-zone"
                     value={zoneId}
                     onChange={(e) => setZoneId(e.target.value)}
                     className="w-full h-10 px-3 rounded-control bg-[rgba(255,255,255,0.06)] border border-border text-ink-1 text-[13px] focus:border-accent transition-all"
@@ -171,10 +183,14 @@ export default function NewReportModal({ open, onClose }: Props) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[12px] font-medium text-ink-3 mb-1.5">
+                  <label
+                    htmlFor="report-type"
+                    className="block text-[12px] font-medium text-ink-3 mb-1.5"
+                  >
                     Report Type
                   </label>
                   <select
+                    id="report-type"
                     value={type}
                     onChange={(e) => setType(e.target.value)}
                     className="w-full h-10 px-3 rounded-control bg-[rgba(255,255,255,0.06)] border border-border text-ink-1 text-[13px] focus:border-accent transition-all"
@@ -194,8 +210,13 @@ export default function NewReportModal({ open, onClose }: Props) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
               >
-                <label className="block text-[12px] font-medium text-ink-3 mb-2">Priority</label>
-                <div className="flex gap-2">
+                <span
+                  id="report-priority-label"
+                  className="block text-[12px] font-medium text-ink-3 mb-2"
+                >
+                  Priority
+                </span>
+                <div className="flex gap-2" role="group" aria-labelledby="report-priority-label">
                   {PRIORITIES.map((p) => (
                     <motion.button
                       key={p.value}
@@ -230,10 +251,17 @@ export default function NewReportModal({ open, onClose }: Props) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.12 }}
               >
-                <label className="block text-[12px] font-medium text-ink-3 mb-2">
+                <span
+                  id="report-pillar-label"
+                  className="block text-[12px] font-medium text-ink-3 mb-2"
+                >
                   Pillar Focus
-                </label>
-                <div className="flex flex-wrap gap-2">
+                </span>
+                <div
+                  className="flex flex-wrap gap-2"
+                  role="group"
+                  aria-labelledby="report-pillar-label"
+                >
                   {PILLAR_KEYS.map((pk) => {
                     const active = pillarFocus.includes(pk);
                     const color = PILLAR_COLORS[pk];
@@ -276,7 +304,12 @@ export default function NewReportModal({ open, onClose }: Props) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.14 }}
               >
-                <label className="block text-[12px] font-medium text-ink-3 mb-1.5">Tags</label>
+                <label
+                  htmlFor="report-tags"
+                  className="block text-[12px] font-medium text-ink-3 mb-1.5"
+                >
+                  Tags
+                </label>
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {tags.map((tag) => (
                     <motion.span
@@ -296,6 +329,7 @@ export default function NewReportModal({ open, onClose }: Props) {
                   ))}
                 </div>
                 <input
+                  id="report-tags"
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={(e) => {
@@ -328,10 +362,14 @@ export default function NewReportModal({ open, onClose }: Props) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.16 }}
               >
-                <label className="block text-[12px] font-medium text-ink-3 mb-1.5">
+                <label
+                  htmlFor="report-summary"
+                  className="block text-[12px] font-medium text-ink-3 mb-1.5"
+                >
                   Executive Summary
                 </label>
                 <textarea
+                  id="report-summary"
                   value={summary}
                   onChange={(e) => setSummary(e.target.value)}
                   rows={4}

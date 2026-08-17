@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronRight, Droplets } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { api } from "@/api";
-import { BRAND, PILLAR_COLORS, PILLAR_LABELS } from "@/lib/scoreColor";
+import { BRAND, PILLAR_COLORS } from "@/lib/scoreColor";
 import { waterProfile } from "@/lib/waterSanitation";
 import { formatRelative } from "@/lib/format";
 import ActivityFeed from "../ActivityFeed";

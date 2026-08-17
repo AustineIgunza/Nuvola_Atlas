@@ -54,7 +54,7 @@ export default function ScoreHistoryChart({ zoneId }: Props) {
   const [forecastOn, setForecastOn] = useState(false);
   const { data, isLoading } = useZoneHistory(zoneId, range);
   const { data: forecast } = useZoneForecast(zoneId, 14, forecastOn);
-  const reduceMotion = useMemo(prefersReducedMotion, []);
+  const reduceMotion = useMemo(() => prefersReducedMotion(), []);
 
   // A range with no rows does not mean the zone has no history — a stalled
   // feed empties the short windows first. Probe the widest window before
