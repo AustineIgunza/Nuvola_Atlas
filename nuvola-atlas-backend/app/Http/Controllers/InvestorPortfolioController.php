@@ -90,6 +90,10 @@ class InvestorPortfolioController extends Controller
         return ZoneScoreSnapshot::query()
             ->selectRaw("date_trunc('day', captured_at) as bucket, avg(score) as avg_score")
             ->whereIn('zone_id', $zoneIds)
+            // Same rule as the zone exclusion above, one level down: a day
+            // that produced only unscoreable snapshots contributes no mean,
+            // and `(float) null` would plot it as a portfolio-wide crash.
+            ->whereNotNull('score')
             ->where('captured_at', '>=', now()->subDays(28))
             ->groupBy(DB::raw("date_trunc('day', captured_at)"))
             ->orderBy('bucket')

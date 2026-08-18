@@ -64,7 +64,8 @@ class IngestSmoke extends Command
         $snapshotWatermark = (int) ZoneScoreSnapshot::where('zone_id', $zone->id)->max('id');
 
         $body = $this->buildBatch($zone, $before);
-        $this->line("Zone <info>{$zone->id}</info>, score before <info>{$before['score']}</info>");
+        $scoreBefore = $before['score'] ?? 'none';
+        $this->line("Zone <info>{$zone->id}</info>, score before <info>{$scoreBefore}</info>");
 
         $response = $kernel->handle($this->signedRequest($body, $secret));
         $status = $response->getStatusCode();
@@ -110,7 +111,7 @@ class IngestSmoke extends Command
         }
 
         $zone->refresh();
-        $this->line("Rescored: <info>{$before['score']}</info> → <info>{$zone->score}</info>");
+        $this->line("Rescored: <info>{$scoreBefore}</info> → <info>{$zone->score}</info>");
 
         if ($this->option('keep')) {
             $this->warn('Synthetic readings left in place (--keep). Restore them before anyone reads this zone.');
@@ -134,7 +135,7 @@ class IngestSmoke extends Command
     }
 
     /**
-     * @return array{score: int, last_sync_min: ?int, indicators: array<string, ?int>}
+     * @return array{score: ?int, last_sync_min: ?int, indicators: array<string, ?int>}
      */
     private function capture(Zone $zone): array
     {
@@ -145,14 +146,17 @@ class IngestSmoke extends Command
         }
 
         return [
-            'score' => (int) $zone->score,
+            // Not `(int)`. A smoke run on an unscoreable zone used to restore
+            // it as a scored 0, leaving a permanent fabrication behind on a
+            // command whose whole contract is to leave no mark.
+            'score' => $zone->score,
             'last_sync_min' => $zone->last_sync_min,
             'indicators' => $indicators,
         ];
     }
 
     /**
-     * @param  array{score: int, last_sync_min: ?int, indicators: array<string, ?int>}  $before
+     * @param  array{score: ?int, last_sync_min: ?int, indicators: array<string, ?int>}  $before
      * @return array{batch_id: string, submitted_at: string, readings: list<array<string, mixed>>}
      */
     private function buildBatch(Zone $zone, array $before): array
@@ -239,7 +243,7 @@ class IngestSmoke extends Command
     }
 
     /**
-     * @param  array{score: int, last_sync_min: ?int, indicators: array<string, ?int>}  $before
+     * @param  array{score: ?int, last_sync_min: ?int, indicators: array<string, ?int>}  $before
      */
     private function restore(Zone $zone, array $before, int $watermark): void
     {

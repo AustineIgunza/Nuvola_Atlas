@@ -206,8 +206,10 @@ class ScoreCalculator
      */
     public function recalculate(Zone $zone, bool $broadcast = false): void
     {
-        $newScore = $this->calculateScore($zone);
-        $zone->score = $newScore ?? 0;
+        // Null, not 0. A zone with no indicators has not scored badly, it has
+        // not scored at all, and 0 would rank it below a zone that genuinely
+        // measured 1.
+        $zone->score = $this->calculateScore($zone);
         $zone->last_sync_min = 0;
         $zone->save();
 

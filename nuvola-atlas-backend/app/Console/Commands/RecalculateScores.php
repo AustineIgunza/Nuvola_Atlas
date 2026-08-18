@@ -31,7 +31,8 @@ class RecalculateScores extends Command
             }
 
             $calculator->recalculate($zone, $broadcast);
-            $this->info("Recalculated score for {$zone->name}: {$zone->score}");
+            $result = $zone->score ?? 'no score (zone has no indicators yet)';
+            $this->info("Recalculated score for {$zone->name}: {$result}");
 
             return self::SUCCESS;
         }

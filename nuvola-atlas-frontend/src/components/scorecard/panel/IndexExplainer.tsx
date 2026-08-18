@@ -5,6 +5,7 @@ import { BRAND, PILLAR_COLORS, PILLAR_GLYPHS } from "@/lib/scoreColor";
 import Ring from "../Ring";
 import DaystarIndicatorPanel from "./DaystarIndicatorPanel";
 import { Section, Chip, scoreBand } from "./bits";
+import { byScoreDesc, formatScore, isScored } from "@/lib/scores";
 import { useT } from "@/lib/i18n/use-t";
 import type { PanelView } from "./panel-types";
 import type { Zone, PillarKey } from "@/types";
@@ -21,8 +22,10 @@ export default function IndexExplainer({ zone, onNavigate }: Props) {
   const { data: allZones } = useQuery({ queryKey: ["zones"], queryFn: api.getZones });
   const band = scoreBand(zone.score);
 
-  const sorted = [...(allZones ?? [])].sort((a, b) => b.score - a.score);
-  const rank = sorted.findIndex((z) => z.id === zone.id) + 1;
+  const sorted = [...(allZones ?? [])].sort(byScoreDesc);
+  // Unscoreable zones are pinned to the tail, so their index is a placement,
+  // not a rank. Suppress it rather than claim they came last.
+  const rank = isScored(zone) ? sorted.findIndex((z) => z.id === zone.id) + 1 : 0;
 
   const BANDS = [
     { range: "70–100", label: t("band.strong"), color: BRAND.teal, note: t("band.strong.note") },
@@ -88,8 +91,11 @@ export default function IndexExplainer({ zone, onNavigate }: Props) {
                 <span className="flex-1 min-w-0 text-[10.5px] text-ink-2 font-medium truncate">
                   {t(`pillar.${key}.long` as const)}
                 </span>
-                <span className="text-[12px] font-semibold tabular-nums shrink-0" style={{ color }}>
-                  {zone.pillars[key]}
+                <span
+                  className="text-[12px] font-semibold tabular-nums shrink-0"
+                  style={{ color: zone.pillars[key] === null ? BRAND.inkSoft : color }}
+                >
+                  {formatScore(zone.pillars[key])}
                 </span>
                 <ChevronRight
                   size={12}

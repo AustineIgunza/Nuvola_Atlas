@@ -40,6 +40,9 @@ class ZoneHistoryTool extends BaseAgentTool
         $rows = ZoneScoreSnapshot::query()
             ->selectRaw("date_trunc('day', captured_at) as bucket, avg(score) as avg_score, avg(pillar_social) as social, avg(pillar_safety) as safety, avg(pillar_density) as density, avg(pillar_infra) as infra")
             ->where('zone_id', $zoneId)
+            // Unscoreable days carry no mean and must not be read as a drop
+            // to zero — which would also invert `direction` for the whole run.
+            ->whereNotNull('score')
             ->where('captured_at', '>=', now()->subDays($days))
             ->groupBy(DB::raw("date_trunc('day', captured_at)"))
             ->orderBy('bucket')

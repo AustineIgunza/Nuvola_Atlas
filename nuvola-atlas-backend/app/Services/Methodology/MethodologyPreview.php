@@ -36,7 +36,10 @@ class MethodologyPreview
                 return [
                     'zone_id' => $zone->id,
                     'zone_name' => $zone->name,
-                    'current' => $current === 0 ? null : $current,
+                    // `score` used to be NOT NULL, so this read 0 as "never
+                    // scored" and threw away a zone that genuinely measured 0.
+                    // The column carries a real null now, so trust it.
+                    'current' => $current,
                     'proposed' => $proposed,
                     'delta' => ($current !== null && $proposed !== null)
                         ? $proposed - $current

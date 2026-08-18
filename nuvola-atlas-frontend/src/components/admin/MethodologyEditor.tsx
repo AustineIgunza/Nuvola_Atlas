@@ -46,21 +46,36 @@ export default function MethodologyEditor() {
 
   // Projected score under proposed weights = sum(pillar * proposed weight).
   // Zone.score is already the current-weights composite, so we just recompute.
+  // A zone with any null pillar has nothing to reweight, so it is excluded
+  // from the diff — reweighting nothing to nothing would show a fake row of
+  // zero-deltas at the top.
   const projected = useMemo(
     () =>
       zones
-        .map((z: Zone) => {
+        .flatMap((z: Zone) => {
+          const { social, safety, density, infra } = z.pillars;
+          if (
+            social === null ||
+            safety === null ||
+            density === null ||
+            infra === null ||
+            z.score === null
+          ) {
+            return [];
+          }
           const nextScore = Math.round(
-            z.pillars.social * normalized.social +
-              z.pillars.safety * normalized.safety +
-              z.pillars.density * normalized.density +
-              z.pillars.infra * normalized.infra,
+            social * normalized.social +
+              safety * normalized.safety +
+              density * normalized.density +
+              infra * normalized.infra,
           );
-          return { z, currentScore: z.score, nextScore, delta: nextScore - z.score };
+          return [{ z, currentScore: z.score, nextScore, delta: nextScore - z.score }];
         })
         .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta)),
     [zones, normalized],
   );
+
+  const excludedCount = zones.length - projected.length;
 
   const canPublish = changed && confirmToken.trim().toLowerCase() === "publish";
 
@@ -169,6 +184,11 @@ export default function MethodologyEditor() {
             {changed
               ? `${projected.filter((p) => p.delta !== 0).length} zones would move`
               : "No change from current weights"}
+            {excludedCount > 0 && (
+              <span className="ml-2 text-ink-4/70">
+                · {excludedCount} zone{excludedCount === 1 ? "" : "s"} unscored, excluded
+              </span>
+            )}
           </span>
         </div>
 

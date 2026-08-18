@@ -68,17 +68,23 @@ const NAMED: Record<string, Partial<WaterProfile>> = {
   },
 };
 
-function need01(z: Zone): number {
-  const infraGap = (100 - z.pillars.infra) / 100;
-  const socialGap = (100 - z.pillars.social) / 100;
-  const densityPressure = z.pillars.density / 100;
+function need01(z: Zone): number | null {
+  const { infra, social, density } = z.pillars;
+  // Any missing pillar means the need weighting is a guess. A zone that has
+  // not been measured has no computable water need — say so with null rather
+  // than fabricate a midpoint by treating the gap as zero.
+  if (infra === null || social === null || density === null) return null;
+  const infraGap = (100 - infra) / 100;
+  const socialGap = (100 - social) / 100;
+  const densityPressure = density / 100;
   let n = infraGap * 0.5 + socialGap * 0.3 + densityPressure * 0.2;
   if (INFORMAL.has(z.id)) n = n + 0.18;
   return Math.max(0, Math.min(1, n));
 }
 
-export function waterProfile(z: Zone): WaterProfile {
+export function waterProfile(z: Zone): WaterProfile | null {
   const need = need01(z);
+  if (need === null) return null;
   const needPct = Math.round(need * 100);
 
   // Below ~0.40 unmet need the trunk network is close enough that conventional

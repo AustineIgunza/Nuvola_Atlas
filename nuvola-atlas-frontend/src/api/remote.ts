@@ -3,6 +3,7 @@ import { ZONES as MOCK_ZONES } from "./fixtures";
 import type {
   Zone,
   PillarDeltas,
+  PillarScores,
   Project,
   AlertItem,
   Report,
@@ -49,13 +50,20 @@ function fill<T>(hydrated: string[], path: string, actual: T | null | undefined,
  * base object, so a fixture could surface in any field the API omitted, with
  * nothing anywhere to say it had.
  */
-function hydrateZone(z: Partial<Zone> & { id: string; name: string; score: number }): Zone {
+function hydrateZone(z: Partial<Zone> & { id: string; name: string }): Zone {
   const mock = MOCK_ZONES.find((m) => m.id === z.id);
   const _hydrated: string[] = [];
 
-  const pillars = { social: 0, safety: 0, density: 0, infra: 0 };
+  const pillars: PillarScores = { social: null, safety: null, density: null, infra: null };
   for (const k of PILLAR_KEYS) {
-    pillars[k] = fill(_hydrated, `pillars.${k}`, z.pillars?.[k], mock?.pillars[k] ?? z.score);
+    // A zone the API could not score has nothing to stand in for its pillars
+    // either. Passing the null through unmarked is right: there is no fixture
+    // behind it, so calling it an estimate would overstate what we have.
+    const fallback = mock?.pillars[k] ?? z.score ?? null;
+    pillars[k] =
+      fallback === null
+        ? (z.pillars?.[k] ?? null)
+        : fill(_hydrated, `pillars.${k}`, z.pillars?.[k], fallback);
   }
 
   // Deltas are deliberately NOT hydrated. A pillar score can be estimated and
@@ -76,6 +84,7 @@ function hydrateZone(z: Partial<Zone> & { id: string; name: string; score: numbe
 
   return {
     ...z,
+    score: z.score ?? null,
     pillars,
     deltas,
     deltaWindowDays: z.deltaWindowDays ?? null,

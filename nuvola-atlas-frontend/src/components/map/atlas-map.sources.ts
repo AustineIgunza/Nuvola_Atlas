@@ -83,7 +83,11 @@ export function generateGridFeatures(zones: Zone[]) {
 
 export function generateDensityFeatures(zones: Zone[]) {
   return zones.flatMap((z) => {
-    const count = Math.round((z.pillars.density / 100) * 20) + 5;
+    // No density reading = no scatter. A count derived from a null pillar
+    // would fabricate a cluster; an empty layer for the zone is the truth.
+    const density = z.pillars.density;
+    if (density === null) return [];
+    const count = Math.round((density / 100) * 20) + 5;
     return Array.from({ length: count }, (_, i) => ({
       type: "Feature" as const,
       geometry: {
@@ -96,9 +100,9 @@ export function generateDensityFeatures(zones: Zone[]) {
       properties: {
         zoneId: z.id,
         zone: z.name,
-        density: z.pillars.density,
+        density,
         delta: z.deltas.density,
-        weight: z.pillars.density / 100,
+        weight: density / 100,
       },
     }));
   });
@@ -157,25 +161,33 @@ export function generateWaterFeatures(zones: Zone[]) {
 
   const mainFeatures = mains
     .filter(([a, b]) => idx.has(a) && idx.has(b))
-    .map(([a, b]) => {
+    .flatMap(([a, b]) => {
       const za = idx.get(a)!;
       const zb = idx.get(b)!;
       const pb = waterProfile(zb);
-      return {
-        type: "Feature" as const,
-        geometry: { type: "LineString" as const, coordinates: [za.centroid, zb.centroid] },
-        properties: {
-          kind: "main",
-          zoneId: zb.id, // click deep-links to the destination (higher-need) zone
-          name: `${za.name} → ${zb.name} main`,
-          access: pb.accessPct,
-          need: pb.needPct / 100,
+      // No profile at the destination means no measured need — drawing the
+      // main with a fabricated width/tint would put a fake priority on it.
+      if (pb === null) return [];
+      return [
+        {
+          type: "Feature" as const,
+          geometry: { type: "LineString" as const, coordinates: [za.centroid, zb.centroid] },
+          properties: {
+            kind: "main",
+            zoneId: zb.id,
+            name: `${za.name} → ${zb.name} main`,
+            access: pb.accessPct,
+            need: pb.needPct / 100,
+          },
         },
-      };
+      ];
     });
 
   const nodeFeatures = zones.flatMap((z) => {
     const p = waterProfile(z);
+    // No profile means the zone has null pillars — no hub, no taps, no ring.
+    // The map should be silent about a zone it cannot honestly characterise.
+    if (p === null) return [];
     // Zone hub — carries the full SDG-6 profile for the popup + opportunity ring.
     const hub = {
       type: "Feature" as const,
@@ -256,7 +268,11 @@ export function generateMomentumFeatures() {
  *  also carry more points, so the heat both brightens and spreads. */
 export function generateSafetyFeatures(zones: Zone[]) {
   return zones.flatMap((z) => {
-    const risk = 100 - z.pillars.safety; // 0..100 (higher = hotter)
+    const safety = z.pillars.safety;
+    // Null safety = we cannot infer risk. Treating null as 0 would paint the
+    // hottest possible heat over a zone nobody measured.
+    if (safety === null) return [];
+    const risk = 100 - safety; // 0..100 (higher = hotter)
     const count = 10 + Math.round((risk / 100) * 22);
     return Array.from({ length: count }, (_, i) => ({
       type: "Feature" as const,
@@ -270,7 +286,7 @@ export function generateSafetyFeatures(zones: Zone[]) {
       properties: {
         zoneId: z.id,
         zone: z.name,
-        safety: z.pillars.safety,
+        safety,
         risk,
         delta: z.deltas.safety,
         weight: risk / 100,

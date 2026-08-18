@@ -67,14 +67,17 @@ export default function ScoreHistoryChart({ zoneId }: Props) {
 
   const chartData = useMemo(() => {
     if (!data) return [];
+    // Recharts uses `undefined` for gaps (with `connectNulls` off); it does
+    // not understand `null` and would plot it as a hard zero, dragging the
+    // line to the floor for any bucket the backend could not aggregate.
     const historical = data.points.map((p) => ({
       t: p.t,
       label: formatTick(p.t, range),
-      score: p.score,
-      social: p.pillars.social,
-      safety: p.pillars.safety,
-      density: p.pillars.density,
-      infra: p.pillars.infra,
+      score: p.score ?? undefined,
+      social: p.pillars.social ?? undefined,
+      safety: p.pillars.safety ?? undefined,
+      density: p.pillars.density ?? undefined,
+      infra: p.pillars.infra ?? undefined,
       forecast: undefined as number | undefined,
       lower: undefined as number | undefined,
       upper: undefined as number | undefined,

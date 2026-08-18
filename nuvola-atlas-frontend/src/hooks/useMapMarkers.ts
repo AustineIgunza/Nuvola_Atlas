@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import { useUIStore } from "@/stores/ui";
 import { markerScoreColor } from "@/components/map/atlas-map.constants";
+import { formatScore } from "@/lib/scores";
 import type { Zone } from "@/types";
 
 export function useMapMarkers(
@@ -41,7 +42,7 @@ export function useMapMarkers(
           line-height: 1.3;
           text-align: center;
         ">
-          <div style="font-size:13px;font-weight:700;">${zone.score}</div>
+          <div style="font-size:13px;font-weight:700;">${formatScore(zone.score)}</div>
           <div style="font-size:9.5px;opacity:0.9;font-weight:500;">${zone.name}</div>
         </div>
       `;

@@ -1,10 +1,16 @@
 export type PillarKey = "social" | "safety" | "density" | "infra";
 
+/**
+ * Null for a pillar with no indicator behind any of its sub-metrics. The
+ * server has always been able to send this — `ScoreCalculator::pillarScores`
+ * returns `?int` per pillar — so a non-nullable type here was a lie that
+ * pushed a bar to 0% for something nobody measured.
+ */
 export interface PillarScores {
-  social: number;
-  safety: number;
-  density: number;
-  infra: number;
+  social: number | null;
+  safety: number | null;
+  density: number | null;
+  infra: number | null;
 }
 
 /**
@@ -23,7 +29,12 @@ export interface PillarDeltas {
 export interface Zone {
   id: string;
   name: string;
-  score: number;
+  /**
+   * Null when no pillar has a single indicator behind it. A zone in that
+   * state has not scored badly, it has not scored at all — it must never be
+   * ranked, averaged, or painted at the bottom of the colour ramp.
+   */
+  score: number | null;
   pillars: PillarScores;
   deltas: PillarDeltas;
   /** Real age in days of the baseline the deltas were measured against. */
@@ -115,7 +126,8 @@ export type HistoryRange = "day" | "week" | "month";
 
 export interface ZoneHistoryPoint {
   t: string;
-  score: number;
+  /** Null for a bucket whose snapshots were all unscoreable — a gap, not a 0. */
+  score: number | null;
   pillars: PillarScores;
 }
 

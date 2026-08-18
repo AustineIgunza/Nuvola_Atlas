@@ -37,8 +37,16 @@ class ZoneScoreForecaster
 
         $daily = $this->trainingSeries($zoneId);
 
+        if ($daily === []) {
+            // Nothing measured means nothing to project from. An empty series
+            // is the honest answer; the alternative was a made-up midpoint
+            // drawn with a confidence band around it.
+            return ['horizon' => $horizonDays, 'points' => []];
+        }
+
         if (count($daily) < 3) {
-            // Not enough history to trend — flat-line the last observation.
+            // Not enough history to trend — carry the last real observation
+            // forward, which is a naive forecast rather than an invention.
             return $this->flatline($daily, $horizonDays);
         }
 
@@ -72,6 +80,10 @@ class ZoneScoreForecaster
     {
         $rows = DB::table('zone_score_snapshots')
             ->where('zone_id', $zoneId)
+            // A day whose snapshots were all unscoreable averages to null.
+            // Casting that to 0.0 would drag the fitted trend toward a floor
+            // the zone never touched, so those days train nothing.
+            ->whereNotNull('score')
             ->where('captured_at', '>=', now()->subDays(self::TRAIN_DAYS))
             ->selectRaw("date_trunc('day', captured_at) as bucket")
             ->selectRaw('AVG(score) as score')
@@ -120,11 +132,14 @@ class ZoneScoreForecaster
     }
 
     /**
+     * @param  non-empty-array<int, float>  $daily
      * @return array{horizon: int, points: array<int, array{t: string, score: int, lower: int, upper: int}>}
      */
     private function flatline(array $daily, int $horizonDays): array
     {
-        $last = end($daily) ?: 50.0;
+        // `?:` would have turned a genuine last reading of 0 into the old
+        // hardcoded 50. The caller guarantees a non-empty series.
+        $last = (float) end($daily);
         $today = CarbonImmutable::now()->startOfDay();
         $points = [];
         for ($k = 1; $k <= $horizonDays; $k++) {

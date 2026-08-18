@@ -6,6 +6,7 @@ import { ArrowUpDown, Download, ChevronRight, X, MapPin } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { api } from "@/api";
 import { scoreColor, PILLAR_COLORS } from "@/lib/scoreColor";
+import { formatScore } from "@/lib/scores";
 import {
   springSettle,
   staggerContainer,
@@ -36,6 +37,10 @@ export default function Leaderboard() {
     return [...filtered].sort((a, b) => {
       const av = sortBy === "score" ? a.score : a.pillars[sortBy];
       const bv = sortBy === "score" ? b.score : b.pillars[sortBy];
+      // Nulls sink to the bottom on either sort axis. `bv - av` would treat
+      // null as 0 and rank an unmeasured zone as the worst in the column.
+      if (av === null) return bv === null ? 0 : 1;
+      if (bv === null) return -1;
       return bv - av;
     });
   }, [zones, sortBy, filter]);
@@ -47,11 +52,14 @@ export default function Leaderboard() {
 
   function exportCSV() {
     if (!sorted.length) return;
+    // Empty cell for a null reading — the standard CSV signal for "no value",
+    // which downstream spreadsheets treat as blank instead of a real 0.
+    const cell = (v: number | null): string => (v === null ? "" : String(v));
     const header = "Rank,Sub-county,Overall,Social,Safety,Density,Infrastructure\n";
     const rows = sorted
       .map(
         (z, i) =>
-          `${i + 1},${z.name},${z.score},${z.pillars.social},${z.pillars.safety},${z.pillars.density},${z.pillars.infra}`,
+          `${i + 1},${z.name},${cell(z.score)},${cell(z.pillars.social)},${cell(z.pillars.safety)},${cell(z.pillars.density)},${cell(z.pillars.infra)}`,
       )
       .join("\n");
     const blob = new Blob([header + rows], { type: "text/csv" });
@@ -152,7 +160,7 @@ export default function Leaderboard() {
                   className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold tabular-nums text-white"
                   style={{ background: scoreColor(z.score) }}
                 >
-                  {z.score}
+                  {formatScore(z.score)}
                 </span>
                 <ChevronRight size={14} className="text-ink-4 shrink-0" />
               </button>
@@ -226,33 +234,45 @@ export default function Leaderboard() {
                       whileHover={{ scale: 1.08 }}
                       transition={springSettle}
                     >
-                      {z.score}
+                      {formatScore(z.score)}
                     </motion.span>
                   </td>
-                  {(["social", "safety", "density", "infra"] as PillarKey[]).map((key) => (
-                    <td key={key} className="py-3 px-2 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <div className="w-14 h-1.5 rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
-                          <motion.div
-                            className="h-full rounded-full"
-                            style={{ background: PILLAR_COLORS[key] }}
-                            initial={{ width: 0 }}
-                            animate={{ width: `${z.pillars[key]}%` }}
-                            transition={{
-                              delay: i * 0.03,
-                              duration: 0.6,
-                              ease: [0.32, 0.72, 0, 1],
-                            }}
-                          />
+                  {(["social", "safety", "density", "infra"] as PillarKey[]).map((key) => {
+                    const pv = z.pillars[key];
+                    return (
+                      <td key={key} className="py-3 px-2 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <div className="w-14 h-1.5 rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
+                            {pv !== null && (
+                              <motion.div
+                                className="h-full rounded-full"
+                                style={{ background: PILLAR_COLORS[key] }}
+                                initial={{ width: 0 }}
+                                animate={{ width: `${pv}%` }}
+                                transition={{
+                                  delay: i * 0.03,
+                                  duration: 0.6,
+                                  ease: [0.32, 0.72, 0, 1],
+                                }}
+                              />
+                            )}
+                          </div>
+                          <span className="tabular-nums text-ink-2 w-6 text-right">
+                            {formatScore(pv)}
+                          </span>
                         </div>
-                        <span className="tabular-nums text-ink-2 w-6 text-right">
-                          {z.pillars[key]}
-                        </span>
-                      </div>
-                    </td>
-                  ))}
+                      </td>
+                    );
+                  })}
                   <td className="py-3 px-2 text-right hidden lg:table-cell">
-                    <Sparkline points={fakeSparkline(z.score)} />
+                    {/* Sparkline needs a numeric seed. An unmeasured zone has
+                        no baseline to walk forward from — draw a blank rather
+                        than a fabricated 12-point curve. */}
+                    {z.score !== null ? (
+                      <Sparkline points={fakeSparkline(z.score)} />
+                    ) : (
+                      <span className="text-ink-4 text-[10px]">—</span>
+                    )}
                   </td>
                 </motion.tr>
               ))}
@@ -315,7 +335,7 @@ export default function Leaderboard() {
                       boxShadow: `0 0 18px ${scoreColor(popupZone.score)}55`,
                     }}
                   >
-                    {popupZone.score}
+                    {formatScore(popupZone.score)}
                   </div>
                   <div className="flex-1">
                     <div className="text-[11px] font-medium text-ink-4 uppercase tracking-[0.1em]">
@@ -328,27 +348,32 @@ export default function Leaderboard() {
                 </div>
 
                 <div className="space-y-3 mb-5">
-                  {(["social", "safety", "density", "infra"] as PillarKey[]).map((key) => (
-                    <div key={key}>
-                      <div className="flex items-center justify-between text-[12px] mb-1.5">
-                        <span className="text-ink-3 font-medium">
-                          {t(`pillar.${key}.long` as const)}
-                        </span>
-                        <span className="tabular-nums text-ink-1 font-semibold">
-                          {popupZone.pillars[key]}
-                        </span>
+                  {(["social", "safety", "density", "infra"] as PillarKey[]).map((key) => {
+                    const pv = popupZone.pillars[key];
+                    return (
+                      <div key={key}>
+                        <div className="flex items-center justify-between text-[12px] mb-1.5">
+                          <span className="text-ink-3 font-medium">
+                            {t(`pillar.${key}.long` as const)}
+                          </span>
+                          <span className="tabular-nums text-ink-1 font-semibold">
+                            {formatScore(pv)}
+                          </span>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
+                          {pv !== null && (
+                            <motion.div
+                              className="h-full rounded-full"
+                              style={{ background: PILLAR_COLORS[key] }}
+                              initial={{ width: 0 }}
+                              animate={{ width: `${pv}%` }}
+                              transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+                            />
+                          )}
+                        </div>
                       </div>
-                      <div className="h-1.5 rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
-                        <motion.div
-                          className="h-full rounded-full"
-                          style={{ background: PILLAR_COLORS[key] }}
-                          initial={{ width: 0 }}
-                          animate={{ width: `${popupZone.pillars[key]}%` }}
-                          transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
-                        />
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 <button

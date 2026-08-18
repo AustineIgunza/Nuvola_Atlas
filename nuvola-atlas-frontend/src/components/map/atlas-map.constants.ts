@@ -18,7 +18,7 @@ export function defaultStyleForTheme(theme: "light" | "dark"): string {
   return theme === "dark" ? MAP_STYLES.dark : MAP_STYLES.light;
 }
 
-import { BRAND } from "@/lib/scoreColor";
+import { BRAND, NO_SCORE_COLOR_HEX } from "@/lib/scoreColor";
 
 /**
  * The Atlas data layers. `label` + `color` drive the floating map chips.
@@ -107,7 +107,8 @@ export const LAYER_META = [
   },
 ];
 
-export function markerScoreColor(score: number): string {
+export function markerScoreColor(score: number | null): string {
+  if (score === null) return NO_SCORE_COLOR_HEX;
   if (score >= 70) return BRAND.teal;
   if (score >= 55) return BRAND.gold;
   return BRAND.terracotta;

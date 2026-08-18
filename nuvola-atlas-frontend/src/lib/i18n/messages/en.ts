@@ -156,6 +156,8 @@ export const en = {
   "band.strong.note": "Ready to absorb new projects",
   "band.moderate.note": "Ready with targeted safeguards",
   "band.atRisk.note": "Readiness gaps need closing first",
+  "band.noData": "Insufficient data",
+  "band.noData.note": "No indicators recorded for this zone yet",
   "scorecard.overview": "Overview",
   "scorecard.pillars": "Pillars — tap to expand",
   "scorecard.projects": "Infrastructure",
@@ -471,6 +473,8 @@ export const en = {
   "chat.composition.deltaUnknown": "no trend yet",
   "chat.composition.strongLabel": "**Strongest — {pillar}.**",
   "chat.composition.weakLabel": "**Weakest — {pillar}.**",
+  "chat.composition.unscored":
+    "**{zone}** has no composite Vitality Score yet — none of its pillars has a reading behind it, so I can't break down what does not exist. Once indicators start landing for the zone, I can compose the score and its four pillars from those readings.",
   "chat.strong.social":
     "{zone} has above-average access to healthcare, education, and connectivity — a workforce and community that can absorb new infrastructure without training gaps.",
   "chat.strong.safety":
@@ -489,8 +493,12 @@ export const en = {
     "The paper trail is thin — ESIAs, waste mandates, or sovereign-immunity carve-outs are missing or non-public. Budget legal + policy work into any project brief here.",
   "chat.distribution":
     "{top1} and {top2} share the lead at {score1}/{score2}. {top3} follows at {score3}, then {top4} ({score4}) and {top5} ({score5}). The top five sit within {spread} points — Nairobi's strongest sub-counties are clustered rather than pulled apart by any single runaway leader.",
+  "chat.distribution.needMore":
+    "Only {count} zone(s) have a composite score right now — I need at least five to name the leaders honestly. As more zones start receiving indicators, the top-five ranking becomes meaningful.",
   "chat.trend":
     "{zone} has held between {low} and {high} over the last 30 days. The overall trajectory is best described as stable, with a small recent uptick coming from the Infrastructure pillar. No sudden movements to flag.",
+  "chat.trend.unscored":
+    "**{zone}** has no composite score to trend against yet — a 30-day trajectory needs a starting number, and there isn't one. Once the zone has its first scored snapshot, the trend chart becomes available.",
   "chat.methodology":
     "The Vitality Score aggregates four pillars — Social Wellbeing, Safety & Security, Density & Scaling, and Infrastructure & Environment — each on a 0–100 scale, and blends them into an overall zone score. The exact weightings are held in the methodology paper rather than exposed in the UI, but every input is versioned in a snapshot table so any score you see can be traced back to the reading that produced it.",
   "chat.summary.needZone":
@@ -499,6 +507,8 @@ export const en = {
     "{zone} sits at {score}/100 overall. Social Wellbeing {social}, Safety {safety}, Density {density}, Infrastructure {infra}. Ask about any pillar and I can go deeper.",
   "chat.summary.multi":
     'You\'re comparing {names}. Their overall Vitality scores average {avg}. Ask "compare across all four pillars" for the full breakdown, or narrow to a single pillar for a deeper look.',
+  "chat.summary.multi.unscored":
+    "You're comparing {names}. None of them has a composite Vitality Score yet, so there's no average to report — but I can still walk through whichever pillar readings each zone does have.",
   "chat.diagnostic.stable":
     "Every zone in Nairobi is roughly stable this quarter — the softest moves are inside noise. Ask about a specific pillar to go deeper.",
   "chat.diagnostic.noMovement":

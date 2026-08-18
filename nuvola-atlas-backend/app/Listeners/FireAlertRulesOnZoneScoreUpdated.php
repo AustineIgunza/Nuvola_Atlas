@@ -39,6 +39,13 @@ class FireAlertRulesOnZoneScoreUpdated implements ShouldQueue
         $zone = $event->zone;
         $currentScore = $zone->score;
 
+        // An unscoreable zone has not crossed a threshold. Returning before
+        // touching last_score_seen also preserves the last reading we could
+        // actually measure, so the next real score still has a baseline.
+        if ($currentScore === null) {
+            return;
+        }
+
         $rules = AlertRule::query()
             ->where('zone_id', $zone->id)
             ->where('active', true)

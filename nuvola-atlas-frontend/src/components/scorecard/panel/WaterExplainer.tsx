@@ -44,6 +44,40 @@ interface Props {
 
 export default function WaterExplainer({ zone, onNavigate }: Props) {
   const wp = waterProfile(zone);
+
+  // No pillar readings behind the SDG-6 weighting means no honest verdict.
+  // Every downstream section (need bar, context verdict, toolkit match) is
+  // computed from the profile, so rendering them from a null would fabricate
+  // an access percentage, a queue time, and a recommended toolkit entry.
+  if (!wp) {
+    return (
+      <div className="space-y-3">
+        <Section>
+          <div className="flex items-center gap-2">
+            <div
+              className="w-7 h-7 rounded-control flex items-center justify-center shrink-0"
+              style={{ background: `${BRAND.steel}1F`, color: BRAND.steel }}
+            >
+              <Droplets size={14} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[10px] font-medium text-ink-4 uppercase tracking-[0.08em]">
+                Water &amp; Sanitation · SDG 6
+              </div>
+              <div className="text-[13px] font-semibold text-ink-2">Insufficient data</div>
+            </div>
+          </div>
+          <p className="mt-2 text-[10.5px] text-ink-3 leading-[1.55]">
+            The SDG-6 need weighting draws on this zone&apos;s infrastructure, social wellbeing and
+            density readings. No indicators have been recorded for one or more of those pillars
+            yet, so no verdict can be issued here.
+          </p>
+        </Section>
+        <LayerHintButton layer="water" label="Water & Sanitation" />
+      </div>
+    );
+  }
+
   const accent = wp.opportunity ? BRAND.teal : BRAND.steel;
 
   return (

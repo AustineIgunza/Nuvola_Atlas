@@ -9,11 +9,20 @@ const STOPS: [number, [number, number, number]][] = [
   [100, [31, 138, 120]],
 ];
 
+/**
+ * An unscoreable zone gets a flat, desaturated grey that sits off the ramp
+ * entirely. Any colour on the ramp — including the brick at 0 — would read
+ * as a measurement.
+ */
+export const NO_SCORE_COLOR = "rgba(255,255,255,0.18)";
+export const NO_SCORE_COLOR_HEX = "#4A5560";
+
 function lerp(a: number, b: number, t: number) {
   return Math.round(a + (b - a) * t);
 }
 
-export function scoreColor(score: number): string {
+export function scoreColor(score: number | null): string {
+  if (score === null) return NO_SCORE_COLOR;
   const s = Math.max(0, Math.min(100, score));
   for (let i = 0; i < STOPS.length - 1; i++) {
     const [s0, c0] = STOPS[i];
@@ -27,7 +36,8 @@ export function scoreColor(score: number): string {
   return `rgb(${last[0]},${last[1]},${last[2]})`;
 }
 
-export function scoreColorHex(score: number): string {
+export function scoreColorHex(score: number | null): string {
+  if (score === null) return NO_SCORE_COLOR_HEX;
   const s = Math.max(0, Math.min(100, score));
   for (let i = 0; i < STOPS.length - 1; i++) {
     const [s0, c0] = STOPS[i];

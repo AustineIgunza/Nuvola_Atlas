@@ -178,6 +178,16 @@ class HeuristicAgentProvider implements AgentProvider
         return null;
     }
 
+    /**
+     * A zone with no indicators has no composite. Interpolating the null
+     * left "composite /100" on screen; the pillars beside it already use
+     * "—" for the same condition, so say it in words instead.
+     */
+    private function composite(mixed $score): string
+    {
+        return $score === null ? 'no score yet' : "{$score}/100";
+    }
+
     private function formatFinal(string $prompt, array $obs): string
     {
         // compare_zones
@@ -190,7 +200,7 @@ class HeuristicAgentProvider implements AgentProvider
                     continue;
                 }
                 $name = $z['name'] ?? $z['zone_id'];
-                $lines[] = "- **{$name}**: composite {$z['score']}/100 · "
+                $lines[] = "- **{$name}**: composite {$this->composite($z['score'])} · "
                     .'social '.($z['pillars']['social'] ?? '—')
                     .' · safety '.($z['pillars']['safety'] ?? '—')
                     .' · density '.($z['pillars']['density'] ?? '—')
@@ -219,7 +229,7 @@ class HeuristicAgentProvider implements AgentProvider
             $active = $obs['indicators_active'];
             $total = $obs['indicators_total'];
             $lines = [
-                "**{$obs['name']}** ({$obs['zone_id']}) — Vitality Score **{$obs['score']}/100**.",
+                "**{$obs['name']}** ({$obs['zone_id']}) — Vitality Score **{$this->composite($obs['score'])}**.",
                 'Pillars: social '.($obs['pillars']['social'] ?? '—')
                     .' · safety '.($obs['pillars']['safety'] ?? '—')
                     .' · density '.($obs['pillars']['density'] ?? '—')
@@ -234,7 +244,7 @@ class HeuristicAgentProvider implements AgentProvider
         if (isset($obs['zones']) && isset($obs['count'])) {
             $lines = ["Top {$obs['count']} zones by composite score:"];
             foreach ($obs['zones'] as $i => $z) {
-                $lines[] = ($i + 1).". **{$z['name']}** ({$z['zone_id']}) — {$z['score']}/100";
+                $lines[] = ($i + 1).". **{$z['name']}** ({$z['zone_id']}) — {$this->composite($z['score'])}";
             }
 
             return implode("\n", $lines);
@@ -275,13 +285,13 @@ class HeuristicAgentProvider implements AgentProvider
             if (! empty($obs['watchlist'])) {
                 $lines[] = "\nWatchlist:";
                 foreach ($obs['watchlist'] as $w) {
-                    $lines[] = "- {$w['zone_name']} · score {$w['score']} · priority {$w['priority']}";
+                    $lines[] = "- {$w['zone_name']} · {$this->composite($w['score'])} · priority {$w['priority']}";
                 }
             }
             if (! empty($obs['opportunities'])) {
                 $lines[] = "\nTop opportunities (weighted by tier):";
                 foreach ($obs['opportunities'] as $o) {
-                    $lines[] = "- {$o['zone_name']} · fit {$o['fit']} · score {$o['score']}";
+                    $lines[] = "- {$o['zone_name']} · fit {$o['fit']} · {$this->composite($o['score'])}";
                 }
             }
 

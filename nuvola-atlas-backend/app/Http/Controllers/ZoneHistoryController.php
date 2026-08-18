@@ -82,7 +82,10 @@ class ZoneHistoryController extends Controller
 
             return [
                 't' => (string) $row->bucket,
-                'score' => (int) $row->score,
+                // AVG skips null snapshots, but a bucket where every snapshot
+                // was unscoreable averages to null — `(int) null` would plot
+                // that gap on the trend chart as a crash to zero.
+                'score' => $row->score === null ? null : (int) $row->score,
                 'pillars' => [
                     'social' => $pillars['social'],
                     'safety' => $pillars['safety'],

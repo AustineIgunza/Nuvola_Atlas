@@ -59,13 +59,16 @@ export default function InvestorPage() {
     [firm.watchlist, zones],
   );
 
-  const countyAvg = zones.length
-    ? Math.round(zones.reduce((a, z) => a + z.score, 0) / zones.length)
-    : 0;
+  // Averages skip unscoreable zones. Coercing null to 0 in a mean would drag
+  // the reported county / portfolio number toward a floor no zone touched.
+  const meanScore = (zs: Zone[]): number | null => {
+    const scored = zs.filter((z): z is Zone & { score: number } => z.score !== null);
+    if (scored.length === 0) return null;
+    return Math.round(scored.reduce((a, z) => a + z.score, 0) / scored.length);
+  };
 
-  const portfolioAvg = watchlistZones.length
-    ? Math.round(watchlistZones.reduce((a, z) => a + z.score, 0) / watchlistZones.length)
-    : 0;
+  const countyAvg = meanScore(zones);
+  const portfolioAvg = meanScore(watchlistZones);
 
   const activeAlertsForFirm = alerts.filter(
     (a) => a.zoneId && firm.watchlist.includes(a.zoneId) && !a.read,
@@ -78,13 +81,31 @@ export default function InvestorPage() {
   // Weights Safety and Infra heavier than Social/Density since those are the
   // pillars a VC prioritises for a defensible thesis. Not exposed as a knob
   // yet — that's the /investor page settings feature slated for later.
-  const investorScore = (z: Zone) =>
-    z.pillars.safety * 0.35 +
-    z.pillars.infra * 0.35 +
-    z.pillars.social * 0.15 +
-    z.pillars.density * 0.15;
+  //
+  // Null on any pillar means we cannot compose the lens for that zone. The
+  // caller sorts nulls to the tail so an unmeasured zone is neither the top
+  // pick nor the bottom, it simply cannot be ranked here.
+  const investorScore = (z: Zone): number | null => {
+    const { safety, infra, social, density } = z.pillars;
+    if (safety === null || infra === null || social === null || density === null) return null;
+    return safety * 0.35 + infra * 0.35 + social * 0.15 + density * 0.15;
+  };
 
-  const rankedPortfolio = [...watchlistZones].sort((a, b) => investorScore(b) - investorScore(a));
+  const byInvestorScoreDesc = (a: Zone, b: Zone): number => {
+    const av = investorScore(a);
+    const bv = investorScore(b);
+    if (av === null) return bv === null ? 0 : 1;
+    if (bv === null) return -1;
+    return bv - av;
+  };
+
+  const byScoreDescNullLast = (a: Zone, b: Zone): number => {
+    if (a.score === null) return b.score === null ? 0 : 1;
+    if (b.score === null) return -1;
+    return b.score - a.score;
+  };
+
+  const rankedPortfolio = [...watchlistZones].sort(byInvestorScoreDesc);
 
   const opportunities = useMemo(() => {
     // Tier-specific heuristic:
@@ -92,7 +113,7 @@ export default function InvestorPage() {
     //   deal      — high infra + safety spread from watchlist thesis
     //   sovereign — largest measured movement (change opportunities)
     if (firm.tier === "basic") {
-      return [...nonWatchlistZones].sort((a, b) => b.score - a.score).slice(0, 5);
+      return [...nonWatchlistZones].sort(byScoreDescNullLast).slice(0, 5);
     }
     if (firm.tier === "sovereign") {
       // A zone whose movement was never measured is not a mover; it sorts
@@ -107,7 +128,7 @@ export default function InvestorPage() {
         })
         .slice(0, 5);
     }
-    return [...nonWatchlistZones].sort((a, b) => investorScore(b) - investorScore(a)).slice(0, 5);
+    return [...nonWatchlistZones].sort(byInvestorScoreDesc).slice(0, 5);
   }, [nonWatchlistZones, firm.tier]);
 
   return (
@@ -145,7 +166,11 @@ export default function InvestorPage() {
               value={portfolioAvg}
               suffix="/100"
               accent={scoreColor(portfolioAvg)}
-              delta={portfolioAvg - countyAvg}
+              // Delta is only meaningful when both sides were measurable —
+              // otherwise "vs. county" would be comparing to nothing.
+              delta={
+                portfolioAvg === null || countyAvg === null ? null : portfolioAvg - countyAvg
+              }
               deltaLabel="vs. county"
             />
             <KpiTile
@@ -181,16 +206,19 @@ export default function InvestorPage() {
               <div className="text-[11.5px] text-ink-4 italic">No zones on your watchlist yet.</div>
             ) : (
               <div className="space-y-2">
-                {rankedPortfolio.map((z, i) => (
-                  <PortfolioRow
-                    key={z.id}
-                    zone={z}
-                    rank={i + 1}
-                    investorScore={Math.round(investorScore(z))}
-                    projects={projects}
-                    onOpen={() => navigate(`/atlas?zone=${z.id}`)}
-                  />
-                ))}
+                {rankedPortfolio.map((z, i) => {
+                  const lens = investorScore(z);
+                  return (
+                    <PortfolioRow
+                      key={z.id}
+                      zone={z}
+                      rank={i + 1}
+                      investorScore={lens === null ? null : Math.round(lens)}
+                      projects={projects}
+                      onOpen={() => navigate(`/atlas?zone=${z.id}`)}
+                    />
+                  );
+                })}
               </div>
             )}
           </section>
@@ -288,13 +316,16 @@ function KpiTile({
   deltaLabel,
 }: {
   label: string;
-  value: number;
+  /** Null when the KPI has no scoreable input (e.g. an empty portfolio). */
+  value: number | null;
   suffix?: string;
   accent: string;
-  delta?: number;
+  /** Null when the delta cannot be measured, e.g. either side is null. */
+  delta?: number | null;
   deltaLabel?: string;
 }) {
-  const trend = delta === undefined ? null : delta >= 0 ? "up" : "down";
+  const trend =
+    delta === undefined || delta === null ? null : delta >= 0 ? "up" : "down";
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -304,19 +335,22 @@ function KpiTile({
     >
       <div className="text-[9.5px] font-medium text-ink-4 uppercase tracking-[0.1em]">{label}</div>
       <div className="mt-1 flex items-baseline gap-1.5">
-        <span className="text-[28px] font-semibold tabular-nums" style={{ color: accent }}>
-          {value}
+        <span
+          className="text-[28px] font-semibold tabular-nums"
+          style={{ color: value === null ? "rgba(255,255,255,0.35)" : accent }}
+        >
+          {value === null ? "—" : value}
         </span>
-        {suffix && <span className="text-[11px] text-ink-4">{suffix}</span>}
+        {suffix && value !== null && <span className="text-[11px] text-ink-4">{suffix}</span>}
       </div>
-      {trend && (
+      {trend && delta !== null && delta !== undefined && (
         <div
           className="mt-1.5 flex items-center gap-1 text-[10.5px]"
-          style={{ color: delta! >= 0 ? BRAND.teal : BRAND.rose }}
+          style={{ color: delta >= 0 ? BRAND.teal : BRAND.rose }}
         >
           {trend === "up" ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
           <span className="font-semibold">
-            {delta! >= 0 ? "+" : ""}
+            {delta >= 0 ? "+" : ""}
             {delta}
           </span>
           <span className="text-ink-4 ml-1">{deltaLabel}</span>
@@ -335,7 +369,8 @@ function PortfolioRow({
 }: {
   zone: Zone;
   rank: number;
-  investorScore: number;
+  /** Null when at least one pillar is unmeasured — no lens value is honest. */
+  investorScore: number | null;
   projects: Project[];
   onOpen: () => void;
 }) {
@@ -359,24 +394,27 @@ function PortfolioRow({
       </div>
       {/* Pillar quartet — hide on mobile to keep the row scannable */}
       <div className="hidden sm:flex gap-2 shrink-0">
-        {PILLAR_KEYS.map((k) => (
-          <div key={k} className="flex flex-col items-center">
-            <span
-              className="text-[11.5px] font-semibold tabular-nums"
-              style={{ color: PILLAR_COLORS[k] }}
-            >
-              {zone.pillars[k]}
-            </span>
-            <span className="text-[8.5px] text-ink-4">{PILLAR_SHORT[k]}</span>
-          </div>
-        ))}
+        {PILLAR_KEYS.map((k) => {
+          const pv = zone.pillars[k];
+          return (
+            <div key={k} className="flex flex-col items-center">
+              <span
+                className="text-[11.5px] font-semibold tabular-nums"
+                style={{ color: pv === null ? "rgba(255,255,255,0.35)" : PILLAR_COLORS[k] }}
+              >
+                {pv === null ? "—" : pv}
+              </span>
+              <span className="text-[8.5px] text-ink-4">{PILLAR_SHORT[k]}</span>
+            </div>
+          );
+        })}
       </div>
       <div className="w-12 sm:w-14 text-right shrink-0">
         <div
           className="text-[15px] sm:text-[16px] font-semibold tabular-nums"
           style={{ color: scoreColor(zone.score) }}
         >
-          {investorScore}
+          {investorScore === null ? "—" : investorScore}
         </div>
         <div className="text-[8.5px] text-ink-4">lens</div>
       </div>
@@ -400,21 +438,24 @@ function OpportunityCard({ zone, onOpen }: { zone: Zone; onOpen: () => void }) {
           className="text-[18px] font-semibold tabular-nums shrink-0"
           style={{ color: scoreColor(zone.score) }}
         >
-          {zone.score}
+          {zone.score === null ? "—" : zone.score}
         </span>
       </div>
       <div className="mt-2 grid grid-cols-4 gap-1">
-        {PILLAR_KEYS.map((k) => (
-          <div key={k} className="rounded-chip bg-[rgba(255,255,255,0.03)] p-1 text-center">
-            <div
-              className="text-[10px] font-semibold tabular-nums"
-              style={{ color: PILLAR_COLORS[k] }}
-            >
-              {zone.pillars[k]}
+        {PILLAR_KEYS.map((k) => {
+          const pv = zone.pillars[k];
+          return (
+            <div key={k} className="rounded-chip bg-[rgba(255,255,255,0.03)] p-1 text-center">
+              <div
+                className="text-[10px] font-semibold tabular-nums"
+                style={{ color: pv === null ? "rgba(255,255,255,0.35)" : PILLAR_COLORS[k] }}
+              >
+                {pv === null ? "—" : pv}
+              </div>
+              <div className="text-[8px] text-ink-4">{PILLAR_SHORT[k]}</div>
             </div>
-            <div className="text-[8px] text-ink-4">{PILLAR_SHORT[k]}</div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       <div className="mt-2 flex items-center gap-1 text-[10px] text-ink-3 group-hover:text-ink-1 transition-colors">
         <Star size={10} /> Watch this zone <ArrowRight size={10} className="ml-auto" />

@@ -1922,6 +1922,18 @@ export function generateZoneHistory(zoneId: string, range: HistoryRange): ZoneHi
   const rand = seededRandom(hashZoneId(zoneId));
   const now = Date.now();
 
+  // If any pillar is null the zone has no baseline to walk forward from; the
+  // fabricated series would be a straight line drawn out of nothing. Return
+  // an empty history so the chart draws the same gap the backend would.
+  if (
+    zone.pillars.social === null ||
+    zone.pillars.safety === null ||
+    zone.pillars.density === null ||
+    zone.pillars.infra === null
+  ) {
+    return { range, points: [] };
+  }
+
   let social = zone.pillars.social;
   let safety = zone.pillars.safety;
   let density = zone.pillars.density;

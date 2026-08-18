@@ -74,6 +74,10 @@ class FirmBriefExporter
             }
             $pillars = $calc->pillarScores($zone);
             $thesis = $entry->thesis ? htmlspecialchars($entry->thesis) : '<em style="color:#6B6257">No thesis recorded.</em>';
+            $headline = $zone->score === null
+                ? '<div style="font-size:9pt;color:#6B6257">Insufficient data</div>'
+                : "<div style=\"font-size:20pt;font-weight:700;color:#1F8A78\">{$zone->score}</div>"
+                    .'<div style="font-size:8pt;color:#6B6257">/100</div>';
             $rows .= <<<HTML
             <tr>
               <td style="padding:8px 6px;border-bottom:1px solid #eee">
@@ -81,8 +85,7 @@ class FirmBriefExporter
                 <div style="font-size:8pt;color:#6B6257">Priority {$entry->priority}</div>
               </td>
               <td style="padding:8px 6px;border-bottom:1px solid #eee;text-align:right">
-                <div style="font-size:20pt;font-weight:700;color:#1F8A78">{$zone->score}</div>
-                <div style="font-size:8pt;color:#6B6257">/100</div>
+                {$headline}
               </td>
               <td style="padding:8px 6px;border-bottom:1px solid #eee;font-size:8pt">
                 Social {$this->fmt($pillars['social'])} · Safety {$this->fmt($pillars['safety'])} ·

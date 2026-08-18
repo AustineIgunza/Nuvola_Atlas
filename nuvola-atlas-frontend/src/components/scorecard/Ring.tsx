@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { scoreColor } from "@/lib/scoreColor";
+import { NO_SCORE_LABEL } from "@/lib/scores";
 
 interface Props {
-  score: number;
+  /** Null for a zone with no indicators behind any pillar. */
+  score: number | null;
   size?: number;
 }
 
@@ -10,10 +12,12 @@ export default function Ring({ score, size = 88 }: Props) {
   const strokeWidth = size * 0.11;
   const r = (size - strokeWidth) / 2;
   const C = 2 * Math.PI * r;
-  const [animated, setAnimated] = useState(score);
+  const [animated, setAnimated] = useState(score ?? 0);
   const gradientId = `ring-grad-${size}`;
 
   useEffect(() => {
+    if (score === null) return;
+    const target = score;
     setAnimated(0);
     const start = performance.now();
     const dur = 900;
@@ -21,7 +25,7 @@ export default function Ring({ score, size = 88 }: Props) {
     function tick(now: number) {
       const t = Math.min((now - start) / dur, 1);
       const ease = 1 - Math.pow(1 - t, 3);
-      setAnimated(Math.round(score * ease));
+      setAnimated(Math.round(target * ease));
       if (t < 1) raf = requestAnimationFrame(tick);
     }
     raf = requestAnimationFrame(tick);
@@ -30,7 +34,7 @@ export default function Ring({ score, size = 88 }: Props) {
 
   // The displayed number is always Math.round(score) as the source of truth,
   // animated only controls the ring stroke. This prevents rAF-paused bugs.
-  const displayValue = animated;
+  const displayValue = score === null ? NO_SCORE_LABEL : animated;
   const offset = C - (animated / 100) * C;
   const color = scoreColor(score);
 
@@ -57,25 +61,30 @@ export default function Ring({ score, size = 88 }: Props) {
           stroke="var(--ring-track)"
           strokeWidth={strokeWidth}
         />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={r}
-          fill="none"
-          stroke={`url(#${gradientId})`}
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
-          strokeDasharray={C}
-          strokeDashoffset={offset}
-          transform={`rotate(-90 ${size / 2} ${size / 2})`}
-          filter="url(#ring-glow)"
-          style={{ transition: "stroke-dashoffset 0.1s linear" }}
-        />
+        {/* No arc at all when there is no score. Drawing even a zero-length
+            one on the ramp would place the zone at the bottom of it. */}
+        {score !== null && (
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            fill="none"
+            stroke={`url(#${gradientId})`}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeDasharray={C}
+            strokeDashoffset={offset}
+            transform={`rotate(-90 ${size / 2} ${size / 2})`}
+            filter="url(#ring-glow)"
+            style={{ transition: "stroke-dashoffset 0.1s linear" }}
+          />
+        )}
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span
-          className="tabular-nums font-semibold text-ink-1"
+          className={`tabular-nums font-semibold ${score === null ? "text-ink-3" : "text-ink-1"}`}
           style={{ fontSize: size * 0.38, lineHeight: 1, letterSpacing: "-0.04em" }}
+          title={score === null ? "Insufficient data — no indicators recorded for this zone" : undefined}
         >
           {displayValue}
         </span>

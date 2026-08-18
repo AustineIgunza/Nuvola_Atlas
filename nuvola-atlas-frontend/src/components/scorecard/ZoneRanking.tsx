@@ -4,6 +4,7 @@ import { cn } from "@/lib/cn";
 import { api } from "@/api";
 import { scoreColor } from "@/lib/scoreColor";
 import { hasEstimates } from "@/lib/hydrated";
+import { byScoreDesc, formatScore, isScored } from "@/lib/scores";
 import { useT } from "@/lib/i18n/use-t";
 import type { Zone } from "@/types";
 
@@ -17,8 +18,10 @@ export default function ZoneRanking({ currentZone }: Props) {
 
   if (!allZones || allZones.length < 2) return null;
 
-  const sorted = [...allZones].sort((a, b) => b.score - a.score);
-  const rank = sorted.findIndex((z) => z.id === currentZone.id) + 1;
+  const sorted = [...allZones].sort(byScoreDesc);
+  // An unscoreable zone sits at the tail of `sorted` by convention, not by
+  // merit, so its position is not a rank. Show no rank rather than a false one.
+  const rank = isScored(currentZone) ? sorted.findIndex((z) => z.id === currentZone.id) + 1 : 0;
   const top5 = sorted.slice(0, 5);
 
   return (
@@ -33,7 +36,7 @@ export default function ZoneRanking({ currentZone }: Props) {
           Zone Ranking
         </div>
         <span className="text-[12px] font-semibold text-accent tabular-nums">
-          #{rank} of {sorted.length}
+          {rank > 0 ? `#${rank} of ${sorted.length}` : "Unranked"}
         </span>
       </div>
       <div className="space-y-1.5">
@@ -64,17 +67,21 @@ export default function ZoneRanking({ currentZone }: Props) {
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
                 <div className="w-[40px] h-[3px] rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{
-                      width: `${z.score}%`,
-                      background: color,
-                      boxShadow: `0 0 4px ${color}55`,
-                    }}
-                  />
+                  {/* No fill at all when unscored — a 0%-wide bar and a 1%-wide
+                      bar are indistinguishable, so an empty track says it better. */}
+                  {z.score !== null && (
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{
+                        width: `${z.score}%`,
+                        background: color,
+                        boxShadow: `0 0 4px ${color}55`,
+                      }}
+                    />
+                  )}
                 </div>
                 <span className="font-semibold tabular-nums" style={{ color }}>
-                  {z.score}
+                  {formatScore(z.score)}
                 </span>
               </div>
             </div>

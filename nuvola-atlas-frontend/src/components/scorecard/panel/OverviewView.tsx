@@ -7,6 +7,7 @@ import { api } from "@/api";
 import { BRAND } from "@/lib/scoreColor";
 import { averageDelta } from "@/lib/deltas";
 import { waterProfile } from "@/lib/waterSanitation";
+import { formatScore } from "@/lib/scores";
 import { formatRelative } from "@/lib/format";
 import { useT } from "@/lib/i18n/use-t";
 import Ring from "../Ring";
@@ -48,8 +49,11 @@ export default function OverviewView({ zone, onNavigate }: Props) {
 
   const zoneProjects = (projects ?? []).filter((p) => p.zoneId === zone.id);
   const zoneAlerts = (alerts ?? []).filter((a) => a.zoneId === zone.id);
+  // Null when the zone has no pillar readings — the SDG-6 need weighting has
+  // no inputs, and the card is suppressed rather than shown with fabricated
+  // access / queue numbers.
   const wp = waterProfile(zone);
-  const waterAccent = wp.opportunity ? BRAND.teal : BRAND.steel;
+  const waterAccent = wp?.opportunity ? BRAND.teal : BRAND.steel;
 
   const totalDelta = averageDelta(zone.deltas);
 
@@ -76,20 +80,27 @@ export default function OverviewView({ zone, onNavigate }: Props) {
   }, [exportMenuOpen]);
 
   const clientTxt = useCallback(() => {
+    const scoreLine =
+      zone.score === null ? "Vitality Score: insufficient data" : `Vitality Score: ${zone.score}/100`;
+    const waterLines = wp
+      ? [
+          ``,
+          `Water & Sanitation (SDG 6): ${wp.contextLabel}`,
+          `  Safe access: ${wp.accessPct}% · Shared points: ${wp.sharedPointPct}% · Queue: ${wp.waitMin} min`,
+          `  Recommended: ${wp.solutionTag}`,
+        ]
+      : [];
     const content = [
       `NAVUUNA ATLAS — Zone Report`,
       `Zone: ${zone.name}`,
-      `Vitality Score: ${zone.score}/100`,
+      scoreLine,
       ``,
       `Pillar Scores:`,
-      `  Social Wellbeing: ${zone.pillars.social}`,
-      `  Safety & Security: ${zone.pillars.safety}`,
-      `  Density & Scaling: ${zone.pillars.density}`,
-      `  Infrastructure & Environmental: ${zone.pillars.infra}`,
-      ``,
-      `Water & Sanitation (SDG 6): ${wp.contextLabel}`,
-      `  Safe access: ${wp.accessPct}% · Shared points: ${wp.sharedPointPct}% · Queue: ${wp.waitMin} min`,
-      `  Recommended: ${wp.solutionTag}`,
+      `  Social Wellbeing: ${formatScore(zone.pillars.social)}`,
+      `  Safety & Security: ${formatScore(zone.pillars.safety)}`,
+      `  Density & Scaling: ${formatScore(zone.pillars.density)}`,
+      `  Infrastructure & Environmental: ${formatScore(zone.pillars.infra)}`,
+      ...waterLines,
       ``,
       `Generated: ${new Date().toLocaleString()}`,
     ].join("\n");
@@ -216,42 +227,46 @@ export default function OverviewView({ zone, onNavigate }: Props) {
       {/* Daystar indicator ledger — 12-indicator delivery + verification state */}
       <DaystarIndicatorPanel zoneId={zone.id} />
 
-      {/* Water & Sanitation — part of the vitality read; opens the SDG 6 explainer */}
-      <button
-        onClick={() => onNavigate({ type: "water" })}
-        className="group w-full text-left rounded-card border p-2.5 transition-colors hover:brightness-110"
-        style={{ background: `${waterAccent}0F`, borderColor: `${waterAccent}33` }}
-      >
-        <div className="flex items-center gap-1.5">
-          <Droplets size={12} style={{ color: BRAND.teal }} className="shrink-0" />
-          <span className="text-[9.5px] font-semibold text-ink-2 uppercase tracking-[0.08em]">
-            {t("compare.water")}
-          </span>
-          <span className="ml-auto shrink-0">
-            <Chip color={waterAccent}>{wp.contextLabel}</Chip>
-          </span>
-          <ChevronRight
-            size={13}
-            className="shrink-0 text-ink-4 group-hover:text-ink-2 transition-colors"
-          />
-        </div>
-        <div className="mt-2 grid grid-cols-3 gap-1.5">
-          <StatCell value={`${wp.accessPct}%`} label={t("scorecard.water.safeAccess")} />
-          <StatCell value={`${wp.sharedPointPct}%`} label={t("scorecard.water.sharedPoints")} />
-          <StatCell value={`${wp.waitMin} min`} label={t("scorecard.water.medianQueue")} />
-        </div>
-        <div className="mt-2 flex items-center gap-1.5 min-w-0">
-          <span
-            className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full shrink-0"
-            style={{ background: waterAccent, color: BRAND.bone }}
-          >
-            {wp.solutionTag}
-          </span>
-          <span className="text-[10px] truncate" style={{ color: waterAccent }}>
-            {wp.opportunity ? t("scorecard.water.opportunity") : t("scorecard.water.sewerage")}
-          </span>
-        </div>
-      </button>
+      {/* Water & Sanitation — part of the vitality read; opens the SDG 6
+          explainer. Suppressed entirely when the zone has no pillar readings
+          to weight the need calculation against. */}
+      {wp && (
+        <button
+          onClick={() => onNavigate({ type: "water" })}
+          className="group w-full text-left rounded-card border p-2.5 transition-colors hover:brightness-110"
+          style={{ background: `${waterAccent}0F`, borderColor: `${waterAccent}33` }}
+        >
+          <div className="flex items-center gap-1.5">
+            <Droplets size={12} style={{ color: BRAND.teal }} className="shrink-0" />
+            <span className="text-[9.5px] font-semibold text-ink-2 uppercase tracking-[0.08em]">
+              {t("compare.water")}
+            </span>
+            <span className="ml-auto shrink-0">
+              <Chip color={waterAccent}>{wp.contextLabel}</Chip>
+            </span>
+            <ChevronRight
+              size={13}
+              className="shrink-0 text-ink-4 group-hover:text-ink-2 transition-colors"
+            />
+          </div>
+          <div className="mt-2 grid grid-cols-3 gap-1.5">
+            <StatCell value={`${wp.accessPct}%`} label={t("scorecard.water.safeAccess")} />
+            <StatCell value={`${wp.sharedPointPct}%`} label={t("scorecard.water.sharedPoints")} />
+            <StatCell value={`${wp.waitMin} min`} label={t("scorecard.water.medianQueue")} />
+          </div>
+          <div className="mt-2 flex items-center gap-1.5 min-w-0">
+            <span
+              className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full shrink-0"
+              style={{ background: waterAccent, color: BRAND.bone }}
+            >
+              {wp.solutionTag}
+            </span>
+            <span className="text-[10px] truncate" style={{ color: waterAccent }}>
+              {wp.opportunity ? t("scorecard.water.opportunity") : t("scorecard.water.sewerage")}
+            </span>
+          </div>
+        </button>
+      )}
 
       {/* Infrastructure projects — each row drills into the project explainer */}
       <Section

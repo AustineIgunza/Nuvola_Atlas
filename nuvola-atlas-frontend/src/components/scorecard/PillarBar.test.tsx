@@ -36,4 +36,22 @@ describe("PillarBar estimated state", () => {
     expect(screen.getByText("+0")).toBeInTheDocument();
     expect(screen.queryByText("—")).not.toBeInTheDocument();
   });
+
+  it("shows an unmeasured pillar as a dash and draws no bar fill", () => {
+    const { container } = render(
+      <PillarBar pillarKey="social" score={null} delta={null} index={0} />,
+    );
+
+    // Two dashes: one for the score, one for the delta. Neither is an
+    // estimated mark — a null score is unmeasured, not synthesised.
+    expect(screen.getAllByText("—")).toHaveLength(2);
+    expect(screen.queryByLabelText(/estimated/i)).not.toBeInTheDocument();
+    // The bar track is present; the animated coloured fill inside it is not.
+    // The pillar glyph badge shares a box-shadow style so it cannot be the
+    // selector — the animated fill is a direct child of the .overflow-hidden
+    // track, so check that specifically.
+    const track = container.querySelector(".overflow-hidden");
+    expect(track).not.toBeNull();
+    expect(track?.children.length).toBe(0);
+  });
 });

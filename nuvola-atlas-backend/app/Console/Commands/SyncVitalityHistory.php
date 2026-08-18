@@ -16,10 +16,13 @@ class SyncVitalityHistory extends Command
 
     public function handle(): int
     {
+        // AVG already skips unscoreable zones, so the monthly figure covers
+        // the zones that were measured rather than being dragged toward a
+        // floor by the ones that were not.
         $avg = Zone::avg('score');
 
         if ($avg === null) {
-            $this->error('No zones found to compute average.');
+            $this->error('No scoreable zones — every zone is either absent or has no indicators yet.');
 
             return self::FAILURE;
         }

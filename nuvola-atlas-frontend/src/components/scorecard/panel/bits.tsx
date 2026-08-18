@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Layers } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useUIStore } from "@/stores/ui";
-import { BRAND } from "@/lib/scoreColor";
+import { BRAND, NO_SCORE_COLOR_HEX } from "@/lib/scoreColor";
 import { translate } from "@/lib/i18n/translate";
 import { usePrefsStore } from "@/stores/prefs";
 import { useT } from "@/lib/i18n/use-t";
@@ -45,8 +45,13 @@ export function statusLabel(t: ReturnType<typeof useT>, status: ProjectStatus): 
 }
 
 /** Score band shared with the map legend / marker colors (70/55 thresholds). */
-export function scoreBand(score: number): { label: string; color: string } {
+export function scoreBand(score: number | null): { label: string; color: string } {
   const locale = usePrefsStore.getState().locale;
+  // Not "At Risk". A zone nobody measured has not failed a threshold, and the
+  // terracotta would put it in the same visual bucket as one that did.
+  if (score === null) {
+    return { label: translate(locale, "band.noData"), color: NO_SCORE_COLOR_HEX };
+  }
   if (score >= 70) return { label: translate(locale, "band.strong"), color: BRAND.teal };
   if (score >= 55) return { label: translate(locale, "band.moderate"), color: BRAND.gold };
   return { label: translate(locale, "band.atRisk"), color: BRAND.terracotta };

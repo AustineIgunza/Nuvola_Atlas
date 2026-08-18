@@ -44,7 +44,10 @@ class ListZonesTool extends BaseAgentTool
         if (isset($args['max_score'])) {
             $query->where('score', '<=', (int) $args['max_score']);
         }
-        $rows = $query->orderBy('score', $order)->limit($limit)->get();
+        // Postgres puts NULLs first on DESC, so an unscoreable zone would have
+        // led "top zones" outright. It is not the best or the worst — it is
+        // unknown, so it sorts last whichever way the caller asked.
+        $rows = $query->orderByRaw("score {$order} NULLS LAST")->limit($limit)->get();
 
         return [
             'count' => $rows->count(),

@@ -162,6 +162,8 @@ export const sw: Partial<Record<MessageKey, string>> = {
   "band.strong.note": "Iko tayari kupokea miradi mipya",
   "band.moderate.note": "Iko tayari na ulinzi maalum",
   "band.atRisk.note": "Mapengo yanahitaji kuzibwa kwanza",
+  "band.noData": "Hakuna data ya kutosha",
+  "band.noData.note": "Hakuna viashiria vilivyorekodiwa kwa eneo hili bado",
   "scorecard.overview": "Muhtasari",
   "scorecard.pillars": "Nguzo — bofya kupanua",
   "scorecard.projects": "Miundombinu",
@@ -482,6 +484,8 @@ export const sw: Partial<Record<MessageKey, string>> = {
   "chat.composition.deltaUnknown": "hakuna mwelekeo bado",
   "chat.composition.strongLabel": "**Imara zaidi — {pillar}.**",
   "chat.composition.weakLabel": "**Dhaifu zaidi — {pillar}.**",
+  "chat.composition.unscored":
+    "**{zone}** halina alama ya jumla ya Uhai bado — hakuna nguzo yenye usomaji wowote, kwa hivyo siwezi kufafanua kile kisichokuwepo. Viashiria vitakapofika kwa eneo hilo, ninaweza kutunga alama na nguzo zake nne kutoka kwa usomaji huo.",
   "chat.strong.social":
     "{zone} ina ufikiaji ulio juu ya wastani wa huduma za afya, elimu, na mtandao — nguvu kazi na jamii inayoweza kupokea miundombinu mipya bila mapengo ya mafunzo.",
   "chat.strong.safety":
@@ -500,8 +504,12 @@ export const sw: Partial<Record<MessageKey, string>> = {
     "Rekodi ya karatasi ni nyembamba — ESIA, maagizo ya taka, au vibali vya kinga ya kitaifa vinakosekana au si vya umma. Panga bajeti ya kazi ya kisheria na sera katika muhtasari wa mradi wowote hapa.",
   "chat.distribution":
     "{top1} na {top2} zinashirikiana uongozi kwa alama {score1}/{score2}. {top3} inafuata kwa {score3}, kisha {top4} ({score4}) na {top5} ({score5}). Tano bora ziko ndani ya pointi {spread} — wilaya ndogo imara zaidi za Nairobi zimekusanyika badala ya kutenganishwa na kiongozi mmoja anayeongoza sana.",
+  "chat.distribution.needMore":
+    "Kwa sasa maeneo {count} tu yana alama ya jumla — ninahitaji angalau matano ili kutaja waongozi kwa uaminifu. Kadiri maeneo mengi yanavyoanza kupokea viashiria, orodha ya tano bora inakuwa na maana.",
   "chat.trend":
     "{zone} imekaa kati ya {low} na {high} katika siku 30 zilizopita. Mwelekeo wa jumla ni imara, na ongezeko dogo la hivi karibuni linatokana na nguzo ya Miundombinu. Hakuna mabadiliko ya ghafla ya kutaja.",
+  "chat.trend.unscored":
+    "**{zone}** halina alama ya jumla ya kufuatilia mwelekeo bado — mkondo wa siku 30 unahitaji nambari ya kuanzia, na haipo. Baada ya eneo hilo kupata picha yake ya kwanza yenye alama, chati ya mwelekeo itapatikana.",
   "chat.methodology":
     "Alama ya Uhai inakusanya nguzo nne — Ustawi wa Jamii, Usalama, Msongamano, na Miundombinu na Mazingira — kila moja kwa kipimo cha 0–100, na kuzichanganya kuwa alama ya jumla ya eneo. Uzito kamili umewekwa kwenye karatasi ya mbinu badala ya kuonyeshwa kwenye kiolesura, lakini kila ingizo limehifadhiwa katika jedwali la picha ili alama yoyote unayoiona iweze kufuatiliwa hadi kwenye usomaji ulioizalisha.",
   "chat.summary.needZone":
@@ -510,6 +518,8 @@ export const sw: Partial<Record<MessageKey, string>> = {
     "{zone} iko kwa {score}/100 kwa jumla. Ustawi wa Jamii {social}, Usalama {safety}, Msongamano {density}, Miundombinu {infra}. Uliza kuhusu nguzo yoyote na naweza kuingia ndani zaidi.",
   "chat.summary.multi":
     'Unaunga {names}. Alama zao za Uhai za jumla ni wastani wa {avg}. Uliza "linganisha katika nguzo zote nne" kwa uchambuzi kamili, au bana kwa nguzo moja kwa mtazamo wa kina zaidi.',
+  "chat.summary.multi.unscored":
+    "Unalinganisha {names}. Hakuna hata moja lenye alama ya jumla ya Uhai bado, kwa hivyo hakuna wastani wa kuripoti — lakini naweza kupitia usomaji wa nguzo ambao kila eneo linao.",
   "chat.diagnostic.stable":
     "Kila eneo la Nairobi lina utulivu wa kadiri robo hii — mabadiliko madogo yako ndani ya kelele. Uliza kuhusu nguzo maalum ili kuingia ndani zaidi.",
   "chat.diagnostic.noMovement":

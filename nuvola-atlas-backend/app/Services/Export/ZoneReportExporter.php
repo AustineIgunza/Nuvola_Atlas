@@ -90,7 +90,7 @@ class ZoneReportExporter
         $lines = [
             'NAVUUNA ATLAS — Zone Vitality Report',
             "Zone: {$z->name}",
-            "Vitality Score: {$z->score}/100",
+            'Vitality Score: '.($z->score === null ? 'insufficient data' : "{$z->score}/100"),
             '',
             'Pillar Scores:',
             '  Social Wellbeing:    '.$this->fmtScore($p['social']),
@@ -146,6 +146,10 @@ class ZoneReportExporter
         $alerts = $data['alerts'];
         $g = htmlspecialchars((string) $data['generatedAt']);
 
+        $scoreBlock = $z->score === null
+            ? '<span style="font-size:18pt;color:#6B6257">Insufficient data</span>'
+            : "{$z->score}<span style=\"font-size:14pt;color:#6B6257\">&nbsp;/100</span>";
+
         $projectRows = '';
         foreach ($projects as $p) {
             $projectRows .= sprintf(
@@ -196,7 +200,7 @@ class ZoneReportExporter
   <h1>{$z->name}</h1>
   <div class="subtitle">UE Vitality Index — snapshot</div>
 
-  <div class="score">{$z->score}<span style="font-size:14pt;color:#6B6257">&nbsp;/100</span></div>
+  <div class="score">{$scoreBlock}</div>
 
   <h2>Pillar Scores</h2>
   <table class="pillars">
@@ -238,8 +242,8 @@ HTML;
 
         $section->addTextBreak(1);
         $section->addText(
-            "{$z->score}/100",
-            ['size' => 32, 'bold' => true, 'color' => '1F8A78'],
+            $z->score === null ? 'Insufficient data' : "{$z->score}/100",
+            ['size' => $z->score === null ? 18 : 32, 'bold' => true, 'color' => $z->score === null ? '6B6257' : '1F8A78'],
             ['alignment' => Jc::START]
         );
 

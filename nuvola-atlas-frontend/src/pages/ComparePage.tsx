@@ -264,23 +264,28 @@ function PillarGrid({ zones }: { zones: Zone[] }) {
               className="grid gap-1"
               style={{ gridTemplateColumns: `repeat(${zones.length}, minmax(0, 1fr))` }}
             >
-              {zones.map((z, i) => (
-                <div key={z.id} className="flex items-center gap-1.5">
-                  <div className="flex-1 h-1.5 rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
-                    <div
-                      className="h-full rounded-full"
-                      style={{
-                        width: `${z.pillars[k]}%`,
-                        background: SERIES_COLORS[i],
-                        boxShadow: `0 0 6px ${SERIES_COLORS[i]}66`,
-                      }}
-                    />
+              {zones.map((z, i) => {
+                const pv = z.pillars[k];
+                return (
+                  <div key={z.id} className="flex items-center gap-1.5">
+                    <div className="flex-1 h-1.5 rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
+                      {pv !== null && (
+                        <div
+                          className="h-full rounded-full"
+                          style={{
+                            width: `${pv}%`,
+                            background: SERIES_COLORS[i],
+                            boxShadow: `0 0 6px ${SERIES_COLORS[i]}66`,
+                          }}
+                        />
+                      )}
+                    </div>
+                    <span className="text-[10px] tabular-nums text-ink-2 w-6 text-right">
+                      {pv === null ? "—" : pv}
+                    </span>
                   </div>
-                  <span className="text-[10px] tabular-nums text-ink-2 w-6 text-right">
-                    {z.pillars[k]}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         ))}
@@ -305,9 +310,18 @@ function CapitalAllocationRow({ zones }: { zones: Zone[] }) {
 
   if (!isInvestor(user) || zones.length === 0) return null;
 
+  // Skip zones missing either input — the composite is Safety+Infra/2, so a
+  // null on either side would either crash the arithmetic or, worse, be
+  // silently coerced to 0 and rank the unmeasured zone last in the lens.
   const ranked = [...zones]
-    .map((z) => ({ z, composite: Math.round((z.pillars.safety + z.pillars.infra) / 2) }))
+    .flatMap((z) => {
+      const { safety, infra } = z.pillars;
+      if (safety === null || infra === null) return [];
+      return [{ z, composite: Math.round((safety + infra) / 2) }];
+    })
     .sort((a, b) => b.composite - a.composite);
+
+  if (ranked.length === 0) return null;
 
   return (
     <div className="mt-3 rounded-card border p-3 bg-[color:var(--accent-1-soft,rgba(31,138,120,0.08))] border-[color:var(--accent-1,#1F8A78)]/40">
@@ -498,6 +512,25 @@ function WaterGrid({ zones }: { zones: Zone[] }) {
       >
         {zones.map((z, i) => {
           const wp = waterProfile(z);
+          if (!wp) {
+            // No pillar readings → no honest SDG-6 profile. A blank cell
+            // says that without fabricating an access percentage.
+            return (
+              <div
+                key={z.id}
+                className="rounded-control p-2.5 border border-border bg-[rgba(255,255,255,0.02)]"
+              >
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <span
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{ background: SERIES_COLORS[i] }}
+                  />
+                  <span className="text-[10.5px] text-ink-2 font-medium truncate">{z.name}</span>
+                </div>
+                <div className="text-[10px] text-ink-4">Water profile: insufficient data</div>
+              </div>
+            );
+          }
           const accent = wp.opportunity ? BRAND.teal : BRAND.steel;
           return (
             <div

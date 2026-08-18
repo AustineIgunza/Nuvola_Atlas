@@ -4,6 +4,7 @@ import { useChatStore } from "@/stores/chat";
 import { useAtlasStore } from "@/stores/atlas";
 import { ZONES } from "@/api/fixtures";
 import { totalDelta } from "@/lib/deltas";
+import { byScoreDesc, formatScore, isScored } from "@/lib/scores";
 import { translate } from "@/lib/i18n/translate";
 import type { MessageKey, TVars } from "@/lib/i18n/translate";
 import { usePrefsStore } from "@/stores/prefs";
@@ -324,7 +325,10 @@ function mockAnswerFor(
  * drop somewhere?" without demanding the user pick a zone first.
  */
 function fallbackZonesForIntent(intent: string): Zone[] {
-  const sortedByScore = [...ZONES].sort((a, b) => b.score - a.score);
+  // Only scoreable zones are candidates — a "top" / "bottom" pick built from
+  // null would rank an unmeasured zone at the extremes of every intent.
+  const sortedByScore = ZONES.filter(isScored).sort(byScoreDesc);
+  if (sortedByScore.length === 0) return [];
   if (intent === "comparison") {
     return [sortedByScore[0], sortedByScore[sortedByScore.length - 1]];
   }
@@ -350,7 +354,11 @@ function fallbackZonesForIntent(intent: string): Zone[] {
 }
 
 function buildComparisonAnswer(zones: Zone[]): MockAnswer {
-  if (zones.length < 2) {
+  // Comparison needs at least two zones with a real composite. Zones missing
+  // a score have no position on the axis being compared, so they are dropped
+  // before the length check.
+  const cmp = zones.filter(isScored);
+  if (cmp.length < 2) {
     return {
       answer: tt("chat.compare.needSecond"),
       followups: [
@@ -361,8 +369,8 @@ function buildComparisonAnswer(zones: Zone[]): MockAnswer {
     };
   }
 
-  const idList = zones.map((z) => `'${z.id}'`).join(", ");
-  const rows = zones.map((z) => ({
+  const idList = cmp.map((z) => `'${z.id}'`).join(", ");
+  const rows = cmp.map((z) => ({
     name: z.name,
     score: z.score,
     social: z.pillars.social,
@@ -371,7 +379,9 @@ function buildComparisonAnswer(zones: Zone[]): MockAnswer {
     infra: z.pillars.infra,
   }));
 
-  const sorted = [...zones].sort((a, b) => b.score - a.score);
+  // `cmp` is `(Zone & { score: number })[]` by construction — the sort here
+  // is on the narrowed shape, so `.score` is guaranteed numeric.
+  const sorted = [...cmp].sort((a, b) => b.score - a.score);
   const [top, ...rest] = sorted;
   const overallGaps = rest.map((z) => {
     const gap = top.score - z.score;
@@ -380,42 +390,59 @@ function buildComparisonAnswer(zones: Zone[]): MockAnswer {
 
   const labels = pillarLabels();
   const pillarKeys = ["social", "safety", "density", "infra"] as const;
-  const pillarLines = pillarKeys.map((k) => {
-    const ranked = [...zones].sort((a, b) => b.pillars[k] - a.pillars[k]);
+  // Each pillar line is built only from zones whose reading for that pillar
+  // was measured — a null on one pillar does not disqualify the zone from
+  // other pillar rows.
+  const pillarLines = pillarKeys.flatMap((k) => {
+    const measured = cmp.filter((z): z is typeof z & { pillars: { [K in typeof k]: number } } =>
+      z.pillars[k] !== null,
+    );
+    if (measured.length < 2) return [];
+    const ranked = [...measured].sort((a, b) => b.pillars[k] - a.pillars[k]);
     const values = ranked.map((z) => `${z.name} ${z.pillars[k]}`).join(", ");
     const spread = ranked[0].pillars[k] - ranked[ranked.length - 1].pillars[k];
-    return tt("chat.compare.pillarLine", {
-      pillar: labels[k],
-      values,
-      spread,
-      plural: spread === 1 ? "" : "s",
-    });
+    return [
+      tt("chat.compare.pillarLine", {
+        pillar: labels[k],
+        values,
+        spread,
+        plural: spread === 1 ? "" : "s",
+      }),
+    ];
   });
 
-  const widestSpread = pillarKeys
-    .map((k) => {
-      const ranked = [...zones].sort((a, b) => b.pillars[k] - a.pillars[k]);
-      return { key: k, spread: ranked[0].pillars[k] - ranked[ranked.length - 1].pillars[k] };
-    })
-    .sort((a, b) => b.spread - a.spread)[0];
+  const spreads = pillarKeys.flatMap((k) => {
+    const measured = cmp.filter((z) => z.pillars[k] !== null) as Array<
+      Zone & { pillars: { [K in typeof k]: number } }
+    >;
+    if (measured.length < 2) return [];
+    const ranked = [...measured].sort((a, b) => b.pillars[k] - a.pillars[k]);
+    return [{ key: k, spread: ranked[0].pillars[k] - ranked[ranked.length - 1].pillars[k] }];
+  });
+  const widestSpread = spreads.sort((a, b) => b.spread - a.spread)[0];
 
   const opener = tt("chat.compare.opener", {
     top: top.name,
     topScore: top.score,
     gaps: overallGaps.join(" & "),
   });
-  const closing = tt("chat.compare.closing", {
-    pillar: labels[widestSpread.key],
-    spread: widestSpread.spread,
-  });
-  const answer = `${opener}\n\n${pillarLines.join("\n")}\n\n${closing}`;
+  const closing = widestSpread
+    ? tt("chat.compare.closing", {
+        pillar: labels[widestSpread.key],
+        spread: widestSpread.spread,
+      })
+    : "";
+  const answer = [opener, pillarLines.join("\n"), closing].filter(Boolean).join("\n\n");
 
   return {
     sql: `SELECT name, score, pillar_social, pillar_safety, pillar_density, pillar_infra FROM zones WHERE id IN (${idList}) ORDER BY score DESC`,
     rows,
     answer,
     followups: [
-      tt("chat.followup.whyPillarStronger", { zone: top.name, pillar: labels[widestSpread.key] }),
+      tt("chat.followup.whyPillarStronger", {
+        zone: top.name,
+        pillar: labels[widestSpread ? widestSpread.key : "social"],
+      }),
       tt("chat.followup.activeProjectsIn", { zone: sorted[sorted.length - 1].name }),
       tt("chat.followup.gapMovedThisQuarter", {
         top: top.name,
@@ -437,6 +464,20 @@ function buildCompositionAnswer(zones: Zone[]): MockAnswer {
       ],
     };
   }
+  // No composite = no ranking, no vs-county delta, no band. A zone in that
+  // state gets a short honest answer instead of an opener assembled from
+  // nulls dressed up as numbers.
+  if (z.score === null) {
+    return {
+      answer: tt("chat.composition.unscored", { zone: z.name }),
+      followups: [
+        tt("chat.followup.whichLeads"),
+        tt("chat.followup.explainPillars"),
+        tt("chat.followup.tellMeAbout", { zone: "Westlands" }),
+      ],
+    };
+  }
+  const zScore = z.score;
   const labels = pillarLabels();
   const entries = (["social", "safety", "density", "infra"] as const).map((k) => ({
     key: k,
@@ -444,23 +485,36 @@ function buildCompositionAnswer(zones: Zone[]): MockAnswer {
     value: z.pillars[k],
     delta: z.deltas[k],
   }));
-  const sorted = [...entries].sort((a, b) => b.value - a.value);
-  const strong = sorted[0];
-  const weak = sorted[sorted.length - 1];
+  // Sort the measured pillars first; unmeasured ones sink to the tail so
+  // "strongest" / "weakest" name pillars we actually read.
+  const sorted = [...entries].sort((a, b) => {
+    if (a.value === null) return b.value === null ? 0 : 1;
+    if (b.value === null) return -1;
+    return b.value - a.value;
+  });
+  const measured = sorted.filter(
+    (e): e is typeof e & { value: number } => e.value !== null,
+  );
+  const strong = measured[0] ?? sorted[0];
+  const weak = measured[measured.length - 1] ?? sorted[sorted.length - 1];
 
   // County-wide average for context — makes the answer feel grounded
-  // instead of "here are four numbers in a vacuum".
-  const countyAvg = Math.round(ZONES.reduce((a, zn) => a + zn.score, 0) / ZONES.length);
-  const vsCounty = z.score - countyAvg;
-  const rankAbove = ZONES.filter((zn) => zn.score > z.score).length + 1;
+  // instead of "here are four numbers in a vacuum". Skip unscored zones so
+  // the mean reflects the zones actually measured.
+  const scoredZones = ZONES.filter(isScored);
+  const countyAvg = scoredZones.length
+    ? Math.round(scoredZones.reduce((a, zn) => a + zn.score, 0) / scoredZones.length)
+    : zScore;
+  const vsCounty = zScore - countyAvg;
+  const rankAbove = scoredZones.filter((zn) => zn.score > zScore).length + 1;
 
   const bandName =
-    z.score >= 70 ? tt("band.strong") : z.score >= 55 ? tt("band.moderate") : tt("band.atRisk");
+    zScore >= 70 ? tt("band.strong") : zScore >= 55 ? tt("band.moderate") : tt("band.atRisk");
   const deltaFmt = vsCounty >= 0 ? `+${vsCounty}` : String(vsCounty);
 
   const opener = tt("chat.composition.opener", {
     zone: z.name,
-    score: z.score,
+    score: zScore,
     delta: deltaFmt,
     avg: countyAvg,
     rank: rankAbove,
@@ -470,8 +524,10 @@ function buildCompositionAnswer(zones: Zone[]): MockAnswer {
   const pillarLine = (e: (typeof sorted)[number]) => {
     const d = e.delta;
     const days = z.deltaWindowDays;
+    // A null value gets no movement either — the arrow reads as "·" and the
+    // label is a straight "—" so it does not blend into a real reading of 0.
     const movement =
-      d === null || days === null
+      e.value === null || d === null || days === null
         ? { arrow: "·", text: tt("chat.composition.deltaUnknown") }
         : {
             arrow: d > 0 ? "▲" : d < 0 ? "▼" : "◆",
@@ -482,7 +538,7 @@ function buildCompositionAnswer(zones: Zone[]): MockAnswer {
           };
     return tt("chat.composition.pillarLine", {
       pillar: e.label,
-      value: e.value,
+      value: formatScore(e.value),
       arrow: movement.arrow,
       delta: movement.text,
     });
@@ -522,9 +578,18 @@ function weakInterpretation(key: "social" | "safety" | "density" | "infra", z: Z
 }
 
 function buildDistributionAnswer(): MockAnswer {
-  const top = [...ZONES].sort((a, b) => b.score - a.score).slice(0, 5);
+  // Only scoreable zones rank — nulls at the head of a DESC sort would
+  // otherwise lead "top zones" with unmeasured ones, which is worse than
+  // no answer.
+  const top = ZONES.filter(isScored).sort(byScoreDesc).slice(0, 5);
+  if (top.length < 5) {
+    return {
+      answer: tt("chat.distribution.needMore", { count: top.length }),
+      followups: [tt("chat.followup.whichLeads"), tt("chat.followup.explainPillars")],
+    };
+  }
   return {
-    sql: "SELECT name, score FROM zones ORDER BY score DESC LIMIT 5",
+    sql: "SELECT name, score FROM zones WHERE score IS NOT NULL ORDER BY score DESC LIMIT 5",
     rows: top.map((z) => ({ name: z.name, score: z.score })),
     answer: tt("chat.distribution", {
       top1: top[0].name,
@@ -548,11 +613,21 @@ function buildDistributionAnswer(): MockAnswer {
 }
 
 function buildTrendAnswer(zone?: Zone): MockAnswer {
-  const target = zone ?? ZONES[0];
+  const target = zone ?? ZONES.find(isScored);
+  // No zone at all, or no scored anchor to fake a trend around, means the
+  // fake series has nothing to wobble against — say so instead of drawing a
+  // line through zero.
+  if (!target || target.score === null) {
+    return {
+      answer: tt("chat.trend.unscored", { zone: target?.name ?? "" }),
+      followups: [tt("chat.followup.whichLeads"), tt("chat.followup.explainPillars")],
+    };
+  }
+  const anchor = target.score;
   return {
-    sql: `SELECT date_trunc('day', captured_at) AS bucket, avg(score) AS score FROM zone_score_snapshots WHERE zone_id = '${target.id}' AND captured_at >= now() - interval '30 days' GROUP BY 1 ORDER BY 1`,
-    rows: buildFakeTrend(target.score),
-    answer: tt("chat.trend", { zone: target.name, low: target.score - 2, high: target.score + 1 }),
+    sql: `SELECT date_trunc('day', captured_at) AS bucket, avg(score) AS score FROM zone_score_snapshots WHERE zone_id = '${target.id}' AND captured_at >= now() - interval '30 days' AND score IS NOT NULL GROUP BY 1 ORDER BY 1`,
+    rows: buildFakeTrend(anchor),
+    answer: tt("chat.trend", { zone: target.name, low: anchor - 2, high: anchor + 1 }),
     followups: [
       tt("chat.followup.pillarMoving", { zone: target.name }),
       tt("chat.followup.compareToAnother", { zone: target.name }),
@@ -591,18 +666,25 @@ function buildDiagnosticText(zones: Zone[]): string {
     value: z.pillars[k],
     d: z.deltas[k],
   }));
-  const weakest = [...entries].sort((a, b) => a.value - b.value)[0];
+  // "Weakest pillar" only makes sense if the pillar was measured. Null
+  // sorts last so the pick is always a real reading.
+  const measuredPillars = entries.filter(
+    (e): e is typeof e & { value: number } => e.value !== null,
+  );
+  const weakest = measuredPillars.length
+    ? [...measuredPillars].sort((a, b) => a.value - b.value)[0]
+    : null;
 
   // Naming a best and worst mover requires movement we actually measured.
   // Unmeasured pillars are dropped rather than treated as having held flat,
   // and a zone with none of them gets told so instead of a diagnosis.
   const moved = entries.filter((e): e is typeof e & { d: number } => e.d !== null);
   const days = z.deltaWindowDays;
-  if (moved.length === 0 || days === null) {
+  if (moved.length === 0 || days === null || !weakest) {
     return tt("chat.diagnostic.noMovement", {
       zone: z.name,
-      weakestPillar: weakest.label,
-      weakestValue: weakest.value,
+      weakestPillar: weakest?.label ?? "—",
+      weakestValue: weakest ? weakest.value : "—",
     });
   }
 
@@ -616,7 +698,9 @@ function buildDiagnosticText(zones: Zone[]): string {
       worstDelta: worstMove.d,
       bestPillar: bestMove.label,
       bestDelta: `${bestMove.d >= 0 ? "+" : ""}${bestMove.d}`,
-      score: z.score,
+      // A composite can be null even when some pillar movement was measured;
+      // format it as "—" so the sentence stays truthful.
+      score: formatScore(z.score),
       days,
       cause: diagnosticCause(worstMove.key, z.name),
       weakestPillar: weakest.label,
@@ -651,17 +735,23 @@ function buildSummaryText(zones: Zone[]): string {
     const [z] = zones;
     return tt("chat.summary.single", {
       zone: z.name,
-      score: z.score,
-      social: z.pillars.social,
-      safety: z.pillars.safety,
-      density: z.pillars.density,
-      infra: z.pillars.infra,
+      score: formatScore(z.score),
+      social: formatScore(z.pillars.social),
+      safety: formatScore(z.pillars.safety),
+      density: formatScore(z.pillars.density),
+      infra: formatScore(z.pillars.infra),
     });
   }
-  const avg = Math.round(zones.reduce((a, z) => a + z.score, 0) / zones.length);
+  // Average only the scoreable zones — a null in the sum would either NaN
+  // the mean or, with a naive coercion, drag it toward zero.
+  const scored = zones.filter(isScored);
   const names = zones.map((z) => z.name);
   const tail =
     names.length > 1 ? `${names.slice(0, -1).join(", ")} & ${names[names.length - 1]}` : names[0];
+  if (scored.length === 0) {
+    return tt("chat.summary.multi.unscored", { names: tail });
+  }
+  const avg = Math.round(scored.reduce((a, z) => a + z.score, 0) / scored.length);
   return tt("chat.summary.multi", { names: tail, avg });
 }
 

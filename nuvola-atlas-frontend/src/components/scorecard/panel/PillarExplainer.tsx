@@ -6,6 +6,7 @@ import { cn } from "@/lib/cn";
 import { api } from "@/api";
 import { BRAND, PILLAR_COLORS } from "@/lib/scoreColor";
 import { waterProfile } from "@/lib/waterSanitation";
+import { NO_SCORE_LABEL } from "@/lib/scores";
 import { formatRelative } from "@/lib/format";
 import ActivityFeed from "../ActivityFeed";
 import { SUB_METRICS, TREND_ICON, scoreLabel } from "../pillar-data";
@@ -60,10 +61,13 @@ export default function PillarExplainer({ zone, pillarKey, onNavigate }: Props) 
       {/* Zone reading for this pillar */}
       <Section>
         <div className="flex items-center gap-2.5">
-          <span className="text-[30px] font-semibold tabular-nums leading-none" style={{ color }}>
-            {score}
+          <span
+            className="text-[30px] font-semibold tabular-nums leading-none"
+            style={{ color: score === null ? "rgba(255,255,255,0.35)" : color }}
+          >
+            {score === null ? NO_SCORE_LABEL : score}
           </span>
-          {delta === null || zone.deltaWindowDays === null ? (
+          {score === null || delta === null || zone.deltaWindowDays === null ? (
             <span className="text-[10px] font-medium text-ink-4">no trend yet</span>
           ) : (
             <span
@@ -81,13 +85,17 @@ export default function PillarExplainer({ zone, pillarKey, onNavigate }: Props) 
           </span>
         </div>
         <div className="mt-2 h-[4px] rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
-          <motion.div
-            className="h-full rounded-full"
-            style={{ background: color, boxShadow: `0 0 6px ${color}55` }}
-            initial={{ width: 0 }}
-            animate={{ width: `${score}%` }}
-            transition={{ type: "spring", stiffness: 120, damping: 20 }}
-          />
+          {/* No fill for a pillar with no reading — the empty track carries
+              the message honestly, a 0%-width bar does not. */}
+          {score !== null && (
+            <motion.div
+              className="h-full rounded-full"
+              style={{ background: color, boxShadow: `0 0 6px ${color}55` }}
+              initial={{ width: 0 }}
+              animate={{ width: `${score}%` }}
+              transition={{ type: "spring", stiffness: 120, damping: 20 }}
+            />
+          )}
         </div>
         {pillarDef && (
           <p className="mt-2.5 text-[11px] text-ink-2 leading-[1.6]">{pillarDef.description}</p>
@@ -178,25 +186,27 @@ export default function PillarExplainer({ zone, pillarKey, onNavigate }: Props) 
       {/* Pillar-specific evidence from this zone */}
       {pillarKey === "social" && (
         <>
-          <button
-            onClick={() => onNavigate({ type: "water" })}
-            className="group w-full flex items-center gap-2 text-left rounded-card border p-2.5 transition-colors hover:brightness-110"
-            style={{ background: `${BRAND.teal}0F`, borderColor: `${BRAND.teal}33` }}
-          >
-            <Droplets size={13} style={{ color: BRAND.teal }} className="shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="text-[10.5px] font-semibold text-ink-1">
-                Water &amp; Sanitation · SDG 6
+          {wp && (
+            <button
+              onClick={() => onNavigate({ type: "water" })}
+              className="group w-full flex items-center gap-2 text-left rounded-card border p-2.5 transition-colors hover:brightness-110"
+              style={{ background: `${BRAND.teal}0F`, borderColor: `${BRAND.teal}33` }}
+            >
+              <Droplets size={13} style={{ color: BRAND.teal }} className="shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="text-[10.5px] font-semibold text-ink-1">
+                  Water &amp; Sanitation · SDG 6
+                </div>
+                <div className="text-[9.5px] text-ink-4 truncate">
+                  {wp.accessPct}% safe access · {wp.contextLabel}
+                </div>
               </div>
-              <div className="text-[9.5px] text-ink-4 truncate">
-                {wp.accessPct}% safe access · {wp.contextLabel}
-              </div>
-            </div>
-            <ChevronRight
-              size={12}
-              className="shrink-0 text-ink-4 group-hover:text-ink-2 transition-colors"
-            />
-          </button>
+              <ChevronRight
+                size={12}
+                className="shrink-0 text-ink-4 group-hover:text-ink-2 transition-colors"
+              />
+            </button>
+          )}
           <Section>
             <ActivityFeed zoneId={zone.id} />
           </Section>
