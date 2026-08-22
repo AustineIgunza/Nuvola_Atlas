@@ -1,6 +1,6 @@
 ## What changed
 
-<!-- What this does and why. Link the tasks/todo.md item or sprint task if there is one. -->
+<!-- What this does and why. Cite the NAVUUNA_REFOCUS_WORKFLOW.md phase if there is one. -->
 
 ## Checks
 

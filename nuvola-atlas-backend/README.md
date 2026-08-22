@@ -86,14 +86,13 @@ data-quality problem to chase, not an outage to page for.
 
 ## Documentation
 
-All reference docs live in the repo-root `docs/` tree:
-
-- [`docs/backend/architecture.md`](../docs/backend/architecture.md) — service internals, scoring engine, roles, audit
-- [`docs/backend/schema.md`](../docs/backend/schema.md) — database design rationale
 - [`docs/api/openapi.yaml`](../docs/api/openapi.yaml) — API contract (partial; see the banner inside)
-- [`docs/architecture.md`](../docs/architecture.md) — cross-service data flow
-- [`docs/ops/deploy.md`](../docs/ops/deploy.md) — deploy runbook
-- [`docs/ops/google-oauth.md`](../docs/ops/google-oauth.md) — OAuth client setup
+- [`CLAUDE.md`](../CLAUDE.md) — current scope and the rules that constrain it
+
+The prose docs that used to sit under `docs/backend/`, `docs/architecture.md`
+and `docs/ops/` were retired in the August 2026 refocus. They described the
+four-pillar model and are no longer accurate. `git log -- docs/` recovers them
+if you need the history.
 
 ## Conventions
 

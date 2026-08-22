@@ -69,7 +69,6 @@ the ingestion service's own `X-Internal-Secret` check are what stand between
 a stray POST and the database.
 
 The tunnel token and the Access policy are dashboard state, not repo state.
-They are listed in `docs/ops/CREDENTIALS-NEEDED.md`.
 
 ## Workflows
 
@@ -92,8 +91,8 @@ on the naming convention → **Filename Valid?** branches → either
 **Forward To Ingestion** + **Summarize Receipt**, or **Quarantine Notice**.
 Both branches land in **Notify #data-feeds**.
 
-The filename convention it enforces is the one in
-`docs/data/daystar-indicator-spec.md`:
+The filename convention it enforces, implemented in the **Validate Filename**
+node:
 
 ```
 daystar-<YYYY-MM-DD>-<scope>[-<seq>].json

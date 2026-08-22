@@ -43,7 +43,7 @@ Two things to know before you read a result:
 - **phpstan is red and that is expected.** 158 pre-existing violations at
   level 5. It is informational in CI and in `make check`, and the count is
   printed so it cannot creep upward unnoticed. Do not lower the level to make
-  it green — see A5 in [`tasks/todo.md`](tasks/todo.md).
+  it green.
 
 ## Formatting
 
@@ -73,8 +73,8 @@ docs/short-description
 ci/short-description
 ```
 
-Branch off `main`. `main` is protected — see
-[`docs/ops/branch-protection.md`](docs/ops/branch-protection.md).
+Branch off `main`. `main` is protected: PRs only, the five checks must pass,
+and force-push is off.
 
 ## Commits
 

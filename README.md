@@ -1,12 +1,18 @@
 # Navuuna
 
-**A spatial intelligence network for African industrial development.**
-Pilot: Nairobi County, Kenya.
+**A sub-county service-performance record for Nairobi County, Kenya.**
 
-Navuuna turns Kenya's physical infrastructure into a live, queryable map, and
-scores every locality 0–100 on the **UE Vitality Index** — four pillars, 
-thirteen indicators, built so that a place is never penalised for being
-undocumented.
+Navuuna publishes what is actually measured about service delivery in
+Nairobi's sub-counties, and shows the shape of what is not. Three pillars are
+live — Water & Sanitation (flagship), Road, and Electricity Access (held) —
+each value carrying its source, vintage, granularity and method. An indicator
+we cannot measure renders grey and carries no number, rather than being filled
+in with a proxy.
+
+The scope was deliberately narrowed in August 2026. It is **not** a general
+urban intelligence platform. [`CLAUDE.md`](CLAUDE.md) holds the current scope
+and the rules that keep it honest; [`NAVUUNA_REFOCUS_WORKFLOW.md`](NAVUUNA_REFOCUS_WORKFLOW.md)
+is the plan of record for getting there.
 
 Student-led project, Strathmore University. See [`COPYRIGHT.md`](COPYRIGHT.md)
 for ownership.
@@ -19,16 +25,14 @@ for ownership.
 | `nuvola-atlas-backend/` | Laravel 13 headless JSON API. PostgreSQL + PostGIS, Sanctum, Reverb. Deploys to Forge/DigitalOcean. | Khillon |
 | `nuvola-atlas-ingestion/` | FastAPI service (Python 3.13). Cleans and validates Daystar indicator batches. Deploys to Vercel Fluid Compute. | Devyan |
 | `infra/n8n/` | n8n automation glue — turns a Daystar file drop into an ingestion POST. | Devyan |
-| `docs/` | All reference documentation. Start at [`docs/README.md`](docs/README.md). | Shared |
-| `tasks/` | Working backlog and per-week team assignments. | Shared |
+| `docs/` | The OpenAPI spec and brand assets. The prose docs were retired in the Aug 2026 refocus — `git log -- docs/` if you need them. | Shared |
 
 `NuvolaAtlasPrototype.jsx` at the root is the approved design spec for the
 frontend. It is a reference artefact — do not edit it.
 
 ## Running the stack
 
-Each service runs standalone; you rarely need all three. Full instructions
-live in [`docs/team-setup.md`](docs/team-setup.md).
+Each service runs standalone; you rarely need all three.
 
 ```bash
 # Backend  (http://localhost:8000)
@@ -73,28 +77,21 @@ Daystar drop → n8n → FastAPI ingestion → [signed hop] → Laravel → Post
 
 The two network hops carry different credentials deliberately: hop 1 crosses
 a third-party boundary and uses a bearer token, hop 2 is ours on both ends and
-is HMAC-signed. Full detail in [`docs/architecture.md`](docs/architecture.md).
+is HMAC-signed.
 
 ## Documentation
 
-[`docs/README.md`](docs/README.md) is the index. The documents you will want
-first:
-
-- [`docs/CONTEXT.md`](docs/CONTEXT.md) — complete standing brief on the project
-- [`docs/architecture.md`](docs/architecture.md) — cross-service data topography
-- [`docs/backend/architecture.md`](docs/backend/architecture.md) — inside the Laravel service
-- [`docs/ops/CREDENTIALS-NEEDED.md`](docs/ops/CREDENTIALS-NEEDED.md) — what is still blocked on a human
+[`docs/api/openapi.yaml`](docs/api/openapi.yaml) is the API contract. Each
+package has its own README. Everything else lives in the code.
 
 ## Status
 
-Phase A is closed. Phase B (ingestion → scoring) is code-complete and
-verifiable end to end via `php artisan nuvola:ingest-smoke`; the remaining
-work is blocked on Daystar delivering a live feed URL. Progress is tracked in
-[`Navuuna Build Phases.txt`](Navuuna%20Build%20Phases.txt) and
-[`tasks/todo.md`](tasks/todo.md).
+Mid-refocus. The security remediation is done — the AI assistant now reaches
+personal data through neither the allowlist, the database grants, nor the SQL
+guard. Next is the pillar registry and the scope cut. Sequence and acceptance
+criteria are in [`NAVUUNA_REFOCUS_WORKFLOW.md`](NAVUUNA_REFOCUS_WORKFLOW.md).
 
 ## Security
 
 Report vulnerabilities per [`SECURITY.md`](SECURITY.md). Never commit
-secrets — every credential is read from the environment, and
-[`docs/ops/secret-rotation.md`](docs/ops/secret-rotation.md) covers rotation.
+secrets — every credential is read from the environment.

@@ -17,8 +17,8 @@ use Tests\TestCase;
  * The local docker postgres' `nuvola` role is a superuser (POSTGRES_USER) and
  * superusers bypass RLS regardless of FORCE. So the test creates a dedicated
  * non-superuser `nuvola_app` role, grants it minimal privileges, and uses
- * SET ROLE to run the gated queries as that role — exactly the production
- * setup described in docs/ops/deploy.md.
+ * SET ROLE to run the gated queries as that role — mirroring production,
+ * where DB_USERNAME is a non-superuser.
  *
  * Without this scaffold, partners could read each other's overlays as soon
  * as a single SQL injection or missing app-level scope slipped through. The

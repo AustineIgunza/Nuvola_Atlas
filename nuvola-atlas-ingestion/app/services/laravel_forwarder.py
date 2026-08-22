@@ -4,7 +4,7 @@ endpoint.
 Batches are grouped by zone_id before forwarding so each Laravel-side
 insert lands as a single per-zone atomic write. Every request carries the
 shared ``X-Internal-Secret`` plus an HMAC-SHA256 signature over the exact
-body bytes -- see ``docs/data/internal-transport.md``.
+body bytes -- see ``app.signing`` for the construction.
 
 Failures are collected and returned rather than raised -- the caller
 decides whether to dead-letter. The FastAPI service is not the system of

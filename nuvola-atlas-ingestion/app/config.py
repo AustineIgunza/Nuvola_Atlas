@@ -32,7 +32,7 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("CRON_SECRET", "INGESTION_CRON_SECRET"),
     )
 
-    # Spend guards — see app/guards.py and docs/data/internal-transport.md.
+    # Spend guards — see app/guards.py.
     max_payload_bytes: int = Field(default=10 * 1024 * 1024)
     max_rows_per_batch: int = Field(default=5000)
     daily_budget: int = Field(default=100_000)

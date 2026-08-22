@@ -60,7 +60,7 @@ printf '\n\033[1m=== summary\033[0m\n'
 for i in "${!names[@]}"; do
   case "${results[$i]}" in
     pass) printf '  \033[32m%-5s\033[0m %s\n' "pass" "${names[$i]}" ;;
-    red)  printf '  \033[33m%-5s\033[0m %s (informational — see A5 in tasks/todo.md)\n' "red" "${names[$i]}" ;;
+    red)  printf '  \033[33m%-5s\033[0m %s (informational — known pre-existing debt)\n' "red" "${names[$i]}" ;;
     *)    printf '  \033[31m%-5s\033[0m %s\n' "FAIL" "${names[$i]}" ;;
   esac
 done

@@ -7,8 +7,7 @@ Two hops carry ingestion traffic and they are not equally trusted:
   cannot require a university partner to implement request signing for the
   pilot.
 * FastAPI -> Laravel is entirely ours, so it additionally carries an
-  HMAC-SHA256 signature (see ``app.signing`` and
-  ``docs/data/internal-transport.md``).
+  HMAC-SHA256 signature (see ``app.signing``).
 
 This module guards the first hop. Never log the raw header -- log the
 redacted fingerprint instead.

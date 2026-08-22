@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Schema;
  * non-BYPASSRLS role. The Supabase default `postgres` role IS the owner and
  * bypasses RLS unless we FORCE it — that's what the FORCE statement below
  * does. For full defence-in-depth, create a dedicated `nuvola_app` role and
- * point DB_USERNAME at it (see docs/ops/deploy.md).
+ * point DB_USERNAME at it.
  */
 return new class extends Migration
 {

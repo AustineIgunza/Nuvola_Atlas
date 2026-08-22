@@ -77,7 +77,6 @@ no-op — Phase B is blocked on Daystar delivering a feed URL.
 Two target shapes are supported:
 
 1. **Vercel Fluid Compute** — `api/index.py` + `vercel.json` + `requirements.txt`.
-   Full runbook, env vars, and cold-start notes: `docs/ops/ingestion-deploy.md`.
 2. **Uvicorn on Forge / Docker Compose** — `Dockerfile` at the repo root of
    this service, orchestrated by the top-level `docker-compose.yml`.
 
@@ -85,5 +84,5 @@ Sentry DSN, `INGESTION_INTERNAL_SECRET`, `CRON_SECRET`, and
 `INGESTION_DAYSTAR_FEED_BASE` must be set per-environment (Vercel/Forge
 dashboards); never in code.
 
-See `docs/architecture.md` for the full data topography and
-`docs/data/internal-transport.md` for the signed FastAPI → Laravel contract.
+The signed FastAPI → Laravel contract is implemented in `app/security.py` and
+`app/services/laravel_forwarder.py`; those two files are the specification.
