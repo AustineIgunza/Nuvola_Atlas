@@ -15,34 +15,45 @@ return new class extends Migration
             return;
         }
 
-        // Only create the role in non-testing environments. Tests use
-        // the primary DB user via the pgsql_chat connection fallback so
-        // we don't need role setup during phpunit — RefreshDatabase would
-        // fight with pre-existing roles across test runs anyway.
-        if (app()->environment('testing')) {
-            return;
-        }
-
+        // This runs under phpunit too. The grants are the primary control on
+        // what the chat pipeline can read, so a suite that ran as the
+        // privileged user would be proving nothing. Roles are cluster-level
+        // and survive migrate:fresh; the pg_roles check below keeps the
+        // create idempotent across runs.
         $roleName = env('DB_CHAT_RO_USER');
         $password = env('DB_CHAT_RO_PASSWORD');
         $database = config('database.connections.pgsql.database');
 
         if (empty($roleName) || empty($password)) {
-            // Nothing to provision. Local dev without a real key still
-            // works via the pgsql_chat fallback to the primary user.
+            // Nothing to provision. The chat endpoint fails closed without
+            // these — see SqlExecutor::isConfigured().
             return;
         }
 
         $exists = DB::selectOne('SELECT 1 AS ok FROM pg_roles WHERE rolname = ?', [$roleName]);
 
-        if (! $exists) {
-            DB::statement("CREATE ROLE {$this->quoteIdent($roleName)} LOGIN PASSWORD ?", [$password]);
-        }
+        // Postgres does not accept bind parameters in utility statements,
+        // so the password is quoted by the driver and inlined. Converging
+        // on every run rather than only at creation keeps the env file the
+        // source of truth for a role that outlives any single database.
+        $quotedPassword = DB::getPdo()->quote($password);
+
+        DB::statement($exists
+            ? "ALTER ROLE {$this->quoteIdent($roleName)} LOGIN PASSWORD {$quotedPassword}"
+            : "CREATE ROLE {$this->quoteIdent($roleName)} LOGIN PASSWORD {$quotedPassword}");
 
         DB::statement("GRANT CONNECT ON DATABASE {$this->quoteIdent($database)} TO {$this->quoteIdent($roleName)}");
         DB::statement("GRANT USAGE ON SCHEMA public TO {$this->quoteIdent($roleName)}");
 
         foreach (config('ai.allowed_tables', []) as $table) {
+            // The allowlist can name a relation that a later migration
+            // creates — chat_user_stats does not exist yet on a fresh
+            // migrate. Grant what is there; the migration that introduces
+            // the relation grants its own access.
+            if (! $this->relationExists($table)) {
+                continue;
+            }
+
             DB::statement("GRANT SELECT ON TABLE public.{$this->quoteIdent($table)} TO {$this->quoteIdent($roleName)}");
         }
 
@@ -56,10 +67,6 @@ return new class extends Migration
         if (DB::connection()->getDriverName() !== 'pgsql') {
             return;
         }
-        if (app()->environment('testing')) {
-            return;
-        }
-
         $roleName = env('DB_CHAT_RO_USER');
         if (empty($roleName)) {
             return;
@@ -73,6 +80,10 @@ return new class extends Migration
         $database = config('database.connections.pgsql.database');
 
         foreach (config('ai.allowed_tables', []) as $table) {
+            if (! $this->relationExists($table)) {
+                continue;
+            }
+
             DB::statement("REVOKE SELECT ON TABLE public.{$this->quoteIdent($table)} FROM {$this->quoteIdent($roleName)}");
         }
         DB::statement("REVOKE USAGE ON SCHEMA public FROM {$this->quoteIdent($roleName)}");
@@ -88,5 +99,12 @@ return new class extends Migration
     private function quoteIdent(string $ident): string
     {
         return '"'.str_replace('"', '""', $ident).'"';
+    }
+
+    private function relationExists(string $table): bool
+    {
+        $row = DB::selectOne('SELECT to_regclass(?) AS oid', ['public.'.$table]);
+
+        return $row !== null && $row->oid !== null;
     }
 };

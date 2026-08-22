@@ -104,21 +104,22 @@ return [
         // Read-only connection for the RAG chat pipeline. Uses a
         // `nuvola_chat_ro` role that has SELECT on the allowlisted tables
         // only (see 2026_07_09_000001_create_chat_readonly_role migration).
-        // Belt-and-suspenders on top of the SqlGuard so that even if a
-        // guard rewrite misses something, the DB refuses the write.
+        // These grants are the primary control on what an LLM-authored query
+        // can reach; the SqlGuard is defence in depth on top of them.
         //
-        // Blank falls back to the primary DB user, which is what local dev
-        // and phpunit run on. `?:` rather than an env() default because
-        // .env ships these keys present-but-empty, and env() only applies
-        // its default when the key is absent entirely.
+        // There is deliberately no fallback to DB_USERNAME. An unconfigured
+        // role used to silently mean "run the model's SQL as the owner of
+        // every table in the database", which is the failure mode this
+        // connection exists to prevent. Missing credentials now 503 the chat
+        // endpoint — see SqlExecutor::isConfigured().
         'pgsql_chat' => [
             'driver' => 'pgsql',
             'url' => env('DB_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '5432'),
             'database' => env('DB_DATABASE', 'laravel'),
-            'username' => env('DB_CHAT_RO_USER') ?: env('DB_USERNAME', 'root'),
-            'password' => env('DB_CHAT_RO_PASSWORD') ?: env('DB_PASSWORD', ''),
+            'username' => env('DB_CHAT_RO_USER'),
+            'password' => env('DB_CHAT_RO_PASSWORD'),
             'charset' => env('DB_CHARSET', 'utf8'),
             'prefix' => '',
             'prefix_indexes' => true,

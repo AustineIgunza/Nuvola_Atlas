@@ -42,6 +42,11 @@ return [
     | list. The read-only DB role also only receives SELECT on these tables.
     | Keep this list narrow — anything readable here is readable by the LLM.
     |
+    | Nothing containing PII belongs here. `users` was removed in Aug 2026:
+    | it exposed email and password_hash to anything that could talk the
+    | model into a join. `chat_user_stats` is the view that replaced it and
+    | carries only id, role and created_at.
+    |
     */
     'allowed_tables' => [
         'zones',
@@ -52,6 +57,6 @@ return [
         'reports',
         'activities',
         'vitality_history',
-        'users',
+        'chat_user_stats',
     ],
 ];

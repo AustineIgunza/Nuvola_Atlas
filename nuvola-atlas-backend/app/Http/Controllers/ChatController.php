@@ -9,6 +9,7 @@ use App\Http\Resources\ChatMessageResource;
 use App\Models\ChatConversation;
 use App\Services\Chat\AiGatewayClient;
 use App\Services\Chat\ChatOrchestrator;
+use App\Services\Chat\SqlExecutor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -64,6 +65,10 @@ class ChatController extends Controller
     {
         if (! $this->gateway->isConfigured()) {
             abort(503, 'AI is not configured — set AI_GATEWAY_API_KEY.');
+        }
+
+        if (! SqlExecutor::isConfigured()) {
+            abort(503, 'AI is not configured — set DB_CHAT_RO_USER and DB_CHAT_RO_PASSWORD to a role that is not the primary database user.');
         }
 
         $data = $request->validate([

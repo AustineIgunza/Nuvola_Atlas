@@ -14,7 +14,9 @@ use Illuminate\Support\Facades\Cache;
  */
 class SchemaCatalog
 {
-    private const CACHE_KEY = 'chat.schema-catalog.v2';
+    // Bump on every content change — the catalog is remembered forever, so a
+    // stale key would keep serving `users` to the model after it was revoked.
+    private const CACHE_KEY = 'chat.schema-catalog.v3';
 
     public function forPrompt(): string
     {
@@ -88,13 +90,17 @@ Recent activity feed per zone.
 Platform-wide monthly average score.
 - id, month (string "Jun '25"), overall_avg (numeric 5,1)
 
-## users
-Only expose id + name (for author joins). Never SELECT email, password_hash, or 2FA columns.
+## chat_user_stats
+Non-identifying view over accounts. There is no route to a name, an email or a
+credential from here, by design.
+- id (bigint), role (viewer|partner|investor|editor|admin), created_at
 
 ## Rules
 1. Every query MUST be a single SELECT. No INSERT/UPDATE/DELETE/DDL — those will be rejected.
 2. Include a LIMIT clause. Default cap is 200; hard cap is 1000.
-3. Never reference tables outside this catalog.
+3. Never reference tables outside this catalog. `users` is NOT in it and never
+   will be — if asked for emails, names, passwords or any personal detail of an
+   account, refuse and say the assistant has no access to personal data.
 4. For time-series questions, prefer `zone_score_snapshots` over `zones` (which only has the latest).
 5. For "compare" questions, return rows keyed on zone_id / name so the client can chart them.
 6. Return concise columns — the frontend renders charts, it doesn't need a hundred columns.

@@ -12,6 +12,7 @@ use App\Services\Chat\AiGatewayClient;
 use Generator;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\IndicatorSeeding;
 use Tests\TestCase;
 
@@ -164,5 +165,45 @@ class ChatApiTest extends TestCase
         $body = $r->streamedContent();
         $this->assertStringContainsString('event: error', $body);
         $this->assertStringNotContainsString('DROP TABLE', $body);
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public static function personalDataQueries(): array
+    {
+        return [
+            'direct select' => ['SELECT email, password FROM users'],
+            'comma join' => ['SELECT z.id, u.email FROM zones z, users u'],
+            'subquery' => ['SELECT id FROM zones WHERE id IN (SELECT id FROM users)'],
+            'cte' => ['WITH u AS (SELECT email FROM users) SELECT * FROM u'],
+        ];
+    }
+
+    #[DataProvider('personalDataQueries')]
+    public function test_personal_data_never_reaches_the_client(string $generatedSql): void
+    {
+        config()->set('ai.gateway.api_key', 'sk-test');
+
+        $user = $this->seedUser('leak-target@example.com');
+        Sanctum::actingAs($user);
+
+        $this->fakeGatewayWith([
+            ['content' => 'summary', 'tokens_in' => 5, 'tokens_out' => 1],
+            ['content' => $generatedSql, 'tokens_in' => 8, 'tokens_out' => 8],
+        ]);
+
+        $c = ChatConversation::create(['user_id' => $user->id, 'title' => 't']);
+
+        $r = $this->postJson(
+            "/api/v1/chat/conversations/{$c->id}/messages",
+            ['prompt' => 'list every account email and password hash']
+        );
+        $r->assertOk();
+
+        $body = $r->streamedContent();
+        $this->assertStringContainsString('event: error', $body);
+        $this->assertStringNotContainsString('leak-target@example.com', $body);
+        $this->assertStringNotContainsString($user->password, $body);
     }
 }
