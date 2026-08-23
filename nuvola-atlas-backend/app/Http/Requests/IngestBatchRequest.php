@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use App\Models\DataIngestionLog;
+use App\Support\Pillars;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -25,29 +26,15 @@ class IngestBatchRequest extends FormRequest
      */
     public function rules(): array
     {
-        $indicators = [
-            'healthcare_access',
-            'education_access',
-            'digital_connectivity',
-            'crime_rates',
-            'emergency_response',
-            'emergency_response_access',
-            'disaster_exposure',
-            'population_density',
-            'congestion',
-            'housing_pressure',
-            'road_quality',
-            'energy_reliability',
-            'food_risk',
-            'waste_management',
-        ];
-
+        // A reading for a pillar that was switched off is rejected, not
+        // ignored — the sender needs to hear that the batch is out of date
+        // rather than watch it disappear.
         return [
             'batch_id' => ['required', 'string'],
             'submitted_at' => ['required', 'date'],
             'readings' => ['required', 'array'],
             'readings.*.zone_id' => ['required', 'string', 'exists:zones,id'],
-            'readings.*.indicator' => ['required', 'string', 'in:'.implode(',', $indicators)],
+            'readings.*.pillar' => ['required', 'string', 'in:'.implode(',', Pillars::keys())],
             'readings.*.value' => ['required', 'numeric'],
             'readings.*.observed_at' => ['required', 'date'],
             'readings.*.field_verified' => ['nullable', 'boolean'],

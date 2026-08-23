@@ -15,7 +15,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Tests\Support\IndicatorSeeding;
+use App\Support\Pillars;
+use Tests\Support\PillarSeeding;
 use Tests\TestCase;
 
 /**
@@ -27,6 +28,13 @@ use Tests\TestCase;
  */
 class AdminPhaseERoutesTest extends TestCase
 {
+    private const EVEN_WEIGHTS = [
+        'water_sanitation' => 0.25,
+        'road_density' => 0.25,
+        'transit_access' => 0.25,
+        'electricity_access' => 0.25,
+    ];
+
     private function adminWithTwoFactor(): User
     {
         return User::factory()->create([
@@ -37,21 +45,16 @@ class AdminPhaseERoutesTest extends TestCase
 
     private function seedZone(string $id, int $pillar = 70): void
     {
-        $indicators = IndicatorSeeding::fromPillars([
-            'social' => $pillar,
-            'safety' => $pillar,
-            'density' => $pillar,
-            'infra' => $pillar,
-        ]);
-        $cols = implode(', ', array_keys($indicators));
-        $vals = implode(', ', array_fill(0, count($indicators), '?'));
+        $pillars = PillarSeeding::columns(array_fill_keys(Pillars::keys(), $pillar));
+        $cols = implode(', ', array_keys($pillars));
+        $vals = implode(', ', array_fill(0, count($pillars), '?'));
 
         DB::statement(
             "INSERT INTO zones (id, name, score, {$cols}, last_sync_min,
              centroid, created_at, updated_at)
              VALUES (?, ?, ?, {$vals}, 5,
              ST_GeogFromText('POINT(36.82 -1.29)'), now(), now())",
-            array_merge([$id, ucfirst($id), $pillar], array_values($indicators))
+            array_merge([$id, ucfirst($id), $pillar], array_values($pillars))
         );
     }
 
@@ -187,14 +190,14 @@ class AdminPhaseERoutesTest extends TestCase
 
         $current = MethodologyVersion::create([
             'version' => 'v1.0.0',
-            'weights' => ['social' => 0.25, 'safety' => 0.25, 'density' => 0.25, 'infra' => 0.25],
+            'weights' => self::EVEN_WEIGHTS,
             'bands' => [],
             'is_current' => true,
             'draft' => false,
         ]);
         $next = MethodologyVersion::create([
             'version' => 'v1.1.0',
-            'weights' => ['social' => 0.30, 'safety' => 0.30, 'density' => 0.20, 'infra' => 0.20],
+            'weights' => ['water_sanitation' => 0.5, 'road_density' => 0.3, 'transit_access' => 0.2, 'electricity_access' => 0.0],
             'bands' => [],
             'is_current' => false,
             'draft' => false,
@@ -218,7 +221,7 @@ class AdminPhaseERoutesTest extends TestCase
 
         $draft = MethodologyVersion::create([
             'version' => 'v2.0.0-draft',
-            'weights' => ['social' => 0.25, 'safety' => 0.25, 'density' => 0.25, 'infra' => 0.25],
+            'weights' => self::EVEN_WEIGHTS,
             'bands' => [],
             'is_current' => false,
             'draft' => true,
@@ -236,8 +239,8 @@ class AdminPhaseERoutesTest extends TestCase
         $admin = $this->adminWithTwoFactor();
 
         $this->actingAs($admin)->postJson('/api/v1/admin/methodology/preview', [
-            'weights' => ['social' => 1.4, 'safety' => 0.2, 'density' => 0.2, 'infra' => 0.2],
-        ])->assertStatus(422)->assertJsonValidationErrors('weights.social');
+            'weights' => ['water_sanitation' => 1.4] + self::EVEN_WEIGHTS,
+        ])->assertStatus(422)->assertJsonValidationErrors('weights.water_sanitation');
     }
 
     public function test_methodology_preview_does_not_mutate_the_live_version(): void
@@ -247,19 +250,19 @@ class AdminPhaseERoutesTest extends TestCase
 
         $live = MethodologyVersion::create([
             'version' => 'v1.0.0',
-            'weights' => ['social' => 0.25, 'safety' => 0.25, 'density' => 0.25, 'infra' => 0.25],
+            'weights' => self::EVEN_WEIGHTS,
             'bands' => [],
             'is_current' => true,
             'draft' => false,
         ]);
 
         $this->actingAs($admin)->postJson('/api/v1/admin/methodology/preview', [
-            'weights' => ['social' => 0.7, 'safety' => 0.1, 'density' => 0.1, 'infra' => 0.1],
+            'weights' => ['water_sanitation' => 0.7, 'road_density' => 0.1, 'transit_access' => 0.1, 'electricity_access' => 0.1],
         ])->assertOk()
-            ->assertJsonPath('weights.social', 0.7)
+            ->assertJsonPath('weights.water_sanitation', 0.7)
             ->assertJsonStructure(['weights', 'impact']);
 
-        $this->assertSame(0.25, (float) $live->fresh()->weights['social']);
+        $this->assertSame(0.25, (float) $live->fresh()->weights['water_sanitation']);
     }
 
     // ----------------------------------------------------------------- feeds
@@ -270,18 +273,18 @@ class AdminPhaseERoutesTest extends TestCase
         $this->seedZone('feed-zone');
 
         DataFeedStatus::create([
-            'feed_name' => 'daystar-social',
+            'feed_name' => 'wasreb.impact',
             'zone_id' => 'feed-zone',
-            'indicator_key' => 'healthcare_access',
+            'pillar_key' => 'water_sanitation',
             'last_delivered_at' => now()->subMinutes(5),
             'expected_frequency_min' => 60,
             'verified_records' => 12,
-            'source_system' => 'daystar',
+            'source_system' => 'wasreb',
         ]);
         DataFeedStatus::create([
-            'feed_name' => 'daystar-safety',
+            'feed_name' => 'hotosm.roads',
             'zone_id' => 'feed-zone',
-            'indicator_key' => 'crime_rates',
+            'pillar_key' => 'road_density',
             'last_delivered_at' => null,
             'expected_frequency_min' => 60,
         ]);
@@ -294,10 +297,10 @@ class AdminPhaseERoutesTest extends TestCase
             ]);
 
         $states = collect($response->json('feeds'))
-            ->pluck('state', 'indicator_key');
+            ->pluck('state', 'pillar_key');
 
-        $this->assertSame('fresh', $states['healthcare_access']);
-        $this->assertSame('missing', $states['crime_rates']);
+        $this->assertSame('fresh', $states['water_sanitation']);
+        $this->assertSame('missing', $states['road_density']);
         $this->assertSame(2, $response->json('summary.total'));
     }
 
@@ -370,18 +373,18 @@ class AdminPhaseERoutesTest extends TestCase
         $admin = $this->adminWithTwoFactor();
 
         $this->actingAs($admin)->putJson('/api/v1/admin/content/methodology-intro', [
-            'body' => 'The Vitality Index scores 17 Nairobi sub-counties.',
+            'body' => 'Navuuna scores 17 Nairobi sub-counties.',
         ])->assertOk()->assertJsonPath('key', 'methodology-intro');
 
         $this->actingAs($admin)->putJson('/api/v1/admin/content/methodology-intro', [
-            'body' => 'The Vitality Index scores 17 Nairobi sub-counties across 13 indicators.',
+            'body' => 'Navuuna scores 17 Nairobi sub-counties on four service pillars.',
         ])->assertOk();
 
         $show = $this->actingAs($admin)
             ->getJson('/api/v1/admin/content/methodology-intro')
             ->assertOk();
 
-        $this->assertStringContainsString('13 indicators', $show->json('body'));
+        $this->assertStringContainsString('four service pillars', $show->json('body'));
         // The first body survives as a revision — content edits are recoverable.
         $this->assertNotEmpty($show->json('revisions'));
     }

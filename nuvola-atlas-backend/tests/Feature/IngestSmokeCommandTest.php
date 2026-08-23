@@ -8,7 +8,9 @@ use App\Jobs\RecalculateZoneScore;
 use App\Models\DataIngestionLog;
 use App\Models\Zone;
 use App\Models\ZoneScoreSnapshot;
+use App\Support\Pillars;
 use Illuminate\Support\Facades\Queue;
+use Tests\Support\PillarSeeding;
 use Tests\TestCase;
 
 /**
@@ -33,56 +35,66 @@ class IngestSmokeCommandTest extends TestCase
 
     public function test_it_drives_a_signed_batch_through_the_real_pipeline(): void
     {
-        Zone::factory()->create(['id' => 'kasarani', 'indicator_healthcare_access' => 40]);
+        Zone::factory()->create(['id' => 'kasarani', 'pillar_water_sanitation' => 40]);
 
         $this->artisan('nuvola:ingest-smoke')
             ->assertSuccessful();
 
         $log = DataIngestionLog::sole();
         $this->assertTrue($log->accepted);
-        $this->assertSame(3, $log->indicators_updated);
+        // The smoke batch drives every live pillar, so a pillar landing or
+        // being retired changes this number without touching the test.
+        $this->assertSame(count(Pillars::keys()), $log->indicators_updated);
         $this->assertStringStartsWith(DataIngestionLog::SMOKE_SOURCE_PREFIX, $log->source);
     }
 
     public function test_it_restores_the_zone_and_leaves_no_snapshot_behind(): void
     {
-        $zone = Zone::factory()->create([
-            'id' => 'kasarani',
-            'score' => 61,
-            'indicator_healthcare_access' => 40,
-            'indicator_emergency_response_access' => 55,
-            'indicator_road_quality' => 70,
-        ]);
+        $zone = Zone::factory()->create(array_merge(
+            ['id' => 'kasarani', 'score' => 61],
+            PillarSeeding::columns([
+                'water_sanitation' => 40,
+                'road_density' => 55,
+                'transit_access' => 70,
+            ]),
+        ));
 
         $this->artisan('nuvola:ingest-smoke')->assertSuccessful();
 
         $zone->refresh();
         $this->assertSame(61, $zone->score);
-        $this->assertSame(40, $zone->indicator_healthcare_access);
-        $this->assertSame(55, $zone->indicator_emergency_response_access);
-        $this->assertSame(70, $zone->indicator_road_quality);
+        $this->assertSame(40, $zone->pillar_water_sanitation);
+        $this->assertSame(55, $zone->pillar_road_density);
+        $this->assertSame(70, $zone->pillar_transit_access);
         $this->assertSame(0, ZoneScoreSnapshot::where('zone_id', 'kasarani')->count());
     }
 
     public function test_keep_leaves_the_synthetic_readings_in_place(): void
     {
-        $zone = Zone::factory()->create(['id' => 'kasarani', 'indicator_healthcare_access' => 40]);
+        $zone = Zone::factory()->create(['id' => 'kasarani', 'pillar_water_sanitation' => 40]);
 
         $this->artisan('nuvola:ingest-smoke --keep')->assertSuccessful();
 
         // 100 - 40; the command mirrors each reading so the write is visible.
-        $this->assertSame(60, $zone->refresh()->indicator_healthcare_access);
+        $this->assertSame(60, $zone->refresh()->pillar_water_sanitation);
     }
 
-    public function test_it_exercises_the_daystar_indicator_alias(): void
+    public function test_it_exercises_every_live_pillar(): void
     {
-        Zone::factory()->create(['id' => 'kasarani', 'indicator_emergency_response_access' => 30]);
+        Zone::factory()->create(array_merge(
+            ['id' => 'kasarani'],
+            PillarSeeding::columns(array_fill_keys(Pillars::keys(), 30)),
+        ));
 
         $this->artisan('nuvola:ingest-smoke --keep')->assertSuccessful();
 
-        // Daystar publishes `emergency_response`; IngestController has to map
-        // it onto indicator_emergency_response_access or this stays at 30.
-        $this->assertSame(70, Zone::find('kasarani')->indicator_emergency_response_access);
+        // A pillar the smoke batch skips would stay at 30 — which is how a
+        // silently unwritable column shows up as a failure here rather than
+        // as a quiet gap in production.
+        $zone = Zone::find('kasarani');
+        foreach (Pillars::keys() as $key) {
+            $this->assertSame(70, $zone->getAttribute(Pillars::column($key)), $key);
+        }
     }
 
     public function test_it_fails_when_no_secret_is_configured(): void
@@ -108,13 +120,13 @@ class IngestSmokeCommandTest extends TestCase
         // batch lands, the job is dispatched, and nothing ever runs it.
         Queue::fake();
 
-        $zone = Zone::factory()->create(['id' => 'kasarani', 'indicator_healthcare_access' => 40]);
+        $zone = Zone::factory()->create(['id' => 'kasarani', 'pillar_water_sanitation' => 40]);
 
         $this->artisan('nuvola:ingest-smoke --wait=0')
             ->expectsOutputToContain('No rescore snapshot appeared')
             ->assertFailed();
 
         Queue::assertPushed(RecalculateZoneScore::class);
-        $this->assertSame(40, $zone->refresh()->indicator_healthcare_access);
+        $this->assertSame(40, $zone->refresh()->pillar_water_sanitation);
     }
 }

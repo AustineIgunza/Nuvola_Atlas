@@ -16,14 +16,14 @@ class ZoneLayerSeeder extends Seeder
         foreach ($zones as $zoneId => $center) {
             ZoneLayer::create([
                 'zone_id' => $zoneId,
-                'layer_type' => 'road_progress',
-                'geojson' => $this->roadProgressLayer($center[0], $center[1], $zoneId),
+                'layer_type' => 'road_density',
+                'geojson' => $this->roadDensityLayer($center[0], $center[1], $zoneId),
             ]);
 
             ZoneLayer::create([
                 'zone_id' => $zoneId,
-                'layer_type' => 'smart_grid',
-                'geojson' => $this->smartGridLayer($center[0], $center[1], $zoneId),
+                'layer_type' => 'electricity_access',
+                'geojson' => $this->electricityAccessLayer($center[0], $center[1], $zoneId),
             ]);
 
             ZoneLayer::create([
@@ -57,7 +57,7 @@ class ZoneLayerSeeder extends Seeder
         ];
     }
 
-    private function roadProgressLayer(float $lng, float $lat, string $zoneId): array
+    private function roadDensityLayer(float $lng, float $lat, string $zoneId): array
     {
         $roads = [
             'westlands' => [
@@ -120,7 +120,7 @@ class ZoneLayerSeeder extends Seeder
         ];
     }
 
-    private function smartGridLayer(float $lng, float $lat, string $zoneId): array
+    private function electricityAccessLayer(float $lng, float $lat, string $zoneId): array
     {
         $grids = [
             'westlands' => [

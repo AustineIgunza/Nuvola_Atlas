@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Chat;
 
+use App\Support\Pillars;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -15,17 +16,34 @@ use Illuminate\Support\Facades\Cache;
 class SchemaCatalog
 {
     // Bump on every content change — the catalog is remembered forever, so a
-    // stale key would keep serving `users` to the model after it was revoked.
-    private const CACHE_KEY = 'chat.schema-catalog.v3';
+    // stale key would keep serving `users` to the model after it was revoked,
+    // or keep describing a pillar that has since been switched off.
+    private const CACHE_KEY = 'chat.schema-catalog.v4';
 
     public function forPrompt(): string
     {
-        return Cache::rememberForever(self::CACHE_KEY, fn () => $this->build());
+        return Cache::rememberForever(
+            self::CACHE_KEY.'.'.Pillars::version(),
+            fn () => $this->build(),
+        );
     }
 
     private function build(): string
     {
-        return <<<'MD'
+        $pillarLines = '';
+        foreach (Pillars::all() as $pillar) {
+            $pillarLines .= sprintf(
+                "\n  %s — %s (%s, %s, %s)",
+                Pillars::column($pillar['key']),
+                $pillar['display_name'],
+                $pillar['status'],
+                $pillar['source_id'] ?? 'no source',
+                $pillar['vintage'] ?? 'no vintage',
+            );
+        }
+        $count = count(Pillars::keys());
+
+        return <<<MD
 You are Navuuna's data assistant. You answer questions by writing Postgres SELECT queries against these tables ONLY:
 
 ## zones
@@ -37,21 +55,18 @@ Current Vitality Score per Nairobi sub-county (17 zones).
 - last_sync_min (int, minutes since last data refresh)
 - created_at, updated_at
 
-  13 indicator columns (each smallint 0-100, nullable when awaiting data —
-  NULL is NOT zero, exclude nulls from averages):
-  Social pillar:   indicator_healthcare_access, indicator_education_access,
-                   indicator_digital_connectivity
-  Safety pillar:   indicator_crime_rates, indicator_emergency_response_access,
-                   indicator_disaster_exposure
-  Density pillar:  indicator_population_density, indicator_congestion,
-                   indicator_housing_pressure
-  Infra pillar:    indicator_road_quality, indicator_energy_reliability,
-                   indicator_food_risk, indicator_waste_management
+  {$count} pillar columns (each smallint 0-100, nullable when awaiting data —
+  NULL is NOT zero, exclude nulls from averages). Each pillar is ONE measured
+  figure, not an average of sub-indicators:{$pillarLines}
 
-  Pillar score = AVG of the pillar's non-null indicators.
-  Composite score = AVG of the pillars that have at least one non-null indicator.
-  Deltas were removed in July 2026; do not select delta_* — those columns
-  don't exist.
+  Composite score = weighted mean of the pillars that have a value, with the
+  weights renormalized across exactly those pillars. A pillar marked "held"
+  carries zero weight — report its value with the vintage above, and say the
+  vintage out loud.
+
+  The thirteen indicator_* columns are retired. They still physically exist but
+  are no longer written or read. Never select them, and never describe a pillar
+  as an average of indicators.
 
 ## zone_score_snapshots
 Time-series of vitality scores, one row per zone per hourly recalc.
@@ -59,11 +74,11 @@ Time-series of vitality scores, one row per zone per hourly recalc.
 - zone_id (FK zones.id)
 - captured_at (timestamp)
 - score (smallint 0-100)
-- Same 13 indicator_* columns as zones (nullable smallint 0-100).
+- Same pillar_* columns as zones (nullable smallint 0-100).
 
 ## zone_layers
-GeoJSON infrastructure layers (roads, water, safety, density) per zone.
-- id, zone_id, layer_type (string: road_progress | smart_grid | density | water | safety), geojson (jsonb)
+GeoJSON infrastructure layers per zone.
+- id, zone_id, layer_type (string: road_density | electricity_access | density | water), geojson (jsonb)
 
 ## projects
 Infrastructure projects (roads/energy/grid/water).

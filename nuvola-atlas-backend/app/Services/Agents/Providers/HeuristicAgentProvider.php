@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Agents\Providers;
 
 use App\Services\Agents\AgentProvider;
+use App\Support\Pillars;
 
 /**
  * Zero-dependency router that keeps the agent surface functional
@@ -179,13 +180,30 @@ class HeuristicAgentProvider implements AgentProvider
     }
 
     /**
-     * A zone with no indicators has no composite. Interpolating the null
+     * A zone with no readings has no composite. Interpolating the null
      * left "composite /100" on screen; the pillars beside it already use
      * "—" for the same condition, so say it in words instead.
      */
     private function composite(mixed $score): string
     {
         return $score === null ? 'no score yet' : "{$score}/100";
+    }
+
+    /**
+     * "water & sanitation 62 · road density — · transit access 48", in
+     * registry order. A pillar with no reading prints an em dash, never a 0.
+     *
+     * @param  array<string, mixed>  $pillars
+     */
+    private function pillarLine(array $pillars): string
+    {
+        $parts = [];
+        foreach (Pillars::all() as $pillar) {
+            $value = $pillars[$pillar['key']] ?? null;
+            $parts[] = strtolower($pillar['display_name']).' '.($value ?? '—');
+        }
+
+        return implode(' · ', $parts);
     }
 
     private function formatFinal(string $prompt, array $obs): string
@@ -201,10 +219,7 @@ class HeuristicAgentProvider implements AgentProvider
                 }
                 $name = $z['name'] ?? $z['zone_id'];
                 $lines[] = "- **{$name}**: composite {$this->composite($z['score'])} · "
-                    .'social '.($z['pillars']['social'] ?? '—')
-                    .' · safety '.($z['pillars']['safety'] ?? '—')
-                    .' · density '.($z['pillars']['density'] ?? '—')
-                    .' · infra '.($z['pillars']['infra'] ?? '—');
+                    .$this->pillarLine($z['pillars'] ?? []);
             }
             if ($obs['winners']['overall']) {
                 $lines[] = "Highest overall: **{$obs['winners']['overall']['zone_id']}** at {$obs['winners']['overall']['value']}.";
@@ -226,15 +241,12 @@ class HeuristicAgentProvider implements AgentProvider
 
         // get_zone
         if (isset($obs['pillars']) && isset($obs['name'])) {
-            $active = $obs['indicators_active'];
-            $total = $obs['indicators_total'];
+            $measured = $obs['pillars_measured'];
+            $total = $obs['pillars_total'];
             $lines = [
                 "**{$obs['name']}** ({$obs['zone_id']}) — Vitality Score **{$this->composite($obs['score'])}**.",
-                'Pillars: social '.($obs['pillars']['social'] ?? '—')
-                    .' · safety '.($obs['pillars']['safety'] ?? '—')
-                    .' · density '.($obs['pillars']['density'] ?? '—')
-                    .' · infra '.($obs['pillars']['infra'] ?? '—').'.',
-                "{$active} of {$total} indicators active".(empty($obs['missing_indicators']) ? '.' : ' (missing: '.implode(', ', $obs['missing_indicators']).').'),
+                'Pillars: '.$this->pillarLine($obs['pillars']).'.',
+                "{$measured} of {$total} pillars measured".(empty($obs['missing_pillars']) ? '.' : ' (missing: '.implode(', ', $obs['missing_pillars']).').'),
             ];
 
             return implode("\n", $lines);
@@ -252,9 +264,13 @@ class HeuristicAgentProvider implements AgentProvider
 
         // methodology
         if (isset($obs['weights']) && isset($obs['pillars'])) {
-            $lines = ["**Vitality methodology (v{$obs['version']})** — four equally-weighted pillars, 13 indicators, null-exclusion averaging."];
-            foreach ($obs['pillars'] as $key => $indicators) {
-                $lines[] = "- **{$key}**: ".implode(', ', $indicators);
+            $count = count($obs['pillars']);
+            $lines = ["**Vitality methodology (v{$obs['version']})** — {$count} pillars, weighted mean, null-exclusion averaging."];
+            foreach ($obs['pillars'] as $pillar) {
+                $weight = $obs['weights'][$pillar['key']] ?? 0;
+                $lines[] = "- **{$pillar['display_name']}** (weight {$weight}, {$pillar['status']}) — "
+                    .($pillar['description'] ?? 'no description')
+                    .' Source: '.($pillar['source_id'] ?? 'none').', '.($pillar['vintage'] ?? 'no vintage').'.';
             }
             $lines[] = 'Notes: '.implode(' ', $obs['notes'] ?? []);
 
@@ -269,7 +285,7 @@ class HeuristicAgentProvider implements AgentProvider
                 $lines[] = 'Latest feeds:';
                 foreach (array_slice($obs['feeds'], 0, 5) as $f) {
                     $age = $f['age_min'] === null ? 'never delivered' : "{$f['age_min']} min ago";
-                    $lines[] = "- [{$f['state']}] {$f['zone_id']}/{$f['indicator_key']} · {$f['source_system']} · {$age}";
+                    $lines[] = "- [{$f['state']}] {$f['zone_id']}/{$f['pillar_key']} · {$f['source_system']} · {$age}";
                 }
             }
 

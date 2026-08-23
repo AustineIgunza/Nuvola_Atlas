@@ -14,7 +14,7 @@ class ImportGeoJson extends Command
     protected $signature = 'atlas:import-geojson
                             {file : Path to GeoJSON file}
                             {--zone= : Zone ID (required)}
-                            {--layer= : Layer type: road_progress, smart_grid, or density (required)}
+                            {--layer= : Layer type: road_density, electricity_access, or density (required)}
                             {--broadcast : Fire broadcast event after import}';
 
     protected $description = 'Import a GeoJSON FeatureCollection into a zone layer';
@@ -31,7 +31,7 @@ class ImportGeoJson extends Command
             return self::FAILURE;
         }
 
-        $validTypes = ['road_progress', 'smart_grid', 'density'];
+        $validTypes = ['road_density', 'electricity_access', 'density'];
         if (! in_array($layerType, $validTypes)) {
             $this->error('Invalid layer type. Must be one of: '.implode(', ', $validTypes));
 

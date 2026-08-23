@@ -7,32 +7,28 @@ namespace Tests\Feature\Scoring;
 use App\Events\ZoneScoreUpdated;
 use App\Jobs\RecalculateAllZones;
 use App\Jobs\RecalculateZoneScore;
+use App\Support\Pillars;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
-use Tests\Support\IndicatorSeeding;
+use Tests\Support\PillarSeeding;
 use Tests\TestCase;
 
 class RecalculateAllZonesTest extends TestCase
 {
-    private function seedZone(string $id, int $pillar = 70): void
+    private function seedZone(string $id, int $value = 70): void
     {
-        $indicators = IndicatorSeeding::fromPillars([
-            'social' => $pillar,
-            'safety' => $pillar,
-            'density' => $pillar,
-            'infra' => $pillar,
-        ]);
+        $pillars = PillarSeeding::columns(array_fill_keys(Pillars::keys(), $value));
 
-        $indicatorCols = implode(', ', array_keys($indicators));
-        $indicatorPlaceholders = implode(', ', array_fill(0, count($indicators), '?'));
+        $cols = implode(', ', array_keys($pillars));
+        $placeholders = implode(', ', array_fill(0, count($pillars), '?'));
 
         DB::statement(
-            "INSERT INTO zones (id, name, score, {$indicatorCols}, last_sync_min,
+            "INSERT INTO zones (id, name, score, {$cols}, last_sync_min,
              centroid, created_at, updated_at)
-             VALUES (?, ?, 0, {$indicatorPlaceholders}, 99,
+             VALUES (?, ?, 0, {$placeholders}, 99,
              ST_GeogFromText('POINT(36.82 -1.29)'), now(), now())",
-            array_merge([$id, ucfirst($id)], array_values($indicators))
+            array_merge([$id, ucfirst($id)], array_values($pillars))
         );
     }
 
@@ -78,12 +74,10 @@ class RecalculateAllZonesTest extends TestCase
 
             return $event->broadcastOn()[0]->name === 'private-zones.broadcast-zone'
                 && isset($payload['score'])
-                && isset($payload['pillars']['social'])
-                && isset($payload['pillars']['safety'])
-                && isset($payload['pillars']['density'])
-                && isset($payload['pillars']['infra'])
-                && array_key_exists('missingIndicators', $payload)
-                && $payload['indicatorsTotal'] === 13;
+                && array_keys($payload['pillars']) === Pillars::keys()
+                && array_key_exists('missingPillars', $payload)
+                && $payload['pillarsTotal'] === count(Pillars::keys())
+                && $payload['pillarRegistryVersion'] === Pillars::version();
         });
     }
 }

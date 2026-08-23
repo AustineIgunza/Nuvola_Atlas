@@ -8,8 +8,8 @@ use App\Http\Requests\IngestBatchRequest;
 use App\Jobs\RecalculateZoneScore;
 use App\Models\DataIngestionLog;
 use App\Models\Zone;
-use App\Services\ScoreCalculator;
 use App\Support\Audit;
+use App\Support\Pillars;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +18,7 @@ use Throwable;
 class IngestController extends Controller
 {
     /**
-     * Process an incoming cleaned batch of indicators (Daystar standard spec).
+     * Process an incoming cleaned batch of pillar readings.
      */
     public function ingest(IngestBatchRequest $request): JsonResponse
     {
@@ -54,20 +54,15 @@ class IngestController extends Controller
         DB::transaction(function () use ($readings, &$uniqueZoneIds) {
             foreach ($readings as $reading) {
                 $zoneId = $reading['zone_id'];
-                $indicatorKey = $reading['indicator'];
                 $value = $reading['value'];
 
-                // Handle schema mapping variance between Daystar key names and Laravel columns
-                if ($indicatorKey === 'emergency_response') {
-                    $indicatorKey = 'emergency_response_access';
-                }
+                // The pillar key is already constrained to the registry by
+                // IngestBatchRequest, so it is safe to build a column from.
+                $columnName = Pillars::column($reading['pillar']);
 
-                $columnName = 'indicator_'.$indicatorKey;
-
-                // Update the zone indicators
                 $zone = Zone::findOrFail($zoneId);
                 $zone->update([
-                    $columnName => (int) round($value), // Database is smallInteger (0-100)
+                    $columnName => (int) round($value),
                     'last_sync_min' => 0,
                 ]);
 
@@ -123,25 +118,25 @@ class IngestController extends Controller
         $data = $request->validate([
             'source' => ['required', 'string', 'max:96'],
             'zone_id' => ['required', 'string', 'exists:zones,id'],
-            'indicators' => ['required', 'array', 'min:1'],
+            'pillars' => ['required', 'array', 'min:1'],
             'received_at' => ['nullable', 'date'],
         ]);
 
-        $known = collect(ScoreCalculator::pillars())->flatten()->all();
+        $known = Pillars::keys();
         $updates = [];
         $ignored = [];
-        foreach ($data['indicators'] as $slug => $value) {
-            if (! in_array($slug, $known, true)) {
-                $ignored[] = $slug;
+        foreach ($data['pillars'] as $key => $value) {
+            if (! in_array($key, $known, true)) {
+                $ignored[] = $key;
 
                 continue;
             }
             if ($value !== null && (! is_numeric($value) || $value < 0 || $value > 100)) {
-                $ignored[] = $slug;
+                $ignored[] = $key;
 
                 continue;
             }
-            $updates['indicator_'.$slug] = $value === null ? null : (int) $value;
+            $updates[Pillars::column($key)] = $value === null ? null : (int) $value;
         }
 
         $hash = hash('sha256', $request->getContent());

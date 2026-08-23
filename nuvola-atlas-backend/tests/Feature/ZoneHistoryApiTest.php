@@ -8,7 +8,7 @@ use App\Models\Zone;
 use App\Models\ZoneScoreSnapshot;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
-use Tests\Support\IndicatorSeeding;
+use Tests\Support\PillarSeeding;
 use Tests\TestCase;
 
 class ZoneHistoryApiTest extends TestCase
@@ -20,11 +20,11 @@ class ZoneHistoryApiTest extends TestCase
             'name' => $name,
             'score' => 76,
             'last_sync_min' => 4,
-        ], IndicatorSeeding::fromPillars([
-            'social' => 82,
-            'safety' => 71,
-            'density' => 64,
-            'infra' => 80,
+        ], PillarSeeding::columns([
+            'water_sanitation' => 82,
+            'road_density' => 71,
+            'transit_access' => 64,
+            'electricity_access' => 80,
         ])));
 
         DB::statement(
@@ -41,21 +41,20 @@ class ZoneHistoryApiTest extends TestCase
         $stepHours = max(1, (int) floor($hoursBack / $count));
 
         for ($i = 0; $i < $count; $i++) {
-            // Snapshots carry the same 13 indicator columns as zones. Vary
-            // each pillar's indicators by a small offset so we get a bit of
-            // curve on the trend charts.
-            $indicators = IndicatorSeeding::fromPillars([
-                'social' => 80 + ($i % 3),
-                'safety' => 70 + ($i % 4),
-                'density' => 65 + ($i % 3),
-                'infra' => 78 + ($i % 5),
+            // Snapshots carry the same pillar columns as zones. Vary each by a
+            // small offset so we get a bit of curve on the trend charts.
+            $pillars = PillarSeeding::columns([
+                'water_sanitation' => 80 + ($i % 3),
+                'road_density' => 70 + ($i % 4),
+                'transit_access' => 65 + ($i % 3),
+                'electricity_access' => 78 + ($i % 5),
             ]);
 
             ZoneScoreSnapshot::create(array_merge([
                 'zone_id' => $zoneId,
                 'captured_at' => $now->subHours($i * $stepHours),
                 'score' => 70 + ($i % 5),
-            ], $indicators));
+            ], $pillars));
         }
     }
 
@@ -72,7 +71,7 @@ class ZoneHistoryApiTest extends TestCase
             ->assertJsonStructure([
                 'range',
                 'points' => [
-                    '*' => ['t', 'score', 'pillars' => ['social', 'safety', 'density', 'infra']],
+                    '*' => ['t', 'score', 'pillars' => ['water_sanitation', 'road_density', 'transit_access', 'electricity_access']],
                 ],
             ]);
     }

@@ -48,7 +48,7 @@ class AlertStaleFeeds extends Command
             $existing = Alert::query()
                 ->where('kind', 'system')
                 ->where('zone_id', $feed['zone_id'])
-                ->where('title', 'like', "%{$feed['indicator_key']}%")
+                ->where('title', 'like', "%{$feed['pillar_key']}%")
                 ->where('created_at', '>=', now()->subHours(24))
                 ->exists();
             if ($existing) {
@@ -59,7 +59,7 @@ class AlertStaleFeeds extends Command
                 'id' => (string) Str::uuid(),
                 'severity' => $feed['state'] === 'missing' ? 'high' : 'medium',
                 'kind' => 'system',
-                'title' => ucfirst($feed['state'])." feed: {$feed['indicator_key']} for {$feed['zone_name']}",
+                'title' => ucfirst($feed['state'])." feed: {$feed['pillar_key']} for {$feed['zone_name']}",
                 'body' => "Source: {$feed['source_system']}. SLA {$feed['expected_frequency_min']} min; last delivered "
                     .($feed['age_min'] === null ? 'never' : "{$feed['age_min']} min ago").'.',
                 'zone_id' => $feed['zone_id'],

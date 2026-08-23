@@ -7,7 +7,9 @@ namespace App\Services\Export;
 use App\Models\Alert;
 use App\Models\Project;
 use App\Models\Zone;
+use App\Services\PillarDeltaCalculator;
 use App\Services\ScoreCalculator;
+use App\Support\Pillars;
 use Dompdf\Dompdf;
 use Dompdf\Options as DompdfOptions;
 use InvalidArgumentException;
@@ -66,18 +68,21 @@ class ZoneReportExporter
         $projects = Project::where('zone_id', $zone->id)->get();
         $alerts = Alert::where('zone_id', $zone->id)->get();
 
-        // Pillars are derived from indicators — no longer stored on the row.
-        // Deltas were dropped in the pillars → indicators migration; the
-        // quarter-over-quarter view will land again on a snapshot-diff.
         $calc = new ScoreCalculator;
-        $pillars = $calc->pillarScores($zone);
+        // The deltas used to be hardcoded to zero here, which printed "+0" for
+        // every pillar of every zone — a movement claim with no history behind
+        // it. They now come from the same snapshot diff the API uses, and read
+        // "—" when the window has nothing to compare against.
+        $delta = (new PillarDeltaCalculator)->forZones([$zone])[$zone->id]
+            ?? PillarDeltaCalculator::unknown();
 
         return [
             'zone' => $zone,
             'projects' => $projects,
             'alerts' => $alerts,
-            'pillars' => $pillars,
-            'deltas' => ['social' => 0, 'safety' => 0, 'density' => 0, 'infra' => 0],
+            'pillars' => $calc->pillarScores($zone),
+            'deltas' => $delta['deltas'],
+            'deltaWindowDays' => $delta['windowDays'],
             'generatedAt' => now()->toRfc7231String(),
         ];
     }
@@ -85,27 +90,28 @@ class ZoneReportExporter
     private function buildText(array $data): string
     {
         $z = $data['zone'];
-        $p = $data['pillars'];
-        $d = $data['deltas'];
+        $rows = $this->pillarRows($data);
+        $width = max(array_map(fn (array $r) => strlen($r[0]), $rows)) + 2;
+
         $lines = [
             'NAVUUNA ATLAS — Zone Vitality Report',
             "Zone: {$z->name}",
             'Vitality Score: '.($z->score === null ? 'insufficient data' : "{$z->score}/100"),
             '',
             'Pillar Scores:',
-            '  Social Wellbeing:    '.$this->fmtScore($p['social']),
-            '  Safety & Security:   '.$this->fmtScore($p['safety']),
-            '  Density & Scaling:   '.$this->fmtScore($p['density']),
-            '  Infrastructure/Env:  '.$this->fmtScore($p['infra']),
-            '',
-            'Deltas (quarter-over-quarter):',
-            '  Social:   '.$this->signed($d['social']),
-            '  Safety:   '.$this->signed($d['safety']),
-            '  Density:  '.$this->signed($d['density']),
-            '  Infra:    '.$this->signed($d['infra']),
-            '',
-            'Infrastructure projects: '.count($data['projects']),
         ];
+        foreach ($rows as [$label, $value, $_]) {
+            $lines[] = '  '.str_pad($label.':', $width).$this->fmtScore($value);
+        }
+
+        $lines[] = '';
+        $lines[] = $this->deltaHeading($data);
+        foreach ($rows as [$label, $_, $delta]) {
+            $lines[] = '  '.str_pad($label.':', $width).$this->signed($delta);
+        }
+
+        $lines[] = '';
+        $lines[] = 'Infrastructure projects: '.count($data['projects']);
 
         foreach ($data['projects'] as $p) {
             $lines[] = "  - [{$p->status}] {$p->name} ({$p->progress}%) — {$p->agency}";
@@ -140,11 +146,20 @@ class ZoneReportExporter
     private function buildHtml(array $data): string
     {
         $z = $data['zone'];
-        $p = $data['pillars'];
-        $d = $data['deltas'];
         $projects = $data['projects'];
         $alerts = $data['alerts'];
         $g = htmlspecialchars((string) $data['generatedAt']);
+
+        $pillarRows = '';
+        foreach ($this->pillarRows($data) as [$label, $value, $delta]) {
+            $pillarRows .= sprintf(
+                '<tr><td width="60%%">%s</td><td><strong>%s</strong></td><td>%s</td></tr>',
+                htmlspecialchars($label),
+                $this->fmtScore($value),
+                $this->signed($delta),
+            );
+        }
+        $deltaHeading = htmlspecialchars($this->deltaHeading($data));
 
         $scoreBlock = $z->score === null
             ? '<span style="font-size:18pt;color:#6B6257">Insufficient data</span>'
@@ -203,12 +218,8 @@ class ZoneReportExporter
   <div class="score">{$scoreBlock}</div>
 
   <h2>Pillar Scores</h2>
-  <table class="pillars">
-    <tr><td width="60%">Social Wellbeing &amp; Human Capital</td><td><strong>{$this->fmtScore($p['social'])}</strong></td><td>{$this->signed($d['social'])}</td></tr>
-    <tr><td>Safety &amp; Security</td><td><strong>{$this->fmtScore($p['safety'])}</strong></td><td>{$this->signed($d['safety'])}</td></tr>
-    <tr><td>Density &amp; Scaling Dynamics</td><td><strong>{$this->fmtScore($p['density'])}</strong></td><td>{$this->signed($d['density'])}</td></tr>
-    <tr><td>Infrastructure &amp; Environmental Safeguards</td><td><strong>{$this->fmtScore($p['infra'])}</strong></td><td>{$this->signed($d['infra'])}</td></tr>
-  </table>
+  <div style="font-size:8pt;color:#6B6257">{$deltaHeading}</div>
+  <table class="pillars">{$pillarRows}</table>
 
   <h2>Infrastructure Projects</h2>
   <table class="data">
@@ -222,7 +233,7 @@ class ZoneReportExporter
     <tbody>{$alertRows}</tbody>
   </table>
 
-  <div class="footer">Generated {$g} · Vitality Score methodology is validated against Navuuna's four-pillar framework. Score movement over 12+ months is available on the Compare page.</div>
+  <div class="footer">Generated {$g} · Each pillar is one measured figure with its source and vintage published on the Methodology page. A pillar with no reading shows "—" and is excluded from the composite, never counted as zero.</div>
 </body>
 </html>
 HTML;
@@ -231,8 +242,6 @@ HTML;
     private function buildDocx(array $data): string
     {
         $z = $data['zone'];
-        $p = $data['pillars'];
-        $d = $data['deltas'];
         $phpWord = new PhpWord;
         $section = $phpWord->addSection();
 
@@ -249,14 +258,9 @@ HTML;
 
         $section->addTextBreak(1);
         $section->addTitle('Pillar Scores', 2);
-        $pillars = [
-            ['Social Wellbeing & Human Capital', $p['social'], $d['social']],
-            ['Safety & Security', $p['safety'], $d['safety']],
-            ['Density & Scaling Dynamics', $p['density'], $d['density']],
-            ['Infrastructure & Environmental Safeguards', $p['infra'], $d['infra']],
-        ];
+        $section->addText($this->deltaHeading($data), ['size' => 8, 'color' => '6B6257']);
         $table = $section->addTable(['borderSize' => 4, 'borderColor' => 'DDDDDD', 'cellMargin' => 80]);
-        foreach ($pillars as [$label, $val, $delta]) {
+        foreach ($this->pillarRows($data) as [$label, $val, $delta]) {
             $table->addRow();
             $table->addCell(6000)->addText($label);
             $table->addCell(1200)->addText($this->fmtScore($val), ['bold' => true]);
@@ -293,21 +297,56 @@ HTML;
         return (string) ob_get_clean();
     }
 
-    private function signed(int $n): string
+    /**
+     * Null means the history could not support a direction claim, which is
+     * not the same as "did not move" — so it prints "—", not "+0".
+     */
+    private function signed(?int $n): string
     {
-        if ($n > 0) {
-            return "+{$n}";
+        if ($n === null) {
+            return '—';
         }
 
-        return (string) $n;
+        return $n > 0 ? "+{$n}" : (string) $n;
     }
 
     /**
      * Render a pillar score for the report. Null means the pillar has no
-     * indicators yet — shown as "—" so the report doesn't lie with a "0".
+     * reading yet — shown as "—" so the report doesn't lie with a "0".
      */
     private function fmtScore(?int $n): string
     {
         return $n === null ? '—' : (string) $n;
+    }
+
+    /**
+     * Pillar rows in registry order: [display name, score, delta].
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<int, array{0: string, 1: ?int, 2: ?int}>
+     */
+    private function pillarRows(array $data): array
+    {
+        return array_map(
+            fn (array $pillar) => [
+                $pillar['display_name'],
+                $data['pillars'][$pillar['key']] ?? null,
+                $data['deltas'][$pillar['key']] ?? null,
+            ],
+            Pillars::all(),
+        );
+    }
+
+    /**
+     * "quarter-over-quarter" was a fixed claim about a window the report never
+     * measured. The window is whatever the baseline snapshot's real age is.
+     */
+    private function deltaHeading(array $data): string
+    {
+        $days = $data['deltaWindowDays'] ?? null;
+
+        return $days === null
+            ? 'Movement (no comparable history yet):'
+            : "Movement (last {$days} days):";
     }
 }

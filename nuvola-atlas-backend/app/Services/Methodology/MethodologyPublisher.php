@@ -57,7 +57,7 @@ class MethodologyPublisher
      * Preview the effect of a proposed weight vector without touching the
      * live methodology. Used by /admin/methodology preview endpoint.
      *
-     * @param  array{social: float, safety: float, density: float, infra: float}  $weights
+     * @param  array<string, float>  $weights
      */
     public function previewImpact(array $weights): MethodologyPreview
     {

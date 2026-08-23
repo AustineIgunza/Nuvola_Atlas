@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Models\MethodologyVersion;
 use App\Services\Methodology\MethodologyPublisher;
 use App\Support\Audit;
+use App\Support\Pillars;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -52,12 +53,15 @@ class AdminMethodologyController extends Controller
 
     public function preview(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'weights.social' => ['required', 'numeric', 'between:0,1'],
-            'weights.safety' => ['required', 'numeric', 'between:0,1'],
-            'weights.density' => ['required', 'numeric', 'between:0,1'],
-            'weights.infra' => ['required', 'numeric', 'between:0,1'],
-        ]);
+        // Rules are built from the registry rather than listed, so a weight
+        // for a retired pillar has no rule, is stripped by validate(), and
+        // cannot reach the calculator.
+        $rules = ['weights' => ['required', 'array']];
+        foreach (Pillars::keys() as $key) {
+            $rules["weights.{$key}"] = ['required', 'numeric', 'between:0,1'];
+        }
+
+        $validated = $request->validate($rules);
 
         $preview = $this->publisher->previewImpact($validated['weights']);
 

@@ -7,6 +7,7 @@ namespace App\Services\Agents\Tools;
 use App\Models\Zone;
 use App\Services\Agents\BaseAgentTool;
 use App\Services\ScoreCalculator;
+use App\Support\Pillars;
 
 class CompareZonesTool extends BaseAgentTool
 {
@@ -65,7 +66,7 @@ class CompareZonesTool extends BaseAgentTool
         }
 
         // Winner per pillar (null-safe) + winner overall.
-        $winners = ['overall' => null, 'social' => null, 'safety' => null, 'density' => null, 'infra' => null];
+        $winners = ['overall' => null] + Pillars::fill(null);
         foreach ($winners as $key => &$holder) {
             $best = null;
             foreach ($rows as $row) {

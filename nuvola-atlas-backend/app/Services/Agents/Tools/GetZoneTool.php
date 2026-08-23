@@ -19,7 +19,7 @@ class GetZoneTool extends BaseAgentTool
 
     public function description(): string
     {
-        return 'Return the current Vitality Score + four pillar sub-scores + missing-indicator ledger for one Nairobi sub-county. Use this when the user names a specific zone.';
+        return 'Return the current Vitality Score, the per-pillar sub-scores, and the ledger of pillars with no reading, for one Nairobi sub-county. Use this when the user names a specific zone.';
     }
 
     public function parameters(): array
@@ -44,16 +44,16 @@ class GetZoneTool extends BaseAgentTool
             return ['error' => "Zone '{$id}' does not exist.", 'zone_id' => $id];
         }
         $pillars = $this->calc->pillarScores($zone);
-        $missing = $this->calc->missingIndicators($zone);
+        $missing = $this->calc->missingPillars($zone);
 
         return [
             'zone_id' => $zone->id,
             'name' => $zone->name,
             'score' => $zone->score,
             'pillars' => $pillars,
-            'indicators_active' => 13 - count($missing),
-            'indicators_total' => 13,
-            'missing_indicators' => $missing,
+            'pillars_measured' => count($pillars) - count($missing),
+            'pillars_total' => count($pillars),
+            'missing_pillars' => $missing,
             'last_sync_min' => $zone->last_sync_min,
         ];
     }

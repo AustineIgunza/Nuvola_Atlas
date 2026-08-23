@@ -6,9 +6,10 @@ namespace Tests\Feature;
 
 use App\Jobs\RecalculateZoneScore;
 use App\Models\DataIngestionLog;
+use App\Support\Pillars;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
-use Tests\Support\IndicatorSeeding;
+use Tests\Support\PillarSeeding;
 use Tests\TestCase;
 
 /**
@@ -28,23 +29,18 @@ class IngestContractTest extends TestCase
         $this->seedZone('westlands');
     }
 
-    private function seedZone(string $id, int $pillar = 70): void
+    private function seedZone(string $id, int $value = 70): void
     {
-        $indicators = IndicatorSeeding::fromPillars([
-            'social' => $pillar,
-            'safety' => $pillar,
-            'density' => $pillar,
-            'infra' => $pillar,
-        ]);
-        $cols = implode(', ', array_keys($indicators));
-        $vals = implode(', ', array_fill(0, count($indicators), '?'));
+        $pillars = PillarSeeding::columns(array_fill_keys(Pillars::keys(), $value));
+        $cols = implode(', ', array_keys($pillars));
+        $vals = implode(', ', array_fill(0, count($pillars), '?'));
 
         DB::statement(
             "INSERT INTO zones (id, name, score, {$cols}, last_sync_min,
              centroid, created_at, updated_at)
              VALUES (?, ?, ?, {$vals}, 5,
              ST_GeogFromText('POINT(36.82 -1.29)'), now(), now())",
-            array_merge([$id, ucfirst($id), $pillar], array_values($indicators))
+            array_merge([$id, ucfirst($id), $value], array_values($pillars))
         );
     }
 
@@ -76,7 +72,7 @@ class IngestContractTest extends TestCase
         return [
             'source' => 'fastapi.daystar',
             'zone_id' => 'westlands',
-            'indicators' => ['healthcare_access' => 82, 'digital_connectivity' => 64],
+            'pillars' => ['water_sanitation' => 82, 'transit_access' => 64],
         ];
     }
 
@@ -104,7 +100,7 @@ class IngestContractTest extends TestCase
             ->assertJsonPath('ok', true)
             ->assertJsonPath('indicators_updated', 2);
 
-        $this->assertSame(82, (int) DB::table('zones')->where('id', 'westlands')->value('indicator_healthcare_access'));
+        $this->assertSame(82, (int) DB::table('zones')->where('id', 'westlands')->value('pillar_water_sanitation'));
         Queue::assertPushed(RecalculateZoneScore::class);
     }
 
@@ -113,12 +109,12 @@ class IngestContractTest extends TestCase
         $payload = $this->payload();
         $headers = $this->signedHeaders($payload);
 
-        // Signature was minted over healthcare_access=82; ship 100 instead.
-        $payload['indicators']['healthcare_access'] = 100;
+        // Signature was minted over water_sanitation=82; ship 100 instead.
+        $payload['pillars']['water_sanitation'] = 100;
 
         $this->postSigned($payload, $headers)->assertStatus(401);
 
-        $this->assertSame(70, (int) DB::table('zones')->where('id', 'westlands')->value('indicator_healthcare_access'));
+        $this->assertSame(70, (int) DB::table('zones')->where('id', 'westlands')->value('pillar_water_sanitation'));
         $this->assertSame(0, DataIngestionLog::count());
     }
 
@@ -163,16 +159,31 @@ class IngestContractTest extends TestCase
         );
     }
 
-    public function test_unknown_indicator_slugs_are_ignored_not_written(): void
+    public function test_unknown_pillar_keys_are_ignored_not_written(): void
     {
         Queue::fake();
         $payload = $this->payload();
-        $payload['indicators']['definitely_not_an_indicator'] = 50;
+        $payload['pillars']['definitely_not_a_pillar'] = 50;
 
         $this->postSigned($payload, $this->signedHeaders($payload))
             ->assertStatus(202)
             ->assertJsonPath('indicators_updated', 2)
-            ->assertJsonPath('ignored', ['definitely_not_an_indicator']);
+            ->assertJsonPath('ignored', ['definitely_not_a_pillar']);
+    }
+
+    public function test_a_switched_off_pillar_is_ignored_not_written(): void
+    {
+        Queue::fake();
+        $payload = $this->payload();
+        $payload['pillars']['safety'] = 50;
+
+        $this->postSigned($payload, $this->signedHeaders($payload))
+            ->assertStatus(202)
+            ->assertJsonPath('ignored', ['safety']);
+
+        // The column still physically exists; the point is that no path
+        // through ingest can put a value back into it.
+        $this->assertNull(DB::table('zones')->where('id', 'westlands')->value('indicator_crime_rates'));
     }
 
     public function test_out_of_range_values_are_ignored(): void
@@ -181,13 +192,13 @@ class IngestContractTest extends TestCase
         $payload = [
             'source' => 'fastapi.daystar',
             'zone_id' => 'westlands',
-            'indicators' => ['healthcare_access' => 900],
+            'pillars' => ['water_sanitation' => 900],
         ];
 
         $this->postSigned($payload, $this->signedHeaders($payload))
             ->assertStatus(422)
             ->assertJsonPath('ok', false);
 
-        $this->assertSame(70, (int) DB::table('zones')->where('id', 'westlands')->value('indicator_healthcare_access'));
+        $this->assertSame(70, (int) DB::table('zones')->where('id', 'westlands')->value('pillar_water_sanitation'));
     }
 }

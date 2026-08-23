@@ -16,7 +16,7 @@ class ZoneLayerFactory extends Factory
     {
         return [
             'zone_id' => Zone::factory(),
-            'layer_type' => fake()->randomElement(['road_progress', 'smart_grid', 'density']),
+            'layer_type' => fake()->randomElement(['road_density', 'electricity_access', 'density']),
             'geojson' => [
                 'type' => 'FeatureCollection',
                 'features' => [

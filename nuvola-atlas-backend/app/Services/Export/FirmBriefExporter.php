@@ -6,6 +6,7 @@ namespace App\Services\Export;
 
 use App\Models\Firm;
 use App\Services\ScoreCalculator;
+use App\Support\Pillars;
 use Dompdf\Dompdf;
 use Dompdf\Options as DompdfOptions;
 
@@ -66,6 +67,13 @@ class FirmBriefExporter
         $tier = htmlspecialchars(strtoupper($firm->tier->value));
         $firmName = htmlspecialchars($firm->name);
 
+        $weights = $calc->getWeights();
+        $methodologyLine = htmlspecialchars(implode(', ', array_map(
+            fn (array $p) => $p['display_name'].' '.($weights[$p['key']] ?? 0)
+                .($p['status'] === 'held' ? ' (held — shown for context, carries no weight)' : ''),
+            Pillars::all(),
+        )));
+
         $rows = '';
         foreach ($watchlists as $entry) {
             $zone = $entry->zone;
@@ -88,8 +96,7 @@ class FirmBriefExporter
                 {$headline}
               </td>
               <td style="padding:8px 6px;border-bottom:1px solid #eee;font-size:8pt">
-                Social {$this->fmt($pillars['social'])} · Safety {$this->fmt($pillars['safety'])} ·
-                Density {$this->fmt($pillars['density'])} · Infra {$this->fmt($pillars['infra'])}
+                {$this->pillarSummary($pillars)}
               </td>
               <td style="padding:8px 6px;border-bottom:1px solid #eee;font-size:9pt;max-width:220px">
                 {$thesis}
@@ -135,13 +142,13 @@ HTML;
 
   <h2>Methodology</h2>
   <p style="font-size:9pt;color:#333;line-height:1.4">
-    The Vitality Score is computed as the simple average of four equally-weighted
-    pillars (Social Wellbeing &amp; Human Capital, Safety &amp; Security, Density
-    &amp; Scaling Dynamics, Infrastructure &amp; Environmental Safeguards).
-    Missing indicators are excluded from the average — they are never treated as
-    zero, so a locality with limited data reporting is not penalised for it.
-    See the Vitality Methodology page in Navuuna Atlas for the full 13-indicator
-    breakdown and the current published methodology version.
+    The Vitality Score is the weighted mean of the pillars that have a reading,
+    with the weights renormalized across exactly those pillars:
+    {$methodologyLine}.
+    A pillar with no reading is excluded from the average — never treated as
+    zero — so a sub-county with limited reporting is not penalised for it.
+    See the Vitality Methodology page in Navuuna Atlas for each pillar's source
+    and vintage, and for the current published methodology version.
   </p>
 
   <div class="footer">
@@ -156,5 +163,16 @@ HTML;
     private function fmt(?int $n): string
     {
         return $n === null ? '—' : (string) $n;
+    }
+
+    /**
+     * @param  array<string, ?int>  $pillars
+     */
+    private function pillarSummary(array $pillars): string
+    {
+        return htmlspecialchars(implode(' · ', array_map(
+            fn (array $p) => $p['display_name'].' '.$this->fmt($pillars[$p['key']] ?? null),
+            Pillars::all(),
+        )));
     }
 }

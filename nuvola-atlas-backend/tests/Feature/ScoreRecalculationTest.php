@@ -7,34 +7,31 @@ namespace Tests\Feature;
 use App\Models\Zone;
 use App\Models\ZoneLayer;
 use App\Services\ScoreCalculator;
+use App\Support\Pillars;
 use Illuminate\Support\Facades\DB;
-use Tests\Support\IndicatorSeeding;
+use Tests\Support\PillarSeeding;
 use Tests\TestCase;
 
 class ScoreRecalculationTest extends TestCase
 {
     private function createTestZone(string $id = 'test-zone'): Zone
     {
-        // Same pillar averages the pre-migration test used (80/70/60/75)
-        // — set every indicator in a pillar to that pillar's target so the
-        // averages come out identical, and the numeric assertions below stay
-        // meaningful across the schema swap.
-        $indicators = IndicatorSeeding::fromPillars([
-            'social' => 80,
-            'safety' => 70,
-            'density' => 60,
-            'infra' => 75,
+        $pillars = PillarSeeding::columns([
+            'water_sanitation' => 80,
+            'road_density' => 70,
+            'transit_access' => 60,
+            'electricity_access' => 75,
         ]);
 
-        $indicatorCols = implode(', ', array_keys($indicators));
-        $indicatorPlaceholders = implode(', ', array_fill(0, count($indicators), '?'));
+        $cols = implode(', ', array_keys($pillars));
+        $placeholders = implode(', ', array_fill(0, count($pillars), '?'));
 
         DB::statement(
-            "INSERT INTO zones (id, name, score, {$indicatorCols}, last_sync_min,
+            "INSERT INTO zones (id, name, score, {$cols}, last_sync_min,
              centroid, created_at, updated_at)
-             VALUES (?, ?, 0, {$indicatorPlaceholders}, 99,
+             VALUES (?, ?, 0, {$placeholders}, 99,
              ST_GeogFromText('POINT(36.82 -1.29)'), now(), now())",
-            array_merge([$id, 'Test Zone'], array_values($indicators))
+            array_merge([$id, 'Test Zone'], array_values($pillars))
         );
 
         return Zone::find($id);
@@ -52,7 +49,7 @@ class ScoreRecalculationTest extends TestCase
         $this->assertSame(0, $zone->last_sync_min);
     }
 
-    public function test_artisan_command_recomputes_indicator_average(): void
+    public function test_artisan_command_recomputes_the_weighted_composite(): void
     {
         $this->createTestZone();
 
@@ -60,7 +57,8 @@ class ScoreRecalculationTest extends TestCase
             ->assertSuccessful();
 
         $zone = Zone::find('test-zone');
-        // Simple average of the 4 pillars: (80 + 70 + 60 + 75) / 4 = 71.25 → 71
+        // 0.4·80 + 0.3·70 + 0.3·60 = 71. Electricity is held at weight 0, so
+        // its 75 is reported but does not enter the composite.
         $this->assertSame(71, $zone->score);
     }
 
@@ -72,7 +70,7 @@ class ScoreRecalculationTest extends TestCase
         // In test mode, queue is sync so it runs immediately
         ZoneLayer::create([
             'zone_id' => 'observer-zone',
-            'layer_type' => 'road_progress',
+            'layer_type' => 'road_density',
             'geojson' => ['type' => 'FeatureCollection', 'features' => []],
         ]);
 
@@ -80,16 +78,23 @@ class ScoreRecalculationTest extends TestCase
         $this->assertGreaterThan(0, $zone->score);
     }
 
-    public function test_methodology_endpoint_exposes_weights(): void
+    public function test_methodology_endpoint_exposes_the_registry(): void
     {
         $response = $this->getJson('/api/v1/vitality/methodology');
 
-        // Post-July-2026 the composite is a simple average of the four pillars,
-        // so weights are all 0.25 — the endpoint still exposes them so the
-        // client's compat contract holds.
         $response->assertOk()
-            ->assertJsonStructure(['pillars', 'weights'])
-            ->assertJsonPath('weights.social', 0.25)
-            ->assertJsonPath('weights.infra', 0.25);
+            ->assertJsonStructure(['version', 'pillars', 'weights'])
+            ->assertJsonPath('version', Pillars::version())
+            ->assertJsonPath('weights.water_sanitation', 0.4)
+            // Held, so it is reported at zero weight rather than omitted —
+            // JSON has no float zero, hence the int.
+            ->assertJsonPath('weights.electricity_access', 0);
+    }
+
+    public function test_methodology_endpoint_names_no_retired_pillar(): void
+    {
+        $weights = $this->getJson('/api/v1/vitality/methodology')->json('weights');
+
+        $this->assertSame([], array_intersect(array_keys($weights), Pillars::retiredKeys()));
     }
 }

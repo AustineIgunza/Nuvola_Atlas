@@ -8,28 +8,24 @@ use App\Models\Firm;
 use App\Models\FirmWatchlist;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use Tests\Support\IndicatorSeeding;
+use App\Support\Pillars;
+use Tests\Support\PillarSeeding;
 use Tests\TestCase;
 
 class InvestorRoutesTest extends TestCase
 {
     private function seedZone(string $id, int $pillar = 70): void
     {
-        $indicators = IndicatorSeeding::fromPillars([
-            'social' => $pillar,
-            'safety' => $pillar,
-            'density' => $pillar,
-            'infra' => $pillar,
-        ]);
-        $cols = implode(', ', array_keys($indicators));
-        $vals = implode(', ', array_fill(0, count($indicators), '?'));
+        $pillars = PillarSeeding::columns(array_fill_keys(Pillars::keys(), $pillar));
+        $cols = implode(', ', array_keys($pillars));
+        $vals = implode(', ', array_fill(0, count($pillars), '?'));
 
         DB::statement(
             "INSERT INTO zones (id, name, score, {$cols}, last_sync_min,
              centroid, created_at, updated_at)
              VALUES (?, ?, ?, {$vals}, 5,
              ST_GeogFromText('POINT(36.82 -1.29)'), now(), now())",
-            array_merge([$id, ucfirst($id), $pillar], array_values($indicators))
+            array_merge([$id, ucfirst($id), $pillar], array_values($pillars))
         );
     }
 

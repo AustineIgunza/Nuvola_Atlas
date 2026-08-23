@@ -6,7 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\ZoneHistoryResource;
 use App\Models\Zone;
-use App\Services\ScoreCalculator;
+use App\Support\Pillars;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -43,15 +43,11 @@ class ZoneHistoryController extends Controller
      */
     private function fetchAggregated(string $zoneId, int $hours, string $bucket): array
     {
-        // Aggregate the 13 indicator columns per bucket, then compute the four
-        // pillar averages in PHP via ScoreCalculator so the chart-ready wire
-        // format matches the live Zones endpoint.
-        $calc = new ScoreCalculator;
-        $indicatorAggregates = [];
-        foreach (ScoreCalculator::pillars() as $pillar => $indicators) {
-            foreach ($indicators as $slug) {
-                $indicatorAggregates[] = 'indicator_'.$slug;
-            }
+        // Average each pillar column per bucket so the chart-ready wire format
+        // matches the live Zones endpoint.
+        $columns = [];
+        foreach (Pillars::keys() as $key) {
+            $columns[$key] = Pillars::column($key);
         }
 
         $query = DB::table('zone_score_snapshots')
@@ -60,7 +56,7 @@ class ZoneHistoryController extends Controller
             ->selectRaw('date_trunc(?, captured_at) as bucket', [$bucket])
             ->selectRaw('AVG(score)::int as score');
 
-        foreach ($indicatorAggregates as $col) {
+        foreach ($columns as $col) {
             $query->selectRaw("AVG({$col})::int as {$col}");
         }
 
@@ -69,29 +65,19 @@ class ZoneHistoryController extends Controller
             ->orderBy('bucket')
             ->get();
 
-        return $rows->map(function ($row) use ($calc) {
-            $values = [];
-            foreach (ScoreCalculator::pillars() as $indicators) {
-                foreach ($indicators as $slug) {
-                    $col = 'indicator_'.$slug;
-                    $values[$slug] = isset($row->$col) ? (int) $row->$col : null;
-                }
+        return $rows->map(function ($row) use ($columns) {
+            $pillars = [];
+            foreach ($columns as $key => $col) {
+                // AVG skips null snapshots, but a bucket where every snapshot
+                // lacked this pillar averages to null — `(int) null` would plot
+                // that gap on the trend chart as a crash to zero.
+                $pillars[$key] = $row->$col === null ? null : (int) $row->$col;
             }
-
-            $pillars = $calc->pillarScoresFromValues($values);
 
             return [
                 't' => (string) $row->bucket,
-                // AVG skips null snapshots, but a bucket where every snapshot
-                // was unscoreable averages to null — `(int) null` would plot
-                // that gap on the trend chart as a crash to zero.
                 'score' => $row->score === null ? null : (int) $row->score,
-                'pillars' => [
-                    'social' => $pillars['social'],
-                    'safety' => $pillars['safety'],
-                    'density' => $pillars['density'],
-                    'infra' => $pillars['infra'],
-                ],
+                'pillars' => $pillars,
             ];
         })->all();
     }

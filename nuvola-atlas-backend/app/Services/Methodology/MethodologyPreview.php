@@ -15,7 +15,7 @@ use App\Services\ScoreCalculator;
 class MethodologyPreview
 {
     /**
-     * @param  array{social: float, safety: float, density: float, infra: float}  $weights
+     * @param  array<string, float>  $weights
      */
     public function __construct(private array $weights) {}
 

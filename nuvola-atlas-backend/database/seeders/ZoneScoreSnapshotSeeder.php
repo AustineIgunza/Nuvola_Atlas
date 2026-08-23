@@ -6,37 +6,26 @@ namespace Database\Seeders;
 
 use App\Models\Zone;
 use App\Services\ScoreCalculator;
+use App\Support\Pillars;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Backfills 30 days × hourly per-indicator snapshots so the ScoreHistoryChart
- * and forecast endpoint have data on a fresh clone. Uses a deterministic
- * per-zone PRNG so re-seeds produce the same series.
+ * Backfills 30 days × hourly per-pillar snapshots so the ScoreHistoryChart and
+ * forecast endpoint have data on a fresh clone. Uses a deterministic per-zone
+ * PRNG so re-seeds produce the same series.
  *
- * Indicators that are null on the current zone row stay null across the
- * snapshot series — a missing indicator does not suddenly appear in the
- * historical data.
+ * Like ZoneSeeder, this is development fixture data — a random walk around the
+ * seeded value, not a record of anything that happened. A pillar that is null
+ * on the current zone row stays null across the whole series, so partial data
+ * stays partial in the chart rather than appearing out of nowhere in history.
  */
 class ZoneScoreSnapshotSeeder extends Seeder
 {
     private const DAYS = 30;
 
     private const HOURS_PER_DAY = 24;
-
-    /** @return array<int, string> */
-    private function indicatorSlugs(): array
-    {
-        $out = [];
-        foreach (ScoreCalculator::pillars() as $slugs) {
-            foreach ($slugs as $slug) {
-                $out[] = $slug;
-            }
-        }
-
-        return $out;
-    }
 
     public function run(ScoreCalculator $calculator): void
     {
@@ -45,47 +34,44 @@ class ZoneScoreSnapshotSeeder extends Seeder
             return;
         }
 
-        $slugs = $this->indicatorSlugs();
+        $keys = Pillars::keys();
         $now = CarbonImmutable::now()->startOfHour();
         $rows = [];
 
         foreach ($zones as $zone) {
             mt_srand(crc32((string) $zone->id));
 
-            // Seed each indicator's current value; nulls remain null across
-            // the whole series so partial data stays partial in the chart.
             $current = [];
-            foreach ($slugs as $slug) {
-                $current[$slug] = $zone->getAttribute('indicator_'.$slug);
+            foreach ($keys as $key) {
+                $current[$key] = $zone->getAttribute(Pillars::column($key));
             }
 
             for ($i = self::DAYS * self::HOURS_PER_DAY - 1; $i >= 0; $i--) {
                 $capturedAt = $now->subHours($i);
 
-                $rowIndicators = [];
-                foreach ($slugs as $slug) {
-                    if ($current[$slug] === null) {
-                        $rowIndicators['indicator_'.$slug] = null;
+                $columns = [];
+                foreach ($keys as $key) {
+                    if ($current[$key] === null) {
+                        $columns[Pillars::column($key)] = null;
                     } else {
-                        $current[$slug] = $this->drift((int) $current[$slug]);
-                        $rowIndicators['indicator_'.$slug] = $current[$slug];
+                        $current[$key] = $this->drift((int) $current[$key]);
+                        $columns[Pillars::column($key)] = $current[$key];
                     }
                 }
 
-                // Reuse the production calculator so snapshot scores match
-                // the "average non-null indicators" rule.
-                $tempZone = (new Zone)->forceFill($rowIndicators);
-                $score = $calculator->calculateScore($tempZone) ?? 0;
+                // Reuse the production calculator so snapshot scores follow the
+                // same null-exclusion rule as everything else.
+                $tempZone = (new Zone)->forceFill($columns);
 
                 $rows[] = array_merge(
                     [
                         'zone_id' => $zone->id,
                         'captured_at' => $capturedAt,
-                        'score' => $score,
+                        'score' => $calculator->calculateScore($tempZone),
                         'created_at' => $capturedAt,
                         'updated_at' => $capturedAt,
                     ],
-                    $rowIndicators,
+                    $columns,
                 );
             }
         }

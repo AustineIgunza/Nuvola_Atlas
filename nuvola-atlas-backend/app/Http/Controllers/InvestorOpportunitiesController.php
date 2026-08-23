@@ -69,8 +69,8 @@ class InvestorOpportunitiesController extends Controller
     }
 
     /**
-     * @param  array{social: ?int, safety: ?int, density: ?int, infra: ?int}  $pillars
-     * @param  array{social: float, safety: float, density: float, infra: float}  $weights
+     * @param  array<string, ?int>  $pillars
+     * @param  array<string, float>  $weights
      */
     private function weightedScore(array $pillars, array $weights): ?float
     {

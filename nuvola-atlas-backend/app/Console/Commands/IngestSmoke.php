@@ -7,6 +7,7 @@ namespace App\Console\Commands;
 use App\Models\DataIngestionLog;
 use App\Models\Zone;
 use App\Models\ZoneScoreSnapshot;
+use App\Support\Pillars;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ use Illuminate\Http\Request;
  * Builds a Daystar-shaped batch, signs it exactly as
  * nuvola-atlas-ingestion/app/signing.py does, and drives it through this
  * app's own HTTP kernel — so the signature check, the batch validator, the
- * Daystar-to-column key mapping, the idempotency hash, the append-only log
+ * pillar-to-column mapping, the idempotency hash, the append-only log
  * write and the queued rescore all execute for real. No running web server
  * and no live feed required.
  *
@@ -34,13 +35,6 @@ class IngestSmoke extends Command
         {--keep : Leave the synthetic readings in place instead of restoring}';
 
     protected $description = 'Push a synthetic signed batch through ingest → score → broadcast to prove the pipeline works.';
-
-    /** Chosen to span three pillars, and to exercise the Daystar key alias. */
-    private const READINGS = [
-        'healthcare_access',
-        'emergency_response',
-        'road_quality',
-    ];
 
     public function handle(HttpKernel $kernel): int
     {
@@ -88,7 +82,7 @@ class IngestSmoke extends Command
             return self::FAILURE;
         }
 
-        $this->line("Log #{$log->id} written, {$log->indicators_updated} indicators applied.");
+        $this->line("Log #{$log->id} written, {$log->indicators_updated} readings applied.");
 
         $landed = $this->verifyReadings($zone, $body['readings']);
 
@@ -135,14 +129,14 @@ class IngestSmoke extends Command
     }
 
     /**
-     * @return array{score: ?int, last_sync_min: ?int, indicators: array<string, ?int>}
+     * @return array{score: ?int, last_sync_min: ?int, pillars: array<string, ?int>}
      */
     private function capture(Zone $zone): array
     {
-        $indicators = [];
-        foreach (self::READINGS as $slug) {
-            $column = 'indicator_'.$this->toColumnSlug($slug);
-            $indicators[$column] = $zone->getAttribute($column);
+        $pillars = [];
+        foreach (Pillars::keys() as $key) {
+            $column = Pillars::column($key);
+            $pillars[$column] = $zone->getAttribute($column);
         }
 
         return [
@@ -151,12 +145,12 @@ class IngestSmoke extends Command
             // command whose whole contract is to leave no mark.
             'score' => $zone->score,
             'last_sync_min' => $zone->last_sync_min,
-            'indicators' => $indicators,
+            'pillars' => $pillars,
         ];
     }
 
     /**
-     * @param  array{score: ?int, last_sync_min: ?int, indicators: array<string, ?int>}  $before
+     * @param  array{score: ?int, last_sync_min: ?int, pillars: array<string, ?int>}  $before
      * @return array{batch_id: string, submitted_at: string, readings: list<array<string, mixed>>}
      */
     private function buildBatch(Zone $zone, array $before): array
@@ -164,8 +158,8 @@ class IngestSmoke extends Command
         $now = now();
         $readings = [];
 
-        foreach (self::READINGS as $slug) {
-            $current = $before['indicators']['indicator_'.$this->toColumnSlug($slug)];
+        foreach (Pillars::keys() as $key) {
+            $current = $before['pillars'][Pillars::column($key)];
 
             // Mirror the current reading so the write is always observable,
             // with a nudge for the one value that mirrors onto itself.
@@ -176,7 +170,7 @@ class IngestSmoke extends Command
 
             $readings[] = [
                 'zone_id' => $zone->id,
-                'indicator' => $slug,
+                'pillar' => $key,
                 'value' => $value,
                 'observed_at' => $now->toIso8601String(),
                 'field_verified' => false,
@@ -216,11 +210,10 @@ class IngestSmoke extends Command
         $zone->refresh();
 
         foreach ($readings as $reading) {
-            $column = 'indicator_'.$this->toColumnSlug((string) $reading['indicator']);
-            $actual = $zone->getAttribute($column);
+            $actual = $zone->getAttribute(Pillars::column((string) $reading['pillar']));
 
             if ((int) $actual !== (int) $reading['value']) {
-                return "Reading for {$reading['indicator']} did not land: expected {$reading['value']}, found ".var_export($actual, true).'.';
+                return "Reading for {$reading['pillar']} did not land: expected {$reading['value']}, found ".var_export($actual, true).'.';
             }
         }
 
@@ -243,25 +236,15 @@ class IngestSmoke extends Command
     }
 
     /**
-     * @param  array{score: ?int, last_sync_min: ?int, indicators: array<string, ?int>}  $before
+     * @param  array{score: ?int, last_sync_min: ?int, pillars: array<string, ?int>}  $before
      */
     private function restore(Zone $zone, array $before, int $watermark): void
     {
-        $zone->forceFill($before['indicators'] + [
+        $zone->forceFill($before['pillars'] + [
             'score' => $before['score'],
             'last_sync_min' => $before['last_sync_min'],
         ])->save();
 
         ZoneScoreSnapshot::where('zone_id', $zone->id)->where('id', '>', $watermark)->delete();
-    }
-
-    /**
-     * Daystar publishes `emergency_response`; the column is
-     * `indicator_emergency_response_access`. IngestController maps it on the
-     * way in, so the smoke check has to map it the same way to verify.
-     */
-    private function toColumnSlug(string $indicator): string
-    {
-        return $indicator === 'emergency_response' ? 'emergency_response_access' : $indicator;
     }
 }

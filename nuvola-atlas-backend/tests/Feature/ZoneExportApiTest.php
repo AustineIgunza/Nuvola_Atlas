@@ -6,7 +6,7 @@ namespace Tests\Feature;
 
 use App\Models\Zone;
 use Illuminate\Support\Facades\DB;
-use Tests\Support\IndicatorSeeding;
+use Tests\Support\PillarSeeding;
 use Tests\TestCase;
 
 class ZoneExportApiTest extends TestCase
@@ -18,11 +18,11 @@ class ZoneExportApiTest extends TestCase
             'name' => 'Westlands',
             'score' => 76,
             'last_sync_min' => 4,
-        ], IndicatorSeeding::fromPillars([
-            'social' => 82,
-            'safety' => 71,
-            'density' => 64,
-            'infra' => 80,
+        ], PillarSeeding::columns([
+            'water_sanitation' => 82,
+            'road_density' => 71,
+            'transit_access' => 64,
+            'electricity_access' => 80,
         ])));
         DB::statement(
             'UPDATE zones SET centroid = ST_MakePoint(36.8048, -1.2673)::geography WHERE id = ?',
@@ -49,7 +49,18 @@ class ZoneExportApiTest extends TestCase
         $r->assertOk()->assertHeader('Content-Type', 'text/plain; charset=UTF-8');
         $body = $r->getContent();
         $this->assertStringContainsString('Vitality Score: 76/100', $body);
-        $this->assertStringContainsString('Social Wellbeing:    82', $body);
+        $this->assertStringContainsString('Water & Sanitation: 82', $body);
+        $this->assertStringContainsString('Road Density:       71', $body);
+    }
+
+    public function test_txt_export_names_no_retired_pillar(): void
+    {
+        $this->seedZone();
+        $body = $this->get('/api/v1/zones/westlands/export?format=txt')->getContent();
+
+        foreach (['Social Wellbeing', 'Safety & Security', 'Project Momentum', 'Freedom Index', 'Smart Grid'] as $retired) {
+            $this->assertStringNotContainsString($retired, $body);
+        }
     }
 
     public function test_docx_export_is_a_zip(): void

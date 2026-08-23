@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Models\MethodologyVersion;
+use App\Support\Pillars;
 use Illuminate\Database\Seeder;
 
 /**
- * Seed the v1.0.0 methodology row as `is_current = true`. Weights are
- * 0.25 across the four pillars (post-July-2026 rewrite); bands express
- * the score-band thresholds the Scorecard uses to colour the ring.
+ * Seed the current methodology row from the pillar registry, so a freshly
+ * seeded database scores exactly as an unseeded one does. Bands express the
+ * score-band thresholds the Scorecard uses to colour the ring.
  *
  * The migration installed a partial unique index on is_current, so this
  * seeder can only ever have one active row.
@@ -20,14 +21,9 @@ class MethodologyVersionSeeder extends Seeder
     public function run(): void
     {
         MethodologyVersion::updateOrCreate(
-            ['version' => '1.0.0'],
+            ['version' => Pillars::version()],
             [
-                'weights' => [
-                    'social' => 0.25,
-                    'safety' => 0.25,
-                    'density' => 0.25,
-                    'infra' => 0.25,
-                ],
+                'weights' => Pillars::weights(),
                 'bands' => [
                     ['label' => 'excellent', 'min' => 80, 'max' => 100],
                     ['label' => 'good',      'min' => 60, 'max' => 79],
@@ -36,7 +32,7 @@ class MethodologyVersionSeeder extends Seeder
                 ],
                 'is_current' => true,
                 'draft' => false,
-                'changelog' => 'Initial published methodology — 4 equally-weighted pillars, null-exclusion averaging.',
+                'changelog' => 'Registry weights — water 0.4, roads 0.3, transit 0.3; electricity held at 0. Null-exclusion averaging.',
                 'published_at' => now(),
             ],
         );

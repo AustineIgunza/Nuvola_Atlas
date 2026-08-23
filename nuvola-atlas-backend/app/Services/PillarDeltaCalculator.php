@@ -6,11 +6,12 @@ namespace App\Services;
 
 use App\Models\Zone;
 use App\Models\ZoneScoreSnapshot;
+use App\Support\Pillars;
 use Illuminate\Support\Facades\DB;
 
 /**
  * Per-pillar movement between a zone's oldest snapshot inside the lookback
- * window and its current indicators.
+ * window and its current values.
  *
  * A delta is a claim about direction, so it is null unless the history can
  * actually support it. Null is returned when: the zone has fewer than two
@@ -26,25 +27,17 @@ class PillarDeltaCalculator
 {
     public const WINDOW_DAYS = 90;
 
-    /** @var array{social: null, safety: null, density: null, infra: null} */
-    private const NO_DELTAS = [
-        'social' => null,
-        'safety' => null,
-        'density' => null,
-        'infra' => null,
-    ];
-
     public function __construct(private readonly ScoreCalculator $calc = new ScoreCalculator) {}
 
     /**
      * Shape returned for a zone with no usable history. Also what
      * ZoneResource falls back to when nothing was preloaded.
      *
-     * @return array{deltas: array{social: ?int, safety: ?int, density: ?int, infra: ?int}, windowDays: ?int}
+     * @return array{deltas: array<string, ?int>, windowDays: ?int}
      */
     public static function unknown(): array
     {
-        return ['deltas' => self::NO_DELTAS, 'windowDays' => null];
+        return ['deltas' => Pillars::fill(null), 'windowDays' => null];
     }
 
     /**
@@ -110,14 +103,14 @@ class PillarDeltaCalculator
     }
 
     /**
-     * @return array{social: ?int, safety: ?int, density: ?int, infra: ?int}
+     * @return array<string, ?int>
      */
     private function diff(Zone $zone, ZoneScoreSnapshot $baseline): array
     {
         $now = $this->calc->pillarScores($zone);
-        $then = $this->calc->pillarScoresFromValues($this->snapshotIndicators($baseline));
+        $then = $this->calc->pillarScoresFromValues($this->snapshotPillars($baseline));
 
-        $deltas = self::NO_DELTAS;
+        $deltas = Pillars::fill(null);
         foreach (array_keys($deltas) as $pillar) {
             if ($now[$pillar] === null || $then[$pillar] === null) {
                 continue;
@@ -131,14 +124,12 @@ class PillarDeltaCalculator
     /**
      * @return array<string, ?int>
      */
-    private function snapshotIndicators(ZoneScoreSnapshot $snapshot): array
+    private function snapshotPillars(ZoneScoreSnapshot $snapshot): array
     {
         $values = [];
-        foreach (ScoreCalculator::pillars() as $indicators) {
-            foreach ($indicators as $slug) {
-                $raw = $snapshot->getAttribute('indicator_'.$slug);
-                $values[$slug] = $raw === null ? null : (int) $raw;
-            }
+        foreach (Pillars::keys() as $key) {
+            $raw = $snapshot->getAttribute(Pillars::column($key));
+            $values[$key] = $raw === null ? null : (int) $raw;
         }
 
         return $values;

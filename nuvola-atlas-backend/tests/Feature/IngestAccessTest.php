@@ -9,8 +9,9 @@ use App\Models\DataIngestionLog;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use App\Support\Pillars;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Tests\Support\IndicatorSeeding;
+use Tests\Support\PillarSeeding;
 use Tests\TestCase;
 
 /**
@@ -19,7 +20,7 @@ use Tests\TestCase;
  *
  *  1. A logged-in user must not be able to reach it. If `auth:sanctum` ever
  *     drifts onto this route, any partner with an API key inherits write
- *     access to every zone's indicators.
+ *     access to every zone's pillar values.
  *  2. A rejected request must not echo anything about the expected secret.
  *
  * The signature mechanics themselves live in IngestContractTest.
@@ -36,18 +37,16 @@ class IngestAccessTest extends TestCase
 
     private function seedZone(string $id = 'access-zone'): void
     {
-        $indicators = IndicatorSeeding::fromPillars([
-            'social' => 70, 'safety' => 70, 'density' => 70, 'infra' => 70,
-        ]);
-        $cols = implode(', ', array_keys($indicators));
-        $vals = implode(', ', array_fill(0, count($indicators), '?'));
+        $pillars = PillarSeeding::columns(array_fill_keys(Pillars::keys(), 70));
+        $cols = implode(', ', array_keys($pillars));
+        $vals = implode(', ', array_fill(0, count($pillars), '?'));
 
         DB::statement(
             "INSERT INTO zones (id, name, score, {$cols}, last_sync_min,
              centroid, created_at, updated_at)
              VALUES (?, ?, ?, {$vals}, 5,
              ST_GeogFromText('POINT(36.82 -1.29)'), now(), now())",
-            array_merge([$id, ucfirst($id), 70], array_values($indicators))
+            array_merge([$id, ucfirst($id), 70], array_values($pillars))
         );
     }
 
@@ -57,7 +56,7 @@ class IngestAccessTest extends TestCase
         return [
             'source' => 'fastapi.daystar',
             'zone_id' => $zoneId,
-            'indicators' => ['healthcare_access' => 88],
+            'pillars' => ['water_sanitation' => 88],
             'received_at' => now()->toIso8601String(),
         ];
     }

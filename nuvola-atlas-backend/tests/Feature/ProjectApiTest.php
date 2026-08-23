@@ -7,7 +7,7 @@ namespace Tests\Feature;
 use App\Models\Project;
 use App\Models\Zone;
 use Illuminate\Support\Facades\DB;
-use Tests\Support\IndicatorSeeding;
+use Tests\Support\PillarSeeding;
 use Tests\TestCase;
 
 class ProjectApiTest extends TestCase
@@ -19,11 +19,11 @@ class ProjectApiTest extends TestCase
             'name' => 'Westlands',
             'score' => 76,
             'last_sync_min' => 4,
-        ], IndicatorSeeding::fromPillars([
-            'social' => 82,
-            'safety' => 71,
-            'density' => 64,
-            'infra' => 80,
+        ], PillarSeeding::columns([
+            'water_sanitation' => 82,
+            'road_density' => 71,
+            'transit_access' => 64,
+            'electricity_access' => 80,
         ])));
 
         DB::statement("UPDATE zones SET centroid = ST_MakePoint(36.8048, -1.2673)::geography WHERE id = 'westlands'");

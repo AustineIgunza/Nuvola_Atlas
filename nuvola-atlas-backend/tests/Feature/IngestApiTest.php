@@ -71,7 +71,7 @@ class IngestApiTest extends TestCase
             'readings' => [
                 [
                     'zone_id' => 'non-existent-zone',
-                    'indicator' => 'healthcare_access',
+                    'pillar' => 'water_sanitation',
                     'value' => 75.2,
                     'observed_at' => now()->toIso8601String(),
                 ],
@@ -104,13 +104,13 @@ class IngestApiTest extends TestCase
             'readings' => [
                 [
                     'zone_id' => 'westlands',
-                    'indicator' => 'healthcare_access',
+                    'pillar' => 'water_sanitation',
                     'value' => 85.4,
                     'observed_at' => now()->toIso8601String(),
                 ],
                 [
                     'zone_id' => 'westlands',
-                    'indicator' => 'emergency_response', // translates to emergency_response_access
+                    'pillar' => 'road_density',
                     'value' => 60.1,
                     'observed_at' => now()->toIso8601String(),
                 ],
@@ -123,10 +123,10 @@ class IngestApiTest extends TestCase
 
         $response->assertStatus(200);
 
-        // Verify indicators saved and rounded correctly
+        // Verify pillars saved and rounded correctly
         $zone->refresh();
-        $this->assertSame(85, $zone->indicator_healthcare_access);
-        $this->assertSame(60, $zone->indicator_emergency_response_access);
+        $this->assertSame(85, $zone->pillar_water_sanitation);
+        $this->assertSame(60, $zone->pillar_road_density);
 
         // Verify log created
         $hash = hash('sha256', json_encode($payload));
@@ -153,7 +153,7 @@ class IngestApiTest extends TestCase
             'readings' => [
                 [
                     'zone_id' => 'starehe',
-                    'indicator' => 'healthcare_access',
+                    'pillar' => 'water_sanitation',
                     'value' => 90,
                     'observed_at' => now()->toIso8601String(),
                 ],
@@ -170,7 +170,34 @@ class IngestApiTest extends TestCase
         $response->assertStatus(200);
 
         $zone->refresh();
-        $this->assertSame(90, $zone->indicator_healthcare_access);
+        $this->assertSame(90, $zone->pillar_water_sanitation);
+    }
+
+    public function test_a_reading_for_a_switched_off_pillar_is_rejected(): void
+    {
+        $zone = $this->createTestZone('mathare');
+
+        $payload = [
+            'batch_id' => 'test-batch-retired-pillar',
+            'submitted_at' => now()->toIso8601String(),
+            'readings' => [
+                [
+                    'zone_id' => 'mathare',
+                    'pillar' => 'safety',
+                    'value' => 50,
+                    'observed_at' => now()->toIso8601String(),
+                ],
+            ],
+        ];
+
+        // Rejected, not ignored: a publisher still shipping a retired pillar
+        // needs to hear that its batch is out of date.
+        $this->withHeaders(['X-Internal-Secret' => $this->secret])
+            ->postJson('/api/v1/ingest', $payload)
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('readings.0.pillar');
+
+        $this->assertNull($zone->refresh()->indicator_crime_rates);
     }
 
     public function test_idempotency_prevents_double_processing(): void
@@ -184,7 +211,7 @@ class IngestApiTest extends TestCase
             'readings' => [
                 [
                     'zone_id' => 'kibra',
-                    'indicator' => 'congestion',
+                    'pillar' => 'transit_access',
                     'value' => 45.8,
                     'observed_at' => now()->toIso8601String(),
                 ],

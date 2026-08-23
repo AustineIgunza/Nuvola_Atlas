@@ -6,6 +6,7 @@ namespace App\Services\Agents\Tools;
 
 use App\Models\ZoneScoreSnapshot;
 use App\Services\Agents\BaseAgentTool;
+use App\Support\Pillars;
 use Illuminate\Support\Facades\DB;
 
 class ZoneHistoryTool extends BaseAgentTool
@@ -37,8 +38,13 @@ class ZoneHistoryTool extends BaseAgentTool
         $zoneId = (string) ($args['zone_id'] ?? '');
         $days = min(365, max(7, (int) ($args['days'] ?? 30)));
 
+        $averages = implode(', ', array_map(
+            fn (string $key) => 'avg('.Pillars::column($key).') as '.$key,
+            Pillars::keys(),
+        ));
+
         $rows = ZoneScoreSnapshot::query()
-            ->selectRaw("date_trunc('day', captured_at) as bucket, avg(score) as avg_score, avg(pillar_social) as social, avg(pillar_safety) as safety, avg(pillar_density) as density, avg(pillar_infra) as infra")
+            ->selectRaw("date_trunc('day', captured_at) as bucket, avg(score) as avg_score, {$averages}")
             ->where('zone_id', $zoneId)
             // Unscoreable days carry no mean and must not be read as a drop
             // to zero — which would also invert `direction` for the whole run.
@@ -52,16 +58,18 @@ class ZoneHistoryTool extends BaseAgentTool
             return ['zone_id' => $zoneId, 'days' => $days, 'series' => [], 'note' => 'No snapshot history available yet.'];
         }
 
-        $series = $rows->map(fn ($r) => [
-            'date' => (string) $r->bucket,
-            'score' => round((float) $r->avg_score, 1),
-            'pillars' => [
-                'social' => $r->social !== null ? round((float) $r->social, 1) : null,
-                'safety' => $r->safety !== null ? round((float) $r->safety, 1) : null,
-                'density' => $r->density !== null ? round((float) $r->density, 1) : null,
-                'infra' => $r->infra !== null ? round((float) $r->infra, 1) : null,
-            ],
-        ])->all();
+        $series = $rows->map(function ($r) {
+            $pillars = [];
+            foreach (Pillars::keys() as $key) {
+                $pillars[$key] = $r->$key !== null ? round((float) $r->$key, 1) : null;
+            }
+
+            return [
+                'date' => (string) $r->bucket,
+                'score' => round((float) $r->avg_score, 1),
+                'pillars' => $pillars,
+            ];
+        })->all();
 
         $first = $series[0]['score'];
         $last = end($series)['score'];
