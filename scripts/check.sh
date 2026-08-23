@@ -50,6 +50,7 @@ backend_tests() {
   cd "$BACKEND" && php vendor/phpunit/phpunit/phpunit --no-coverage
 }
 
+run "pillar registry"      blocking      node "$ROOT/scripts/gen-pillars.mjs" --check
 run "backend — phpunit"    blocking      backend_tests
 run "backend — phpstan"    informational bash -c "cd '$BACKEND' && vendor/bin/phpstan analyse --memory-limit=512M --no-progress"
 run "frontend — typecheck" blocking      bash -c "cd '$FRONTEND' && npm run typecheck"

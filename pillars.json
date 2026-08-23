@@ -1,0 +1,133 @@
+{
+  "$comment": [
+    "Canonical pillar registry. This file is the ONLY place a pillar is defined.",
+    "",
+    "Backend, frontend and ingestion each consume a generated artefact derived",
+    "from this file — run `node scripts/gen-pillars.mjs` after any edit, and",
+    "commit the generated files alongside it. `gen-pillars.mjs --check` fails",
+    "the build if they have drifted, so the three languages cannot disagree.",
+    "",
+    "A pillar with status \"off\" has no data source that exists. It is not",
+    "rendered, not served, and has no code path that could render it. Turning",
+    "one back on means editing this file and writing down where the numbers",
+    "come from — see NAVUUNA_REFOCUS_WORKFLOW.md."
+  ],
+  "version": "2026-08-22",
+  "weights_rationale": "Water & Sanitation is the flagship and by a wide margin the best-sourced pillar (KNBS 2019 census at sub-county resolution plus 17 editions of WASREB IMPACT), so it carries the largest share. Road density and transit accessibility are equally weighted behind it: both derive from the same OSM/GTFS extraction and neither is more defensible than the other. Held pillars carry zero weight — a 2019 figure is shown as context with its vintage attached, not folded into a 2026 score.",
+  "pillars": [
+    {
+      "key": "water_sanitation",
+      "display_name": "Water & Sanitation",
+      "description": "Household water source and sanitation type, set against the utility's own service-performance record.",
+      "status": "active",
+      "method": "measured",
+      "granularity": "subcounty",
+      "source_id": "knbs_census_2019",
+      "vintage": "2019 census",
+      "weight": 0.4
+    },
+    {
+      "key": "road_density",
+      "display_name": "Road Density",
+      "description": "Kilometres of mapped road per square kilometre of sub-county.",
+      "status": "active",
+      "method": "measured",
+      "granularity": "subcounty",
+      "source_id": "hot_osm_roads",
+      "vintage": "2026 extract",
+      "weight": 0.3
+    },
+    {
+      "key": "transit_access",
+      "display_name": "Transit Access",
+      "description": "Share of residents living within walking distance of a matatu stop.",
+      "status": "active",
+      "method": "measured",
+      "granularity": "subcounty",
+      "source_id": "digital_matatus_gtfs",
+      "vintage": "2026 extract",
+      "weight": 0.3
+    },
+    {
+      "key": "electricity_access",
+      "display_name": "Electricity Access",
+      "description": "Share of households using electricity for lighting. The vintage is old and is stated on every reading.",
+      "status": "held",
+      "method": "measured",
+      "granularity": "subcounty",
+      "source_id": "knbs_census_2019",
+      "vintage": "2019 census",
+      "weight": 0
+    },
+    {
+      "key": "freedom_index",
+      "display_name": "Freedom Index",
+      "status": "off",
+      "method": "gap",
+      "granularity": null,
+      "source_id": null,
+      "vintage": null,
+      "weight": 0,
+      "retired": {
+        "date": "2026-08-22",
+        "reason": "No sub-county source exists. Every candidate is a national score, and spreading a national figure across 17 sub-counties is inventing data."
+      }
+    },
+    {
+      "key": "safety",
+      "display_name": "Safety & Security",
+      "status": "off",
+      "method": "gap",
+      "granularity": null,
+      "source_id": null,
+      "vintage": null,
+      "weight": 0,
+      "retired": {
+        "date": "2026-08-22",
+        "reason": "Kenyan crime statistics are not published at sub-county resolution and reporting rates vary too much between sub-counties for the numbers to be comparable."
+      }
+    },
+    {
+      "key": "project_momentum",
+      "display_name": "Project Momentum",
+      "status": "off",
+      "method": "gap",
+      "granularity": null,
+      "source_id": null,
+      "vintage": null,
+      "weight": 0,
+      "retired": {
+        "date": "2026-08-22",
+        "reason": "Depended on a live project feed that was never delivered. The values shown were derived from seeded fixtures."
+      }
+    },
+    {
+      "key": "environment",
+      "display_name": "Environment",
+      "status": "off",
+      "method": "gap",
+      "granularity": null,
+      "source_id": null,
+      "vintage": null,
+      "weight": 0,
+      "retired": {
+        "date": "2026-08-22",
+        "reason": "No sub-county air-quality or hazard source with a usable vintage. Satellite proxies were considered and rejected as unverifiable at this resolution."
+      }
+    },
+    {
+      "key": "smart_grid",
+      "display_name": "Smart Grid",
+      "status": "off",
+      "method": "gap",
+      "granularity": null,
+      "source_id": null,
+      "vintage": null,
+      "weight": 0,
+      "retired": {
+        "date": "2026-08-22",
+        "reason": "There is no live grid feed. Superseded by electricity_access, which reports a real census figure with its vintage attached."
+      }
+    }
+  ]
+}
