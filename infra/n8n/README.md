@@ -1,7 +1,7 @@
 # n8n — automation glue
 
 **Owner:** Devyan (CTIPSO)
-**Last updated:** 2026-08-07
+**Last updated:** 2026-08-23
 
 n8n is the Phase J automation layer. It sits *beside* the data path, not
 inside it: it turns a Daystar file drop into an HTTP call against the
@@ -10,7 +10,7 @@ FastAPI depends on n8n being up — if it dies, ingestion still accepts a
 direct POST, and the only thing lost is the automatic pickup.
 
 ```
-Daystar drop ──▶ n8n ──▶ FastAPI /api/ingest/indicators ──▶ Laravel /api/v1/ingest ──▶ PostGIS
+Daystar drop ──▶ n8n ──▶ FastAPI /api/ingest/readings ──▶ Laravel /api/v1/ingest ──▶ PostGIS
                   │
                   └──▶ Slack #data-feeds
 ```
@@ -84,7 +84,7 @@ Two triggers feed one pipeline:
   `{ "filename": "...", "batch": { ... } }`, or a bare batch envelope with a
   sibling `filename` key.
 - **Manual Dry Run** — fires the same pipeline against a built-in synthetic
-  drop (4 readings across 3 indicators, 3 zones). Needs no input.
+  drop (3 `water_sanitation` readings across 3 zones). Needs no input.
 
 Then: **Normalize Drop** collapses both shapes → **Validate Filename** gates
 on the naming convention → **Filename Valid?** branches → either
@@ -98,10 +98,20 @@ node:
 daystar-<YYYY-MM-DD>-<scope>[-<seq>].json
 ```
 
-`<scope>` is a pillar group (`social`, `safety`, `density`, `infra`) or a
-single one of the 13 indicator keys. The gate also rejects a batch over the
-5,000-row cap up front, so an oversized drop gets a "chunk it" message
-instead of a bare 413 from the next hop.
+`<scope>` is a single pillar key from the registry — one pillar per drop.
+There are no pillar groups; the four-pillar grouping was retired in the
+August 2026 refocus.
+
+The **Validate Filename** node holds its own copy of the live keys, because
+`scripts/gen-pillars.mjs` does not target n8n workflow JSON. It is the one
+place in the repo where the registry is duplicated by hand, so a pillar added
+to or retired from `pillars.json` has to be mirrored here. A drop naming a
+switched-off pillar is quarantined at the gate and never reaches ingestion —
+and if it somehow did, the ingestion service rejects retired keys too.
+
+The gate also rejects a batch over the 5,000-row cap up front, so an
+oversized drop gets a "chunk it" message instead of a bare 413 from the next
+hop.
 
 **Idempotency is delegated, not reimplemented.** The ingestion service
 deduplicates on the SHA-256 of the raw request body and replays the original
