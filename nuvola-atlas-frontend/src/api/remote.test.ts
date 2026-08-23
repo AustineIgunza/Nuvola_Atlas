@@ -151,3 +151,108 @@ describe("hydrateZone", () => {
     expect(console.warn).not.toHaveBeenCalled();
   });
 });
+
+describe("paginated collections", () => {
+  beforeEach(() => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+  });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const pagedZone = (id: string) => ({
+    id,
+    name: id,
+    score: 71,
+    pillars: allPillars((_k, i) => 60 + i),
+    deltas: allPillars(() => 0),
+    centroid: [36.81, -1.26],
+    lastSyncMin: 4,
+  });
+
+  it("walks every page so a closed set is never truncated", async () => {
+    const pages: Record<string, unknown> = {
+      "1": { data: [pagedZone("a"), pagedZone("b")], meta: { current_page: 1, last_page: 2 } },
+      "2": { data: [pagedZone("c")], meta: { current_page: 2, last_page: 2 } },
+    };
+    const fetchMock = vi.fn((url: string) =>
+      jsonResponse(pages[new URL(url, "http://x").searchParams.get("page") ?? "1"]),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const zones = await remoteApi.getZones();
+
+    expect(zones.map((z) => z.id)).toEqual(["a", "b", "c"]);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("issues no follow-up request when the collection fits on one page", async () => {
+    const fetchMock = vi.fn(() =>
+      jsonResponse({ data: [pagedZone("a")], meta: { current_page: 1, last_page: 1 } }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    expect((await remoteApi.getZones()).map((z) => z.id)).toEqual(["a"]);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("passes a bare array through untouched", async () => {
+    vi.stubGlobal("fetch", () => jsonResponse([pagedZone("a")]));
+
+    expect((await remoteApi.getZones()).map((z) => z.id)).toEqual(["a"]);
+  });
+});
+
+describe("declared gaps", () => {
+  beforeEach(() => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+  });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("never substitutes a fixture for a pillar the API measured as absent", async () => {
+    // Mathare has a fixture value for every pillar, so before missingPillars
+    // was honoured the API's null came back as an invented number.
+    const mathare = MOCK_ZONES.find((z) => z.id === "mathare")!;
+    expect(mathare.pillars[FIRST_PILLAR]).not.toBeNull();
+
+    vi.stubGlobal("fetch", () =>
+      jsonResponse({
+        id: "mathare",
+        name: "Mathare",
+        score: 47,
+        pillars: allPillars((k) => (k === FIRST_PILLAR ? null : 60)),
+        deltas: allPillars(() => 0),
+        missingPillars: [FIRST_PILLAR],
+        centroid: [36.86, -1.26],
+        lastSyncMin: 4,
+      }),
+    );
+
+    const zone = await remoteApi.getZone("mathare");
+
+    expect(zone.pillars[FIRST_PILLAR]).toBeNull();
+    expect(zone._hydrated ?? []).not.toContain(`pillars.${FIRST_PILLAR}`);
+  });
+
+  it("still hydrates a null the API did not declare as a gap", async () => {
+    vi.stubGlobal("fetch", () =>
+      jsonResponse({
+        id: "mathare",
+        name: "Mathare",
+        score: 47,
+        pillars: allPillars((k) => (k === FIRST_PILLAR ? null : 60)),
+        deltas: allPillars(() => 0),
+        missingPillars: [],
+        centroid: [36.86, -1.26],
+        lastSyncMin: 4,
+      }),
+    );
+
+    const zone = await remoteApi.getZone("mathare");
+
+    expect(zone.pillars[FIRST_PILLAR]).not.toBeNull();
+    expect(zone._hydrated).toContain(`pillars.${FIRST_PILLAR}`);
+  });
+});

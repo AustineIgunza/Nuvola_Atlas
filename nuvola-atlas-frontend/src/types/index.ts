@@ -45,6 +45,11 @@ export interface Zone {
   centroid: [number, number];
   lastSyncMin: number;
   /**
+   * Pillars the API measured as absent for this zone. A declared gap is a
+   * finding, not a hole to plug — it stays null all the way to the screen.
+   */
+  missingPillars?: PillarKey[];
+  /**
    * Dotted paths of fields the client synthesised because the API returned
    * null — `pillars.water_sanitation`, `centroid`, and so on. Set by
    * `hydrateZone` in remote mode. Anything listed here is an estimate and

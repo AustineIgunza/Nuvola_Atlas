@@ -19,13 +19,48 @@ import type {
   ChatMessage,
 } from "@/types";
 
-async function get<T>(path: string): Promise<T> {
+type Paged = { data: unknown[]; meta?: { current_page?: number; last_page?: number } };
+
+function isPaged(json: unknown): json is Paged {
+  return (
+    !!json &&
+    typeof json === "object" &&
+    "data" in json &&
+    "meta" in json &&
+    Array.isArray((json as Paged).data)
+  );
+}
+
+async function fetchJson(path: string): Promise<unknown> {
   const res = await fetch(`${BASE}${path}`, { headers: authHeaders() });
-  const json = await handleResponse<Record<string, unknown>>(res);
-  if (json && typeof json === "object" && "data" in json && "meta" in json) {
-    return json.data as T;
-  }
-  return json as T;
+  return handleResponse<unknown>(res);
+}
+
+/**
+ * Collections come back length-aware (`paginate(15)`), and the zone index is a
+ * closed set of 17 sub-counties — so taking page 1 alone dropped two of them
+ * off the map with nothing on screen to say so. Walk the pages instead: for a
+ * bounded set this is one extra request, and it keeps a collection that later
+ * outgrows its page size from truncating in silence.
+ */
+async function get<T>(path: string): Promise<T> {
+  const json = await fetchJson(path);
+  if (!isPaged(json)) return json as T;
+
+  const lastPage = json.meta?.last_page ?? 1;
+  if (lastPage <= 1) return json.data as T;
+
+  const rest = await Promise.all(
+    Array.from({ length: lastPage - 1 }, (_, i) => {
+      const sep = path.includes("?") ? "&" : "?";
+      return fetchJson(`${path}${sep}page=${i + 2}`);
+    }),
+  );
+
+  return rest.reduce<unknown[]>(
+    (all, page) => (isPaged(page) ? all.concat(page.data) : all),
+    [...json.data],
+  ) as T;
 }
 
 const PILLAR_KEYS = PILLARS.map((p) => p.key as PillarKey);
@@ -59,12 +94,17 @@ function hydrateZone(z: Partial<Zone> & { id: string; name: string }): Zone {
   const mock = MOCK_ZONES.find((m) => m.id === z.id);
   const _hydrated: string[] = [];
 
+  // A pillar the API listed as missing was measured to be absent. That is a
+  // result, and substituting a fixture for it would publish an invented number
+  // for the very zones — Kibra, Mathare — whose gaps are the finding.
+  const declaredGaps = new Set<string>(z.missingPillars ?? []);
+
   const pillars = NO_PILLARS();
   for (const k of PILLAR_KEYS) {
     // A zone the API could not score has nothing to stand in for its pillars
     // either. Passing the null through unmarked is right: there is no fixture
     // behind it, so calling it an estimate would overstate what we have.
-    const fallback = mock?.pillars[k] ?? z.score ?? null;
+    const fallback = declaredGaps.has(k) ? null : (mock?.pillars[k] ?? z.score ?? null);
     pillars[k] =
       fallback === null
         ? (z.pillars?.[k] ?? null)
