@@ -1,3 +1,4 @@
+import { PILLARS, PILLAR_REGISTRY_VERSION } from "@/lib/pillars.generated";
 import type {
   Zone,
   Project,
@@ -5,19 +6,32 @@ import type {
   Report,
   HistoryPoint,
   ActivityEntry,
-  PillarDef,
+  Methodology,
   ZoneHistory,
   ZoneHistoryPoint,
   HistoryRange,
+  PillarKey,
+  PillarScores,
 } from "@/types";
 
+/**
+ * Mock-mode zones. Every `score` here is the registry-weighted average of the
+ * pillars beside it (water 0.4, roads 0.3, transit 0.3; electricity is held at
+ * weight 0), so the demo cannot show a headline that its own bars disagree
+ * with. Mathare carries a real gap on electricity to exercise the null path.
+ */
 export const ZONES: Zone[] = [
   {
     id: "westlands",
     name: "Westlands",
-    score: 76,
-    pillars: { social: 82, safety: 71, density: 64, infra: 80 },
-    deltas: { social: 3, safety: -1, density: 2, infra: 4 },
+    score: 73,
+    pillars: {
+      water_sanitation: 82,
+      road_density: 71,
+      transit_access: 64,
+      electricity_access: 80,
+    },
+    deltas: { water_sanitation: 3, road_density: -1, transit_access: 2, electricity_access: 4 },
     deltaWindowDays: 90,
     centroid: [36.8048, -1.2673],
     lastSyncMin: 4,
@@ -25,9 +39,14 @@ export const ZONES: Zone[] = [
   {
     id: "dagoretti-north",
     name: "Dagoretti North",
-    score: 72,
-    pillars: { social: 74, safety: 68, density: 70, infra: 66 },
-    deltas: { social: 2, safety: 1, density: -2, infra: 3 },
+    score: 71,
+    pillars: {
+      water_sanitation: 74,
+      road_density: 68,
+      transit_access: 70,
+      electricity_access: 66,
+    },
+    deltas: { water_sanitation: 2, road_density: 1, transit_access: -2, electricity_access: 3 },
     deltaWindowDays: 90,
     centroid: [36.76, -1.275],
     lastSyncMin: 7,
@@ -35,9 +54,14 @@ export const ZONES: Zone[] = [
   {
     id: "dagoretti-south",
     name: "Dagoretti South",
-    score: 65,
-    pillars: { social: 62, safety: 64, density: 60, infra: 68 },
-    deltas: { social: 1, safety: -3, density: 2, infra: 1 },
+    score: 62,
+    pillars: {
+      water_sanitation: 62,
+      road_density: 64,
+      transit_access: 60,
+      electricity_access: 68,
+    },
+    deltas: { water_sanitation: 1, road_density: -3, transit_access: 2, electricity_access: 1 },
     deltaWindowDays: 90,
     centroid: [36.745, -1.305],
     lastSyncMin: 12,
@@ -45,9 +69,14 @@ export const ZONES: Zone[] = [
   {
     id: "langata",
     name: "Langata",
-    score: 70,
-    pillars: { social: 72, safety: 74, density: 55, infra: 71 },
-    deltas: { social: -1, safety: 2, density: 1, infra: 3 },
+    score: 68,
+    pillars: {
+      water_sanitation: 72,
+      road_density: 74,
+      transit_access: 55,
+      electricity_access: 71,
+    },
+    deltas: { water_sanitation: -1, road_density: 2, transit_access: 1, electricity_access: 3 },
     deltaWindowDays: 90,
     centroid: [36.735, -1.36],
     lastSyncMin: 5,
@@ -55,9 +84,14 @@ export const ZONES: Zone[] = [
   {
     id: "kibra",
     name: "Kibra",
-    score: 54,
-    pillars: { social: 48, safety: 52, density: 58, infra: 56 },
-    deltas: { social: 2, safety: -2, density: 1, infra: 0 },
+    score: 52,
+    pillars: {
+      water_sanitation: 48,
+      road_density: 52,
+      transit_access: 58,
+      electricity_access: 56,
+    },
+    deltas: { water_sanitation: 2, road_density: -2, transit_access: 1, electricity_access: 0 },
     deltaWindowDays: 90,
     centroid: [36.785, -1.315],
     lastSyncMin: 18,
@@ -65,9 +99,14 @@ export const ZONES: Zone[] = [
   {
     id: "roysambu",
     name: "Roysambu",
-    score: 68,
-    pillars: { social: 70, safety: 65, density: 62, infra: 72 },
-    deltas: { social: 1, safety: 3, density: -1, infra: 2 },
+    score: 66,
+    pillars: {
+      water_sanitation: 70,
+      road_density: 65,
+      transit_access: 62,
+      electricity_access: 72,
+    },
+    deltas: { water_sanitation: 1, road_density: 3, transit_access: -1, electricity_access: 2 },
     deltaWindowDays: 90,
     centroid: [36.875, -1.22],
     lastSyncMin: 9,
@@ -75,9 +114,14 @@ export const ZONES: Zone[] = [
   {
     id: "kasarani",
     name: "Kasarani",
-    score: 63,
-    pillars: { social: 60, safety: 62, density: 58, infra: 68 },
-    deltas: { social: -1, safety: 2, density: 0, infra: 1 },
+    score: 60,
+    pillars: {
+      water_sanitation: 60,
+      road_density: 62,
+      transit_access: 58,
+      electricity_access: 68,
+    },
+    deltas: { water_sanitation: -1, road_density: 2, transit_access: 0, electricity_access: 1 },
     deltaWindowDays: 90,
     centroid: [36.9, -1.235],
     lastSyncMin: 6,
@@ -85,9 +129,14 @@ export const ZONES: Zone[] = [
   {
     id: "ruaraka",
     name: "Ruaraka",
-    score: 66,
-    pillars: { social: 68, safety: 64, density: 60, infra: 70 },
-    deltas: { social: 2, safety: 0, density: -1, infra: 3 },
+    score: 64,
+    pillars: {
+      water_sanitation: 68,
+      road_density: 64,
+      transit_access: 60,
+      electricity_access: 70,
+    },
+    deltas: { water_sanitation: 2, road_density: 0, transit_access: -1, electricity_access: 3 },
     deltaWindowDays: 90,
     centroid: [36.88, -1.25],
     lastSyncMin: 11,
@@ -95,9 +144,14 @@ export const ZONES: Zone[] = [
   {
     id: "embakasi-south",
     name: "Embakasi South",
-    score: 58,
-    pillars: { social: 55, safety: 56, density: 62, infra: 58 },
-    deltas: { social: 1, safety: -1, density: 2, infra: 0 },
+    score: 57,
+    pillars: {
+      water_sanitation: 55,
+      road_density: 56,
+      transit_access: 62,
+      electricity_access: 58,
+    },
+    deltas: { water_sanitation: 1, road_density: -1, transit_access: 2, electricity_access: 0 },
     deltaWindowDays: 90,
     centroid: [36.91, -1.33],
     lastSyncMin: 14,
@@ -105,9 +159,14 @@ export const ZONES: Zone[] = [
   {
     id: "embakasi-north",
     name: "Embakasi North",
-    score: 62,
-    pillars: { social: 60, safety: 64, density: 56, infra: 66 },
-    deltas: { social: 0, safety: 2, density: 1, infra: -1 },
+    score: 60,
+    pillars: {
+      water_sanitation: 60,
+      road_density: 64,
+      transit_access: 56,
+      electricity_access: 66,
+    },
+    deltas: { water_sanitation: 0, road_density: 2, transit_access: 1, electricity_access: -1 },
     deltaWindowDays: 90,
     centroid: [36.905, -1.28],
     lastSyncMin: 8,
@@ -115,9 +174,14 @@ export const ZONES: Zone[] = [
   {
     id: "embakasi-central",
     name: "Embakasi Central",
-    score: 60,
-    pillars: { social: 58, safety: 60, density: 54, infra: 64 },
-    deltas: { social: 1, safety: 1, density: -2, infra: 2 },
+    score: 57,
+    pillars: {
+      water_sanitation: 58,
+      road_density: 60,
+      transit_access: 54,
+      electricity_access: 64,
+    },
+    deltas: { water_sanitation: 1, road_density: 1, transit_access: -2, electricity_access: 2 },
     deltaWindowDays: 90,
     centroid: [36.89, -1.31],
     lastSyncMin: 10,
@@ -125,9 +189,14 @@ export const ZONES: Zone[] = [
   {
     id: "embakasi-east",
     name: "Embakasi East",
-    score: 76,
-    pillars: { social: 78, safety: 72, density: 70, infra: 82 },
-    deltas: { social: 4, safety: 2, density: 1, infra: 5 },
+    score: 74,
+    pillars: {
+      water_sanitation: 78,
+      road_density: 72,
+      transit_access: 70,
+      electricity_access: 82,
+    },
+    deltas: { water_sanitation: 4, road_density: 2, transit_access: 1, electricity_access: 5 },
     deltaWindowDays: 90,
     centroid: [36.93, -1.29],
     lastSyncMin: 3,
@@ -135,9 +204,14 @@ export const ZONES: Zone[] = [
   {
     id: "embakasi-west",
     name: "Embakasi West",
-    score: 61,
-    pillars: { social: 58, safety: 62, density: 56, infra: 66 },
-    deltas: { social: -1, safety: 1, density: 0, infra: 2 },
+    score: 59,
+    pillars: {
+      water_sanitation: 58,
+      road_density: 62,
+      transit_access: 56,
+      electricity_access: 66,
+    },
+    deltas: { water_sanitation: -1, road_density: 1, transit_access: 0, electricity_access: 2 },
     deltaWindowDays: 90,
     centroid: [36.87, -1.32],
     lastSyncMin: 15,
@@ -145,9 +219,14 @@ export const ZONES: Zone[] = [
   {
     id: "makadara",
     name: "Makadara",
-    score: 64,
-    pillars: { social: 62, safety: 66, density: 58, infra: 68 },
-    deltas: { social: 2, safety: -1, density: 1, infra: 3 },
+    score: 62,
+    pillars: {
+      water_sanitation: 62,
+      road_density: 66,
+      transit_access: 58,
+      electricity_access: 68,
+    },
+    deltas: { water_sanitation: 2, road_density: -1, transit_access: 1, electricity_access: 3 },
     deltaWindowDays: 90,
     centroid: [36.86, -1.295],
     lastSyncMin: 7,
@@ -155,9 +234,14 @@ export const ZONES: Zone[] = [
   {
     id: "kamukunji",
     name: "Kamukunji",
-    score: 57,
-    pillars: { social: 54, safety: 52, density: 60, infra: 58 },
-    deltas: { social: -2, safety: 1, density: 3, infra: 0 },
+    score: 55,
+    pillars: {
+      water_sanitation: 54,
+      road_density: 52,
+      transit_access: 60,
+      electricity_access: 58,
+    },
+    deltas: { water_sanitation: -2, road_density: 1, transit_access: 3, electricity_access: 0 },
     deltaWindowDays: 90,
     centroid: [36.845, -1.28],
     lastSyncMin: 20,
@@ -165,9 +249,14 @@ export const ZONES: Zone[] = [
   {
     id: "starehe",
     name: "Starehe",
-    score: 69,
-    pillars: { social: 66, safety: 68, density: 72, infra: 70 },
-    deltas: { social: 1, safety: 2, density: -1, infra: 2 },
+    score: 68,
+    pillars: {
+      water_sanitation: 66,
+      road_density: 68,
+      transit_access: 72,
+      electricity_access: 70,
+    },
+    deltas: { water_sanitation: 1, road_density: 2, transit_access: -1, electricity_access: 2 },
     deltaWindowDays: 90,
     centroid: [36.825, -1.285],
     lastSyncMin: 5,
@@ -175,9 +264,14 @@ export const ZONES: Zone[] = [
   {
     id: "mathare",
     name: "Mathare",
-    score: 52,
-    pillars: { social: 46, safety: 48, density: 56, infra: 54 },
-    deltas: { social: -1, safety: -2, density: 1, infra: 0 },
+    score: 50,
+    pillars: {
+      water_sanitation: 46,
+      road_density: 48,
+      transit_access: 56,
+      electricity_access: null,
+    },
+    deltas: { water_sanitation: -1, road_density: -2, transit_access: 1, electricity_access: null },
     deltaWindowDays: 90,
     centroid: [36.858, -1.258],
     lastSyncMin: 22,
@@ -1000,17 +1094,17 @@ export const ALERTS: AlertItem[] = [
 export const REPORTS: Report[] = [
   {
     id: "r1",
-    title: "Nairobi Q1 2026 Vitality Report",
+    title: "Nairobi Q1 2026 Service-performance Report",
     zoneId: null,
     date: "2026-04-15",
     status: "published",
     author: "Ken N'ganga",
     sizeBytes: 2_450_000,
     format: "PDF",
-    type: "vitality",
+    type: "service_performance",
     priority: "high",
     tags: ["quarterly", "county-wide", "vitality-index", "baseline"],
-    pillarFocus: ["social", "safety", "density", "infra"],
+    pillarFocus: ["water_sanitation", "road_density", "transit_access", "electricity_access"],
     dateRange: { from: "2026-01-01", to: "2026-03-31" },
     executiveSummary:
       "Comprehensive quarterly assessment of Nairobi County's readiness across all 17 sub-county zones. The county-wide Vitality Index rose from 61.0 to 65.8 over Q1, driven primarily by infrastructure upgrades in Embakasi East and Westlands. Kibra and Mathare remain below the 60-point threshold, requiring targeted interventions in safety and social wellbeing pillars.",
@@ -1054,7 +1148,7 @@ export const REPORTS: Report[] = [
     type: "infrastructure",
     priority: "medium",
     tags: ["infrastructure", "road-progress", "smart-grid", "westlands"],
-    pillarFocus: ["infra"],
+    pillarFocus: ["electricity_access"],
     dateRange: { from: "2026-01-01", to: "2026-04-30" },
     executiveSummary:
       "Westlands maintains the highest Vitality score in Nairobi (76) supported by strong infrastructure delivery. The Waiyaki Way Expansion is 72% complete with Phase 2 paving ahead of schedule. Smart meter rollout has reached 1,200 units in Parklands. Key risk: lane-marking phase requires full weekend road closures that may impact the Urban Friction Index.",
@@ -1090,10 +1184,10 @@ export const REPORTS: Report[] = [
     author: "Joy Nthei",
     sizeBytes: 980_000,
     format: "PDF",
-    type: "density",
+    type: "service_performance",
     priority: "high",
     tags: ["density", "informal-settlement", "kibra", "urban-planning"],
-    pillarFocus: ["density", "social"],
+    pillarFocus: ["transit_access", "water_sanitation"],
     dateRange: { from: "2025-10-01", to: "2026-04-30" },
     executiveSummary:
       "Kibra's Optimal Density Ratio stands at 0.68 — well below the healthy threshold of 1.0. Infrastructure capacity has not kept pace with population growth, creating compounding pressure on access roads, water points, and the electrical distribution network. The Kibra Access Roads project (28% complete) is the single largest intervention, but its current pace will not close the gap before density pressures trigger service failures.",
@@ -1132,7 +1226,7 @@ export const REPORTS: Report[] = [
     type: "infrastructure",
     priority: "critical",
     tags: ["energy", "substation", "KETRACO", "embakasi-east", "grid"],
-    pillarFocus: ["infra", "safety"],
+    pillarFocus: ["electricity_access", "road_density"],
     dateRange: { from: "2024-09-01", to: "2026-05-15" },
     executiveSummary:
       "The Embakasi Substation Upgrade (KETRACO, KES 520M) is 88% complete — transformer testing finished successfully on May 21. Grid connection is the final milestone. This project has been the primary driver of Embakasi East's rise to joint-highest Vitality score (76). The study assesses downstream impacts on surrounding zones and identifies risks associated with the final connection phase.",
@@ -1168,10 +1262,10 @@ export const REPORTS: Report[] = [
     author: "Austine Igunza",
     sizeBytes: 640_000,
     format: "PDF",
-    type: "vitality",
+    type: "service_performance",
     priority: "medium",
     tags: ["baseline", "mathare", "informal-settlement", "survey"],
-    pillarFocus: ["social", "safety"],
+    pillarFocus: ["water_sanitation", "road_density"],
     dateRange: { from: "2026-03-01", to: "2026-05-15" },
     executiveSummary:
       "Mathare records the lowest Vitality score in Nairobi County (52). This baseline survey establishes ground-truth metrics across all four pillars to serve as a benchmark for future interventions. The Mathare Distribution Line (KPLC, planned) is the only major project in the pipeline. Without additional investment, scores are projected to decline further as population pressure intensifies.",
@@ -1207,10 +1301,10 @@ export const REPORTS: Report[] = [
     author: "Ken N'ganga",
     sizeBytes: 420_000,
     format: "PDF",
-    type: "safety",
+    type: "infrastructure",
     priority: "high",
     tags: ["safety", "county-wide", "corridors", "crime-mapping", "rule-of-law"],
-    pillarFocus: ["safety"],
+    pillarFocus: ["road_density"],
     executiveSummary:
       "Preliminary mapping of safety corridors across Nairobi County, cross-referencing the Safety & Security pillar with physical infrastructure routes. Identifies six high-risk transit corridors where infrastructure projects intersect with elevated crime or instability zones. Intended to inform route-level risk scoring for the Atlas layer.",
     sections: [
@@ -1248,7 +1342,7 @@ export const REPORTS: Report[] = [
     type: "infrastructure",
     priority: "medium",
     tags: ["road-progress", "langata", "KeNHA", "dualling"],
-    pillarFocus: ["infra", "density"],
+    pillarFocus: ["electricity_access", "transit_access"],
     dateRange: { from: "2025-03-01", to: "2026-04-28" },
     executiveSummary:
       "The Langata Road Dualling project (KeNHA, KES 890M) is 61% complete with earthworks and base course finished. The asphalt phase is scheduled for May 2026. Langata's Vitality score (70) is directly supported by this project — the infra pillar gained 3 points this quarter. Key risk: the asphalt phase coincides with the long rains, which historically delays road projects in the area by 3-6 weeks.",
@@ -1284,10 +1378,10 @@ export const REPORTS: Report[] = [
     author: "Devyan Jethwa",
     sizeBytes: 2_180_000,
     format: "PDF",
-    type: "environmental",
+    type: "water_sanitation",
     priority: "critical",
     tags: ["sdg-6", "water", "sanitation", "county-wide", "clean-water", "informal-settlements"],
-    pillarFocus: ["infra", "social"],
+    pillarFocus: ["electricity_access", "water_sanitation"],
     dateRange: { from: "2026-01-01", to: "2026-05-15" },
     executiveSummary:
       "A county-wide read on Clean Water & Sanitation (SDG 6) across all 17 Nairobi zones. Safely-managed water access averages 71% county-wide but collapses to 38-46% in the informal settlements of Kibra and Mathare, where conventional sewered sanitation is neither affordable nor physically deliverable. The review argues for a decentralized sanitation strategy — DEWATS blocks, faecal-sludge treatment, and metered communal kiosks — as the context-specific path to closing the gap, and tracks the four active water projects now in delivery.",
@@ -1328,10 +1422,10 @@ export const REPORTS: Report[] = [
     author: "Joy Nthei",
     sizeBytes: 1_120_000,
     format: "PDF",
-    type: "environmental",
+    type: "water_sanitation",
     priority: "high",
     tags: ["sdg-6", "sanitation", "kibra", "dewats", "informal-settlement", "feasibility"],
-    pillarFocus: ["infra", "social"],
+    pillarFocus: ["electricity_access", "water_sanitation"],
     dateRange: { from: "2026-02-01", to: "2026-05-15" },
     executiveSummary:
       "A feasibility assessment for extending decentralized sanitation into Kibra alongside the communal water kiosk programme. With 78,723 persons/km² and no viable sewer corridor, Kibra requires cluster-scale DEWATS and container-based sanitation rather than conventional connections. The study models three delivery options and recommends a phased DEWATS-plus-kiosk pairing anchored to the existing NCWSC water project.",
@@ -1370,7 +1464,7 @@ export const REPORTS: Report[] = [
     type: "infrastructure",
     priority: "medium",
     tags: ["energy", "grid", "embakasi-east", "KETRACO", "quarterly"],
-    pillarFocus: ["infra"],
+    pillarFocus: ["electricity_access"],
     dateRange: { from: "2026-04-01", to: "2026-05-23" },
     executiveSummary:
       "A short-cycle update on the final grid-connection milestone for the Embakasi Substation Upgrade. Testing is complete and the substation is energized on the KETRACO side; the outstanding dependency is KPLC's downstream feeder coordination, currently the pacing item and linked to the wider KPLC data-feed interruption flagged in Alert a4. Connection is now estimated for July 2026.",
@@ -1409,7 +1503,7 @@ export const REPORTS: Report[] = [
     type: "infrastructure",
     priority: "medium",
     tags: ["fibre", "grid", "dagoretti-north", "ICTA", "digital-sovereignty"],
-    pillarFocus: ["infra", "safety"],
+    pillarFocus: ["electricity_access", "road_density"],
     dateRange: { from: "2025-06-15", to: "2026-05-14" },
     executiveSummary:
       "Dagoretti North holds a healthy Vitality score of 72, anchored by strong infrastructure delivery and an emerging digital backbone. The Dagoretti North Fibre Ring (ICTA, KES 130M) is 47% complete, with duct and manhole works closed out and fibre blowing scheduled for early 2026. The ring is the county's first ward-scale digital-sovereignty asset outside the CBD and materially lifts the Safety pillar's Digital Sovereignty sub-metric.",
@@ -1445,10 +1539,10 @@ export const REPORTS: Report[] = [
     author: "Joy Nthei",
     sizeBytes: 1_060_000,
     format: "PDF",
-    type: "environmental",
+    type: "water_sanitation",
     priority: "high",
     tags: ["sdg-6", "water", "dagoretti-south", "NCWSC", "flood-risk", "long-rains"],
-    pillarFocus: ["infra", "social"],
+    pillarFocus: ["electricity_access", "water_sanitation"],
     dateRange: { from: "2025-04-15", to: "2026-05-19" },
     executiveSummary:
       "The Dagoretti South Water Main Extension (NCWSC, KES 140M) is 58% complete but the DN300 pipe-laying phase is suspended after long-rains flooding submerged 1.8 km of open trench (Alert a10). The May 31 zonal-connection milestone will slip. This review reframes the schedule against a probabilistic weather envelope and proposes a re-sequenced construction plan.",
@@ -1487,7 +1581,7 @@ export const REPORTS: Report[] = [
     type: "infrastructure",
     priority: "medium",
     tags: ["energy", "solar", "microgrid", "roysambu", "KPLC", "resilience"],
-    pillarFocus: ["infra"],
+    pillarFocus: ["electricity_access"],
     dateRange: { from: "2025-05-15", to: "2026-05-10" },
     executiveSummary:
       "The Roysambu Solar Microgrid (KPLC, KES 240M) is 55% complete and on track for April 2026 go-live. The project is Nairobi's first ward-scale islanded microgrid — a proof-point for solar-plus-storage resilience in peri-urban zones. Roysambu's Infrastructure pillar rose 4 points this quarter on the strength of installation progress.",
@@ -1523,10 +1617,10 @@ export const REPORTS: Report[] = [
     author: "Ken N'ganga",
     sizeBytes: 890_000,
     format: "PDF",
-    type: "safety",
+    type: "infrastructure",
     priority: "high",
     tags: ["safety", "smart-lighting", "kasarani", "thika-road", "KPLC", "corridor"],
-    pillarFocus: ["safety", "infra"],
+    pillarFocus: ["road_density", "electricity_access"],
     dateRange: { from: "2025-04-01", to: "2026-05-15" },
     executiveSummary:
       "Thika Road Smart Lighting (KPLC, KES 340M) is 45% complete but the installation corridor is flagged as high-risk in the county safety corridor mapping (Report r6, corridor 5). Copper theft from installed but un-energized poles has driven a 12% wastage rate. This study proposes accelerated commissioning and physical-security measures to protect the remaining installation phases.",
@@ -1565,7 +1659,7 @@ export const REPORTS: Report[] = [
     type: "infrastructure",
     priority: "medium",
     tags: ["road-progress", "ruaraka", "KURA", "bypass", "density"],
-    pillarFocus: ["infra", "density"],
+    pillarFocus: ["electricity_access", "transit_access"],
     dateRange: { from: "2025-05-01", to: "2026-05-13" },
     executiveSummary:
       "The Ruaraka Bypass Rehabilitation (KURA, KES 420M) is 53% complete with drainage works closed out. The bypass is the main relief route for Thika Road congestion and its rehabilitation is one of the largest single density interventions Ruaraka has seen. The Density & Scaling pillar is projected to gain 5-7 points at handover.",
@@ -1601,10 +1695,10 @@ export const REPORTS: Report[] = [
     author: "Joy Nthei",
     sizeBytes: 1_340_000,
     format: "PDF",
-    type: "environmental",
+    type: "water_sanitation",
     priority: "high",
     tags: ["sdg-6", "sanitation", "embakasi-south", "athi-water", "FSTP", "informal-settlement"],
-    pillarFocus: ["infra", "social"],
+    pillarFocus: ["electricity_access", "water_sanitation"],
     dateRange: { from: "2026-02-01", to: "2026-05-21" },
     executiveSummary:
       "The Embakasi Faecal Sludge Treatment Plant (Athi Water, KES 310M) is at feasibility & ESIA stage (12% overall). ESIA public participation opened on May 21 (Alert a8) and closes June 20. The 400 m³/day plant would give the informal settlements of Embakasi South a licensed alternative to river discharge for exhauster-truck operators. This assessment reviews site fit, catchment volumes, and community input readiness.",
@@ -1643,7 +1737,7 @@ export const REPORTS: Report[] = [
     type: "infrastructure",
     priority: "medium",
     tags: ["energy", "grid", "embakasi-north", "KPLC", "feeder-line"],
-    pillarFocus: ["infra"],
+    pillarFocus: ["electricity_access"],
     dateRange: { from: "2025-03-15", to: "2026-05-12" },
     executiveSummary:
       "The Embakasi North Feeder Line (KPLC, KES 280M) is 64% complete with poles, conductor stringing, and transformer bays closed out. Energization is scheduled for April 2026 but is contingent on the Embakasi Substation grid-connection milestone (Report r10). Both projects are now paired in the county infrastructure programme.",
@@ -1682,7 +1776,7 @@ export const REPORTS: Report[] = [
     type: "infrastructure",
     priority: "critical",
     tags: ["road-progress", "embakasi-central", "KURA", "jogoo-road", "stalled", "wayleave"],
-    pillarFocus: ["infra", "density"],
+    pillarFocus: ["electricity_access", "transit_access"],
     dateRange: { from: "2025-02-20", to: "2026-05-22" },
     executiveSummary:
       "The Jogoo Road Corridor Upgrade (KURA, KES 360M) has been stalled at 31% for over a month over a utility-relocation dispute with a fibre operator (Alert a12). Non-motorized transport lanes and carriageway widening are both on hold. Without resolution in the next 30 days, Embakasi Central's density pillar is exposed and the county infrastructure committee should convene.",
@@ -1721,7 +1815,7 @@ export const REPORTS: Report[] = [
     type: "infrastructure",
     priority: "medium",
     tags: ["energy", "solar", "streetlights", "embakasi-west", "KPLC", "safety"],
-    pillarFocus: ["infra", "safety"],
+    pillarFocus: ["electricity_access", "road_density"],
     dateRange: { from: "2025-07-01", to: "2026-05-15" },
     executiveSummary:
       "Embakasi West Solar Streetlights (KPLC, KES 190M) is 49% complete with foundations and poles installed. Solar heads and battery mounts follow in the next quarter. The project targets 480 solar streetlight units across the ward and is expected to lift Safety pillar sub-metrics on street lighting coverage.",
@@ -1760,7 +1854,7 @@ export const REPORTS: Report[] = [
     type: "infrastructure",
     priority: "medium",
     tags: ["energy", "smart-grid", "makadara", "KETRACO", "pilot", "meters"],
-    pillarFocus: ["infra"],
+    pillarFocus: ["electricity_access"],
     dateRange: { from: "2025-02-01", to: "2026-05-08" },
     executiveSummary:
       "The Makadara Smart Grid Pilot (KETRACO, KES 310M) is 67% complete. Meter procurement and installation phases 1 and 2 are closed out; full deployment is scheduled for March 2026. The pilot is the county's largest AMI rollout to date and is intended as the template for county-wide smart-grid extension.",
@@ -1796,10 +1890,10 @@ export const REPORTS: Report[] = [
     author: "Joy Nthei",
     sizeBytes: 830_000,
     format: "PDF",
-    type: "safety",
+    type: "infrastructure",
     priority: "high",
     tags: ["safety", "fibre", "kamukunji", "eastleigh", "ICTA", "corridor"],
-    pillarFocus: ["safety", "infra"],
+    pillarFocus: ["road_density", "electricity_access"],
     dateRange: { from: "2025-06-01", to: "2026-05-17" },
     executiveSummary:
       "Kamukunji has the county's second-lowest Vitality score (57), pulled down primarily by the Safety pillar (52). The Eastleigh Fibre Backbone (ICTA, KES 160M, 40% complete) runs through corridor 3 in the county safety-corridor mapping — petty crime rate along the trenching path is 2.4x the county average. This report reads the delivery risk against the corridor exposure and proposes joint safety-plus-infrastructure interventions.",
@@ -1838,7 +1932,7 @@ export const REPORTS: Report[] = [
     type: "infrastructure",
     priority: "critical",
     tags: ["road-progress", "starehe", "KURA", "inner-ring", "stalled", "contractor"],
-    pillarFocus: ["infra"],
+    pillarFocus: ["electricity_access"],
     dateRange: { from: "2025-02-10", to: "2026-05-24" },
     executiveSummary:
       "The Inner Ring Resurfacing (KURA, KES 180M) has been stalled at 34% for 45+ days. KURA issued a show-cause notice on May 10 (Alert a1) and the contractor has not remobilized. This escalation note recommends activating the penalty clause and starting the replacement-contractor process to preserve the November 2025 handover window — already slipped to Q2 2026 in practice.",
@@ -1922,39 +2016,45 @@ export function generateZoneHistory(zoneId: string, range: HistoryRange): ZoneHi
   const rand = seededRandom(hashZoneId(zoneId));
   const now = Date.now();
 
-  // If any pillar is null the zone has no baseline to walk forward from; the
-  // fabricated series would be a straight line drawn out of nothing. Return
-  // an empty history so the chart draws the same gap the backend would.
-  if (
-    zone.pillars.social === null ||
-    zone.pillars.safety === null ||
-    zone.pillars.density === null ||
-    zone.pillars.infra === null
-  ) {
+  // A zone with no reading at all has no baseline to walk forward from; the
+  // fabricated series would be a straight line drawn out of nothing.
+  const walked = { ...zone.pillars };
+  if (PILLARS.every((p) => walked[p.key as PillarKey] === null)) {
     return { range, points: [] };
   }
 
-  let social = zone.pillars.social;
-  let safety = zone.pillars.safety;
-  let density = zone.pillars.density;
-  let infra = zone.pillars.infra;
-
   const points: ZoneHistoryPoint[] = [];
   for (let i = n - 1; i >= 0; i--) {
-    social = clamp(social + Math.round((rand() - 0.5) * 4));
-    safety = clamp(safety + Math.round((rand() - 0.5) * 4));
-    density = clamp(density + Math.round((rand() - 0.5) * 4));
-    infra = clamp(infra + Math.round((rand() - 0.5) * 4));
+    for (const p of PILLARS) {
+      const key = p.key as PillarKey;
+      const current = walked[key];
+      // A pillar with no reading stays a gap for the whole series. Walking a
+      // null forward would invent a history for something never measured.
+      if (current !== null) walked[key] = clamp(current + Math.round((rand() - 0.5) * 4));
+    }
 
-    const score = Math.round((social + safety + density + infra) / 4);
     points.push({
       t: new Date(now - i * stepMs).toISOString(),
-      score,
-      pillars: { social, safety, density, infra },
+      score: weightedScore(walked),
+      pillars: { ...walked },
     });
   }
 
   return { range, points };
+}
+
+/** Mirrors the backend calculator: registry weights, gaps excluded from both
+ *  the numerator and the divisor rather than counted as zero. */
+function weightedScore(pillars: PillarScores): number | null {
+  let sum = 0;
+  let weight = 0;
+  for (const p of PILLARS) {
+    const value = pillars[p.key as PillarKey];
+    if (value === null || p.weight === 0) continue;
+    sum += value * p.weight;
+    weight += p.weight;
+  }
+  return weight === 0 ? null : Math.round(sum / weight);
 }
 
 export const ACTIVITIES: Record<string, ActivityEntry[]> = {
@@ -1986,9 +2086,9 @@ export const ACTIVITIES: Record<string, ActivityEntry[]> = {
     {
       id: "act4",
       zoneId: "westlands",
-      kind: "density",
-      text: "Population density survey updated for Q1 2026",
-      source: "KNBS",
+      kind: "transit",
+      text: "Matatu route survey refreshed for Q1 2026",
+      source: "Digital Matatus",
       createdAt: "2026-05-15T09:00:00Z",
     },
   ],
@@ -2162,7 +2262,7 @@ export const ACTIVITIES: Record<string, ActivityEntry[]> = {
     {
       id: "act22",
       zoneId: "dagoretti-north",
-      kind: "density",
+      kind: "road",
       text: "Ngong Road boundary wayleave clash with NCWSC resolved",
       source: "KURA",
       createdAt: "2026-04-28T14:00:00Z",
@@ -2362,100 +2462,8 @@ export const ACTIVITIES: Record<string, ActivityEntry[]> = {
   ],
 };
 
-export const METHODOLOGY: PillarDef[] = [
-  {
-    key: "social",
-    name: "Social Wellbeing & Human Capital",
-    description:
-      "Whether the local population is thriving. A low score predicts future labour issues or shortage of skilled operators.",
-    subMetrics: [
-      {
-        key: "spi",
-        label: "Social Progress Index",
-        description: "Basic medical care, access to amenities, and inclusiveness",
-      },
-      {
-        key: "workforce",
-        label: "Workforce Mobility Score",
-        description: "How easily labour and specialized roles can move in and out",
-      },
-      {
-        key: "livability",
-        label: "Mental Health & Livability",
-        description: "Access to green space, air quality, projected burnout",
-      },
-    ],
-  },
-  {
-    key: "safety",
-    name: "Safety & Security",
-    description: "Freedom from physical, legal, and digital threats that could disrupt projects.",
-    subMetrics: [
-      {
-        key: "ruleOfLaw",
-        label: "Rule of Law Stability",
-        description: "Probability of contract expropriation, five-year judicial independence trend",
-      },
-      {
-        key: "physSecurity",
-        label: "Infrastructure Physical Security",
-        description: "Conflict heatmap, proximity to unrest or high-crime corridors",
-      },
-      {
-        key: "digitalSov",
-        label: "Digital Sovereignty & Cybersecurity",
-        description: "Internet Freedom Score, network outage frequency",
-      },
-    ],
-  },
-  {
-    key: "density",
-    name: "Density & Scaling Dynamics",
-    description: "Whether the region's density supports growth or constrains it.",
-    subMetrics: [
-      {
-        key: "optDensity",
-        label: "Optimal Density Ratio",
-        description:
-          "Infrastructure Capacity / Population Density. Low ratio flags over-saturation",
-      },
-      {
-        key: "urbanFriction",
-        label: "Urban Friction Index",
-        description: "Average transit times for heavy equipment, zoning complexity",
-      },
-    ],
-  },
-  {
-    key: "infra",
-    name: "Infrastructure & Environmental Safeguards",
-    description: "Whether documentation and legal architecture exist to back up large projects.",
-    subMetrics: [
-      {
-        key: "esia",
-        label: "ESIA Transparency",
-        description: "Are Environmental and Social Impact Assessments publicly available",
-      },
-      {
-        key: "sovImmunity",
-        label: "Sovereign Immunity Risk",
-        description: "Government accountability for breaches of infrastructure contracts",
-      },
-      {
-        key: "resourceSov",
-        label: "Resource Sovereignty",
-        description: "Legal protections on water and energy rights",
-      },
-      {
-        key: "waste",
-        label: "Waste & Lifecycle Mandates",
-        description: "Extended Producer Responsibility laws, decommissioning liabilities",
-      },
-      {
-        key: "circular",
-        label: "Circular Economy Freedom",
-        description: "Whether laws permit reuse of greywater and recycled construction materials",
-      },
-    ],
-  },
-];
+/** Mock-mode methodology: the registry's own weights, unedited. */
+export const METHODOLOGY: Methodology = {
+  version: PILLAR_REGISTRY_VERSION,
+  weights: Object.fromEntries(PILLARS.map((p) => [p.key, p.weight])) as Record<PillarKey, number>,
+};

@@ -1,79 +1,26 @@
 import { useQuery } from "@tanstack/react-query";
-import { BadgeCheck, CircleDashed, Clock, Signal } from "lucide-react";
-import { api } from "@/api";
-import { INDICATORS, zoneIndicatorSummary } from "@/lib/indicators";
+import { BadgeCheck, CircleDashed, CircleSlash, Clock, Signal } from "lucide-react";
+import { adminApi, type FeedRow, type FeedState } from "@/api/admin";
+import { PILLARS } from "@/lib/pillars.generated";
 import { BRAND } from "@/lib/scoreColor";
-import type { Zone } from "@/types";
+import type { PillarKey } from "@/types";
 
-const FEEDS: { name: string; source: string; expectedFreqMin: number; lastMinAgo: number }[] = [
-  {
-    name: "Daystar",
-    source: "Daystar University data-access partnership",
-    expectedFreqMin: 60 * 24,
-    lastMinAgo: 42,
+const STATE_STYLE: Record<
+  FeedState,
+  { color: string; label: string; Icon: typeof BadgeCheck; note: string }
+> = {
+  fresh: { color: BRAND.teal, label: "Within SLA", Icon: BadgeCheck, note: "Delivered on schedule" },
+  stale: { color: BRAND.gold, label: "Past SLA", Icon: CircleDashed, note: "Late, under 3× the SLA" },
+  overdue: { color: BRAND.rose, label: "Overdue", Icon: Clock, note: "More than 3× the SLA late" },
+  missing: {
+    color: BRAND.steel,
+    label: "Never delivered",
+    Icon: CircleSlash,
+    note: "Registered but no delivery yet",
   },
-  { name: "KURA", source: "Kenya Urban Roads Authority", expectedFreqMin: 60 * 24, lastMinAgo: 9 },
-  {
-    name: "KeNHA",
-    source: "Kenya National Highways Authority",
-    expectedFreqMin: 60 * 24,
-    lastMinAgo: 18,
-  },
-  {
-    name: "KPLC",
-    source: "Kenya Power & Lighting Company",
-    expectedFreqMin: 60 * 6,
-    lastMinAgo: 6,
-  },
-  {
-    name: "KETRACO",
-    source: "Kenya Electricity Transmission Company",
-    expectedFreqMin: 60 * 24,
-    lastMinAgo: 33,
-  },
-  {
-    name: "NPS",
-    source: "National Police Service quarterly reports",
-    expectedFreqMin: 60 * 24 * 90,
-    lastMinAgo: 60 * 24 * 45,
-  },
-  {
-    name: "KNBS",
-    source: "Kenya National Bureau of Statistics",
-    expectedFreqMin: 60 * 24 * 365,
-    lastMinAgo: 60 * 24 * 30,
-  },
-  {
-    name: "NEMA",
-    source: "National Environment Management Authority",
-    expectedFreqMin: 60 * 24 * 30,
-    lastMinAgo: 60 * 24 * 3,
-  },
-  {
-    name: "NCWSC",
-    source: "Nairobi City Water & Sewerage Company",
-    expectedFreqMin: 60 * 24,
-    lastMinAgo: 12,
-  },
-  {
-    name: "Athi Water",
-    source: "Athi Water Works Development Agency",
-    expectedFreqMin: 60 * 24,
-    lastMinAgo: 20,
-  },
-  {
-    name: "ICTA",
-    source: "ICT Authority connectivity feeds",
-    expectedFreqMin: 60 * 6,
-    lastMinAgo: 4,
-  },
-];
+};
 
-function stalenessBucket(lastMinAgo: number, expectedFreqMin: number): "fresh" | "amber" | "stale" {
-  if (lastMinAgo <= expectedFreqMin * 1.5) return "fresh";
-  if (lastMinAgo <= expectedFreqMin * 3) return "amber";
-  return "stale";
-}
+const STATE_ORDER: FeedState[] = ["fresh", "stale", "overdue", "missing"];
 
 function formatAge(min: number): string {
   if (min < 60) return `${min}m ago`;
@@ -85,47 +32,83 @@ function formatAge(min: number): string {
 }
 
 export default function DataFeedsMatrix() {
-  const { data: zones = [] } = useQuery({ queryKey: ["zones"], queryFn: api.getZones });
+  const { data, isLoading } = useQuery({ queryKey: ["admin", "feeds"], queryFn: adminApi.feeds });
+
+  const feeds = data?.feeds ?? [];
+  const summary = data?.summary;
+
+  // One cell per (sub-county, pillar). Rows come from the feed table itself,
+  // so a sub-county with nothing registered is absent rather than shown as a
+  // row of empty promises.
+  const byCell = new Map<string, FeedRow>();
+  const zones = new Map<string, string>();
+  for (const f of feeds) {
+    byCell.set(`${f.zone_id}:${f.pillar_key}`, f);
+    zones.set(f.zone_id, f.zone_name ?? f.zone_id);
+  }
+  const zoneRows = [...zones.entries()].sort((a, b) => a[1].localeCompare(b[1]));
+
+  const sources = [...new Set(feeds.map((f) => f.source_system).filter(Boolean))] as string[];
+
+  if (isLoading) {
+    return <div className="text-[11px] text-ink-4">Reading feed status…</div>;
+  }
+
+  if (!summary || summary.total === 0) {
+    return (
+      <div className="rounded-card border border-border bg-[rgba(255,255,255,0.02)] p-4">
+        <div className="text-[11px] font-semibold text-ink-1">No feed rows registered</div>
+        <p className="mt-1 text-[10.5px] text-ink-4 leading-[1.55]">
+          Nothing is being tracked in <code className="text-ink-3">data_feed_status</code> yet.
+          Freshness is measured from real deliveries, so there is nothing to show rather than a
+          default set of green tiles.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
-      {/* Feed health tiles — every ingestion source at a glance */}
       <section>
         <div className="text-[10.5px] font-medium text-ink-4 uppercase tracking-[0.1em] mb-2 flex items-center gap-1.5">
-          <Signal size={11} /> Ingestion feed health · {FEEDS.length} sources
+          <Signal size={11} /> Feed health · {summary.total} tracked
+          {sources.length > 0 && ` · ${sources.length} sources`}
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-          {FEEDS.map((f) => {
-            const bucket = stalenessBucket(f.lastMinAgo, f.expectedFreqMin);
-            const bucketColor =
-              bucket === "fresh" ? BRAND.teal : bucket === "amber" ? BRAND.gold : BRAND.rose;
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+          {STATE_ORDER.map((state) => {
+            const st = STATE_STYLE[state];
             return (
               <div
-                key={f.name}
+                key={state}
                 className="rounded-card border border-border p-2.5 bg-[rgba(255,255,255,0.02)]"
-                title={f.source}
+                title={st.note}
               >
                 <div className="flex items-center gap-1.5">
                   <span
-                    className="w-1.5 h-1.5 rounded-full pulse-glow shrink-0"
-                    style={{ background: bucketColor, boxShadow: `0 0 6px ${bucketColor}88` }}
+                    className="w-1.5 h-1.5 rounded-full shrink-0"
+                    style={{ background: st.color, boxShadow: `0 0 6px ${st.color}88` }}
                   />
-                  <span className="text-[11px] font-semibold text-ink-1 truncate">{f.name}</span>
-                  <span className="ml-auto text-[9.5px] text-ink-4 tabular-nums">
-                    {formatAge(f.lastMinAgo)}
+                  <span className="text-[11px] font-semibold text-ink-1 truncate">{st.label}</span>
+                  <span
+                    className="ml-auto text-[13px] font-semibold tabular-nums"
+                    style={{ color: st.color }}
+                  >
+                    {summary[state]}
                   </span>
                 </div>
-                <div className="mt-1 text-[9.5px] text-ink-4 truncate">{f.source}</div>
+                <div className="mt-1 text-[9.5px] text-ink-4 truncate">{st.note}</div>
               </div>
             );
           })}
         </div>
+        {sources.length > 0 && (
+          <p className="mt-2 text-[9.5px] text-ink-4">Sources · {sources.join(" · ")}</p>
+        )}
       </section>
 
-      {/* Zone × indicator matrix */}
       <section>
         <div className="text-[10.5px] font-medium text-ink-4 uppercase tracking-[0.1em] mb-2">
-          Zone × indicator delivery matrix
+          Sub-county × pillar delivery
         </div>
         <div className="overflow-x-auto rounded-card border border-border bg-[rgba(255,255,255,0.02)] max-w-full">
           {/* On mobile the swipe hint helps users find that the matrix scrolls sideways */}
@@ -136,49 +119,59 @@ export default function DataFeedsMatrix() {
             <thead>
               <tr className="text-ink-4">
                 <th className="text-left px-2.5 py-1.5 font-medium sticky left-0 z-10 min-w-[110px] sm:min-w-[140px] bg-atlas-base shadow-[2px_0_6px_rgba(0,0,0,0.4)]">
-                  Zone
+                  Sub-county
                 </th>
-                {INDICATORS.map((ind) => (
+                {PILLARS.map((p) => (
                   <th
-                    key={ind.key}
-                    className="text-center px-1.5 py-1.5 font-medium min-w-[42px]"
-                    title={ind.label}
+                    key={p.key}
+                    className="text-center px-1.5 py-1.5 font-medium min-w-[64px]"
+                    title={`${p.displayName} · ${p.sourceId ?? "no source"}`}
                   >
-                    {ind.label.split(" ").slice(0, 2).join(" ")}
+                    {p.displayName.split(" ")[0]}
                   </th>
                 ))}
-                <th className="text-right px-2.5 py-1.5 font-medium min-w-[70px]">Delivered</th>
+                <th className="text-right px-2.5 py-1.5 font-medium min-w-[70px]">Within SLA</th>
               </tr>
             </thead>
             <tbody>
-              {zones.map((z: Zone) => {
-                const summary = zoneIndicatorSummary(z.id);
+              {zoneRows.map(([zoneId, zoneName]) => {
+                const cells = PILLARS.map((p) => byCell.get(`${zoneId}:${p.key as PillarKey}`));
+                const tracked = cells.filter(Boolean).length;
+                const fresh = cells.filter((c) => c?.state === "fresh").length;
                 return (
-                  <tr key={z.id} className="border-t border-border">
+                  <tr key={zoneId} className="border-t border-border">
                     <td className="text-left px-2.5 py-1.5 text-ink-1 font-medium sticky left-0 z-10 truncate bg-atlas-base shadow-[2px_0_6px_rgba(0,0,0,0.4)]">
-                      {z.name}
+                      {zoneName}
                     </td>
-                    {summary.states.map((s) => {
-                      const icon =
-                        s.availability === "delivered" ? (
-                          <BadgeCheck size={11} style={{ color: BRAND.teal }} />
-                        ) : s.availability === "pending" ? (
-                          <CircleDashed size={11} style={{ color: BRAND.gold }} />
-                        ) : (
-                          <Clock size={11} style={{ color: BRAND.steel }} />
+                    {PILLARS.map((p, i) => {
+                      const cell = cells[i];
+                      if (!cell) {
+                        return (
+                          <td
+                            key={p.key}
+                            className="text-center px-1 py-1.5 text-ink-4"
+                            title={`${p.displayName} · no feed registered for this sub-county`}
+                          >
+                            —
+                          </td>
                         );
+                      }
+                      const st = STATE_STYLE[cell.state];
+                      const age = cell.age_min === null ? "never" : formatAge(cell.age_min);
                       return (
                         <td
-                          key={s.key}
+                          key={p.key}
                           className="text-center px-1 py-1.5"
-                          title={`${s.label} · ${s.availability}`}
+                          title={`${cell.feed_name} · ${st.label} · ${age} · ${cell.verified_records} verified records`}
                         >
-                          <span className="inline-flex">{icon}</span>
+                          <span className="inline-flex">
+                            <st.Icon size={11} style={{ color: st.color }} />
+                          </span>
                         </td>
                       );
                     })}
                     <td className="text-right px-2.5 py-1.5 text-ink-2 tabular-nums">
-                      {summary.delivered}/{summary.total}
+                      {fresh}/{tracked}
                     </td>
                   </tr>
                 );
@@ -187,15 +180,15 @@ export default function DataFeedsMatrix() {
           </table>
         </div>
         <div className="mt-2 flex flex-wrap gap-2 text-[9.5px] text-ink-3">
-          <span className="inline-flex items-center gap-1">
-            <BadgeCheck size={10} style={{ color: BRAND.teal }} /> Delivered
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <CircleDashed size={10} style={{ color: BRAND.gold }} /> In pipeline
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <Clock size={10} style={{ color: BRAND.steel }} /> Awaiting Daystar
-          </span>
+          {STATE_ORDER.map((state) => {
+            const st = STATE_STYLE[state];
+            return (
+              <span key={state} className="inline-flex items-center gap-1">
+                <st.Icon size={10} style={{ color: st.color }} /> {st.label}
+              </span>
+            );
+          })}
+          <span className="inline-flex items-center gap-1 text-ink-4">— No feed registered</span>
         </div>
       </section>
     </div>

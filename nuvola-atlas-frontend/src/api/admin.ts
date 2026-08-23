@@ -105,6 +105,28 @@ export interface AuditVolume {
   generated_at: string;
 }
 
+/** Computed on read from `last_delivered_at` against the feed's own SLA. */
+export type FeedState = "fresh" | "stale" | "overdue" | "missing";
+
+export interface FeedRow {
+  id: number;
+  zone_id: string;
+  zone_name: string | null;
+  pillar_key: string;
+  feed_name: string;
+  source_system: string | null;
+  last_delivered_at: string | null;
+  expected_frequency_min: number;
+  verified_records: number;
+  state: FeedState;
+  age_min: number | null;
+}
+
+export interface FeedMatrix {
+  summary: { fresh: number; stale: number; overdue: number; missing: number; total: number };
+  feeds: FeedRow[];
+}
+
 // ── Mock fixtures so the dashboard renders in preview/local without a backend.
 const mockAuditVolume = (): AuditVolume => {
   // Slight wobble so the sparkline reads as a real trend in mock mode.
@@ -299,6 +321,16 @@ export const adminApi = {
     }
     const r = await getJson<{ data: SystemHealth }>("/admin/system-health");
     return r.data;
+  },
+
+  feeds: async (): Promise<FeedMatrix> => {
+    // No mock fixture, for the same reason as systemHealth: in mock mode
+    // nothing is ingesting, and a wall of green freshness tiles is exactly the
+    // claim this panel exists to check.
+    if (USE_MOCK) {
+      return { summary: { fresh: 0, stale: 0, overdue: 0, missing: 0, total: 0 }, feeds: [] };
+    }
+    return getJson<FeedMatrix>("/admin/feeds");
   },
 
   auditVolume: async (): Promise<AuditVolume> => {

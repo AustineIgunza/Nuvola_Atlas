@@ -1,3 +1,5 @@
+import { PILLARS, type PillarKey } from "@/lib/pillars.generated";
+
 /** Maps a 0-100 vitality score along the Ground & Harvest ramp:
  *  brick #B23A2E -> terracotta #C0552B -> gold #E0A82E -> #3F9E72 -> teal #1F8A78
  *  (warm earth at the low end → living teal where people flourish). */
@@ -65,41 +67,40 @@ export const BRAND = {
   navyRaised: "#123049",
   terracotta: "#C0552B", // signature — earth / roads / infrastructure
   terracottaDeep: "#A8481F",
-  gold: "#E0A82E", // value — energy / grid
-  goldDeep: "#B8801C", // momentum
-  teal: "#1F8A78", // freedom — water / life / Social pillar
+  gold: "#E0A82E", // value — energy / transit
+  goldDeep: "#B8801C",
+  teal: "#1F8A78", // water / life
   tealDeep: "#176B5D",
-  steel: "#3E6E93", // navy-family — density / Safety pillar
+  steel: "#3E6E93", // navy-family — held / deliberately cool
   rose: "#D3402E", // alert / risk
   bone: "#F4EFE6", // warm off-white — paper / verified record
   ink: "#1A1A1A",
   inkSoft: "#6B6257", // warm taupe — secondary text on light surfaces
 } as const;
 
-export const PILLAR_COLORS: Record<string, string> = {
-  social: "#1F8A78", // Living Teal — freedom / human wellbeing
-  safety: "#3E6E93", // Sovereign Steel — security (navy family)
-  density: "#E0A82E", // Savannah Gold — value / scaling
-  infra: "#C0552B", // Harvest Terracotta — earth / infrastructure
+export const PILLAR_COLORS: Record<PillarKey, string> = {
+  water_sanitation: "#1F8A78", // Living Teal — water / life
+  road_density: "#C0552B", // Harvest Terracotta — earth / roads
+  transit_access: "#E0A82E", // Savannah Gold — movement
+  electricity_access: "#3E6E93", // Sovereign Steel — held, deliberately cool
 };
 
-export const PILLAR_LABELS: Record<string, string> = {
-  social: "Social Wellbeing & Human Capital",
-  safety: "Safety & Security",
-  density: "Density & Scaling Dynamics",
-  infra: "Infrastructure & Environmental Safeguards",
+/** Long form, for headings and legends. Taken from the registry so a rename
+ *  in pillars.json lands everywhere at once. */
+export const PILLAR_LABELS: Record<PillarKey, string> = Object.fromEntries(
+  PILLARS.map((p) => [p.key, p.displayName]),
+) as Record<PillarKey, string>;
+
+export const PILLAR_SHORT: Record<PillarKey, string> = {
+  water_sanitation: "Water",
+  road_density: "Roads",
+  transit_access: "Transit",
+  electricity_access: "Power",
 };
 
-export const PILLAR_SHORT: Record<string, string> = {
-  social: "Social",
-  safety: "Safety",
-  density: "Density",
-  infra: "Infra",
-};
-
-export const PILLAR_GLYPHS: Record<string, string> = {
-  social: "S",
-  safety: "P",
-  density: "D",
-  infra: "E",
+export const PILLAR_GLYPHS: Record<PillarKey, string> = {
+  water_sanitation: "W",
+  road_density: "R",
+  transit_access: "T",
+  electricity_access: "E",
 };

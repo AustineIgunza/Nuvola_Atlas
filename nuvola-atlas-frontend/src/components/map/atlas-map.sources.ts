@@ -81,33 +81,6 @@ export function generateGridFeatures(zones: Zone[]) {
   });
 }
 
-export function generateDensityFeatures(zones: Zone[]) {
-  return zones.flatMap((z) => {
-    // No density reading = no scatter. A count derived from a null pillar
-    // would fabricate a cluster; an empty layer for the zone is the truth.
-    const density = z.pillars.density;
-    if (density === null) return [];
-    const count = Math.round((density / 100) * 20) + 5;
-    return Array.from({ length: count }, (_, i) => ({
-      type: "Feature" as const,
-      geometry: {
-        type: "Point" as const,
-        coordinates: [
-          z.centroid[0] + jitter(`${z.id}-dx-${i}`) * 0.04,
-          z.centroid[1] + jitter(`${z.id}-dy-${i}`) * 0.03,
-        ] as [number, number],
-      },
-      properties: {
-        zoneId: z.id,
-        zone: z.name,
-        density,
-        delta: z.deltas.density,
-        weight: density / 100,
-      },
-    }));
-  });
-}
-
 /** Deterministic jitter so scattered nodes stay put between renders (no random
  *  drift on every map re-init). Hashes a seed string into a stable [-1,1]. */
 function jitter(seed: string): number {
@@ -176,7 +149,6 @@ export function generateWaterFeatures(zones: Zone[]) {
             kind: "main",
             zoneId: zb.id,
             name: `${za.name} → ${zb.name} main`,
-            access: pb.accessPct,
             need: pb.needPct / 100,
           },
         },
@@ -200,18 +172,16 @@ export function generateWaterFeatures(zones: Zone[]) {
         needPct: p.needPct,
         opportunity: p.opportunity,
         context: p.contextLabel,
-        accessPct: p.accessPct,
-        sharedPointPct: p.sharedPointPct,
-        waitMin: p.waitMin,
         sewerViable: p.sewerViable,
         solutionTag: p.solutionTag,
         solution: p.solution,
         rationale: p.rationale,
       },
     };
-    // Communal water-point taps — more of them where shared-point dependency is
-    // higher, so weak-access zones visibly carry a denser tap cluster.
-    const taps = 2 + Math.round((p.sharedPointPct / 100) * 4);
+    // Communal water-point taps — more of them where unmet need is higher, so
+    // weak sub-counties visibly carry a denser tap cluster. A density cue for
+    // the eye, not a count of real taps; no number is ever read off it.
+    const taps = 2 + Math.round((p.needPct / 100) * 4);
     const tapFeatures = Array.from({ length: taps }, (_, i) => ({
       type: "Feature" as const,
       geometry: {
@@ -245,56 +215,6 @@ export function generateWaterFeatures(zones: Zone[]) {
   return [...mainFeatures, ...nodeFeatures, ...facilityFeatures];
 }
 
-/** Project Momentum — gold circles at each project marker, sized by progress.
- *  Stalled projects tint rose so lost momentum reads at a glance. */
-export function generateMomentumFeatures() {
-  return PROJECTS.map((p) => ({
-    type: "Feature" as const,
-    geometry: { type: "Point" as const, coordinates: p.marker },
-    properties: {
-      name: p.name,
-      progress: p.progress,
-      status: p.status,
-      agency: p.agency,
-      eta: p.eta,
-    },
-  }));
-}
-
-/** Safety & Security — drawn as a risk heatmap. Each zone contributes a stable
- *  cluster of jittered points weighted by risk (100 - safety score), so the map
- *  reads as a live heat surface: cool steel where security is strong, gold in
- *  the watch zones, terracotta/rose over the at-risk wards. Higher-risk zones
- *  also carry more points, so the heat both brightens and spreads. */
-export function generateSafetyFeatures(zones: Zone[]) {
-  return zones.flatMap((z) => {
-    const safety = z.pillars.safety;
-    // Null safety = we cannot infer risk. Treating null as 0 would paint the
-    // hottest possible heat over a zone nobody measured.
-    if (safety === null) return [];
-    const risk = 100 - safety; // 0..100 (higher = hotter)
-    const count = 10 + Math.round((risk / 100) * 22);
-    return Array.from({ length: count }, (_, i) => ({
-      type: "Feature" as const,
-      geometry: {
-        type: "Point" as const,
-        coordinates: [
-          z.centroid[0] + jitter(`${z.id}-hx-${i}`) * 0.03,
-          z.centroid[1] + jitter(`${z.id}-hy-${i}`) * 0.024,
-        ] as [number, number],
-      },
-      properties: {
-        zoneId: z.id,
-        zone: z.name,
-        safety,
-        risk,
-        delta: z.deltas.safety,
-        weight: risk / 100,
-      },
-    }));
-  });
-}
-
 export function addSourcesAndLayers(
   m: mapboxgl.Map,
   zones: Zone[],
@@ -302,10 +222,7 @@ export function addSourcesAndLayers(
     vitality: boolean;
     roads: boolean;
     energy: boolean;
-    density: boolean;
     water: boolean;
-    momentum: boolean;
-    safety: boolean;
   },
 ) {
   m.addSource("vitality", {
@@ -320,21 +237,9 @@ export function addSourcesAndLayers(
     type: "geojson",
     data: { type: "FeatureCollection", features: generateGridFeatures(zones) },
   });
-  m.addSource("density", {
-    type: "geojson",
-    data: { type: "FeatureCollection", features: generateDensityFeatures(zones) },
-  });
   m.addSource("water", {
     type: "geojson",
     data: { type: "FeatureCollection", features: generateWaterFeatures(zones) },
-  });
-  m.addSource("momentum", {
-    type: "geojson",
-    data: { type: "FeatureCollection", features: generateMomentumFeatures() },
-  });
-  m.addSource("safety", {
-    type: "geojson",
-    data: { type: "FeatureCollection", features: generateSafetyFeatures(zones) },
   });
 
   // --- Vitality choropleth (added first → bottom-most; overlays draw above) ---
@@ -428,53 +333,6 @@ export function addSourcesAndLayers(
     type: "circle",
     source: "grid",
     paint: { "circle-radius": 22, "circle-color": "#000", "circle-opacity": 0 },
-  });
-
-  m.addLayer({
-    id: "density-heat",
-    type: "heatmap",
-    source: "density",
-    paint: {
-      "heatmap-weight": ["get", "weight"],
-      "heatmap-intensity": 1.2,
-      "heatmap-radius": 35,
-      "heatmap-opacity": active.density ? 0.65 : 0,
-      "heatmap-color": [
-        "interpolate",
-        ["linear"],
-        ["heatmap-density"],
-        0,
-        "rgba(62,110,147,0)",
-        0.3,
-        "rgba(62,110,147,0.28)",
-        0.6,
-        "rgba(62,110,147,0.55)",
-        1,
-        "rgba(62,110,147,0.9)",
-      ],
-    },
-  });
-  m.addLayer({
-    id: "density-circles",
-    type: "circle",
-    source: "density",
-    minzoom: 13,
-    paint: {
-      "circle-radius": ["interpolate", ["linear"], ["zoom"], 13, 4, 16, 8],
-      "circle-color": BRAND.steel,
-      "circle-opacity": active.density ? 0.5 : 0,
-      "circle-stroke-width": 1,
-      "circle-stroke-color": BRAND.steel,
-      "circle-stroke-opacity": active.density ? 0.3 : 0,
-    },
-  });
-  // Invisible fat-circle hit surface so the density heatmap is clickable at any
-  // zoom (density-circles alone only appears above zoom 13).
-  m.addLayer({
-    id: "density-touch",
-    type: "circle",
-    source: "density",
-    paint: { "circle-radius": 38, "circle-color": "#000", "circle-opacity": 0 },
   });
 
   // --- Water & Sanitation (SDG 6) — drawn reticulation network ---
@@ -614,80 +472,4 @@ export function addSourcesAndLayers(
     paint: { "circle-radius": 22, "circle-color": "#000", "circle-opacity": 0 },
   });
 
-  // --- Project Momentum ---
-  m.addLayer({
-    id: "momentum-glow",
-    type: "circle",
-    source: "momentum",
-    paint: {
-      "circle-radius": ["interpolate", ["linear"], ["get", "progress"], 0, 12, 100, 32],
-      "circle-color": ["case", ["==", ["get", "status"], "stalled"], BRAND.rose, BRAND.gold],
-      "circle-blur": 1,
-      "circle-opacity": active.momentum ? 0.28 : 0,
-    },
-  });
-  m.addLayer({
-    id: "momentum-core",
-    type: "circle",
-    source: "momentum",
-    paint: {
-      "circle-radius": ["interpolate", ["linear"], ["get", "progress"], 0, 4, 100, 13],
-      "circle-color": [
-        "case",
-        ["==", ["get", "status"], "stalled"],
-        BRAND.rose,
-        ["interpolate", ["linear"], ["get", "progress"], 0, BRAND.goldDeep, 100, BRAND.gold],
-      ],
-      "circle-opacity": active.momentum ? 0.92 : 0,
-      "circle-stroke-width": 1.5,
-      "circle-stroke-color": BRAND.bone,
-      "circle-stroke-opacity": active.momentum ? 0.6 : 0,
-    },
-  });
-  m.addLayer({
-    id: "momentum-touch",
-    type: "circle",
-    source: "momentum",
-    paint: { "circle-radius": 20, "circle-color": "#000", "circle-opacity": 0 },
-  });
-
-  // --- Safety & Security — risk heatmap ---
-  // Cool steel over secure wards, gold across watch corridors, terracotta/rose
-  // over at-risk zones.
-  m.addLayer({
-    id: "safety-heat",
-    type: "heatmap",
-    source: "safety",
-    paint: {
-      "heatmap-weight": ["get", "weight"],
-      "heatmap-intensity": 1.3,
-      "heatmap-radius": 42,
-      "heatmap-opacity": active.safety ? 0.7 : 0,
-      "heatmap-color": [
-        "interpolate",
-        ["linear"],
-        ["heatmap-density"],
-        0,
-        "rgba(178,58,46,0)",
-        0.15,
-        "rgba(62,110,147,0.28)",
-        0.4,
-        "rgba(224,168,46,0.55)",
-        0.7,
-        "rgba(192,85,43,0.75)",
-        1,
-        "rgba(178,58,46,0.9)",
-      ],
-    },
-  });
-  // Heatmaps in Mapbox aren't hit-testable, so we stack an invisible fat-circle
-  // layer over the same scattered points. The circles overlap so any click
-  // inside a hot zone lands on a hit point that carries the zone's `zoneId`,
-  // which the popup hook uses to open the side panel.
-  m.addLayer({
-    id: "safety-touch",
-    type: "circle",
-    source: "safety",
-    paint: { "circle-radius": 40, "circle-color": "#000", "circle-opacity": 0 },
-  });
 }

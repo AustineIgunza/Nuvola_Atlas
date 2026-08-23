@@ -1,18 +1,9 @@
 import { useEffect, useRef } from "react";
 import type mapboxgl from "mapbox-gl";
 import { useUIStore } from "@/stores/ui";
+import type { LayerState } from "@/stores/atlas";
 import type { Zone } from "@/types";
 import { addSourcesAndLayers } from "@/components/map/atlas-map.sources";
-
-interface LayerState {
-  vitality: boolean;
-  roads: boolean;
-  energy: boolean;
-  density: boolean;
-  water: boolean;
-  momentum: boolean;
-  safety: boolean;
-}
 
 export function useMapLayers(
   mapRef: React.RefObject<mapboxgl.Map | null>,
@@ -46,10 +37,6 @@ export function useMapLayers(
           m.setPaintProperty("grid-outer", "circle-stroke-opacity", 0.5 + Math.sin(t * 2.0) * 0.4);
           m.setPaintProperty("grid-outer", "circle-radius", 10 + Math.sin(t * 1.8) * 4);
         }
-        if (active.density && m.getLayer("density-heat")) {
-          m.setPaintProperty("density-heat", "heatmap-opacity", 0.55 + Math.sin(t * 0.8) * 0.12);
-          m.setPaintProperty("density-heat", "heatmap-radius", 33 + Math.sin(t * 0.6) * 5);
-        }
         if (active.water && m.getLayer("water-opportunity")) {
           // Breathe the opportunity ring so decentralized-sanitation zones pulse.
           m.setPaintProperty(
@@ -60,14 +47,6 @@ export function useMapLayers(
           if (m.getLayer("water-main-glow")) {
             m.setPaintProperty("water-main-glow", "line-opacity", 0.16 + Math.sin(t * 1.3) * 0.1);
           }
-        }
-        if (active.momentum && m.getLayer("momentum-glow")) {
-          m.setPaintProperty("momentum-glow", "circle-opacity", 0.2 + Math.sin(t * 1.4) * 0.12);
-        }
-        if (active.safety && m.getLayer("safety-heat")) {
-          // Gentle breath on the risk heatmap so at-risk zones read as *alive*.
-          m.setPaintProperty("safety-heat", "heatmap-opacity", 0.62 + Math.sin(t * 0.9) * 0.12);
-          m.setPaintProperty("safety-heat", "heatmap-radius", 40 + Math.sin(t * 0.7) * 6);
         }
       } catch {
         // layer may not exist during style swap
@@ -111,20 +90,6 @@ export function useMapLayers(
         m.setPaintProperty("grid-outer", "circle-stroke-opacity", activeLayers.energy ? 0.9 : 0);
         m.setPaintProperty("grid-outer", "circle-radius", activeLayers.energy ? 12 : 0);
       }
-      if (m.getLayer("density-heat")) {
-        m.setPaintProperty("density-heat", "heatmap-opacity", activeLayers.density ? 0.65 : 0);
-        // Mapbox rejects heatmap-radius < 1 ("0 is less than the minimum value 1").
-        // Opacity 0 already hides the layer, so 1 is a safe "off" radius.
-        m.setPaintProperty("density-heat", "heatmap-radius", activeLayers.density ? 35 : 1);
-      }
-      if (m.getLayer("density-circles")) {
-        m.setPaintProperty("density-circles", "circle-opacity", activeLayers.density ? 0.5 : 0);
-        m.setPaintProperty(
-          "density-circles",
-          "circle-stroke-opacity",
-          activeLayers.density ? 0.3 : 0,
-        );
-      }
       if (m.getLayer("water-main-glow")) {
         m.setPaintProperty("water-main-glow", "line-opacity", activeLayers.water ? 0.22 : 0);
       }
@@ -156,22 +121,6 @@ export function useMapLayers(
           "circle-stroke-opacity",
           activeLayers.water ? 0.85 : 0,
         );
-      }
-      if (m.getLayer("momentum-glow")) {
-        m.setPaintProperty("momentum-glow", "circle-opacity", activeLayers.momentum ? 0.28 : 0);
-      }
-      if (m.getLayer("momentum-core")) {
-        m.setPaintProperty("momentum-core", "circle-opacity", activeLayers.momentum ? 0.92 : 0);
-        m.setPaintProperty(
-          "momentum-core",
-          "circle-stroke-opacity",
-          activeLayers.momentum ? 0.6 : 0,
-        );
-      }
-      if (m.getLayer("safety-heat")) {
-        m.setPaintProperty("safety-heat", "heatmap-opacity", activeLayers.safety ? 0.7 : 0);
-        // Same rule as density-heat above — 1 is the minimum, not 0.
-        m.setPaintProperty("safety-heat", "heatmap-radius", activeLayers.safety ? 42 : 1);
       }
     } catch {
       // layers may not exist during style swap

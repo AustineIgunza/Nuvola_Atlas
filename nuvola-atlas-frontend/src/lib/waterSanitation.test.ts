@@ -8,9 +8,9 @@ const byId = (id: string) => {
   return z;
 };
 
-// The public signature returns `WaterProfile | null` to cover zones with no
-// pillar readings. Every fixture zone has complete pillars, so a null here
-// is a test regression — assert-and-narrow.
+// The public signature returns `WaterProfile | null` to cover sub-counties
+// with no water & sanitation reading. Every fixture zone has one, so a null
+// here is a test regression — assert-and-narrow.
 const profileOf = (id: string): WaterProfile => {
   const p = waterProfile(byId(id));
   if (!p) throw new Error(`fixture zone ${id} unexpectedly has no water profile`);
@@ -24,9 +24,6 @@ describe("waterProfile — Clean Water & Sanitation (SDG 6)", () => {
     expect(kibra.sewerViable).toBe(false);
     expect(kibra.opportunity).toBe(true);
     // Named ground-truth override applied.
-    expect(kibra.accessPct).toBe(38);
-    expect(kibra.sharedPointPct).toBe(62);
-    expect(kibra.waitMin).toBe(31);
     expect(kibra.solutionTag).toBe("Container-based + FSM");
     expect(kibra.solution.toLowerCase()).toContain("faecal-sludge");
 
@@ -52,17 +49,15 @@ describe("waterProfile — Clean Water & Sanitation (SDG 6)", () => {
     expect(p.solutionTag).toBe("DEWATS + desludging");
   });
 
-  it("keeps every zone's need/access within bounds and always names a solution", () => {
+  it("keeps every zone's need within bounds and always names a solution", () => {
     for (const z of ZONES) {
       const p = waterProfile(z);
-      // Fixture zones all have concrete pillars, so a null profile is a
-      // signal that something regressed in the fixture data itself.
+      // Fixture zones all carry a water reading, so a null profile is a signal
+      // that something regressed in the fixture data itself.
       expect(p).not.toBeNull();
       if (!p) continue;
       expect(p.needPct).toBeGreaterThanOrEqual(0);
       expect(p.needPct).toBeLessThanOrEqual(100);
-      expect(p.accessPct).toBeGreaterThanOrEqual(0);
-      expect(p.accessPct).toBeLessThanOrEqual(100);
       expect(p.solution.length).toBeGreaterThan(0);
       expect(p.rationale.length).toBeGreaterThan(0);
       // Opportunity zones are exactly the non-sewer-viable ones.
@@ -70,11 +65,17 @@ describe("waterProfile — Clean Water & Sanitation (SDG 6)", () => {
     }
   });
 
-  it("returns null for a zone with any pillar missing", () => {
+  it("inverts the measured pillar rather than composing a second weighting", () => {
+    const westlands = byId("westlands");
+    const p = profileOf("westlands");
+    expect(p.needPct).toBe(100 - westlands.pillars.water_sanitation!);
+  });
+
+  it("returns null when the water & sanitation pillar has no reading", () => {
     const seed = byId("westlands");
     const stripped = {
       ...seed,
-      pillars: { ...seed.pillars, infra: null },
+      pillars: { ...seed.pillars, water_sanitation: null },
     };
     expect(waterProfile(stripped)).toBeNull();
   });

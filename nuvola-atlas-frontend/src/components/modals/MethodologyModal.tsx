@@ -4,7 +4,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { useUIStore } from "@/stores/ui";
 import { api } from "@/api";
-import { PILLAR_COLORS } from "@/lib/scoreColor";
+import { PILLAR_COLORS, PILLAR_GLYPHS } from "@/lib/scoreColor";
+import { PILLARS } from "@/lib/pillars.generated";
+import type { PillarKey } from "@/types";
 import {
   springSettle,
   modalBackdrop,
@@ -81,10 +83,10 @@ export default function MethodologyModal() {
               transition={{ delay: 0.15 }}
               className="text-[13px] text-ink-3 mb-4 leading-relaxed"
             >
-              The UE Vitality Index produces a single 0-100 readiness score per sub-county, built
-              from four pillars. Each pillar combines several sub-metrics sourced from Kenyan
-              government data, international indices, and ground-truth verification carried on the
-              Asase layer — Navuuna's live infrastructure map.
+              Navuuna publishes one 0–100 service-performance score per Nairobi sub-county. It is a
+              weighted average of the pillars below, each a single measured quantity with a named
+              source and a stated vintage. A pillar with no reading for a sub-county is left out of
+              both the numerator and the divisor — never counted as a zero.
             </motion.p>
 
             <motion.div
@@ -94,19 +96,18 @@ export default function MethodologyModal() {
               className="mb-6 p-3.5 rounded-card bg-[rgba(255,255,255,0.03)] border border-border"
             >
               <div className="text-[10px] font-semibold text-ink-4 uppercase tracking-[0.08em] mb-1.5">
-                Freedom Index — the analytical core
+                Weights are published, not proprietary
               </div>
               <p className="text-[12px] text-ink-2 leading-relaxed">
-                The Vitality Score operationalizes Amartya Sen's <em>Development as Freedom</em>:
-                readiness as the expansion of real freedoms — economic opportunity, safety, social
-                wellbeing, and environmental security. Verified ground-truth in, one comparable
-                readiness signal out.
+                Every weight on this page is served from the same versioned registry the scorer
+                reads, so what you see here is what produced the number on the map. A regulator can
+                recompute any score from the pillar values and these weights.
               </p>
-              <p className="text-[11px] text-ink-4 mt-2 leading-relaxed">
-                The precise weighting and combination logic across pillars is proprietary to Navuuna
-                and validated against publicly documented data feeds. Pillar definitions and data
-                sources are open; the composite methodology is not.
-              </p>
+              {data && (
+                <p className="text-[11px] text-ink-4 mt-2 tabular-nums">
+                  Registry version {data.version}
+                </p>
+              )}
             </motion.div>
 
             <motion.div
@@ -115,43 +116,43 @@ export default function MethodologyModal() {
               animate="visible"
               className="space-y-4"
             >
-              {data?.pillars.map((pillar) => (
-                <motion.div
-                  key={pillar.key}
-                  variants={staggerItem}
-                  transition={springSettle}
-                  whileHover={{ scale: 1.01 }}
-                  className="p-4 rounded-card bg-[rgba(255,255,255,0.03)] border border-border transition-colors hover:border-border-strong"
-                >
-                  <div className="flex items-center gap-2.5 mb-2.5">
-                    <motion.div
-                      className="w-6 h-6 rounded-chip flex items-center justify-center text-[11px] font-bold text-white"
-                      style={{ background: PILLAR_COLORS[pillar.key] }}
-                      whileHover={{ rotate: 10 }}
-                    >
-                      {pillar.key[0].toUpperCase()}
-                    </motion.div>
-                    <h3 className="text-[14px] font-semibold text-ink-1">{pillar.name}</h3>
-                  </div>
-                  <p className="text-[12px] text-ink-3 mb-3 leading-relaxed">
-                    {pillar.description}
-                  </p>
-                  <div className="space-y-2">
-                    {pillar.subMetrics.map((sm) => (
-                      <div key={sm.key} className="flex items-start gap-2 text-[12px]">
-                        <div
-                          className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
-                          style={{ background: PILLAR_COLORS[pillar.key] }}
-                        />
-                        <div>
-                          <span className="font-medium text-ink-2">{sm.label}</span>
-                          <span className="text-ink-4"> - {sm.description}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              ))}
+              {PILLARS.map((pillar) => {
+                const key = pillar.key as PillarKey;
+                const weight = data?.weights[key] ?? pillar.weight;
+                return (
+                  <motion.div
+                    key={pillar.key}
+                    variants={staggerItem}
+                    transition={springSettle}
+                    whileHover={{ scale: 1.01 }}
+                    className="p-4 rounded-card bg-[rgba(255,255,255,0.03)] border border-border transition-colors hover:border-border-strong"
+                  >
+                    <div className="flex items-center gap-2.5 mb-2.5">
+                      <motion.div
+                        className="w-6 h-6 rounded-chip flex items-center justify-center text-[11px] font-bold text-white"
+                        style={{ background: PILLAR_COLORS[key] }}
+                        whileHover={{ rotate: 10 }}
+                      >
+                        {PILLAR_GLYPHS[key]}
+                      </motion.div>
+                      <h3 className="text-[14px] font-semibold text-ink-1">{pillar.displayName}</h3>
+                      <span className="ml-auto text-[11px] font-semibold tabular-nums text-ink-3">
+                        {weight === 0 ? "held · weight 0" : `weight ${weight.toFixed(2)}`}
+                      </span>
+                    </div>
+                    {pillar.description && (
+                      <p className="text-[12px] text-ink-3 mb-3 leading-relaxed">
+                        {pillar.description}
+                      </p>
+                    )}
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-ink-4">
+                      <span>Source · {pillar.sourceId ?? "—"}</span>
+                      <span>Vintage · {pillar.vintage ?? "—"}</span>
+                      <span>Collected at · {pillar.granularity ?? "—"}</span>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </motion.div>
           </motion.div>
         </motion.div>

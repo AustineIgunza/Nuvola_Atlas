@@ -13,9 +13,9 @@ import type { ChatMessage } from "@/types";
 import ResultChart from "./ResultChart";
 
 const STARTER_PROMPTS = [
-  "Which zones improved most in the last 30 days?",
-  "Why did Westlands' safety pillar drop this quarter?",
-  "Compare Kasarani and Embakasi East for infrastructure",
+  "Which sub-counties improved most in the last 30 days?",
+  "Why did Westlands' water & sanitation pillar move this quarter?",
+  "Compare Kasarani and Embakasi East on road density",
 ];
 
 export default function ChatPanel() {

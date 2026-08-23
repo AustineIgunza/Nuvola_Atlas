@@ -1,8 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { remoteApi } from "./remote";
 import { ZONES as MOCK_ZONES } from "./fixtures";
+import { PILLAR_KEYS } from "@/lib/pillars.generated";
 
-const PILLAR_PATHS = ["pillars.social", "pillars.safety", "pillars.density", "pillars.infra"];
+const PILLAR_PATHS = PILLAR_KEYS.map((k) => `pillars.${k}`);
+const [FIRST_PILLAR] = PILLAR_KEYS;
+
+const allPillars = <T,>(value: (k: string, i: number) => T): Record<string, T> =>
+  Object.fromEntries(PILLAR_KEYS.map((k, i) => [k, value(k, i)]));
 
 function jsonResponse(body: unknown) {
   return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(body) } as Response);
@@ -14,8 +19,8 @@ function zoneWithNullPillars(id: string) {
     id,
     name: "Westlands",
     score: 71,
-    pillars: { social: null, safety: null, density: null, infra: null },
-    deltas: { social: null, safety: null, density: null, infra: null },
+    pillars: allPillars(() => null),
+    deltas: allPillars(() => null),
     centroid: null,
     lastSyncMin: null,
   };
@@ -44,8 +49,8 @@ describe("hydrateZone", () => {
         id: "westlands",
         name: "Westlands",
         score: 71,
-        pillars: { social: 60, safety: 61, density: 62, infra: 63 },
-        deltas: { social: 1, safety: -1, density: 0, infra: 2 },
+        pillars: allPillars((_k, i) => 60 + i),
+        deltas: allPillars((_k, i) => i - 1),
         centroid: [36.81, -1.26],
         lastSyncMin: 4,
       }),
@@ -54,7 +59,7 @@ describe("hydrateZone", () => {
     const zone = await remoteApi.getZone("westlands");
 
     expect(zone._hydrated).toBeUndefined();
-    expect(zone.pillars).toEqual({ social: 60, safety: 61, density: 62, infra: 63 });
+    expect(zone.pillars).toEqual(allPillars((_k, i) => 60 + i));
   });
 
   it("keeps a zero from the API rather than treating it as missing", async () => {
@@ -63,15 +68,15 @@ describe("hydrateZone", () => {
     vi.stubGlobal("fetch", () =>
       jsonResponse({
         ...zoneWithNullPillars("westlands"),
-        pillars: { social: 0, safety: null, density: null, infra: null },
+        pillars: allPillars((k) => (k === FIRST_PILLAR ? 0 : null)),
         lastSyncMin: 0,
       }),
     );
 
     const zone = await remoteApi.getZone("westlands");
 
-    expect(zone.pillars.social).toBe(0);
-    expect(zone._hydrated).not.toContain("pillars.social");
+    expect(zone.pillars[FIRST_PILLAR]).toBe(0);
+    expect(zone._hydrated).not.toContain(`pillars.${FIRST_PILLAR}`);
     expect(zone._hydrated).not.toContain("lastSyncMin");
   });
 
@@ -103,15 +108,15 @@ describe("hydrateZone", () => {
     // of travel cannot — an arrow on screen for a movement nobody measured is
     // a claim, not a placeholder. Deltas therefore skip hydration entirely.
     const mock = MOCK_ZONES.find((m) => m.id === "westlands")!;
-    expect(mock.deltas.social).not.toBeNull(); // otherwise this proves nothing
+    expect(mock.deltas[FIRST_PILLAR]).not.toBeNull(); // otherwise this proves nothing
 
     vi.stubGlobal("fetch", () => jsonResponse({ id: "westlands", name: "Westlands", score: 71 }));
 
     const zone = await remoteApi.getZone("westlands");
 
-    expect(zone.deltas).toEqual({ social: null, safety: null, density: null, infra: null });
+    expect(zone.deltas).toEqual(allPillars(() => null));
     expect(zone.deltaWindowDays).toBeNull();
-    expect(zone._hydrated ?? []).not.toContain("deltas.social");
+    expect(zone._hydrated ?? []).not.toContain(`deltas.${FIRST_PILLAR}`);
   });
 
   it("warns once per response, not once per zone", async () => {
@@ -133,8 +138,8 @@ describe("hydrateZone", () => {
           id: "westlands",
           name: "Westlands",
           score: 71,
-          pillars: { social: 60, safety: 61, density: 62, infra: 63 },
-          deltas: { social: 0, safety: 0, density: 0, infra: 0 },
+          pillars: allPillars((_k, i) => 60 + i),
+          deltas: allPillars(() => 0),
           centroid: [36.81, -1.26],
           lastSyncMin: 4,
         },

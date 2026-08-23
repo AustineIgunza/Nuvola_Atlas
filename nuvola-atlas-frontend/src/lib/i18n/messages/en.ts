@@ -122,32 +122,29 @@ export const en = {
   "assistant.readonlyNote": "⌘/Ctrl + Enter to send. Read-only queries only.",
   "assistant.pickConversation": "Pick a conversation or start a new one.",
   "assistant.starterHint": "Try one of these to get started:",
-  "assistant.starter.leaders": "Which zones lead on Vitality?",
-  "assistant.starter.explainPillars": "Explain the four Vitality pillars",
-  "assistant.starter.weakSafety": "Where is the Safety pillar weakest?",
+  "assistant.starter.leaders": "Which sub-counties score highest?",
+  "assistant.starter.explainPillars": "Explain the pillars behind the score",
+  "assistant.starter.weakWater": "Where is water and sanitation weakest?",
 
   // ── Sign-in / auth ───────────────────────────────────────────────────────
   "auth.signIn": "Sign in",
   "auth.signOut": "Sign out",
 
   // ── Pillar labels (short + long) ─────────────────────────────────────────
-  "pillar.social.short": "Social",
-  "pillar.safety.short": "Safety",
-  "pillar.density.short": "Density",
-  "pillar.infra.short": "Infra",
-  "pillar.social.long": "Social Wellbeing & Human Capital",
-  "pillar.safety.long": "Safety & Security",
-  "pillar.density.long": "Density & Scaling Dynamics",
-  "pillar.infra.long": "Infrastructure & Environmental Safeguards",
+  "pillar.water_sanitation.short": "Water",
+  "pillar.road_density.short": "Roads",
+  "pillar.transit_access.short": "Transit",
+  "pillar.electricity_access.short": "Power",
+  "pillar.water_sanitation.long": "Water & Sanitation",
+  "pillar.road_density.long": "Road Density",
+  "pillar.transit_access.long": "Transit Access",
+  "pillar.electricity_access.long": "Electricity Access",
 
   // ── Map layer labels ────────────────────────────────────────────────────
-  "layer.vitality": "Vitality Zones",
-  "layer.roads": "Road Progress",
-  "layer.energy": "Smart Grid Status",
-  "layer.density": "Density",
+  "layer.vitality": "Service Performance",
+  "layer.roads": "Road Density",
+  "layer.energy": "Electricity Access",
   "layer.water": "Water & Sanitation",
-  "layer.momentum": "Project Momentum",
-  "layer.safety": "Safety & Security",
 
   // ── Vitality bands + scorecard chrome ───────────────────────────────────
   "band.strong": "Strong",
@@ -256,10 +253,10 @@ export const en = {
     "Editorial copy shown on public + methodology surfaces. Every save creates a revision.",
   "cms.pick": "Pick a block to edit",
   "cms.blocks.methodology": "Methodology · Overview",
-  "cms.blocks.social": "Pillar · Social Wellbeing",
-  "cms.blocks.safety": "Pillar · Safety & Security",
-  "cms.blocks.density": "Pillar · Density & Scaling",
-  "cms.blocks.infra": "Pillar · Infrastructure & Environment",
+  "cms.blocks.water_sanitation": "Pillar · Water & Sanitation",
+  "cms.blocks.road_density": "Pillar · Road Density",
+  "cms.blocks.transit_access": "Pillar · Transit Access",
+  "cms.blocks.electricity_access": "Pillar · Electricity Access",
   "cms.blocks.public": "Public Portal · Intro",
   "cms.editorLabel": "Body (Markdown)",
   "cms.publish": "Publish",
@@ -351,10 +348,6 @@ export const en = {
   "esgLens.off": "ESG lens",
   "esgLens.turnOn": "Turn ESG lens on",
   "esgLens.turnOff": "Turn ESG lens off",
-  "compare.capitalAllocation.title": "Capital-allocation lens",
-  "compare.capitalAllocation.subtitle":
-    "Zones ranked on Safety × Infrastructure × Rule-of-Law composite",
-  "compare.capitalAllocation.rank": "#{rank}",
   "reports.investorFilter.badge": "Watchlist only",
   "reports.investorFilter.showAll": "Show all reports",
   "reports.investorFilter.showWatchlist": "Show only watchlist",
@@ -432,12 +425,12 @@ export const en = {
   "leaderboard.previewAria": "{zone} scorecard preview",
 
   // ── Chat / Assistant answer templates ──────────────────────────────────
-  "chat.followup.whichDriving": "Which of the four pillars is driving that gap?",
-  "chat.followup.qoqMoves": "How have these zones moved quarter-over-quarter?",
+  "chat.followup.whichDriving": "Which pillar is driving that gap?",
+  "chat.followup.qoqMoves": "How have these sub-counties moved quarter-over-quarter?",
   "chat.followup.whichInfra": "Which infrastructure projects are behind these numbers?",
-  "chat.followup.whichLeads": "Which Nairobi zones lead on Vitality?",
-  "chat.followup.explainPillars": "Explain the four Vitality pillars",
-  "chat.followup.safetyWeakest": "Where is Safety weakest across the county?",
+  "chat.followup.whichLeads": "Which Nairobi sub-counties score highest?",
+  "chat.followup.explainPillars": "Explain the pillars behind the score",
+  "chat.followup.waterWeakest": "Where is water and sanitation weakest across the county?",
   "chat.followup.whyPillarStronger": "Why is {zone}'s {pillar} pillar stronger?",
   "chat.followup.activeProjectsIn": "Which infrastructure projects are active in {zone}?",
   "chat.followup.gapMovedThisQuarter":
@@ -457,14 +450,14 @@ export const en = {
   "chat.followup.pillarsDisagree": "Show me a zone where the pillars disagree",
   "chat.followup.dataOrigin": "Where does the underlying data come from?",
   "chat.compare.needSecond":
-    "Pick a second zone in the picker above and I'll walk through all four pillars side by side — Social Wellbeing, Safety & Security, Density & Scaling, and Infrastructure & Environment.",
+    "Pick a second sub-county in the picker above and I'll walk through the pillars side by side — {pillars}.",
   "chat.compare.opener": "{top} leads overall at {topScore}, {gaps}.",
   "chat.compare.gap": "{gap} pt{plural} ahead of {name}",
   "chat.compare.pillarLine": "• {pillar}: {values} — spread of {spread} pt{plural}.",
   "chat.compare.closing":
-    "The four pillars split the story: {pillar} is where these zones diverge most ({spread} pt spread), so if you're prioritising, that's the pillar to interrogate first.",
+    "{pillar} is where these sub-counties diverge most ({spread} pt spread), so if you're prioritising, that's the pillar to interrogate first.",
   "chat.composition.needZone":
-    "Pick a zone or mention one by name and I'll break down its four Vitality pillars — Social Wellbeing, Safety & Security, Density & Scaling, and Infrastructure & Environment.",
+    "Pick a sub-county or mention one by name and I'll break down its pillars — {pillars}.",
   "chat.composition.opener":
     "**{zone}** scores **{score}/100** overall — that's {delta} vs. the Nairobi average ({avg}) and puts it at rank #{rank} of the 17 sub-counties. Readiness band: **{band}**.",
   "chat.composition.pillarLine": "• **{pillar}** — {value}/100 {arrow} ({delta})",
@@ -474,41 +467,41 @@ export const en = {
   "chat.composition.strongLabel": "**Strongest — {pillar}.**",
   "chat.composition.weakLabel": "**Weakest — {pillar}.**",
   "chat.composition.unscored":
-    "**{zone}** has no composite Vitality Score yet — none of its pillars has a reading behind it, so I can't break down what does not exist. Once indicators start landing for the zone, I can compose the score and its four pillars from those readings.",
-  "chat.strong.social":
-    "{zone} has above-average access to healthcare, education, and connectivity — a workforce and community that can absorb new infrastructure without training gaps.",
-  "chat.strong.safety":
-    "Physical and legal safety are the anchor here. Low incident density along transit corridors, and rule-of-law indicators that make long-horizon contracts defensible.",
-  "chat.strong.density":
-    "{zone} still has headroom for growth — the density-to-capacity ratio hasn't tipped into over-saturation, so new development doesn't fight land costs.",
-  "chat.strong.infra":
-    "Infrastructure and environmental safeguards are already documented — ESIA transparency, resource sovereignty, and lifecycle mandates are on paper and defensible.",
-  "chat.weak.social":
-    "This is the pillar to fund alongside any new project in {zone} — healthcare access, digital connectivity, or education-capacity gaps will otherwise leak into operational risk in year 2–3.",
-  "chat.weak.safety":
-    "Safety needs closing before the next round of investment. It usually shows up as physical-security incidents or rule-of-law drift; the alerts feed is where a diagnostic reveals which one.",
-  "chat.weak.density":
-    "{zone} is over-saturated relative to its current infrastructure — new capital tends to lose margin to land costs and permit friction. Fund density-lifting projects (transit, water mains) first.",
-  "chat.weak.infra":
-    "The paper trail is thin — ESIAs, waste mandates, or sovereign-immunity carve-outs are missing or non-public. Budget legal + policy work into any project brief here.",
+    "**{zone}** has no composite score yet — none of its pillars has a reading behind it, so I can't break down what does not exist. Once indicators start landing for the sub-county, I can compose the score and its pillars from those readings.",
+  "chat.strong.water_sanitation":
+    "Improved water supply reaches most households in {zone}, and the sanitation mix is not dominated by shared or open facilities. This is the pillar the whole record is built around, so a strong reading here carries the most weight.",
+  "chat.strong.road_density":
+    "{zone} has a dense mapped road network for its area — the usual precondition for waste collection, emergency access and last-mile delivery working at all.",
+  "chat.strong.transit_access":
+    "Most residents of {zone} live within walking distance of a matatu stop, so reaching work and services is not gated on owning a vehicle.",
+  "chat.strong.electricity_access":
+    "Household electricity for lighting was widespread in {zone} at the 2019 census. That is the newest sub-county figure that exists — read it as a floor, not as today.",
+  "chat.weak.water_sanitation":
+    "This is the pillar to fund first in {zone}. Where trunk sewerage is not viable, the realistic path is context-specific sanitation rather than waiting on a main with no funded date.",
+  "chat.weak.road_density":
+    "{zone} has little mapped road per square kilometre. That constrains everything downstream — collection routes, ambulance times, and the cost of delivering anything at all.",
+  "chat.weak.transit_access":
+    "A large share of {zone} sits outside walking distance of a matatu stop. That puts a daily cost on residents which shows up in no other pillar.",
+  "chat.weak.electricity_access":
+    "The reading is weak, but its only source is the 2019 census. Verify against something current before acting on it.",
   "chat.distribution":
     "{top1} and {top2} share the lead at {score1}/{score2}. {top3} follows at {score3}, then {top4} ({score4}) and {top5} ({score5}). The top five sit within {spread} points — Nairobi's strongest sub-counties are clustered rather than pulled apart by any single runaway leader.",
   "chat.distribution.needMore":
     "Only {count} zone(s) have a composite score right now — I need at least five to name the leaders honestly. As more zones start receiving indicators, the top-five ranking becomes meaningful.",
   "chat.trend":
-    "{zone} has held between {low} and {high} over the last 30 days. The overall trajectory is best described as stable, with a small recent uptick coming from the Infrastructure pillar. No sudden movements to flag.",
+    "{zone} has held between {low} and {high} over the last 30 days. The trajectory is best described as stable. No sudden movements to flag.",
   "chat.trend.unscored":
-    "**{zone}** has no composite score to trend against yet — a 30-day trajectory needs a starting number, and there isn't one. Once the zone has its first scored snapshot, the trend chart becomes available.",
+    "**{zone}** has no composite score to trend against yet — a 30-day trajectory needs a starting number, and there isn't one. Once the sub-county has its first scored snapshot, the trend chart becomes available.",
   "chat.methodology":
-    "The Vitality Score aggregates four pillars — Social Wellbeing, Safety & Security, Density & Scaling, and Infrastructure & Environment — each on a 0–100 scale, and blends them into an overall zone score. The exact weightings are held in the methodology paper rather than exposed in the UI, but every input is versioned in a snapshot table so any score you see can be traced back to the reading that produced it.",
+    "The score blends the pillars — {pillars} — each on a 0–100 scale. Weights live in one versioned registry rather than inline anywhere, a pillar with no reading is dropped from both the numerator and the divisor instead of counting as a zero, and every input is versioned in a snapshot table, so any score you see traces back to the reading that produced it.",
   "chat.summary.needZone":
-    "Pick a zone or two from the compare picker and I'll walk through their four Vitality pillars. Without a specific zone in view, I can only speak to county averages.",
+    "Pick a sub-county or two from the compare picker and I'll walk through their pillars. Without a specific sub-county in view, I can only speak to county averages.",
   "chat.summary.single":
-    "{zone} sits at {score}/100 overall. Social Wellbeing {social}, Safety {safety}, Density {density}, Infrastructure {infra}. Ask about any pillar and I can go deeper.",
+    "{zone} sits at {score}/100 overall. {pillars}. Ask about any pillar and I can go deeper.",
   "chat.summary.multi":
-    'You\'re comparing {names}. Their overall Vitality scores average {avg}. Ask "compare across all four pillars" for the full breakdown, or narrow to a single pillar for a deeper look.',
+    'You\'re comparing {names}. Their overall scores average {avg}. Ask "compare across all pillars" for the full breakdown, or narrow to a single pillar for a deeper look.',
   "chat.summary.multi.unscored":
-    "You're comparing {names}. None of them has a composite Vitality Score yet, so there's no average to report — but I can still walk through whichever pillar readings each zone does have.",
+    "You're comparing {names}. None of them has a composite score yet, so there's no average to report — but I can still walk through whichever pillar readings each does have.",
   "chat.diagnostic.stable":
     "Every zone in Nairobi is roughly stable this quarter — the softest moves are inside noise. Ask about a specific pillar to go deeper.",
   "chat.diagnostic.noMovement":
@@ -517,14 +510,14 @@ export const en = {
     "**{zone}** — the specific pillar to look at is **{worstPillar}**, which moved {worstDelta} over the last {days} days. The best mover was {bestPillar} at {bestDelta}, so the net Vitality Score of {score} is only mildly affected by the drop. \n\n**Likely cause.** {cause} The alerts feed for {zone} usually names the exact project or incident behind a move this size — worth checking before you commit to a diagnosis.\n\nOn the standing weak side, **{weakestPillar}** at {weakestValue}/100 is the pillar that structurally holds {zone} back, regardless of recent movement.",
   "chat.diagnostic.growth":
     "**{zone}** did not drop on any measured pillar over the last {days} days — the softest move was {worstPillar} at {worstDelta}, and the strongest was {bestPillar} at {bestDelta}. Growth is broad-based, not driven by a single pillar. \n\nOn the standing weak side, **{weakestPillar}** at {weakestValue}/100 is the pillar that keeps the composite from climbing further — {weakExplain}",
-  "chat.cause.social":
-    "Drops on Social Wellbeing typically track a workforce or health-service disruption — clinic closures, teacher-strike days, or a mobile-broadband coverage regression.",
-  "chat.cause.safety":
-    "Safety drops of this magnitude almost always track a physical-security incident cluster (a set of vandalism or crime reports) or a rule-of-law event flagged by NPS. Around {zone} specifically, transit-corridor incidents are the usual cause.",
-  "chat.cause.density":
-    "Density drops read as either a population-pressure spike (housing shortage widening) or a corridor congestion event — the AM/PM peak transit times are the tell.",
-  "chat.cause.infra":
-    "Infrastructure drops mean an ESIA has expired or been pulled, a resource-sovereignty carve-out has been renegotiated, or waste/lifecycle mandate enforcement has slipped.",
+  "chat.cause.water_sanitation":
+    "A move here tracks either a revision to the utility's reported service performance or a change in the household sanitation mix. WASREB's IMPACT report is where the utility-side figure is published; the household side comes from the census.",
+  "chat.cause.road_density":
+    "Road density is measured off the OSM extract, not the ground. A mapping campaign can add kilometres that were always there, so check the extract date around {zone} before reading a move as construction.",
+  "chat.cause.transit_access":
+    "Transit access follows the GTFS refresh — routes added, retired, or re-surveyed by Digital Matatus. A route withdrawal lands here before it lands anywhere else.",
+  "chat.cause.electricity_access":
+    "Electricity access has one source and one vintage, the 2019 census. Any movement here is a recalculation, not a change on the ground in {zone}.",
   "chat.errorGeneric": "Sorry — that request could not be sent.",
   "chat.errorEnded": "The chat stream ended unexpectedly.",
 
@@ -552,9 +545,7 @@ export const en = {
   // Shown wherever the API returned null and the client filled the gap.
   "estimated.tooltip": "Estimated — no measured data for this indicator",
   "estimated.zoneBadge": "Contains estimated values",
-  "scorecard.water.safeAccess": "Safe access",
-  "scorecard.water.sharedPoints": "Shared points",
-  "scorecard.water.medianQueue": "Median queue",
+  "scorecard.water.unmetNeed": "Unmet need",
   "scorecard.water.opportunity": "Decentralized sanitation opportunity",
   "scorecard.water.sewerage": "Sewerage viable here",
   "scorecard.infra.title": "Infrastructure · {count} {noun}",
@@ -589,13 +580,10 @@ export const en = {
   "sidebar.role.admin": "Administrator",
 
   // ── Layer descriptions ──────────────────────────────────────────────────
-  "layerDesc.vitality": "Choropleth of Vitality scores per sub-county.",
-  "layerDesc.roads": "Live progress of major road works — KURA / KeNHA.",
-  "layerDesc.energy": "Smart-grid coverage and outage clusters — KPLC.",
-  "layerDesc.density": "Population density heatmap — KNBS 2019 census.",
+  "layerDesc.vitality": "Choropleth of the service-performance score per sub-county.",
+  "layerDesc.roads": "Kilometres of mapped road per km² — HOT OSM.",
+  "layerDesc.energy": "Households using electricity for lighting — KNBS 2019 census.",
   "layerDesc.water": "Water access and sanitation solution profile — SDG 6.",
-  "layerDesc.momentum": "Delivery pace vs. schedule across active projects.",
-  "layerDesc.safety": "Rule-of-law and physical-security incidents — NPS.",
 
   // ── TopBar chrome ───────────────────────────────────────────────────────
   "topbar.live": "Live",

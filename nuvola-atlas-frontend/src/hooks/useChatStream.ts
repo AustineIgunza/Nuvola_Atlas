@@ -8,7 +8,8 @@ import { byScoreDesc, formatScore, isScored } from "@/lib/scores";
 import { translate } from "@/lib/i18n/translate";
 import type { MessageKey, TVars } from "@/lib/i18n/translate";
 import { usePrefsStore } from "@/stores/prefs";
-import type { ChatMessage, Zone } from "@/types";
+import { PILLAR_KEYS } from "@/lib/pillars.generated";
+import type { ChatMessage, PillarKey, Zone } from "@/types";
 
 /** Locale-aware t() at message-build time (never at module load) so language
  *  switches take effect on the very next chat turn. */
@@ -20,13 +21,17 @@ function tt(key: MessageKey, vars?: TVars): string {
 /**
  * Resolve pillar labels against the currently-active locale.
  */
-function pillarLabels(): Record<"social" | "safety" | "density" | "infra", string> {
-  return {
-    social: tt("pillar.social.long"),
-    safety: tt("pillar.safety.long"),
-    density: tt("pillar.density.long"),
-    infra: tt("pillar.infra.long"),
-  };
+function pillarLabels(): Record<PillarKey, string> {
+  return Object.fromEntries(
+    PILLAR_KEYS.map((k) => [k, tt(`pillar.${k}.long` as MessageKey)]),
+  ) as Record<PillarKey, string>;
+}
+
+/** Comma-joined pillar names for the templates that list them. Comma rather
+ *  than a conjunction so the same builder is correct in every locale. */
+function pillarList(): string {
+  const labels = pillarLabels();
+  return PILLAR_KEYS.map((k) => labels[k]).join(", ");
 }
 
 type StreamEventName = "intent" | "sql" | "rows" | "insight_delta" | "followups" | "done" | "error";
@@ -299,7 +304,7 @@ function mockAnswerFor(
   }
   if (intent === "methodology") {
     return {
-      answer: tt("chat.methodology"),
+      answer: tt("chat.methodology", { pillars: pillarList() }),
       followups: [
         tt("chat.followup.pillarMostContrib"),
         tt("chat.followup.pillarsDisagree"),
@@ -360,11 +365,11 @@ function buildComparisonAnswer(zones: Zone[]): MockAnswer {
   const cmp = zones.filter(isScored);
   if (cmp.length < 2) {
     return {
-      answer: tt("chat.compare.needSecond"),
+      answer: tt("chat.compare.needSecond", { pillars: pillarList() }),
       followups: [
         tt("chat.followup.whichLeads"),
         tt("chat.followup.explainPillars"),
-        tt("chat.followup.safetyWeakest"),
+        tt("chat.followup.waterWeakest"),
       ],
     };
   }
@@ -373,10 +378,7 @@ function buildComparisonAnswer(zones: Zone[]): MockAnswer {
   const rows = cmp.map((z) => ({
     name: z.name,
     score: z.score,
-    social: z.pillars.social,
-    safety: z.pillars.safety,
-    density: z.pillars.density,
-    infra: z.pillars.infra,
+    ...Object.fromEntries(PILLAR_KEYS.map((k) => [k, z.pillars[k]])),
   }));
 
   // `cmp` is `(Zone & { score: number })[]` by construction — the sort here
@@ -389,11 +391,10 @@ function buildComparisonAnswer(zones: Zone[]): MockAnswer {
   });
 
   const labels = pillarLabels();
-  const pillarKeys = ["social", "safety", "density", "infra"] as const;
   // Each pillar line is built only from zones whose reading for that pillar
   // was measured — a null on one pillar does not disqualify the zone from
   // other pillar rows.
-  const pillarLines = pillarKeys.flatMap((k) => {
+  const pillarLines = PILLAR_KEYS.flatMap((k) => {
     const measured = cmp.filter((z): z is typeof z & { pillars: { [K in typeof k]: number } } =>
       z.pillars[k] !== null,
     );
@@ -411,7 +412,7 @@ function buildComparisonAnswer(zones: Zone[]): MockAnswer {
     ];
   });
 
-  const spreads = pillarKeys.flatMap((k) => {
+  const spreads = PILLAR_KEYS.flatMap((k) => {
     const measured = cmp.filter((z) => z.pillars[k] !== null) as Array<
       Zone & { pillars: { [K in typeof k]: number } }
     >;
@@ -434,14 +435,16 @@ function buildComparisonAnswer(zones: Zone[]): MockAnswer {
     : "";
   const answer = [opener, pillarLines.join("\n"), closing].filter(Boolean).join("\n\n");
 
+  const columns = PILLAR_KEYS.map((k) => `pillar_${k}`).join(", ");
+
   return {
-    sql: `SELECT name, score, pillar_social, pillar_safety, pillar_density, pillar_infra FROM zones WHERE id IN (${idList}) ORDER BY score DESC`,
+    sql: `SELECT name, score, ${columns} FROM zones WHERE id IN (${idList}) ORDER BY score DESC`,
     rows,
     answer,
     followups: [
       tt("chat.followup.whyPillarStronger", {
         zone: top.name,
-        pillar: labels[widestSpread ? widestSpread.key : "social"],
+        pillar: labels[widestSpread ? widestSpread.key : PILLAR_KEYS[0]],
       }),
       tt("chat.followup.activeProjectsIn", { zone: sorted[sorted.length - 1].name }),
       tt("chat.followup.gapMovedThisQuarter", {
@@ -456,7 +459,7 @@ function buildCompositionAnswer(zones: Zone[]): MockAnswer {
   const [z] = zones;
   if (!z) {
     return {
-      answer: tt("chat.composition.needZone"),
+      answer: tt("chat.composition.needZone", { pillars: pillarList() }),
       followups: [
         tt("chat.followup.tellMeAbout", { zone: "Westlands" }),
         tt("chat.followup.whichLeads"),
@@ -479,7 +482,7 @@ function buildCompositionAnswer(zones: Zone[]): MockAnswer {
   }
   const zScore = z.score;
   const labels = pillarLabels();
-  const entries = (["social", "safety", "density", "infra"] as const).map((k) => ({
+  const entries = PILLAR_KEYS.map((k) => ({
     key: k,
     label: labels[k],
     value: z.pillars[k],
@@ -569,11 +572,11 @@ function buildCompositionAnswer(zones: Zone[]): MockAnswer {
   };
 }
 
-function strongInterpretation(key: "social" | "safety" | "density" | "infra", z: Zone): string {
+function strongInterpretation(key: PillarKey, z: Zone): string {
   return tt(`chat.strong.${key}` as MessageKey, { zone: z.name });
 }
 
-function weakInterpretation(key: "social" | "safety" | "density" | "infra", z: Zone): string {
+function weakInterpretation(key: PillarKey, z: Zone): string {
   return tt(`chat.weak.${key}` as MessageKey, { zone: z.name });
 }
 
@@ -660,7 +663,7 @@ function buildDiagnosticText(zones: Zone[]): string {
   }
   const [z] = zones;
   const labels = pillarLabels();
-  const entries = (["social", "safety", "density", "infra"] as const).map((k) => ({
+  const entries = PILLAR_KEYS.map((k) => ({
     label: labels[k],
     key: k,
     value: z.pillars[k],
@@ -720,10 +723,7 @@ function buildDiagnosticText(zones: Zone[]): string {
   });
 }
 
-function diagnosticCause(
-  pillar: "social" | "safety" | "density" | "infra",
-  zoneName: string,
-): string {
+function diagnosticCause(pillar: PillarKey, zoneName: string): string {
   return tt(`chat.cause.${pillar}` as MessageKey, { zone: zoneName });
 }
 
@@ -733,13 +733,11 @@ function buildSummaryText(zones: Zone[]): string {
   }
   if (zones.length === 1) {
     const [z] = zones;
+    const labels = pillarLabels();
     return tt("chat.summary.single", {
       zone: z.name,
       score: formatScore(z.score),
-      social: formatScore(z.pillars.social),
-      safety: formatScore(z.pillars.safety),
-      density: formatScore(z.pillars.density),
-      infra: formatScore(z.pillars.infra),
+      pillars: PILLAR_KEYS.map((k) => `${labels[k]} ${formatScore(z.pillars[k])}`).join(", "),
     });
   }
   // Average only the scoreable zones — a null in the sum would either NaN

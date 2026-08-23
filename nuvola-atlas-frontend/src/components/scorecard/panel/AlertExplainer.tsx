@@ -123,8 +123,6 @@ export default function AlertExplainer({ alertId, onNavigate }: Props) {
         </Section>
       )}
 
-      <LayerHintButton layer="safety" label="Safety & Security" />
-
       <button
         onClick={() => navigate("/alerts")}
         className="w-full h-8 rounded-control bg-[rgba(255,255,255,0.04)] border border-border text-[10.5px] font-medium text-ink-3 hover:bg-[rgba(255,255,255,0.08)] transition-colors flex items-center justify-center gap-1.5"

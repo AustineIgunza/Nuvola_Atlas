@@ -14,6 +14,7 @@ import { TrendingUp } from "lucide-react";
 import { useZoneHistory } from "@/hooks/useZoneHistory";
 import { useZoneForecast } from "@/hooks/useZoneForecast";
 import { BRAND, PILLAR_COLORS, PILLAR_SHORT } from "@/lib/scoreColor";
+import { PILLAR_KEYS } from "@/lib/pillars.generated";
 import type { HistoryRange, PillarKey } from "@/types";
 import { Section } from "./bits";
 
@@ -28,8 +29,6 @@ const RANGE_WINDOW: Record<HistoryRange, string> = {
   week: "7 days",
   month: "30 days",
 };
-
-const PILLAR_KEYS: PillarKey[] = ["social", "safety", "density", "infra"];
 
 function prefersReducedMotion(): boolean {
   if (typeof window === "undefined" || !window.matchMedia) return false;
@@ -47,6 +46,15 @@ function formatTick(iso: string, range: HistoryRange): string {
 interface Props {
   zoneId: string;
 }
+
+type ChartRow = {
+  t: string;
+  label: string;
+  score?: number;
+  forecast?: number;
+  lower?: number;
+  upper?: number;
+} & Partial<Record<PillarKey, number>>;
 
 export default function ScoreHistoryChart({ zoneId }: Props) {
   const [range, setRange] = useState<HistoryRange>("week");
@@ -70,36 +78,30 @@ export default function ScoreHistoryChart({ zoneId }: Props) {
     // Recharts uses `undefined` for gaps (with `connectNulls` off); it does
     // not understand `null` and would plot it as a hard zero, dragging the
     // line to the floor for any bucket the backend could not aggregate.
-    const historical = data.points.map((p) => ({
-      t: p.t,
-      label: formatTick(p.t, range),
-      score: p.score ?? undefined,
-      social: p.pillars.social ?? undefined,
-      safety: p.pillars.safety ?? undefined,
-      density: p.pillars.density ?? undefined,
-      infra: p.pillars.infra ?? undefined,
-      forecast: undefined as number | undefined,
-      lower: undefined as number | undefined,
-      upper: undefined as number | undefined,
-    }));
+    const historical: ChartRow[] = data.points.map((p) => {
+      const row: ChartRow = {
+        t: p.t,
+        label: formatTick(p.t, range),
+        score: p.score ?? undefined,
+      };
+      for (const k of PILLAR_KEYS) {
+        const v = p.pillars[k];
+        if (v !== null) row[k] = v;
+      }
+      return row;
+    });
 
     if (!forecastOn || !forecast) return historical;
 
     // Anchor: last historical point becomes the seed for the forecast line
     // so the two segments connect visually.
     const anchor = historical[historical.length - 1];
-    const projected = forecast.points.map((p, i) => ({
+    const projected: ChartRow[] = forecast.points.map((p) => ({
       t: p.t,
       label: formatTick(p.t, range === "day" ? "week" : range),
-      score: undefined as number | undefined,
-      social: undefined as number | undefined,
-      safety: undefined as number | undefined,
-      density: undefined as number | undefined,
-      infra: undefined as number | undefined,
       forecast: p.score,
       lower: p.lower,
       upper: p.upper,
-      __anchor: i === 0 && anchor ? anchor.score : undefined,
     }));
 
     if (anchor) {

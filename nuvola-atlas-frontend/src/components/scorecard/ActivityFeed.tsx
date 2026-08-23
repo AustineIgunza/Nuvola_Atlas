@@ -6,7 +6,7 @@ const KIND_COLORS: Record<string, string> = {
   road: "#C0552B",
   grid: "#1F8A78",
   esia: "#1F8A78",
-  density: "#E0A82E",
+  transit: "#E0A82E",
   water: "#176B5D",
 };
 

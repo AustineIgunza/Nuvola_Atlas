@@ -26,9 +26,8 @@ export const PRIORITY_STYLES: Record<string, { bg: string; text: string }> = {
 };
 
 export const TYPE_LABELS: Record<string, string> = {
-  vitality: "Vitality Assessment",
+  service_performance: "Service-performance Assessment",
+  water_sanitation: "Water & Sanitation (SDG 6)",
   infrastructure: "Infrastructure Progress",
-  density: "Density Analysis",
-  safety: "Safety Audit",
-  environmental: "Environmental Impact",
+  methodology: "Methodology & Provenance",
 };

@@ -2,10 +2,10 @@ import type { Zone } from "@/types";
 
 /** Clean Water & Sanitation (SDG 6) intelligence.
  *
- *  The Atlas reads each zone's *unmet water & sanitation need* from its pillar
- *  scores (weak infrastructure + weak social wellbeing + high density pressure
- *  = greater need) and classifies the sanitation context so the map can
- *  recommend a *context-specific* infrastructure solution.
+ *  Unmet need is the inverse of the measured `water_sanitation` pillar — no
+ *  second weighting, no composite. The pillar is the number; this module only
+ *  turns it into a sanitation *context* so the map can recommend a solution
+ *  that fits the ground.
  *
  *  The core innovation angle: in dense informal settlements and flood-prone
  *  valleys, conventional trunk sewerage and centralized treatment works are not
@@ -19,14 +19,8 @@ export interface WaterProfile {
   zoneId: string;
   context: SanitationContext;
   contextLabel: string;
-  /** 0-100 unmet water & sanitation need (higher = weaker access). */
+  /** 0-100 unmet water & sanitation need — the inverse of the measured pillar. */
   needPct: number;
-  /** % of households with safe/basic water access. */
-  accessPct: number;
-  /** % dependent on shared / communal water points. */
-  sharedPointPct: number;
-  /** Median queue time at shared points, minutes. */
-  waitMin: number;
   /** Whether conventional trunk sewerage / a treatment works is viable here. */
   sewerViable: boolean;
   /** Flagged as a decentralized-sanitation opportunity (sewerage not viable). */
@@ -43,13 +37,15 @@ export interface WaterProfile {
  *  sewerage and centralized treatment cannot be laid or maintained. */
 const INFORMAL = new Set(["kibra", "mathare"]);
 
+/** Above this unmet-need share, extending the trunk main is slower and more
+ *  capital-heavy than cluster-scale treatment. A recommendation threshold, not
+ *  a scoring weight — it changes which solution is proposed, never a score. */
+const DECENTRALISED_THRESHOLD = 0.4;
+
 /** Ground-truthed detail for the flagged informal-settlement zones — overrides
- *  the derived defaults with the real access picture and a specific solution. */
+ *  the derived recommendation with a specific, surveyed solution. */
 const NAMED: Record<string, Partial<WaterProfile>> = {
   kibra: {
-    accessPct: 38,
-    sharedPointPct: 62,
-    waitMin: 31,
     solutionTag: "Container-based + FSM",
     solution:
       "Container-based sanitation — sealed cartridge latrines emptied on a scheduled collection route and treated off-site — paired with decentralized faecal-sludge management and raised communal ablution blocks.",
@@ -57,9 +53,6 @@ const NAMED: Record<string, Partial<WaterProfile>> = {
       "Dense, unplanned plots with no road reserves: trunk sewers and a treatment works can neither be laid nor desludged here, so collection-and-treatment is the only maintainable path.",
   },
   mathare: {
-    accessPct: 41,
-    sharedPointPct: 57,
-    waitMin: 27,
     solutionTag: "Raised blocks + FSM",
     solution:
       "Raised ablution blocks sited above the flood line, scheduled faecal-sludge emptying, and small cluster bio-digesters where plot sizes allow.",
@@ -68,31 +61,18 @@ const NAMED: Record<string, Partial<WaterProfile>> = {
   },
 };
 
-function need01(z: Zone): number | null {
-  const { infra, social, density } = z.pillars;
-  // Any missing pillar means the need weighting is a guess. A zone that has
-  // not been measured has no computable water need — say so with null rather
-  // than fabricate a midpoint by treating the gap as zero.
-  if (infra === null || social === null || density === null) return null;
-  const infraGap = (100 - infra) / 100;
-  const socialGap = (100 - social) / 100;
-  const densityPressure = density / 100;
-  let n = infraGap * 0.5 + socialGap * 0.3 + densityPressure * 0.2;
-  if (INFORMAL.has(z.id)) n = n + 0.18;
-  return Math.max(0, Math.min(1, n));
-}
-
 export function waterProfile(z: Zone): WaterProfile | null {
-  const need = need01(z);
-  if (need === null) return null;
+  const measured = z.pillars.water_sanitation;
+  // A sub-county with no water & sanitation reading has no computable need.
+  // Say so with null rather than fabricate a midpoint from the gap.
+  if (measured === null) return null;
+
+  const need = (100 - measured) / 100;
   const needPct = Math.round(need * 100);
 
-  // Below ~0.40 unmet need the trunk network is close enough that conventional
-  // sewerage extension wins; above it, cluster-scale decentralized treatment is
-  // the faster, cheaper, context-fit path — so those zones flag as opportunities.
   const context: SanitationContext = INFORMAL.has(z.id)
     ? "informal"
-    : need >= 0.4
+    : need >= DECENTRALISED_THRESHOLD
       ? "peri-urban"
       : "established";
   const sewerViable = context === "established";
@@ -107,9 +87,6 @@ export function waterProfile(z: Zone): WaterProfile | null {
           ? "Peri-urban · low trunk coverage"
           : "Established urban",
     needPct,
-    accessPct: Math.round(90 - need * 55),
-    sharedPointPct: Math.round(need * 55),
-    waitMin: Math.round(4 + need * 26),
     sewerViable,
     opportunity: !sewerViable,
     solutionTag:

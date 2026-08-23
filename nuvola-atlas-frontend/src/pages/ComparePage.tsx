@@ -23,6 +23,7 @@ import { useZoneHistory } from "@/hooks/useZoneHistory";
 import { useZoneForecast } from "@/hooks/useZoneForecast";
 import { waterProfile } from "@/lib/waterSanitation";
 import { BRAND, PILLAR_COLORS, PILLAR_SHORT, scoreColor } from "@/lib/scoreColor";
+import { PILLAR_KEYS } from "@/lib/pillars.generated";
 import { averageDelta } from "@/lib/deltas";
 import type { AlertItem, AlertSeverity, HistoryRange, PillarKey, Project, Zone } from "@/types";
 
@@ -33,7 +34,6 @@ const RANGES: { key: HistoryRange; label: string }[] = [
   { key: "month", label: "Month" },
 ];
 const SERIES_COLORS = [BRAND.terracotta, BRAND.teal, BRAND.gold];
-const PILLAR_KEYS: PillarKey[] = ["social", "safety", "density", "infra"];
 
 export default function ComparePage() {
   const { data: zones = [] } = useQuery({ queryKey: ["zones"], queryFn: api.getZones });
@@ -132,7 +132,6 @@ export default function ComparePage() {
                 <ScoreGrid zones={selected} />
                 <DeltaGrid zones={selected} />
                 <PillarGrid zones={selected} />
-                <CapitalAllocationRow zones={selected} />
                 <WaterGrid zones={selected} />
                 <TrendCard zones={selected} range={range} onRange={setRange} />
                 <ProjectsGrid zones={selected} projects={projects} />
@@ -287,66 +286,6 @@ function PillarGrid({ zones }: { zones: Zone[] }) {
                 );
               })}
             </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/**
- * Investor-only "capital-allocation lens" row. Ranks the picked zones on a
- * transparent Safety × Infrastructure composite — the two pillars that
- * carry the sovereign-risk / hard-infra signals a deal reviewer looks at
- * first. Averaged 50/50 (Safety + Infrastructure) because those are the
- * two directly observable pillars in the current 4-pillar model; Rule of
- * Law sits inside the Safety pillar's sub-metrics rather than as a
- * separate score, so it's implicitly weighted here rather than added as a
- * third factor. Hidden for non-investors.
- */
-function CapitalAllocationRow({ zones }: { zones: Zone[] }) {
-  const user = useAuthStore((s) => s.user);
-  const t = useT();
-
-  if (!isInvestor(user) || zones.length === 0) return null;
-
-  // Skip zones missing either input — the composite is Safety+Infra/2, so a
-  // null on either side would either crash the arithmetic or, worse, be
-  // silently coerced to 0 and rank the unmeasured zone last in the lens.
-  const ranked = [...zones]
-    .flatMap((z) => {
-      const { safety, infra } = z.pillars;
-      if (safety === null || infra === null) return [];
-      return [{ z, composite: Math.round((safety + infra) / 2) }];
-    })
-    .sort((a, b) => b.composite - a.composite);
-
-  if (ranked.length === 0) return null;
-
-  return (
-    <div className="mt-3 rounded-card border p-3 bg-[color:var(--accent-1-soft,rgba(31,138,120,0.08))] border-[color:var(--accent-1,#1F8A78)]/40">
-      <div className="text-[10px] text-ink-4 uppercase tracking-[0.08em] mb-1">
-        {t("compare.capitalAllocation.title")}
-      </div>
-      <div className="text-[10.5px] text-ink-3 mb-2">{t("compare.capitalAllocation.subtitle")}</div>
-      <div className="space-y-1.5">
-        {ranked.map(({ z, composite }, i) => (
-          <div key={z.id} className="flex items-center gap-2 text-[11px]">
-            <span className="w-6 text-ink-4 tabular-nums">
-              {t("compare.capitalAllocation.rank", { rank: String(i + 1) })}
-            </span>
-            <span className="flex-1 min-w-0 truncate text-ink-1">{z.name}</span>
-            <div className="w-24 h-1.5 rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
-              <div
-                className="h-full rounded-full"
-                style={{
-                  width: `${composite}%`,
-                  background: scoreColor(composite),
-                  boxShadow: `0 0 6px ${scoreColor(composite)}66`,
-                }}
-              />
-            </div>
-            <span className="w-8 text-right tabular-nums text-ink-2">{composite}</span>
           </div>
         ))}
       </div>
@@ -513,8 +452,8 @@ function WaterGrid({ zones }: { zones: Zone[] }) {
         {zones.map((z, i) => {
           const wp = waterProfile(z);
           if (!wp) {
-            // No pillar readings → no honest SDG-6 profile. A blank cell
-            // says that without fabricating an access percentage.
+            // No water & sanitation reading → no honest SDG-6 profile. A blank
+            // cell says that without fabricating a need score.
             return (
               <div
                 key={z.id}
@@ -545,10 +484,8 @@ function WaterGrid({ zones }: { zones: Zone[] }) {
                 />
                 <span className="text-[10.5px] text-ink-2 font-medium truncate">{z.name}</span>
               </div>
-              <div className="grid grid-cols-3 gap-1 mb-1.5">
-                <StatCell value={`${wp.accessPct}%`} label="Access" />
-                <StatCell value={`${wp.sharedPointPct}%`} label="Shared" />
-                <StatCell value={`${wp.waitMin}m`} label="Queue" />
+              <div className="mb-1.5">
+                <StatCell value={`${wp.needPct}/100`} label="Unmet need" />
               </div>
               <div className="text-[9px] text-ink-3 leading-tight">
                 <span

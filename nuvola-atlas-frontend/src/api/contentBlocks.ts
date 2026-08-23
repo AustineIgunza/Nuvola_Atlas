@@ -28,40 +28,40 @@ const SEED_BLOCKS: ContentBlock[] = [
     key: "methodology.overview",
     title: "Methodology · Overview",
     bodyMd:
-      "The UE Vitality Index turns fused infrastructure and social data into a single 0–100 readiness score for each sub-county — how ready a locality is to absorb, operate, and sustain new infrastructure.\n\nGrounded in Amartya Sen's *Development as Freedom*: readiness is the expansion of real freedoms — economic opportunity, safety, social wellbeing, and environmental security — not infrastructure counts alone.",
-    updatedAt: "2026-07-01T09:00:00Z",
+      "Navuuna is a service-performance record for Nairobi's 17 sub-counties. Each sub-county carries a single 0–100 composite blended from a small set of pillars, every one of them measured against a named public source.\n\nThe record only publishes what it can measure. A pillar with no reading is dropped from both the numerator and the divisor rather than counted as a zero, and every value states its source, vintage, granularity and method on the face of it. Where a figure is collected at county or utility level, it stays on the county banner — spreading it across 17 sub-counties would be inventing data.",
+    updatedAt: "2026-08-22T09:00:00Z",
     updatedBy: "austine@nuvola.dev",
   },
   {
-    key: "methodology.pillar.social",
-    title: "Pillar · Social Wellbeing & Human Capital",
+    key: "methodology.pillar.water_sanitation",
+    title: "Pillar · Water & Sanitation",
     bodyMd:
-      "Whether the local population is thriving. Combines healthcare access, education access, and digital connectivity. A low score predicts future strikes, unrest, or a skills shortage.",
-    updatedAt: "2026-07-01T09:00:00Z",
+      "The flagship pillar. Household water source and sanitation type from the KNBS 2019 census, set against the utility's own reported service performance in the WASREB IMPACT report.\n\nWhere trunk sewerage is not viable — dense informal settlements, flood-prone valleys — the record recommends context-specific sanitation rather than assuming the sewer will arrive.",
+    updatedAt: "2026-08-22T09:00:00Z",
     updatedBy: "austine@nuvola.dev",
   },
   {
-    key: "methodology.pillar.safety",
-    title: "Pillar · Safety & Security",
+    key: "methodology.pillar.road_density",
+    title: "Pillar · Road Density",
     bodyMd:
-      "Freedom from physical, legal, and digital threats. Weighs crime rates, emergency response access, and disaster exposure.",
-    updatedAt: "2026-07-01T09:00:00Z",
+      "Kilometres of mapped road per square kilometre of sub-county, measured off the HOT OSM extract.\n\nRead it as mapped road, not built road: a mapping campaign can add kilometres that were always on the ground, so check the extract date before reading a movement as construction.",
+    updatedAt: "2026-08-22T09:00:00Z",
     updatedBy: "austine@nuvola.dev",
   },
   {
-    key: "methodology.pillar.density",
-    title: "Pillar · Density & Scaling Dynamics",
+    key: "methodology.pillar.transit_access",
+    title: "Pillar · Transit Access",
     bodyMd:
-      "Whether the region's density supports growth or strangles it. Combines population density, congestion, and housing pressure.",
-    updatedAt: "2026-07-01T09:00:00Z",
+      "The share of residents living within walking distance of a matatu stop, from the Digital Matatus GTFS feed intersected with WorldPop population raster.\n\nA route withdrawal shows up here before it shows up anywhere else.",
+    updatedAt: "2026-08-22T09:00:00Z",
     updatedBy: "austine@nuvola.dev",
   },
   {
-    key: "methodology.pillar.infra",
-    title: "Pillar · Infrastructure & Environmental Safeguards",
+    key: "methodology.pillar.electricity_access",
+    title: "Pillar · Electricity Access",
     bodyMd:
-      "Whether documentation and legal architecture exist to back up large projects. Combines road quality, energy reliability, food risk, and waste management.",
-    updatedAt: "2026-07-01T09:00:00Z",
+      "The share of households using electricity for lighting, from the KNBS 2019 census.\n\nHeld, not active: the census is the newest sub-county figure that exists, so the reading is published with its vintage stated loudly and carries no weight in the composite. Read it as a floor, not as today.",
+    updatedAt: "2026-08-22T09:00:00Z",
     updatedBy: "austine@nuvola.dev",
   },
   {

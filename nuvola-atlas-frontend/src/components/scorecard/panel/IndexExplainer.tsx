@@ -3,14 +3,13 @@ import { ChevronRight } from "lucide-react";
 import { api } from "@/api";
 import { BRAND, PILLAR_COLORS, PILLAR_GLYPHS } from "@/lib/scoreColor";
 import Ring from "../Ring";
-import DaystarIndicatorPanel from "./DaystarIndicatorPanel";
+import PillarProvenancePanel from "./PillarProvenancePanel";
 import { Section, Chip, scoreBand } from "./bits";
+import { PILLARS } from "@/lib/pillars.generated";
 import { byScoreDesc, formatScore, isScored } from "@/lib/scores";
 import { useT } from "@/lib/i18n/use-t";
 import type { PanelView } from "./panel-types";
 import type { Zone, PillarKey } from "@/types";
-
-const PILLAR_KEYS: PillarKey[] = ["social", "safety", "density", "infra"];
 
 interface Props {
   zone: Zone;
@@ -61,20 +60,20 @@ export default function IndexExplainer({ zone, onNavigate }: Props) {
 
       <Section title={t("explain.whatIndex")}>
         <p className="text-[11px] text-ink-2 leading-[1.6]">
-          The UE Vitality Index turns fused infrastructure and social data into a single 0–100
-          readiness score for each sub-county — how ready a locality is to absorb, operate, and
-          sustain new infrastructure.
+          Navuuna publishes one 0–100 service-performance score per Nairobi sub-county, built from
+          the pillars below. Each pillar is a single measured quantity with a named public source
+          and a stated vintage.
         </p>
         <p className="mt-2 text-[10.5px] text-ink-3 leading-[1.6]">
-          It is grounded in Amartya Sen&apos;s <em>Development as Freedom</em>: readiness is the
-          expansion of real freedoms — economic opportunity, safety, social wellbeing, and
-          environmental security — not infrastructure counts alone.
+          Nothing here is modelled down from a county or utility figure. A sub-county with no
+          reading for a pillar shows a gap rather than a number.
         </p>
       </Section>
 
       <Section title={t("explain.howComputed")}>
         <div className="space-y-1.5">
-          {PILLAR_KEYS.map((key) => {
+          {PILLARS.map((p) => {
+            const key = p.key as PillarKey;
             const color = PILLAR_COLORS[key];
             return (
               <button
@@ -89,7 +88,7 @@ export default function IndexExplainer({ zone, onNavigate }: Props) {
                   {PILLAR_GLYPHS[key]}
                 </div>
                 <span className="flex-1 min-w-0 text-[10.5px] text-ink-2 font-medium truncate">
-                  {t(`pillar.${key}.long` as const)}
+                  {p.displayName}
                 </span>
                 <span
                   className="text-[12px] font-semibold tabular-nums shrink-0"
@@ -106,9 +105,8 @@ export default function IndexExplainer({ zone, onNavigate }: Props) {
           })}
         </div>
         <p className="mt-2 text-[9.5px] text-ink-4 leading-[1.5]">
-          The four pillars combine into the composite readiness score; each pillar synthesizes
-          sub-metrics from live public feeds. The composite methodology is proprietary — pillar
-          definitions and data sources are open.
+          The composite is a weighted average of these pillars, with gaps excluded from both the
+          numerator and the divisor. The weights are published in the methodology, not withheld.
         </p>
       </Section>
 
@@ -127,13 +125,13 @@ export default function IndexExplainer({ zone, onNavigate }: Props) {
         </div>
       </Section>
 
-      <DaystarIndicatorPanel zoneId={zone.id} showAttribution />
+      <PillarProvenancePanel zone={zone} showAttribution />
 
       <Section title={t("explain.dataPipeline")}>
         <p className="text-[10.5px] text-ink-3 leading-[1.6]">
-          Scores refresh as KNBS, KURA, KPLC, NPS, and NEMA feeds sync into the Atlas. {zone.name}{" "}
+          Scores refresh as the KNBS, WASREB, HOT OSM and Digital Matatus extracts land. {zone.name}{" "}
           last synced <span className="text-ink-2 font-medium">{zone.lastSyncMin} min ago</span>.
-          Every reading traces back to a named public source — the Ground Truth ledger.
+          Every reading traces back to a named public source.
         </p>
       </Section>
     </div>

@@ -15,22 +15,19 @@ import PillarBar from "../PillarBar";
 import ZoneRanking from "../ZoneRanking";
 import ActivityFeed from "../ActivityFeed";
 import ScoreHistoryChart from "./ScoreHistoryChart";
-import IndicatorAvailabilityChip from "./IndicatorAvailabilityChip";
-import DaystarIndicatorPanel from "./DaystarIndicatorPanel";
+import PillarCoverageChip from "./PillarCoverageChip";
+import PillarProvenancePanel from "./PillarProvenancePanel";
 import { Section, Chip, StatCell, SEVERITY_COLOR, IMPACT_COLOR, STATUS_STYLE } from "./bits";
 import ZoneNotesCard from "@/components/investor/ZoneNotesCard";
+import { PILLARS } from "@/lib/pillars.generated";
 import { isEstimated } from "@/lib/hydrated";
-import { useChromeStore } from "@/stores/chrome";
-import { useAuthStore, isInvestor } from "@/stores/auth";
 import type { PanelView } from "./panel-types";
 import type { Zone, PillarKey } from "@/types";
 
-// Default pillar order matches the grant methodology: Social, Safety,
-// Density, Infra (four equally weighted pillars). Investors with the ESG
-// lens on get the sovereign-risk-first ordering — Safety + Infra rise
-// because those are the pillars a deal reviewer signs off on first.
-const DEFAULT_PILLAR_ORDER: PillarKey[] = ["social", "safety", "density", "infra"];
-const ESG_LENS_PILLAR_ORDER: PillarKey[] = ["safety", "infra", "social", "density"];
+// Registry order: water first as the flagship, electricity last because it is
+// held. There is no second ordering — a lens that reshuffles the pillars would
+// imply a reader can reweight them, and only the published weights do that.
+const PILLAR_ORDER = PILLARS.map((p) => p.key as PillarKey);
 
 interface Props {
   zone: Zone;
@@ -43,10 +40,6 @@ export default function OverviewView({ zone, onNavigate }: Props) {
   const [exporting, setExporting] = useState(false);
   const { data: projects } = useQuery({ queryKey: ["projects"], queryFn: api.getProjects });
   const { data: alerts } = useQuery({ queryKey: ["alerts"], queryFn: api.getAlerts });
-  const user = useAuthStore((s) => s.user);
-  const esgLens = useChromeStore((s) => s.esgLens);
-  const pillarOrder = isInvestor(user) && esgLens ? ESG_LENS_PILLAR_ORDER : DEFAULT_PILLAR_ORDER;
-
   const zoneProjects = (projects ?? []).filter((p) => p.zoneId === zone.id);
   const zoneAlerts = (alerts ?? []).filter((a) => a.zoneId === zone.id);
   // Null when the zone has no pillar readings — the SDG-6 need weighting has
@@ -56,14 +49,6 @@ export default function OverviewView({ zone, onNavigate }: Props) {
   const waterAccent = wp?.opportunity ? BRAND.teal : BRAND.steel;
 
   const totalDelta = averageDelta(zone.deltas);
-
-  const sources = [
-    { source: "KNBS Population", fresh: true, age: "2 days" },
-    { source: "KURA Road Status", fresh: true, age: "4 hours" },
-    { source: "KPLC Energy Feed", fresh: zone.lastSyncMin < 15, age: `${zone.lastSyncMin} min` },
-    { source: "NPS Safety Data", fresh: true, age: "1 week" },
-    { source: "NEMA ESIA Portal", fresh: true, age: "3 days" },
-  ];
 
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const exportMenuRef = useRef<HTMLDivElement>(null);
@@ -81,31 +66,34 @@ export default function OverviewView({ zone, onNavigate }: Props) {
 
   const clientTxt = useCallback(() => {
     const scoreLine =
-      zone.score === null ? "Vitality Score: insufficient data" : `Vitality Score: ${zone.score}/100`;
+      zone.score === null
+        ? "Service-performance score: insufficient data"
+        : `Service-performance score: ${zone.score}/100`;
     const waterLines = wp
       ? [
           ``,
           `Water & Sanitation (SDG 6): ${wp.contextLabel}`,
-          `  Safe access: ${wp.accessPct}% · Shared points: ${wp.sharedPointPct}% · Queue: ${wp.waitMin} min`,
+          `  Unmet need: ${wp.needPct}/100`,
           `  Recommended: ${wp.solutionTag}`,
         ]
       : [];
     const content = [
-      `NAVUUNA ATLAS — Zone Report`,
-      `Zone: ${zone.name}`,
+      `NAVUUNA — Sub-county Report`,
+      `Sub-county: ${zone.name}`,
       scoreLine,
       ``,
-      `Pillar Scores:`,
-      `  Social Wellbeing: ${formatScore(zone.pillars.social)}`,
-      `  Safety & Security: ${formatScore(zone.pillars.safety)}`,
-      `  Density & Scaling: ${formatScore(zone.pillars.density)}`,
-      `  Infrastructure & Environmental: ${formatScore(zone.pillars.infra)}`,
+      `Pillars:`,
+      ...PILLARS.map(
+        (p) =>
+          `  ${p.displayName}: ${formatScore(zone.pillars[p.key as PillarKey])}` +
+          (p.vintage ? ` (${p.vintage})` : ``),
+      ),
       ...waterLines,
       ``,
       `Generated: ${new Date().toLocaleString()}`,
     ].join("\n");
     const blob = new Blob([content], { type: "text/plain" });
-    triggerDownload(blob, `${zone.id}-vitality-report.txt`);
+    triggerDownload(blob, `${zone.id}-navuuna-report.txt`);
   }, [zone, wp]);
 
   const serverExport = useCallback(
@@ -174,7 +162,7 @@ export default function OverviewView({ zone, onNavigate }: Props) {
                   })}
                 </span>
               )}
-              <IndicatorAvailabilityChip zoneId={zone.id} />
+              <PillarCoverageChip zone={zone} />
             </div>
             <p className="text-[10px] text-ink-4 mt-1">
               {t("scorecard.lastSyncShort", { min: zone.lastSyncMin })}
@@ -201,7 +189,7 @@ export default function OverviewView({ zone, onNavigate }: Props) {
 
       {/* Pillars — each row drills into the pillar explainer */}
       <Section title={t("scorecard.pillars")} className="px-1.5 py-1">
-        {pillarOrder.map((key, i) => (
+        {PILLAR_ORDER.map((key, i) => (
           <button
             key={key}
             onClick={() => onNavigate({ type: "pillar", key })}
@@ -224,12 +212,11 @@ export default function OverviewView({ zone, onNavigate }: Props) {
         ))}
       </Section>
 
-      {/* Daystar indicator ledger — 12-indicator delivery + verification state */}
-      <DaystarIndicatorPanel zoneId={zone.id} />
+      {/* Provenance ledger — source, vintage and granularity per pillar */}
+      <PillarProvenancePanel zone={zone} />
 
-      {/* Water & Sanitation — part of the vitality read; opens the SDG 6
-          explainer. Suppressed entirely when the zone has no pillar readings
-          to weight the need calculation against. */}
+      {/* Water & Sanitation — opens the SDG 6 explainer. Suppressed entirely
+          when the sub-county has no water & sanitation reading. */}
       {wp && (
         <button
           onClick={() => onNavigate({ type: "water" })}
@@ -249,10 +236,8 @@ export default function OverviewView({ zone, onNavigate }: Props) {
               className="shrink-0 text-ink-4 group-hover:text-ink-2 transition-colors"
             />
           </div>
-          <div className="mt-2 grid grid-cols-3 gap-1.5">
-            <StatCell value={`${wp.accessPct}%`} label={t("scorecard.water.safeAccess")} />
-            <StatCell value={`${wp.sharedPointPct}%`} label={t("scorecard.water.sharedPoints")} />
-            <StatCell value={`${wp.waitMin} min`} label={t("scorecard.water.medianQueue")} />
+          <div className="mt-2">
+            <StatCell value={`${wp.needPct}/100`} label={t("scorecard.water.unmetNeed")} />
           </div>
           <div className="mt-2 flex items-center gap-1.5 min-w-0">
             <span
@@ -393,29 +378,6 @@ export default function OverviewView({ zone, onNavigate }: Props) {
 
       <Section>
         <ActivityFeed zoneId={zone.id} />
-      </Section>
-
-      {/* Data source freshness */}
-      <Section title={t("scorecard.dataSources")}>
-        <div className="space-y-1.5">
-          {sources.map((d) => (
-            <div key={d.source} className="flex items-center justify-between text-[10.5px]">
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-1.5 h-1.5 rounded-full"
-                  style={{
-                    background: d.fresh ? BRAND.teal : BRAND.rose,
-                    boxShadow: d.fresh
-                      ? "0 0 6px rgba(31,138,120,0.5)"
-                      : "0 0 6px rgba(211,64,46,0.5)",
-                  }}
-                />
-                <span className="text-ink-3">{d.source}</span>
-              </div>
-              <span className={d.fresh ? "text-ink-4" : "text-danger font-medium"}>{d.age}</span>
-            </div>
-          ))}
-        </div>
       </Section>
 
       <div className="flex gap-2">

@@ -3,15 +3,9 @@ import { useChromeStore } from "./chrome";
 import { useThemeStore } from "./theme";
 import { defaultStyleForTheme } from "@/components/map/atlas-map.constants";
 
-interface LayerState {
-  vitality: boolean;
-  roads: boolean;
-  energy: boolean;
-  density: boolean;
-  water: boolean;
-  momentum: boolean;
-  safety: boolean;
-}
+export type LayerKey = "vitality" | "roads" | "energy" | "water";
+
+export type LayerState = Record<LayerKey, boolean>;
 
 interface AtlasState {
   selectedZoneId: string | null;
@@ -24,7 +18,7 @@ interface AtlasState {
   compareZoneIds: string[];
 
   setSelectedZone: (id: string | null) => void;
-  toggleLayer: (key: keyof LayerState) => void;
+  toggleLayer: (key: LayerKey) => void;
   setScrubMonth: (idx: number) => void;
   setMapStyle: (style: string) => void;
   setCompareZoneIds: (ids: string[]) => void;
@@ -37,10 +31,7 @@ export const useAtlasStore = create<AtlasState>((set) => ({
     vitality: true,
     roads: false,
     energy: false,
-    density: false,
     water: false,
-    momentum: false,
-    safety: false,
   },
   scrubMonthIdx: 11,
   mapStyle: defaultStyleForTheme(useThemeStore.getState().theme),

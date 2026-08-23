@@ -69,7 +69,7 @@ export default function AssistantPage() {
   // Kibra" chip on the scorecard drops the user straight into an answer.
   // The zone param seeds the conversation's zoneId so follow-up questions
   // in the same conversation stay scoped to that zone even when the user
-  // types a bare prompt like "and what about safety?".
+  // types a bare prompt like "and what about sanitation?".
   useEffect(() => {
     const seed = searchParams.get("ask");
     if (!seed) return;
@@ -124,7 +124,7 @@ export default function AssistantPage() {
     () => [
       t("assistant.starter.leaders"),
       t("assistant.starter.explainPillars"),
-      t("assistant.starter.weakSafety"),
+      t("assistant.starter.weakWater"),
     ],
     [t],
   );

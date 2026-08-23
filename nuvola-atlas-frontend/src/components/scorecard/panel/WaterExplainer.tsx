@@ -2,9 +2,9 @@ import { Droplets, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { BRAND, PILLAR_COLORS, PILLAR_LABELS, PILLAR_GLYPHS } from "@/lib/scoreColor";
 import { waterProfile } from "@/lib/waterSanitation";
-import { Section, Chip, StatCell, LayerHintButton } from "./bits";
+import { Section, Chip, LayerHintButton } from "./bits";
 import type { PanelView } from "./panel-types";
-import type { Zone, PillarKey } from "@/types";
+import type { Zone } from "@/types";
 
 /** The context-specific sanitation toolkit the Atlas recommends where trunk
  *  sewerage is not viable. `terms` match against the zone's solutionTag. */
@@ -31,12 +31,6 @@ const TOOLKIT: { name: string; desc: string; terms: string[] }[] = [
   },
 ];
 
-/** How the water read feeds the Vitality Index. */
-const PILLAR_LINKS: { key: PillarKey; note: string }[] = [
-  { key: "social", note: "Safe access lifts the basic-services and amenities sub-metrics" },
-  { key: "infra", note: "Greywater reuse scores under Circular Economy Freedom" },
-];
-
 interface Props {
   zone: Zone;
   onNavigate: (view: PanelView) => void;
@@ -45,10 +39,9 @@ interface Props {
 export default function WaterExplainer({ zone, onNavigate }: Props) {
   const wp = waterProfile(zone);
 
-  // No pillar readings behind the SDG-6 weighting means no honest verdict.
-  // Every downstream section (need bar, context verdict, toolkit match) is
-  // computed from the profile, so rendering them from a null would fabricate
-  // an access percentage, a queue time, and a recommended toolkit entry.
+  // Every downstream section — need bar, context verdict, toolkit match — is
+  // computed from the profile, so rendering them from a null would fabricate a
+  // need score and a recommended toolkit entry.
   if (!wp) {
     return (
       <div className="space-y-3">
@@ -68,9 +61,8 @@ export default function WaterExplainer({ zone, onNavigate }: Props) {
             </div>
           </div>
           <p className="mt-2 text-[10.5px] text-ink-3 leading-[1.55]">
-            The SDG-6 need weighting draws on this zone&apos;s infrastructure, social wellbeing and
-            density readings. No indicators have been recorded for one or more of those pillars
-            yet, so no verdict can be issued here.
+            Unmet need is read straight off the Water &amp; Sanitation pillar. No indicator has
+            been recorded for this sub-county yet, so no verdict can be issued here.
           </p>
         </Section>
         <LayerHintButton layer="water" label="Water & Sanitation" />
@@ -114,11 +106,10 @@ export default function WaterExplainer({ zone, onNavigate }: Props) {
             transition={{ type: "spring", stiffness: 120, damping: 20 }}
           />
         </div>
-        <div className="mt-2.5 grid grid-cols-3 gap-1.5">
-          <StatCell value={`${wp.accessPct}%`} label="Safe access" />
-          <StatCell value={`${wp.sharedPointPct}%`} label="Shared points" />
-          <StatCell value={`${wp.waitMin} min`} label="Queue time" />
-        </div>
+        <p className="mt-2 text-[9.5px] text-ink-4 leading-[1.5]">
+          The inverse of the measured Water &amp; Sanitation pillar. Household water source and
+          sanitation type, KNBS 2019 census, sub-county.
+        </p>
       </Section>
 
       {/* Context verdict — is conventional sewerage the right call here? */}
@@ -198,37 +189,34 @@ export default function WaterExplainer({ zone, onNavigate }: Props) {
         </div>
       </Section>
 
-      {/* How this reading feeds the Vitality Index */}
-      <Section title="Feeds the Vitality Index">
-        <div className="space-y-1.5">
-          {PILLAR_LINKS.map(({ key, note }) => {
-            const color = PILLAR_COLORS[key];
-            return (
-              <button
-                key={key}
-                onClick={() => onNavigate({ type: "pillar", key })}
-                className="group w-full flex items-center gap-2 text-left rounded-control bg-[rgba(255,255,255,0.02)] border border-border px-2 py-1.5 hover:bg-[rgba(255,255,255,0.06)] transition-colors"
-              >
-                <div
-                  className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold text-white shrink-0"
-                  style={{ background: color, boxShadow: `0 0 6px ${color}44` }}
-                >
-                  {PILLAR_GLYPHS[key]}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-[10.5px] font-medium text-ink-2 truncate">
-                    {PILLAR_LABELS[key]}
-                  </div>
-                  <div className="text-[9px] text-ink-4 truncate">{note}</div>
-                </div>
-                <ChevronRight
-                  size={12}
-                  className="shrink-0 text-ink-4 group-hover:text-ink-2 transition-colors"
-                />
-              </button>
-            );
-          })}
-        </div>
+      {/* Where this reading comes from */}
+      <Section title="Behind the reading">
+        <button
+          onClick={() => onNavigate({ type: "pillar", key: "water_sanitation" })}
+          className="group w-full flex items-center gap-2 text-left rounded-control bg-[rgba(255,255,255,0.02)] border border-border px-2 py-1.5 hover:bg-[rgba(255,255,255,0.06)] transition-colors"
+        >
+          <div
+            className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold text-white shrink-0"
+            style={{
+              background: PILLAR_COLORS.water_sanitation,
+              boxShadow: `0 0 6px ${PILLAR_COLORS.water_sanitation}44`,
+            }}
+          >
+            {PILLAR_GLYPHS.water_sanitation}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-[10.5px] font-medium text-ink-2 truncate">
+              {PILLAR_LABELS.water_sanitation}
+            </div>
+            <div className="text-[9px] text-ink-4 truncate">
+              The pillar this need score inverts — open it for the indicators behind it
+            </div>
+          </div>
+          <ChevronRight
+            size={12}
+            className="shrink-0 text-ink-4 group-hover:text-ink-2 transition-colors"
+          />
+        </button>
       </Section>
 
       <LayerHintButton layer="water" label="Water & Sanitation" />

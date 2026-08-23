@@ -29,7 +29,8 @@ export const FIRMS: FirmDef[] = [
     name: "Acumen East Africa",
     tier: "deal",
     watchlist: ["westlands", "kibra", "mathare", "kasarani"],
-    thesis: "Impact-first blended finance. Peri-urban infra with strong social pillar prospects.",
+    thesis:
+      "Impact-first blended finance. Peri-urban sub-counties with decentralised-sanitation upside.",
     contactName: "Njoki Wanjiru",
     contactEmail: "njoki@acumen.example",
   },
@@ -39,7 +40,7 @@ export const FIRMS: FirmDef[] = [
     name: "Andela Ventures",
     tier: "basic",
     watchlist: ["kasarani", "embakasi-east", "roysambu"],
-    thesis: "Digital-first growth corridors. Weighting connectivity + density signals.",
+    thesis: "Digital-first growth corridors. Weighting road-density and transit-access signals.",
     contactName: "Peter Ochieng",
     contactEmail: "peter@andelaventures.example",
   },

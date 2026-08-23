@@ -16,7 +16,7 @@ import {
 } from "@/lib/motion";
 import { useUIStore } from "@/stores/ui";
 import { useT } from "@/lib/i18n/use-t";
-import Sparkline from "./Sparkline";
+import { PILLAR_KEYS, PILLARS_BY_KEY } from "@/lib/pillars.generated";
 import type { PillarKey, Zone } from "@/types";
 
 type SortKey = "score" | PillarKey;
@@ -55,38 +55,21 @@ export default function Leaderboard() {
     // Empty cell for a null reading — the standard CSV signal for "no value",
     // which downstream spreadsheets treat as blank instead of a real 0.
     const cell = (v: number | null): string => (v === null ? "" : String(v));
-    const header = "Rank,Sub-county,Overall,Social,Safety,Density,Infrastructure\n";
-    const rows = sorted
-      .map(
-        (z, i) =>
-          `${i + 1},${z.name},${cell(z.score)},${cell(z.pillars.social)},${cell(z.pillars.safety)},${cell(z.pillars.density)},${cell(z.pillars.infra)}`,
-      )
-      .join("\n");
-    const blob = new Blob([header + rows], { type: "text/csv" });
+    const header = ["Rank", "Sub-county", "Overall", ...PILLAR_KEYS.map((k) => PILLARS_BY_KEY[k].displayName)].join(",");
+    const rows = sorted.map((z, i) =>
+      [i + 1, z.name, cell(z.score), ...PILLAR_KEYS.map((k) => cell(z.pillars[k]))].join(","),
+    );
+    const blob = new Blob([[header, ...rows].join("\n")], { type: "text/csv" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "vitality-leaderboard.csv";
+    a.download = "service-performance-leaderboard.csv";
     a.click();
   }
 
   const headers: { key: SortKey; label: string }[] = [
     { key: "score", label: t("vitality.overall") },
-    { key: "social", label: t("pillar.social.short") },
-    { key: "safety", label: t("pillar.safety.short") },
-    { key: "density", label: t("pillar.density.short") },
-    { key: "infra", label: t("pillar.infra.short") },
+    ...PILLAR_KEYS.map((k) => ({ key: k, label: t(`pillar.${k}.short` as const) })),
   ];
-
-  function fakeSparkline(score: number): number[] {
-    const pts: number[] = [];
-    let v = score - 8 + Math.random() * 4;
-    for (let i = 0; i < 12; i++) {
-      v += (Math.random() - 0.4) * 3;
-      pts.push(Math.max(0, Math.min(100, Math.round(v))));
-    }
-    pts[11] = score;
-    return pts;
-  }
 
   return (
     <>
@@ -200,9 +183,6 @@ export default function Leaderboard() {
                     </span>
                   </th>
                 ))}
-                <th className="text-right py-2.5 px-2 text-ink-4 font-medium w-24 hidden lg:table-cell">
-                  {t("vitality.trend")}
-                </th>
               </tr>
             </thead>
             <motion.tbody variants={staggerContainer} initial="hidden" animate="visible">
@@ -237,7 +217,7 @@ export default function Leaderboard() {
                       {formatScore(z.score)}
                     </motion.span>
                   </td>
-                  {(["social", "safety", "density", "infra"] as PillarKey[]).map((key) => {
+                  {PILLAR_KEYS.map((key) => {
                     const pv = z.pillars[key];
                     return (
                       <td key={key} className="py-3 px-2 text-right">
@@ -264,16 +244,6 @@ export default function Leaderboard() {
                       </td>
                     );
                   })}
-                  <td className="py-3 px-2 text-right hidden lg:table-cell">
-                    {/* Sparkline needs a numeric seed. An unmeasured zone has
-                        no baseline to walk forward from — draw a blank rather
-                        than a fabricated 12-point curve. */}
-                    {z.score !== null ? (
-                      <Sparkline points={fakeSparkline(z.score)} />
-                    ) : (
-                      <span className="text-ink-4 text-[10px]">—</span>
-                    )}
-                  </td>
                 </motion.tr>
               ))}
             </motion.tbody>
@@ -348,7 +318,7 @@ export default function Leaderboard() {
                 </div>
 
                 <div className="space-y-3 mb-5">
-                  {(["social", "safety", "density", "infra"] as PillarKey[]).map((key) => {
+                  {PILLAR_KEYS.map((key) => {
                     const pv = popupZone.pillars[key];
                     return (
                       <div key={key}>

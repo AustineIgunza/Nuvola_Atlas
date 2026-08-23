@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Layers } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useUIStore } from "@/stores/ui";
+import type { LayerKey } from "@/stores/atlas";
 import { BRAND, NO_SCORE_COLOR_HEX } from "@/lib/scoreColor";
 import { translate } from "@/lib/i18n/translate";
 import { usePrefsStore } from "@/stores/prefs";
@@ -106,8 +107,6 @@ export function StatCell({ value, label }: { value: string; label: string }) {
     </div>
   );
 }
-
-type LayerKey = "vitality" | "roads" | "energy" | "density" | "water" | "momentum" | "safety";
 
 /** "See it on the Atlas" — enables the related map layer if it's off. */
 export function LayerHintButton({ layer, label }: { layer: LayerKey; label: string }) {

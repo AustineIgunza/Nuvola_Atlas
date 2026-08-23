@@ -7,7 +7,7 @@ import PillarBar from "./PillarBar";
 
 describe("PillarBar estimated state", () => {
   it("marks a synthesised score and withholds its delta", () => {
-    render(<PillarBar pillarKey="social" score={64} delta={3} index={0} estimated />);
+    render(<PillarBar pillarKey="water_sanitation" score={64} delta={3} index={0} estimated />);
 
     expect(screen.getByLabelText(/estimated — no measured data/i)).toHaveTextContent("64");
     expect(screen.queryByText("+3")).not.toBeInTheDocument();
@@ -15,14 +15,14 @@ describe("PillarBar estimated state", () => {
   });
 
   it("renders a measured score unmarked, with its delta", () => {
-    render(<PillarBar pillarKey="social" score={64} delta={3} index={0} />);
+    render(<PillarBar pillarKey="water_sanitation" score={64} delta={3} index={0} />);
 
     expect(screen.queryByLabelText(/estimated/i)).not.toBeInTheDocument();
     expect(screen.getByText("+3")).toBeInTheDocument();
   });
 
   it("shows no movement for an unmeasured delta rather than a flat zero", () => {
-    render(<PillarBar pillarKey="social" score={64} delta={null} index={0} />);
+    render(<PillarBar pillarKey="water_sanitation" score={64} delta={null} index={0} />);
 
     expect(screen.getByText("—")).toBeInTheDocument();
     expect(screen.queryByText("0")).not.toBeInTheDocument();
@@ -31,7 +31,7 @@ describe("PillarBar estimated state", () => {
   });
 
   it("keeps a genuine no-change reading distinct from an unmeasured one", () => {
-    render(<PillarBar pillarKey="social" score={64} delta={0} index={0} />);
+    render(<PillarBar pillarKey="water_sanitation" score={64} delta={0} index={0} />);
 
     expect(screen.getByText("+0")).toBeInTheDocument();
     expect(screen.queryByText("—")).not.toBeInTheDocument();
@@ -39,7 +39,7 @@ describe("PillarBar estimated state", () => {
 
   it("shows an unmeasured pillar as a dash and draws no bar fill", () => {
     const { container } = render(
-      <PillarBar pillarKey="social" score={null} delta={null} index={0} />,
+      <PillarBar pillarKey="water_sanitation" score={null} delta={null} index={0} />,
     );
 
     // Two dashes: one for the score, one for the delta. Neither is an

@@ -130,7 +130,7 @@ export default function ScorecardPanel({ zone }: Props) {
     const prompt = t("scorecard.askPrompt", { zone: zone.name });
     // Pass the zone id so the seeded conversation carries context;
     // follow-up prompts in the same conversation then default to this
-    // zone even if the user types a bare "and what about safety?".
+    // zone even if the user types a bare "and what about sanitation?".
     navigate(`/assistant?ask=${encodeURIComponent(prompt)}&zone=${encodeURIComponent(zone.id)}`);
   };
 

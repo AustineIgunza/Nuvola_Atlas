@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
@@ -6,6 +6,7 @@ import { cn } from "@/lib/cn";
 import { api } from "@/api";
 import { springSettle, modalBackdrop, modalContent } from "@/lib/motion";
 import { PILLAR_COLORS, PILLAR_LABELS } from "@/lib/scoreColor";
+import { PILLAR_KEYS } from "@/lib/pillars.generated";
 import type { PillarKey } from "@/types";
 
 interface Props {
@@ -14,11 +15,10 @@ interface Props {
 }
 
 const REPORT_TYPES = [
-  { value: "vitality", label: "Vitality Assessment" },
+  { value: "service_performance", label: "Service-performance Assessment" },
+  { value: "water_sanitation", label: "Water & Sanitation (SDG 6)" },
   { value: "infrastructure", label: "Infrastructure Progress" },
-  { value: "density", label: "Density Analysis" },
-  { value: "safety", label: "Safety Audit" },
-  { value: "environmental", label: "Environmental Impact" },
+  { value: "methodology", label: "Methodology & Provenance" },
 ];
 
 const PRIORITIES = [
@@ -28,21 +28,18 @@ const PRIORITIES = [
   { value: "low", label: "Low", color: "#1F8A78" },
 ];
 
-const PILLAR_KEYS: PillarKey[] = ["social", "safety", "density", "infra"];
-
 const SUGGESTED_TAGS = [
   "quarterly",
   "baseline",
   "county-wide",
+  "water",
+  "sanitation",
+  "SDG-6",
   "infrastructure",
   "road-progress",
-  "energy",
-  "smart-grid",
-  "density",
+  "transit",
   "informal-settlement",
-  "safety",
-  "environmental",
-  "ESIA",
+  "provenance",
   "survey",
   "urban-planning",
 ];
@@ -50,7 +47,7 @@ const SUGGESTED_TAGS = [
 export default function NewReportModal({ open, onClose }: Props) {
   const [title, setTitle] = useState("");
   const [zoneId, setZoneId] = useState("");
-  const [type, setType] = useState("vitality");
+  const [type, setType] = useState("service_performance");
   const [priority, setPriority] = useState("medium");
   const [pillarFocus, setPillarFocus] = useState<PillarKey[]>([]);
   const [tags, setTags] = useState<string[]>([]);
@@ -72,7 +69,7 @@ export default function NewReportModal({ open, onClose }: Props) {
   function resetForm() {
     setTitle("");
     setZoneId("");
-    setType("vitality");
+    setType("service_performance");
     setPriority("medium");
     setPillarFocus([]);
     setTags([]);

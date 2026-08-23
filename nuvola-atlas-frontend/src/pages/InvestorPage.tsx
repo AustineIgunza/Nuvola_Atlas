@@ -21,9 +21,8 @@ import { useAuthStore } from "@/stores/auth";
 import { BRAND, PILLAR_COLORS, PILLAR_SHORT, scoreColor } from "@/lib/scoreColor";
 import { totalDelta } from "@/lib/deltas";
 import { springSettle } from "@/lib/motion";
-import type { Zone, Project, AlertItem, PillarKey } from "@/types";
-
-const PILLAR_KEYS: PillarKey[] = ["social", "safety", "density", "infra"];
+import { PILLAR_KEYS } from "@/lib/pillars.generated";
+import type { Zone, Project, AlertItem } from "@/types";
 
 /**
  * The purpose-built investor landing page. Aggregates the firm's watchlist
@@ -77,41 +76,18 @@ export default function InvestorPage() {
   const projectsForFirm = projects.filter((p) => firm.watchlist.includes(p.zoneId));
   const activeProjectsForFirm = projectsForFirm.filter((p) => p.status === "active").length;
 
-  // Investor composite for portfolio ranking — the "capital allocation lens".
-  // Weights Safety and Infra heavier than Social/Density since those are the
-  // pillars a VC prioritises for a defensible thesis. Not exposed as a knob
-  // yet — that's the /investor page settings feature slated for later.
-  //
-  // Null on any pillar means we cannot compose the lens for that zone. The
-  // caller sorts nulls to the tail so an unmeasured zone is neither the top
-  // pick nor the bottom, it simply cannot be ranked here.
-  const investorScore = (z: Zone): number | null => {
-    const { safety, infra, social, density } = z.pillars;
-    if (safety === null || infra === null || social === null || density === null) return null;
-    return safety * 0.35 + infra * 0.35 + social * 0.15 + density * 0.15;
-  };
-
-  const byInvestorScoreDesc = (a: Zone, b: Zone): number => {
-    const av = investorScore(a);
-    const bv = investorScore(b);
-    if (av === null) return bv === null ? 0 : 1;
-    if (bv === null) return -1;
-    return bv - av;
-  };
-
   const byScoreDescNullLast = (a: Zone, b: Zone): number => {
     if (a.score === null) return b.score === null ? 0 : 1;
     if (b.score === null) return -1;
     return b.score - a.score;
   };
 
-  const rankedPortfolio = [...watchlistZones].sort(byInvestorScoreDesc);
+  const rankedPortfolio = [...watchlistZones].sort(byScoreDescNullLast);
 
   const opportunities = useMemo(() => {
     // Tier-specific heuristic:
-    //   basic     — highest overall Vitality (safest bets)
-    //   deal      — high infra + safety spread from watchlist thesis
-    //   sovereign — largest measured movement (change opportunities)
+    //   basic / deal — highest published composite
+    //   sovereign    — largest measured movement (change opportunities)
     if (firm.tier === "basic") {
       return [...nonWatchlistZones].sort(byScoreDescNullLast).slice(0, 5);
     }
@@ -128,7 +104,7 @@ export default function InvestorPage() {
         })
         .slice(0, 5);
     }
-    return [...nonWatchlistZones].sort(byInvestorScoreDesc).slice(0, 5);
+    return [...nonWatchlistZones].sort(byScoreDescNullLast).slice(0, 5);
   }, [nonWatchlistZones, firm.tier]);
 
   return (
@@ -199,26 +175,22 @@ export default function InvestorPage() {
               <Compass size={13} style={{ color: BRAND.teal }} />
               <h2 className="text-[14px] font-semibold text-ink-1">Portfolio ranking</h2>
               <span className="text-[10px] text-ink-4 tracking-[0.06em]">
-                Capital-allocation lens — weights Safety × Infra
+                Ranked by published composite score
               </span>
             </div>
             {rankedPortfolio.length === 0 ? (
               <div className="text-[11.5px] text-ink-4 italic">No zones on your watchlist yet.</div>
             ) : (
               <div className="space-y-2">
-                {rankedPortfolio.map((z, i) => {
-                  const lens = investorScore(z);
-                  return (
-                    <PortfolioRow
-                      key={z.id}
-                      zone={z}
-                      rank={i + 1}
-                      investorScore={lens === null ? null : Math.round(lens)}
-                      projects={projects}
-                      onOpen={() => navigate(`/atlas?zone=${z.id}`)}
-                    />
-                  );
-                })}
+                {rankedPortfolio.map((z, i) => (
+                  <PortfolioRow
+                    key={z.id}
+                    zone={z}
+                    rank={i + 1}
+                    projects={projects}
+                    onOpen={() => navigate(`/atlas?zone=${z.id}`)}
+                  />
+                ))}
               </div>
             )}
           </section>
@@ -229,11 +201,9 @@ export default function InvestorPage() {
               <Sparkles size={13} style={{ color: BRAND.gold }} />
               <h2 className="text-[14px] font-semibold text-ink-1">Top opportunities</h2>
               <span className="text-[10px] text-ink-4 tracking-[0.06em]">
-                {firm.tier === "basic"
-                  ? "Ranked by Vitality — safest positions"
-                  : firm.tier === "sovereign"
-                    ? "Ranked by quarter-over-quarter momentum"
-                    : "Ranked by capital-allocation lens — zones you don't yet watch"}
+                {firm.tier === "sovereign"
+                  ? "Ranked by quarter-over-quarter movement"
+                  : "Ranked by composite score — sub-counties you don't yet watch"}
               </span>
             </div>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -363,14 +333,11 @@ function KpiTile({
 function PortfolioRow({
   zone,
   rank,
-  investorScore,
   projects,
   onOpen,
 }: {
   zone: Zone;
   rank: number;
-  /** Null when at least one pillar is unmeasured — no lens value is honest. */
-  investorScore: number | null;
   projects: Project[];
   onOpen: () => void;
 }) {
@@ -392,7 +359,7 @@ function PortfolioRow({
           {projectCount} projects · {activeProjects} active
         </div>
       </div>
-      {/* Pillar quartet — hide on mobile to keep the row scannable */}
+      {/* Pillar strip — hide on mobile to keep the row scannable */}
       <div className="hidden sm:flex gap-2 shrink-0">
         {PILLAR_KEYS.map((k) => {
           const pv = zone.pillars[k];
@@ -414,9 +381,9 @@ function PortfolioRow({
           className="text-[15px] sm:text-[16px] font-semibold tabular-nums"
           style={{ color: scoreColor(zone.score) }}
         >
-          {investorScore === null ? "—" : investorScore}
+          {zone.score === null ? "—" : zone.score}
         </div>
-        <div className="text-[8.5px] text-ink-4">lens</div>
+        <div className="text-[8.5px] text-ink-4">score</div>
       </div>
       <ArrowRight size={13} className="text-ink-4 shrink-0 hidden sm:block" />
     </button>
@@ -484,10 +451,10 @@ function FirmThesisCard({
       </div>
       <p className="text-[11.5px] text-ink-3 leading-relaxed">
         {firm.tier === "sovereign"
-          ? "County-wide corridor programme — every ward is tracked. Portfolio ranking surfaces the ones moving fastest."
+          ? "County-wide corridor programme — every sub-county is tracked. Portfolio ranking surfaces the ones moving fastest."
           : firm.tier === "deal"
-            ? "Impact-first deal team. Portfolio balances high-Vitality zones against social-pillar-recoverable zones for blended-finance positions."
-            : "Digital-first growth thesis. Portfolio favours connectivity + density signals over pure Vitality rank."}
+            ? "Impact-first deal team. Portfolio balances well-served sub-counties against those with recoverable water & sanitation deficits for blended-finance positions."
+            : "Digital-first growth thesis. Portfolio favours road-density and transit-access signals over the composite rank alone."}
       </p>
     </section>
   );

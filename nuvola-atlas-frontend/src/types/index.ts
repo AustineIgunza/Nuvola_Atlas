@@ -1,17 +1,14 @@
-export type PillarKey = "social" | "safety" | "density" | "infra";
+export type { PillarKey } from "@/lib/pillars.generated";
+
+import type { PillarKey } from "@/lib/pillars.generated";
 
 /**
- * Null for a pillar with no indicator behind any of its sub-metrics. The
- * server has always been able to send this — `ScoreCalculator::pillarScores`
- * returns `?int` per pillar — so a non-nullable type here was a lie that
- * pushed a bar to 0% for something nobody measured.
+ * Null for a pillar the zone has no reading for. The server has always been
+ * able to send this — `ScoreCalculator::pillarScores` returns `?int` per
+ * pillar — so a non-nullable type here was a lie that pushed a bar to 0% for
+ * something nobody measured.
  */
-export interface PillarScores {
-  social: number | null;
-  safety: number | null;
-  density: number | null;
-  infra: number | null;
-}
+export type PillarScores = Record<PillarKey, number | null>;
 
 /**
  * A delta is a claim about direction, so it is null whenever the history
@@ -19,11 +16,17 @@ export interface PillarScores {
  * that had no score at either end. Null must render as no movement shown,
  * never as a zero and never as a flat arrow.
  */
-export interface PillarDeltas {
-  social: number | null;
-  safety: number | null;
-  density: number | null;
-  infra: number | null;
+export type PillarDeltas = Record<PillarKey, number | null>;
+
+/**
+ * What `/vitality/methodology` adds to what the client already knows. Pillar
+ * definitions are not in here on purpose: they are compiled into the bundle
+ * from the same `pillars.json` the server generates its config from. Weights
+ * are, because an admin can republish them without a deploy.
+ */
+export interface Methodology {
+  version: string;
+  weights: Record<PillarKey, number>;
 }
 
 export interface Zone {
@@ -43,9 +46,9 @@ export interface Zone {
   lastSyncMin: number;
   /**
    * Dotted paths of fields the client synthesised because the API returned
-   * null — `pillars.social`, `centroid`, and so on. Set by `hydrateZone` in
-   * remote mode. Anything listed here is an estimate and must not be
-   * rendered as though it were measured.
+   * null — `pillars.water_sanitation`, `centroid`, and so on. Set by
+   * `hydrateZone` in remote mode. Anything listed here is an estimate and
+   * must not be rendered as though it were measured.
    */
   _hydrated?: string[];
 }
@@ -110,7 +113,7 @@ export interface Report {
   format: "PDF";
   sections: ReportSection[];
   tags: string[];
-  type: "vitality" | "infrastructure" | "density" | "safety" | "environmental";
+  type: "service_performance" | "water_sanitation" | "infrastructure" | "methodology";
   priority: "critical" | "high" | "medium" | "low";
   dateRange?: { from: string; to: string };
   pillarFocus?: PillarKey[];
@@ -151,23 +154,10 @@ export interface ZoneForecast {
 export interface ActivityEntry {
   id: string;
   zoneId: string;
-  kind: "road" | "grid" | "esia" | "density" | "water";
+  kind: "road" | "grid" | "esia" | "transit" | "water";
   text: string;
   source: string;
   createdAt: string;
-}
-
-export interface PillarSubMetric {
-  key: string;
-  label: string;
-  description: string;
-}
-
-export interface PillarDef {
-  key: PillarKey;
-  name: string;
-  description: string;
-  subMetrics: PillarSubMetric[];
 }
 
 export type ChatRole = "user" | "assistant" | "system";

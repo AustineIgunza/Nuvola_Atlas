@@ -327,28 +327,6 @@
       inset 0 0 30px rgba(192, 85, 43, 0.03);
   }
 
-  /* Pillar color glows */
-  .glow-social {
-    box-shadow:
-      0 0 12px rgba(31, 138, 120, 0.35),
-      0 0 4px rgba(31, 138, 120, 0.15);
-  }
-  .glow-safety {
-    box-shadow:
-      0 0 12px rgba(62, 110, 147, 0.38),
-      0 0 4px rgba(62, 110, 147, 0.16);
-  }
-  .glow-density {
-    box-shadow:
-      0 0 12px rgba(224, 168, 46, 0.35),
-      0 0 4px rgba(224, 168, 46, 0.15);
-  }
-  .glow-infra {
-    box-shadow:
-      0 0 12px rgba(192, 85, 43, 0.35),
-      0 0 4px rgba(192, 85, 43, 0.15);
-  }
-
   /* Infra type glows — roads=terracotta, energy=gold, grid=teal */
   .glow-road {
     box-shadow:

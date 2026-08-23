@@ -1,7 +1,9 @@
 import { BASE, authHeaders, handleResponse } from "./client";
 import { ZONES as MOCK_ZONES } from "./fixtures";
+import { PILLARS } from "@/lib/pillars.generated";
 import type {
   Zone,
+  PillarKey,
   PillarDeltas,
   PillarScores,
   Project,
@@ -9,7 +11,7 @@ import type {
   Report,
   HistoryPoint,
   ActivityEntry,
-  PillarDef,
+  Methodology,
   ZoneHistory,
   HistoryRange,
   ZoneForecast,
@@ -26,7 +28,10 @@ async function get<T>(path: string): Promise<T> {
   return json as T;
 }
 
-const PILLAR_KEYS = ["social", "safety", "density", "infra"] as const;
+const PILLAR_KEYS = PILLARS.map((p) => p.key as PillarKey);
+
+const NO_PILLARS = (): PillarScores =>
+  Object.fromEntries(PILLAR_KEYS.map((k) => [k, null])) as PillarScores;
 
 /**
  * Substitute a value for one the API returned as null, recording the field
@@ -40,8 +45,8 @@ function fill<T>(hydrated: string[], path: string, actual: T | null | undefined,
 
 /**
  * Fill the gaps a thin backend leaves, so the UI does not crash: a zone with
- * no indicators seeded returns `pillars: {social: null, ...}`, and a zone
- * with no geometry returns a null centroid that breaks the coordinate math.
+ * no readings seeded returns every pillar as null, and a zone with no
+ * geometry returns a null centroid that breaks the coordinate math.
  *
  * Every substituted field is recorded in `_hydrated`. That list is what makes
  * this honest rather than a lie: the number on screen is a fixture, and the
@@ -54,7 +59,7 @@ function hydrateZone(z: Partial<Zone> & { id: string; name: string }): Zone {
   const mock = MOCK_ZONES.find((m) => m.id === z.id);
   const _hydrated: string[] = [];
 
-  const pillars: PillarScores = { social: null, safety: null, density: null, infra: null };
+  const pillars = NO_PILLARS();
   for (const k of PILLAR_KEYS) {
     // A zone the API could not score has nothing to stand in for its pillars
     // either. Passing the null through unmarked is right: there is no fixture
@@ -70,12 +75,9 @@ function hydrateZone(z: Partial<Zone> & { id: string; name: string }): Zone {
   // labelled as such; a direction of travel cannot — substituting a fixture
   // would put an arrow on screen for a movement that was never measured.
   // Null flows straight through and renders as no delta at all.
-  const deltas: PillarDeltas = {
-    social: z.deltas?.social ?? null,
-    safety: z.deltas?.safety ?? null,
-    density: z.deltas?.density ?? null,
-    infra: z.deltas?.infra ?? null,
-  };
+  const deltas = Object.fromEntries(
+    PILLAR_KEYS.map((k) => [k, z.deltas?.[k] ?? null]),
+  ) as PillarDeltas;
 
   const centroid =
     Array.isArray(z.centroid) && z.centroid.length === 2
@@ -178,7 +180,11 @@ export const remoteApi = {
   },
   getConversationMessages: (id: string) => get<ChatMessage[]>(`/chat/conversations/${id}/messages`),
 
-  getMethodology: () => get<{ pillars: PillarDef[] }>("/vitality/methodology"),
+  // Only the live weights and the registry version come off the wire. The
+  // pillar definitions are compiled into the bundle from the same pillars.json
+  // the server generates its config from, so asking for them again would only
+  // create a second shape that could drift.
+  getMethodology: () => get<Methodology>("/vitality/methodology"),
 
   changePassword: async (currentPassword: string, newPassword: string): Promise<{ ok: true }> => {
     const res = await fetch(`${BASE}/auth/change-password`, {

@@ -17,7 +17,7 @@ import type {
   Report,
   HistoryPoint,
   ActivityEntry,
-  PillarDef,
+  Methodology,
   ZoneHistory,
   HistoryRange,
   ZoneForecast,
@@ -116,7 +116,7 @@ export const mockApi = {
       author: "Austine Igunza",
       sizeBytes: 0,
       format: "PDF",
-      type: "vitality",
+      type: "service_performance",
       priority: "medium",
       tags: [],
       sections: [],
@@ -195,9 +195,9 @@ export const mockApi = {
     return structuredClone(chatMessages[id] ?? []);
   },
 
-  getMethodology: async (): Promise<{ pillars: PillarDef[] }> => {
+  getMethodology: async (): Promise<Methodology> => {
     await delay();
-    return { pillars: structuredClone(METHODOLOGY) };
+    return structuredClone(METHODOLOGY);
   },
 
   register: async (

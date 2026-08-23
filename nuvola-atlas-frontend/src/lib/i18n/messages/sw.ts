@@ -128,32 +128,29 @@ export const sw: Partial<Record<MessageKey, string>> = {
   "assistant.readonlyNote": "⌘/Ctrl + Enter kutuma. Maswali ya kusoma tu.",
   "assistant.pickConversation": "Chagua mazungumzo au anzisha mapya.",
   "assistant.starterHint": "Jaribu moja ya haya ili kuanza:",
-  "assistant.starter.leaders": "Ni maeneo gani yanaongoza kwa Uhai?",
-  "assistant.starter.explainPillars": "Eleza nguzo nne za Uhai",
-  "assistant.starter.weakSafety": "Nguzo ya Usalama ni dhaifu wapi?",
+  "assistant.starter.leaders": "Ni kata gani zenye alama za juu zaidi?",
+  "assistant.starter.explainPillars": "Eleza nguzo zinazounda alama",
+  "assistant.starter.weakWater": "Maji na usafi wa mazingira ni dhaifu wapi?",
 
   // Auth
   "auth.signIn": "Ingia",
   "auth.signOut": "Toka",
 
   // Pillar labels
-  "pillar.social.short": "Jamii",
-  "pillar.safety.short": "Usalama",
-  "pillar.density.short": "Msongamano",
-  "pillar.infra.short": "Miundo",
-  "pillar.social.long": "Ustawi wa Jamii na Mtaji wa Binadamu",
-  "pillar.safety.long": "Usalama na Ulinzi",
-  "pillar.density.long": "Msongamano na Mienendo ya Ukuaji",
-  "pillar.infra.long": "Miundombinu na Ulinzi wa Mazingira",
+  "pillar.water_sanitation.short": "Maji",
+  "pillar.road_density.short": "Barabara",
+  "pillar.transit_access.short": "Usafiri",
+  "pillar.electricity_access.short": "Umeme",
+  "pillar.water_sanitation.long": "Maji na Usafi wa Mazingira",
+  "pillar.road_density.long": "Msongamano wa Barabara",
+  "pillar.transit_access.long": "Upatikanaji wa Usafiri",
+  "pillar.electricity_access.long": "Upatikanaji wa Umeme",
 
   // Map layer labels
-  "layer.vitality": "Maeneo ya Uhai",
-  "layer.roads": "Maendeleo ya Barabara",
-  "layer.energy": "Hali ya Umeme",
-  "layer.density": "Msongamano",
+  "layer.vitality": "Utendaji wa Huduma",
+  "layer.roads": "Msongamano wa Barabara",
+  "layer.energy": "Upatikanaji wa Umeme",
   "layer.water": "Maji na Usafi",
-  "layer.momentum": "Kasi ya Miradi",
-  "layer.safety": "Usalama na Ulinzi",
 
   // Vitality bands + scorecard chrome
   "band.strong": "Imara",
@@ -263,10 +260,10 @@ export const sw: Partial<Record<MessageKey, string>> = {
     "Maandishi ya uhariri yanayoonyeshwa kwenye kurasa za umma na mbinu. Kila kuhifadhi hutengeneza toleo.",
   "cms.pick": "Chagua kizuizi cha kuhariri",
   "cms.blocks.methodology": "Mbinu · Muhtasari",
-  "cms.blocks.social": "Nguzo · Ustawi wa Jamii",
-  "cms.blocks.safety": "Nguzo · Usalama",
-  "cms.blocks.density": "Nguzo · Msongamano",
-  "cms.blocks.infra": "Nguzo · Miundombinu",
+  "cms.blocks.water_sanitation": "Nguzo · Maji na Usafi wa Mazingira",
+  "cms.blocks.road_density": "Nguzo · Msongamano wa Barabara",
+  "cms.blocks.transit_access": "Nguzo · Ufikiaji wa Usafiri",
+  "cms.blocks.electricity_access": "Nguzo · Ufikiaji wa Umeme",
   "cms.blocks.public": "Ukurasa wa Umma · Utangulizi",
   "cms.editorLabel": "Mwili (Markdown)",
   "cms.publish": "Chapisha",
@@ -362,10 +359,6 @@ export const sw: Partial<Record<MessageKey, string>> = {
   "esgLens.off": "Lenzi ya ESG",
   "esgLens.turnOn": "Washa lenzi ya ESG",
   "esgLens.turnOff": "Zima lenzi ya ESG",
-  "compare.capitalAllocation.title": "Lenzi ya mgao wa mtaji",
-  "compare.capitalAllocation.subtitle":
-    "Maeneo yamepangwa kwa Usalama × Miundombinu × Utawala wa Sheria",
-  "compare.capitalAllocation.rank": "#{rank}",
   "reports.investorFilter.badge": "Orodha tu",
   "reports.investorFilter.showAll": "Onyesha ripoti zote",
   "reports.investorFilter.showWatchlist": "Onyesha za orodha pekee",
@@ -443,12 +436,12 @@ export const sw: Partial<Record<MessageKey, string>> = {
   "leaderboard.previewAria": "Kadi ya awali ya {zone}",
 
   // Chat / Assistant
-  "chat.followup.whichDriving": "Ni ipi kati ya nguzo nne inayosababisha pengo hilo?",
-  "chat.followup.qoqMoves": "Maeneo haya yamesogeaje robo hii dhidi ya iliyopita?",
+  "chat.followup.whichDriving": "Ni nguzo ipi inayosababisha pengo hilo?",
+  "chat.followup.qoqMoves": "Kata hizi zimesogeaje robo hii dhidi ya iliyopita?",
   "chat.followup.whichInfra": "Ni miradi gani ya miundombinu iliyopo nyuma ya nambari hizi?",
-  "chat.followup.whichLeads": "Ni maeneo gani ya Nairobi yanayoongoza kwa Uhai?",
-  "chat.followup.explainPillars": "Eleza nguzo nne za Uhai",
-  "chat.followup.safetyWeakest": "Usalama ni dhaifu wapi kote kaunti?",
+  "chat.followup.whichLeads": "Ni kata gani za Nairobi zenye alama za juu zaidi?",
+  "chat.followup.explainPillars": "Eleza nguzo zinazounda alama",
+  "chat.followup.waterWeakest": "Maji na usafi wa mazingira ni dhaifu wapi kote kaunti?",
   "chat.followup.whyPillarStronger": "Kwa nini nguzo ya {pillar} ya {zone} iko imara zaidi?",
   "chat.followup.activeProjectsIn": "Ni miradi gani ya miundombinu iko hai {zone}?",
   "chat.followup.gapMovedThisQuarter": "Pengo kati ya {top} na {bottom} limesogeaje robo hii?",
@@ -468,14 +461,14 @@ export const sw: Partial<Record<MessageKey, string>> = {
   "chat.followup.pillarsDisagree": "Nionyeshe eneo ambapo nguzo hazikubaliani",
   "chat.followup.dataOrigin": "Data ya msingi inatoka wapi?",
   "chat.compare.needSecond":
-    "Chagua eneo la pili kwenye kichaguzi hapo juu, nami nitakupitia nguzo zote nne bega kwa bega — Ustawi wa Jamii, Usalama, Msongamano, na Miundombinu na Mazingira.",
+    "Chagua kata ya pili kwenye kichaguzi hapo juu, nami nitakupitia nguzo bega kwa bega — {pillars}.",
   "chat.compare.opener": "{top} inaongoza kwa jumla kwa alama {topScore}, {gaps}.",
   "chat.compare.gap": "pointi {gap} mbele ya {name}",
   "chat.compare.pillarLine": "• {pillar}: {values} — mtawanyiko wa pointi {spread}.",
   "chat.compare.closing":
-    "Nguzo nne zinaelezea hadithi: {pillar} ni pale maeneo haya yanapotofautiana zaidi (mtawanyiko wa pointi {spread}), kwa hivyo ikiwa unapanga vipaumbele, hiyo ndiyo nguzo ya kuchunguza kwanza.",
+    "{pillar} ni pale kata hizi zinapotofautiana zaidi (mtawanyiko wa pointi {spread}), kwa hivyo ikiwa unapanga vipaumbele, hiyo ndiyo nguzo ya kuchunguza kwanza.",
   "chat.composition.needZone":
-    "Chagua eneo au taja moja kwa jina nami nitachanganua nguzo zake nne za Uhai — Ustawi wa Jamii, Usalama, Msongamano, na Miundombinu na Mazingira.",
+    "Chagua kata au taja moja kwa jina nami nitachanganua nguzo zake — {pillars}.",
   "chat.composition.opener":
     "**{zone}** inapata alama **{score}/100** kwa jumla — hii ni {delta} dhidi ya wastani wa Nairobi ({avg}) na inaiweka katika nafasi ya #{rank} kati ya wilaya ndogo 17. Kiwango cha utayari: **{band}**.",
   "chat.composition.pillarLine": "• **{pillar}** — {value}/100 {arrow} ({delta})",
@@ -485,41 +478,41 @@ export const sw: Partial<Record<MessageKey, string>> = {
   "chat.composition.strongLabel": "**Imara zaidi — {pillar}.**",
   "chat.composition.weakLabel": "**Dhaifu zaidi — {pillar}.**",
   "chat.composition.unscored":
-    "**{zone}** halina alama ya jumla ya Uhai bado — hakuna nguzo yenye usomaji wowote, kwa hivyo siwezi kufafanua kile kisichokuwepo. Viashiria vitakapofika kwa eneo hilo, ninaweza kutunga alama na nguzo zake nne kutoka kwa usomaji huo.",
-  "chat.strong.social":
-    "{zone} ina ufikiaji ulio juu ya wastani wa huduma za afya, elimu, na mtandao — nguvu kazi na jamii inayoweza kupokea miundombinu mipya bila mapengo ya mafunzo.",
-  "chat.strong.safety":
-    "Usalama wa kimwili na kisheria ndio nanga hapa. Matukio machache kando ya barabara kuu, na viashirio vya utawala wa sheria vinavyofanya mikataba ya muda mrefu kutetewa kwa urahisi.",
-  "chat.strong.density":
-    "{zone} bado ina nafasi ya ukuaji — uwiano wa msongamano na uwezo bado haujazidi, kwa hivyo maendeleo mapya hayagombani na gharama ya ardhi.",
-  "chat.strong.infra":
-    "Miundombinu na ulinzi wa mazingira tayari umeandikwa — uwazi wa ESIA, uhuru wa rasilimali, na maagizo ya mzunguko wa maisha yamewekwa kwenye karatasi na yanaweza kutetewa.",
-  "chat.weak.social":
-    "Hii ndiyo nguzo ya kufadhili pamoja na mradi wowote mpya {zone} — mapengo ya afya, mtandao wa dijitali, au uwezo wa elimu vinginevyo yatageuka kuwa hatari ya utendaji katika mwaka wa 2–3.",
-  "chat.weak.safety":
-    "Usalama unahitaji kufungwa kabla ya duru inayofuata ya uwekezaji. Kwa kawaida hujitokeza kama matukio ya usalama wa kimwili au mabadiliko ya utawala wa sheria; mkondo wa arifa ni pale uchunguzi unafichua ni lipi.",
-  "chat.weak.density":
-    "{zone} ina msongamano uliozidi ikilinganishwa na miundombinu yake ya sasa — mtaji mpya huwa unapoteza faida kwa gharama ya ardhi na msuguano wa vibali. Fadhili miradi ya kupunguza msongamano (usafiri, mabomba ya maji) kwanza.",
-  "chat.weak.infra":
-    "Rekodi ya karatasi ni nyembamba — ESIA, maagizo ya taka, au vibali vya kinga ya kitaifa vinakosekana au si vya umma. Panga bajeti ya kazi ya kisheria na sera katika muhtasari wa mradi wowote hapa.",
+    "**{zone}** haina alama ya jumla bado — hakuna nguzo yenye usomaji wowote, kwa hivyo siwezi kufafanua kile kisichokuwepo. Viashiria vitakapofika kwa kata hiyo, ninaweza kutunga alama na nguzo zake kutoka kwa usomaji huo.",
+  "chat.strong.water_sanitation":
+    "Maji safi yanafika kaya nyingi za {zone}, na mchanganyiko wa usafi wa mazingira hautawaliwi na vyoo vya kushirikiana au vya wazi. Hii ndiyo nguzo ambayo rekodi nzima imejengwa juu yake, kwa hivyo usomaji imara hapa una uzito mkubwa zaidi.",
+  "chat.strong.road_density":
+    "{zone} ina mtandao mnene wa barabara zilizoramaniwa kwa eneo lake — sharti la kawaida ili ukusanyaji taka, ufikiaji wa dharura na usafirishaji wa mwisho vifanye kazi kabisa.",
+  "chat.strong.transit_access":
+    "Wakazi wengi wa {zone} wanaishi umbali wa kutembea kutoka kituo cha matatu, kwa hivyo kufika kazini na kwenye huduma hakutegemei kumiliki gari.",
+  "chat.strong.electricity_access":
+    "Umeme wa taa wa kaya ulikuwa umeenea {zone} wakati wa sensa ya 2019. Hiyo ndiyo takwimu mpya zaidi ya kata iliyopo — isome kama kiwango cha chini, si cha leo.",
+  "chat.weak.water_sanitation":
+    "Hii ndiyo nguzo ya kufadhili kwanza {zone}. Pale mfumo mkuu wa maji taka hauwezekani, njia halisi ni usafi wa mazingira unaolingana na mazingira badala ya kusubiri bomba lisilo na tarehe ya ufadhili.",
+  "chat.weak.road_density":
+    "{zone} ina barabara chache zilizoramaniwa kwa kila km². Hilo linabana kila kitu kinachofuata — njia za ukusanyaji, muda wa ambulensi, na gharama ya kusafirisha chochote.",
+  "chat.weak.transit_access":
+    "Sehemu kubwa ya {zone} iko nje ya umbali wa kutembea kutoka kituo cha matatu. Hiyo inaweka gharama ya kila siku kwa wakazi ambayo haionekani katika nguzo nyingine yoyote.",
+  "chat.weak.electricity_access":
+    "Usomaji ni dhaifu, lakini chanzo chake pekee ni sensa ya 2019. Thibitisha dhidi ya chanzo cha sasa kabla ya kuchukua hatua.",
   "chat.distribution":
     "{top1} na {top2} zinashirikiana uongozi kwa alama {score1}/{score2}. {top3} inafuata kwa {score3}, kisha {top4} ({score4}) na {top5} ({score5}). Tano bora ziko ndani ya pointi {spread} — wilaya ndogo imara zaidi za Nairobi zimekusanyika badala ya kutenganishwa na kiongozi mmoja anayeongoza sana.",
   "chat.distribution.needMore":
     "Kwa sasa maeneo {count} tu yana alama ya jumla — ninahitaji angalau matano ili kutaja waongozi kwa uaminifu. Kadiri maeneo mengi yanavyoanza kupokea viashiria, orodha ya tano bora inakuwa na maana.",
   "chat.trend":
-    "{zone} imekaa kati ya {low} na {high} katika siku 30 zilizopita. Mwelekeo wa jumla ni imara, na ongezeko dogo la hivi karibuni linatokana na nguzo ya Miundombinu. Hakuna mabadiliko ya ghafla ya kutaja.",
+    "{zone} imekaa kati ya {low} na {high} katika siku 30 zilizopita. Mwelekeo ni imara. Hakuna mabadiliko ya ghafla ya kutaja.",
   "chat.trend.unscored":
-    "**{zone}** halina alama ya jumla ya kufuatilia mwelekeo bado — mkondo wa siku 30 unahitaji nambari ya kuanzia, na haipo. Baada ya eneo hilo kupata picha yake ya kwanza yenye alama, chati ya mwelekeo itapatikana.",
+    "**{zone}** haina alama ya jumla ya kufuatilia mwelekeo bado — mkondo wa siku 30 unahitaji nambari ya kuanzia, na haipo. Baada ya kata hiyo kupata picha yake ya kwanza yenye alama, chati ya mwelekeo itapatikana.",
   "chat.methodology":
-    "Alama ya Uhai inakusanya nguzo nne — Ustawi wa Jamii, Usalama, Msongamano, na Miundombinu na Mazingira — kila moja kwa kipimo cha 0–100, na kuzichanganya kuwa alama ya jumla ya eneo. Uzito kamili umewekwa kwenye karatasi ya mbinu badala ya kuonyeshwa kwenye kiolesura, lakini kila ingizo limehifadhiwa katika jedwali la picha ili alama yoyote unayoiona iweze kufuatiliwa hadi kwenye usomaji ulioizalisha.",
+    "Alama inachanganya nguzo — {pillars} — kila moja kwa kipimo cha 0–100. Uzito unaishi katika rejista moja yenye toleo badala ya kuwekwa popote ndani ya msimbo, nguzo isiyo na usomaji inaondolewa kwenye hesabu na kigawanyiko vyote viwili badala ya kuhesabiwa sufuri, na kila ingizo limehifadhiwa katika jedwali la picha, kwa hivyo alama yoyote unayoiona inafuatiliwa hadi kwenye usomaji ulioizalisha.",
   "chat.summary.needZone":
-    "Chagua eneo moja au mawili kutoka kwenye kichaguzi cha kulinganisha nami nitakupitia nguzo zao nne za Uhai. Bila eneo maalum, ninaweza tu kuzungumza kuhusu wastani wa kaunti.",
+    "Chagua kata moja au mbili kutoka kwenye kichaguzi cha kulinganisha nami nitakupitia nguzo zao. Bila kata maalum, ninaweza tu kuzungumza kuhusu wastani wa kaunti.",
   "chat.summary.single":
-    "{zone} iko kwa {score}/100 kwa jumla. Ustawi wa Jamii {social}, Usalama {safety}, Msongamano {density}, Miundombinu {infra}. Uliza kuhusu nguzo yoyote na naweza kuingia ndani zaidi.",
+    "{zone} iko kwa {score}/100 kwa jumla. {pillars}. Uliza kuhusu nguzo yoyote na naweza kuingia ndani zaidi.",
   "chat.summary.multi":
-    'Unaunga {names}. Alama zao za Uhai za jumla ni wastani wa {avg}. Uliza "linganisha katika nguzo zote nne" kwa uchambuzi kamili, au bana kwa nguzo moja kwa mtazamo wa kina zaidi.',
+    'Unalinganisha {names}. Alama zao za jumla ni wastani wa {avg}. Uliza "linganisha katika nguzo zote" kwa uchambuzi kamili, au bana kwa nguzo moja kwa mtazamo wa kina zaidi.',
   "chat.summary.multi.unscored":
-    "Unalinganisha {names}. Hakuna hata moja lenye alama ya jumla ya Uhai bado, kwa hivyo hakuna wastani wa kuripoti — lakini naweza kupitia usomaji wa nguzo ambao kila eneo linao.",
+    "Unalinganisha {names}. Hakuna hata moja yenye alama ya jumla bado, kwa hivyo hakuna wastani wa kuripoti — lakini naweza kupitia usomaji wa nguzo ambao kila moja inao.",
   "chat.diagnostic.stable":
     "Kila eneo la Nairobi lina utulivu wa kadiri robo hii — mabadiliko madogo yako ndani ya kelele. Uliza kuhusu nguzo maalum ili kuingia ndani zaidi.",
   "chat.diagnostic.noMovement":
@@ -528,14 +521,14 @@ export const sw: Partial<Record<MessageKey, string>> = {
     "**{zone}** — nguzo maalum ya kuangalia ni **{worstPillar}**, iliyosogea {worstDelta} katika siku {days} zilizopita. Msogezaji bora alikuwa {bestPillar} kwa {bestDelta}, kwa hivyo Alama ya Uhai ya {score} imeathirika kidogo tu. \n\n**Sababu inayowezekana.** {cause} Mkondo wa arifa wa {zone} kwa kawaida hutaja mradi au tukio kamili nyuma ya mabadiliko ya ukubwa huu — inafaa kuangalia kabla ya kuamini utambuzi.\n\nUpande wa udhaifu unaosimama, **{weakestPillar}** kwa {weakestValue}/100 ni nguzo inayoshikilia {zone} kimuundo, bila kujali mabadiliko ya hivi karibuni.",
   "chat.diagnostic.growth":
     "**{zone}** haikushuka katika nguzo yoyote iliyopimwa katika siku {days} zilizopita — mabadiliko madogo zaidi yalikuwa {worstPillar} kwa {worstDelta}, na yaliyo imara zaidi yalikuwa {bestPillar} kwa {bestDelta}. Ukuaji ni wa msingi mpana, si unaosukumwa na nguzo moja. \n\nUpande wa udhaifu unaosimama, **{weakestPillar}** kwa {weakestValue}/100 ni nguzo inayozuia jumla isipande zaidi — {weakExplain}",
-  "chat.cause.social":
-    "Kushuka kwa Ustawi wa Jamii kwa kawaida hufuata usumbufu wa nguvu kazi au huduma ya afya — kufungwa kwa zahanati, siku za mgomo wa walimu, au kupungua kwa mtandao wa simu.",
-  "chat.cause.safety":
-    "Kushuka kwa usalama wa ukubwa huu karibu kila mara hufuata mkusanyiko wa matukio ya usalama wa kimwili (seti ya ripoti za uharibifu au uhalifu) au tukio la utawala wa sheria lililotangazwa na NPS. Karibu na {zone} hasa, matukio ya barabara kuu ndiyo sababu ya kawaida.",
-  "chat.cause.density":
-    "Kushuka kwa msongamano kunasomeka kama ama ongezeko la shinikizo la idadi ya watu (upungufu wa nyumba unaongezeka) au tukio la msongamano wa barabara — muda wa usafiri wa asubuhi/jioni ndio ishara.",
-  "chat.cause.infra":
-    "Kushuka kwa miundombinu kunamaanisha kuwa ESIA imekwisha au kuondolewa, kibali cha uhuru wa rasilimali kimeandikwa upya, au utekelezaji wa maagizo ya taka/mzunguko wa maisha umeteleza.",
+  "chat.cause.water_sanitation":
+    "Mabadiliko hapa hufuata ama marekebisho ya utendaji wa huduma unaoripotiwa na mtoa huduma, au mabadiliko ya mchanganyiko wa usafi wa kaya. Ripoti ya IMPACT ya WASREB ndipo takwimu ya mtoa huduma huchapishwa; upande wa kaya unatoka kwenye sensa.",
+  "chat.cause.road_density":
+    "Msongamano wa barabara hupimwa kutoka kwenye data ya OSM, si ardhini. Kampeni ya uramani inaweza kuongeza kilomita zilizokuwepo tayari, kwa hivyo angalia tarehe ya data karibu na {zone} kabla ya kusoma mabadiliko kama ujenzi.",
+  "chat.cause.transit_access":
+    "Upatikanaji wa usafiri hufuata masasisho ya GTFS — njia zilizoongezwa, zilizoondolewa, au zilizopimwa upya na Digital Matatus. Kuondolewa kwa njia hujitokeza hapa kabla ya mahali pengine popote.",
+  "chat.cause.electricity_access":
+    "Upatikanaji wa umeme una chanzo kimoja na kipindi kimoja, sensa ya 2019. Mabadiliko yoyote hapa ni hesabu upya, si mabadiliko halisi ardhini {zone}.",
   "chat.errorGeneric": "Samahani — ombi hilo halikuweza kutumwa.",
   "chat.errorEnded": "Mkondo wa mazungumzo uliisha ghafla.",
 
@@ -562,9 +555,7 @@ export const sw: Partial<Record<MessageKey, string>> = {
 
   "estimated.tooltip": "Kadirio — hakuna data iliyopimwa kwa kiashiria hiki",
   "estimated.zoneBadge": "Ina thamani zilizokadiriwa",
-  "scorecard.water.safeAccess": "Ufikiaji salama",
-  "scorecard.water.sharedPoints": "Vituo vya pamoja",
-  "scorecard.water.medianQueue": "Wastani wa foleni",
+  "scorecard.water.unmetNeed": "Hitaji ambalo halijatimizwa",
   "scorecard.water.opportunity": "Fursa ya usafi wa kujitegemea",
   "scorecard.water.sewerage": "Mifereji ya taka inaweza kufanya kazi hapa",
   "scorecard.infra.title": "Miundombinu · {noun} {count}",
@@ -599,13 +590,10 @@ export const sw: Partial<Record<MessageKey, string>> = {
   "sidebar.role.admin": "Msimamizi",
 
   // Layer descriptions
-  "layerDesc.vitality": "Ramani ya rangi ya alama za Uhai kwa kila wilaya ndogo.",
-  "layerDesc.roads": "Maendeleo ya moja kwa moja ya kazi kubwa za barabara — KURA / KeNHA.",
-  "layerDesc.energy": "Ufunikaji wa gridi mahiri na maeneo ya kukatika — KPLC.",
-  "layerDesc.density": "Ramani ya msongamano wa idadi ya watu — sensa ya KNBS 2019.",
+  "layerDesc.vitality": "Ramani ya rangi ya alama za utendaji wa huduma kwa kila kata.",
+  "layerDesc.roads": "Kilomita za barabara zilizoramaniwa kwa kila km² — HOT OSM.",
+  "layerDesc.energy": "Kaya zinazotumia umeme kwa mwanga — sensa ya KNBS 2019.",
   "layerDesc.water": "Ufikiaji wa maji na wasifu wa suluhisho la usafi — SDG 6.",
-  "layerDesc.momentum": "Kasi ya utoaji dhidi ya ratiba katika miradi hai.",
-  "layerDesc.safety": "Utawala wa sheria na matukio ya usalama wa kimwili — NPS.",
 
   // TopBar chrome
   "topbar.live": "Moja kwa Moja",
