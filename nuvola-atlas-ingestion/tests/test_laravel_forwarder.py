@@ -8,7 +8,7 @@ import httpx
 import pytest
 
 from app.config import Settings
-from app.models.indicators import IndicatorKey, IndicatorReading
+from app.models.readings import PillarReading
 from app.services.laravel_forwarder import RETRY_BACKOFF_SECONDS, forward_batch
 from app.signing import verify
 
@@ -19,13 +19,14 @@ def settings() -> Settings:
     return Settings(laravel_base_url="http://laravel.test/api/v1", internal_secret=SECRET)
 
 
-def reading(zone_id: str = "westlands", value: float = 82.0) -> IndicatorReading:
-    return IndicatorReading(
+def reading(zone_id: str = "westlands", value: float = 82.0) -> PillarReading:
+    return PillarReading(
         zone_id=zone_id,
-        indicator=IndicatorKey.healthcare_access,
+        pillar="water_sanitation",
         value=value,
         unit="index",
         observed_at=datetime(2026, 8, 1, tzinfo=UTC),
+        source="knbs_census_2019",
     )
 
 
@@ -156,3 +157,20 @@ async def test_readings_are_grouped_into_one_request_per_zone() -> None:
 
 async def test_empty_batch_short_circuits() -> None:
     assert await forward_batch([], settings()) == []
+
+
+async def test_payload_is_keyed_the_way_laravel_validates_it() -> None:
+    """IngestController::store validates `pillars`, keyed by registry pillar key."""
+    captured: dict[str, Any] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        import json
+
+        captured.update(json.loads(request.content))
+        return httpx.Response(202, json={"ok": True})
+
+    async with client_for(handler) as client:
+        await forward_batch([reading()], settings(), client=client)
+
+    assert captured["pillars"] == {"water_sanitation": 82.0}
+    assert captured["zone_id"] == "westlands"

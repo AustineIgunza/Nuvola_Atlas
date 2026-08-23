@@ -26,9 +26,9 @@ def create_app() -> FastAPI:
         title="Navuuna Ingestion Service",
         version=__version__,
         description=(
-            "Cleans and forwards Daystar University indicator batches into the "
-            "Navuuna Laravel API. Deployable as a Vercel Fluid Compute Python "
-            "function or under Uvicorn on Forge."
+            "Cleans and forwards sub-county pillar readings into the Navuuna "
+            "Laravel API. Deployable as a Vercel Fluid Compute Python function "
+            "or under Uvicorn on Forge."
         ),
     )
     register_problem_handlers(app)

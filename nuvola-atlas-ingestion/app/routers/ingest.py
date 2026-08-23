@@ -1,4 +1,4 @@
-"""Indicator ingest endpoint — the front door for Daystar batches.
+"""Reading ingest endpoint — the front door for field batches.
 
 Cleans the batch, runs anomaly detection, forwards the accepted rows to
 the Laravel intake endpoint, and returns a receipt describing what was
@@ -16,7 +16,7 @@ from fastapi import APIRouter, Depends, Request
 from app.config import get_settings
 from app.guards import enforce_payload_size, get_guards
 from app.idempotency import lookup, payload_hash, remember
-from app.models.indicators import IndicatorBatch
+from app.models.readings import ReadingBatch
 from app.security import require_internal_secret
 from app.services.anomaly_detector import Anomaly, detect_anomalies
 from app.services.data_cleaner import clean_batch
@@ -26,11 +26,11 @@ router = APIRouter(prefix="/api/ingest", tags=["ingest"])
 
 
 @router.post(
-    "/indicators",
+    "/readings",
     dependencies=[Depends(require_internal_secret), Depends(enforce_payload_size)],
-    summary="Accept a Daystar indicator batch",
+    summary="Accept a batch of pillar readings",
 )
-async def ingest_indicators(batch: IndicatorBatch, request: Request) -> dict[str, object]:
+async def ingest_readings(batch: ReadingBatch, request: Request) -> dict[str, object]:
     settings = get_settings()
     guards = get_guards()
 
@@ -85,7 +85,7 @@ async def ingest_indicators(batch: IndicatorBatch, request: Request) -> dict[str
         "anomalies": [
             {
                 "zone_id": a.zone_id,
-                "indicator": a.indicator,
+                "pillar": a.pillar,
                 "value": a.value,
                 "z_score": round(a.z_score, 3),
                 "reason": a.reason,

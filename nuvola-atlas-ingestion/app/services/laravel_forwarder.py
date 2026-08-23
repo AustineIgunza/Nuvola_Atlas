@@ -1,4 +1,4 @@
-"""Forwarder that ships cleaned indicator readings to the Laravel /ingest
+"""Forwarder that ships cleaned pillar readings to the Laravel /ingest
 endpoint.
 
 Batches are grouped by zone_id before forwarding so each Laravel-side
@@ -21,7 +21,7 @@ from typing import Any
 import httpx
 
 from app.config import Settings
-from app.models.indicators import IndicatorReading
+from app.models.readings import PillarReading
 from app.signing import sign
 
 # One initial send plus three retries. Backoff is stepped rather than
@@ -43,11 +43,11 @@ class ForwardResult:
     attempts: int = 1
 
 
-def _group_by_zone(rows: list[IndicatorReading]) -> dict[str, dict[str, float | None]]:
+def _group_by_zone(rows: list[PillarReading]) -> dict[str, dict[str, float | None]]:
     grouped: dict[str, dict[str, float | None]] = {}
     for row in rows:
         bucket = grouped.setdefault(row.zone_id, {})
-        bucket[row.indicator.value] = row.value
+        bucket[row.pillar] = row.value
     return grouped
 
 
@@ -106,7 +106,7 @@ async def _post_with_retries(
 
 
 async def forward_batch(
-    rows: list[IndicatorReading],
+    rows: list[PillarReading],
     settings: Settings,
     *,
     source: str = "fastapi.daystar",
@@ -126,9 +126,9 @@ async def forward_batch(
 
     results: list[ForwardResult] = []
     try:
-        for zone_id, indicators in payloads.items():
+        for zone_id, pillars in payloads.items():
             body = json.dumps(
-                {"source": source, "zone_id": zone_id, "indicators": indicators},
+                {"source": source, "zone_id": zone_id, "pillars": pillars},
                 separators=(",", ":"),
                 sort_keys=True,
             ).encode()

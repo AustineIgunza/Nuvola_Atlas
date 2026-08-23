@@ -13,7 +13,7 @@ import hmac
 from app.signing import MAX_CLOCK_SKEW_SECONDS, fingerprint, sign, verify
 
 SECRET = "test-internal-secret-value-that-is-long-enough-000"
-BODY = b'{"indicators":{"healthcare_access":82},"source":"fastapi.daystar","zone_id":"westlands"}'
+BODY = b'{"pillars":{"water_sanitation":82},"source":"fastapi.daystar","zone_id":"westlands"}'
 
 
 def test_signature_matches_the_canonical_php_construction() -> None:

@@ -1,9 +1,12 @@
-# Nuvola Atlas Ingestion Service
+# Navuuna Ingestion Service
 
-FastAPI microservice that cleans and forwards Daystar University indicator
-batches into the Navuuna Laravel API. Owned by Devyan (CTIPSO). Isolated
-from the Laravel app so a batch ingest spike cannot destabilise the
-partner-facing website.
+FastAPI microservice that cleans and forwards sub-county pillar readings into
+the Navuuna Laravel API. Owned by Devyan (CTIPSO). Isolated from the Laravel
+app so a batch ingest spike cannot destabilise the partner-facing website.
+
+The pillar taxonomy is not defined here. It comes from `pillars.json` at the
+repo root, generated into `app/models/pillars_generated.py`. A reading naming
+a pillar the registry marks `off` is rejected, not stored.
 
 ## Stack
 
@@ -31,10 +34,21 @@ curl http://localhost:8001/api/health/ingestion
 Ingest a batch (requires `X-Internal-Secret`):
 
 ```bash
-curl -X POST http://localhost:8001/api/ingest/indicators \
+curl -X POST http://localhost:8001/api/ingest/readings \
   -H 'Content-Type: application/json' \
   -H 'X-Internal-Secret: change-me-per-environment' \
-  -d @tests/fixtures/sample_batch.json
+  -d '{
+    "batch_id": "demo-001",
+    "submitted_at": "2026-08-23T00:00:00Z",
+    "readings": [{
+      "zone_id": "westlands",
+      "pillar": "water_sanitation",
+      "value": 82,
+      "unit": "index",
+      "observed_at": "2026-08-23T00:00:00Z",
+      "source": "knbs_census_2019"
+    }]
+  }'
 ```
 
 ## Checks

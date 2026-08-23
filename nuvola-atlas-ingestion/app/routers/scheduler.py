@@ -21,7 +21,7 @@ from pydantic import ValidationError
 from app.config import get_settings
 from app.guards import get_guards
 from app.idempotency import lookup, payload_hash, remember
-from app.models.indicators import IndicatorBatch
+from app.models.readings import ReadingBatch
 from app.security import require_internal_secret
 from app.services.data_cleaner import clean_batch
 from app.services.laravel_forwarder import forward_batch
@@ -107,7 +107,7 @@ async def _run_tick() -> dict[str, object]:
         return {**replayed, "status": "duplicate", "ticked_at": now}
 
     try:
-        batch = IndicatorBatch.model_validate_json(raw)
+        batch = ReadingBatch.model_validate_json(raw)
     except ValidationError as exc:
         return {
             "status": "failed",

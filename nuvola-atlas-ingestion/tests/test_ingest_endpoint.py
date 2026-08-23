@@ -14,7 +14,7 @@ from app.main import create_app
 from app.services.laravel_forwarder import ForwardResult
 
 SECRET = "test-internal-secret-value-that-is-long-enough-000"
-URL = "/api/ingest/indicators"
+URL = "/api/ingest/readings"
 
 
 def batch(rows: int = 1) -> dict[str, Any]:
@@ -24,10 +24,11 @@ def batch(rows: int = 1) -> dict[str, Any]:
         "readings": [
             {
                 "zone_id": "westlands",
-                "indicator": "healthcare_access",
+                "pillar": "water_sanitation",
                 "value": 80 + i,
                 "unit": "index",
                 "observed_at": "2026-08-01T00:00:00Z",
+                "source": "knbs_census_2019",
             }
             for i in range(rows)
         ],
@@ -119,6 +120,17 @@ def test_daily_budget_guard_returns_429_with_retry_after(make_client: Any) -> No
     response = client.post(URL, json=batch(1), headers=headers)
     assert response.status_code == 429
     assert int(response.headers["retry-after"]) > 0
+
+
+def test_a_switched_off_pillar_is_rejected_at_the_schema(make_client: Any) -> None:
+    client = make_client()
+    payload = batch(1)
+    payload["readings"][0]["pillar"] = "safety"
+
+    response = client.post(URL, json=payload, headers={"X-Internal-Secret": SECRET})
+
+    assert response.status_code == 422
+    assert "switched off" in response.text
 
 
 def test_malformed_batch_returns_a_validation_problem(make_client: Any) -> None:

@@ -1,7 +1,7 @@
 [project]
 name = "nuvola-atlas-ingestion"
 version = "0.1.0"
-description = "Navuuna data ingestion microservice — normalises Daystar University indicator feeds and forwards them to the Laravel API."
+description = "Navuuna data ingestion microservice — normalises sub-county pillar readings and forwards them to the Laravel API."
 requires-python = ">=3.13,<3.15"
 readme = "README.md"
 authors = [
