@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 #
-# The five checks, in one place. The Makefile calls this; so can anyone
+# The six checks, in one place. The Makefile calls this; so can anyone
 # without `make`, which includes every Windows machine on the team:
 #
 #   bash scripts/check.sh
 #
-# Runs all five even when an early one fails, so a single run tells you
+# Runs all six even when an early one fails, so a single run tells you
 # everything that is broken rather than only the first thing.
 
 set -uo pipefail
@@ -67,7 +67,7 @@ for i in "${!names[@]}"; do
 done
 
 # phpstan matches CI: it runs and its result is printed, but it does not gate.
-# It carries 158 pre-existing violations at level 5, and a check that is
+# It carries 154 pre-existing violations at level 5, and a check that is
 # always red teaches everyone to stop reading it. The number is still shown
 # so it cannot drift upward unnoticed.
 echo

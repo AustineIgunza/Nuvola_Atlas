@@ -8,13 +8,14 @@ Tick only what you actually ran. If a check was not run, say why rather than
 leaving the box empty — "not run, no Docker on this machine" is a useful
 review signal; a blank box is not.
 
+- [ ] `node scripts/gen-pillars.mjs --check`
 - [ ] `cd nuvola-atlas-backend && php vendor/phpunit/phpunit/phpunit --no-coverage`
 - [ ] `cd nuvola-atlas-backend && vendor/bin/phpstan analyse --memory-limit=512M`
 - [ ] `cd nuvola-atlas-frontend && npm run typecheck`
 - [ ] `cd nuvola-atlas-frontend && npm test`
 - [ ] `cd nuvola-atlas-frontend && npm run build`
 
-<!-- `make check` from the repo root runs all five. -->
+<!-- `make check` (or `bash scripts/check.sh`) from the repo root runs all six. -->
 
 Not run, and why:
 

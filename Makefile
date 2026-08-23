@@ -12,7 +12,7 @@ help:  ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) \
 		| awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-8s\033[0m %s\n", $$1, $$2}'
 
-check:  ## Run the five checks (bash scripts/check.sh)
+check:  ## Run the six checks (bash scripts/check.sh)
 	@bash scripts/check.sh
 
 lint:  ## Run the formatters and linters in check mode

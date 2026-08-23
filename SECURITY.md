@@ -2,17 +2,17 @@
 
 ## Supported Versions
 
-Nuvola Atlas is currently in pre-pilot development against `main`. Only the
+Navuuna is currently in pre-pilot development against `main`. Only the
 latest `main` commit is supported for security fixes during this phase.
 
 ## Reporting a Vulnerability
 
-If you discover a security issue in Nuvola Atlas — the frontend, the
+If you discover a security issue in Navuuna — the frontend, the
 Laravel backend, the FastAPI ingestion service, the OpenAPI contract,
 or any deployed infrastructure — please report it privately. Do **not**
 open a public GitHub issue.
 
-Email **security@nuvola-atlas.example** with:
+Email **security@navuuna.example** with:
 
 - A description of the issue and the potential impact.
 - Steps to reproduce, or a proof-of-concept where appropriate.
@@ -30,6 +30,8 @@ In scope:
 - Authentication / authorisation bypass (`/auth/*`, role gating, RLS).
 - Data exposure (cross-tenant reads, IDOR on `/api/v1/*`).
 - Injection (SQL, NoSQL, command, header, log).
+- Anything that gets the AI assistant to read personal data, or to run a
+  statement the SQL guard should have refused. Prompt injection counts.
 - Cryptography / token-handling issues (Sanctum tokens, password resets).
 - Server-side request forgery, deserialization, and supply-chain risks.
 - Compromise of the audit log integrity.
@@ -58,6 +60,29 @@ Out of scope for the pilot:
 - Bearer tokens are Sanctum personal access tokens with an 8-hour TTL;
   successful password resets revoke every active token for the affected
   user.
+
+### The AI assistant
+
+The assistant generates SQL, so it is treated as hostile input at three
+independent layers. Each is designed to hold if the ones above it fail.
+
+- **Database grants are the primary control.** The assistant connects as a
+  dedicated read-only role, and `SELECT` on `users` is revoked from that role
+  outright. Aggregate user counts reach it through the `chat_user_stats` view
+  instead, which exposes no personal data.
+- **The connection is mandatory, and it fails closed.** With `DB_CHAT_RO_USER`
+  unset, chat errors rather than falling back to the privileged connection.
+  There is no environment where an unconfigured deployment silently runs the
+  assistant as the app user.
+- **`SqlGuard` parses rather than pattern-matches.** It tokenises the statement
+  and resolves every table source, so the bypasses that defeat a regex do not
+  get through: comments of any nesting, stacked statements, and reads reached
+  via subquery, derived table, CTE, `UNION`, comma join, quoted identifier or
+  set-returning function all resolve back to the table allowlist. Keywords and
+  semicolons inside string literals are not mistaken for syntax. It is defence
+  in depth: assume it will eventually be bypassed, and the grants above hold.
+
+If you find a way through all three, that is exactly the report we want.
 
 ## Coordinated Disclosure
 

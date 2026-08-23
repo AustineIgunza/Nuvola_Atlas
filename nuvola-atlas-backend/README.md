@@ -1,9 +1,9 @@
 # Navuuna — Laravel API
 
-Headless JSON API for the Navuuna spatial intelligence platform. Serves the
-React SPA in `../nuvola-atlas-frontend`, receives cleaned indicator batches
+Headless JSON API for the Navuuna sub-county service-performance record. Serves
+the React SPA in `../nuvola-atlas-frontend`, receives cleaned pillar readings
 from the FastAPI service in `../nuvola-atlas-ingestion`, and computes the
-Vitality Index.
+per-sub-county score.
 
 Laravel 13 · PHP 8.3+ · PostgreSQL 16 + PostGIS 3.4 · Sanctum · Reverb
 
@@ -45,9 +45,12 @@ Frontend dev server runs separately from `../nuvola-atlas-frontend`
 Run all of these before pushing. Green across the board is the baseline.
 
 ```bash
-php artisan route:list --path=api                    # 72 routes
-php vendor/phpunit/phpunit/phpunit --no-coverage      # 245 tests
+php artisan route:list --path=api                    # 73 routes
+php vendor/phpunit/phpunit/phpunit --no-coverage      # 311 tests
 ```
+
+`bash ../scripts/check.sh` from the repo root runs these alongside the pillar
+registry check and the three frontend checks.
 
 `phpunit.xml` force-overrides the connection to the local Docker Postgres on
 `127.0.0.1:5434`. Without `docker compose up -d postgres` the suite hangs on
@@ -102,4 +105,7 @@ if you need the history.
 - No raw SQL except isolated, commented PostGIS queries inside a service.
 - Every migration implements both `up()` and `down()`.
 - Scoring runs only as a queued job, never inline in a controller.
-- Missing indicators are excluded from score averages, never zero-filled.
+- A pillar with no reading is excluded from the score average — dropped from
+  both the numerator and the divisor, never zero-filled.
+- The pillar taxonomy is generated into `config/pillars.php` from the root
+  `pillars.json`. Edit the JSON, not the PHP.

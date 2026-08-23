@@ -44,11 +44,11 @@ declared, which is exactly why a regulator or funder will trust ours.
 
 - **Frontend:** React 18 + Vite 5 + TypeScript. Not Next.js.
 - **Styling:** Tailwind 3, tokens from `tailwind.config.ts`. **Animation:** Framer Motion 11, `springSettle` preset.
-- **Mapping:** Mapbox GL JS 3.9. Token from `VITE_MAPBOX_ACCESS_TOKEN` only.
+- **Mapping:** Mapbox GL JS 3.9. Token from `VITE_MAPBOX_TOKEN` only.
 - **Data/state:** TanStack Query 5 + Zustand 4.
-- **Backend:** Laravel 11 (PHP 8.3+). **DB:** Supabase Postgres + PostGIS; local Docker for tests.
+- **Backend:** Laravel 13 (PHP 8.3+). **DB:** Supabase Postgres + PostGIS; local Docker for tests.
 - **Ingestion:** FastAPI (Python 3.13).
-- **Packages:** `nuvola-atlas-backend`, `-frontend`, `-ingestion`, `-data`.
+- **Packages:** `nuvola-atlas-backend`, `-frontend`, `-ingestion`.
 
 Directories keep the `nuvola-atlas-*` names. Use "Navuuna" in copy and UI.
 
@@ -70,19 +70,23 @@ Directories keep the `nuvola-atlas-*` names. Use "Navuuna" in copy and UI.
 - Every `React.lazy()` goes through `lazyWithRetry()` so a Vercel deploy
   can't break an open tab on a stale chunk hash.
 
-## Five-check baseline — run after every meaningful slice
+## The baseline — run after every meaningful slice
 
 ```bash
-cd nuvola-atlas-frontend && npx tsc --noEmit
-cd nuvola-atlas-frontend && npx vite build
-cd nuvola-atlas-frontend && npx vitest run
-cd nuvola-atlas-backend  && php artisan route:list --path=api
-cd nuvola-atlas-backend  && php vendor/phpunit/phpunit/phpunit --no-coverage
+bash scripts/check.sh
 ```
+
+That runs all six and keeps going after a failure, so one run tells you
+everything that is broken: pillar-registry drift, phpunit, phpstan, frontend
+typecheck, vitest, and the Vite build.
 
 phpunit needs `docker compose up -d postgres` from the backend directory
 first — `phpunit.xml` force-overrides to a local Docker postgres+postgis on
 `127.0.0.1:5434`, and without it the suite hangs on a TCP timeout.
 
-Green across all five is the baseline for "it works". Fix failures, don't
-paper over them. Push after the slice goes green, not at end of session.
+Five of the six gate. phpstan is informational: it carries pre-existing
+level-5 violations, and a check that is always red teaches everyone to stop
+reading it. The count is printed so it cannot drift upward unnoticed.
+
+Green across the blocking five is the baseline for "it works". Fix failures,
+don't paper over them. Push after the slice goes green, not at end of session.

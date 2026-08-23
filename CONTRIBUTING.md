@@ -22,12 +22,13 @@ command directly. `make check` is the one worth an alias of your own:
 bash scripts/check.sh
 ```
 
-## The five checks
+## The six checks
 
-Run these before you push. `make check` runs all five and keeps going after a
+Run these before you push. `make check` runs all six and keeps going after a
 failure, so one run tells you everything that is broken.
 
 ```bash
+node scripts/gen-pillars.mjs --check
 cd nuvola-atlas-backend  && php vendor/phpunit/phpunit/phpunit --no-coverage
 cd nuvola-atlas-backend  && vendor/bin/phpstan analyse --memory-limit=512M
 cd nuvola-atlas-frontend && npm run typecheck
@@ -35,12 +36,16 @@ cd nuvola-atlas-frontend && npm test
 cd nuvola-atlas-frontend && npm run build
 ```
 
-Two things to know before you read a result:
+Three things to know before you read a result:
 
+- **The registry check is drift detection, not a test.** `pillars.json` at the
+  root generates the pillar taxonomy into all three packages. If you edited a
+  generated file by hand instead of the JSON, this is what catches it. Re-run
+  without `--check` to regenerate.
 - **phpunit needs Postgres.** `phpunit.xml` force-pins to `127.0.0.1:5434`, so
   without the container the suite does not fail — it hangs on a TCP timeout.
   `make db` starts it. `make check` checks the port first and tells you.
-- **phpstan is red and that is expected.** 158 pre-existing violations at
+- **phpstan is red and that is expected.** 154 pre-existing violations at
   level 5. It is informational in CI and in `make check`, and the count is
   printed so it cannot creep upward unnoticed. Do not lower the level to make
   it green.
@@ -57,8 +62,8 @@ them by hand: `make fmt` rewrites, `make lint` checks without rewriting.
 | Ingestion | ruff, then mypy strict | `pyproject.toml` |
 
 Pint and Prettier are **blocking** in CI. ESLint is blocking and currently
-fails on 44 pre-existing errors — fix or narrow the preset before relying on
-it as a gate.
+fails on 26 pre-existing errors (plus 10 warnings) — fix or narrow the preset
+before relying on it as a gate.
 
 `NuvolaAtlasPrototype.jsx` is the frozen design spec. Do not reformat it; it
 sits outside every lint and format glob on purpose.
@@ -73,8 +78,8 @@ docs/short-description
 ci/short-description
 ```
 
-Branch off `main`. `main` is protected: PRs only, the five checks must pass,
-and force-push is off.
+Branch off `main`. `main` is protected: PRs only, the blocking checks must
+pass, and force-push is off.
 
 ## Commits
 
@@ -89,8 +94,12 @@ style(backend): apply the first Pint pass
 chore(repo): add .gitattributes and .editorconfig
 ```
 
-Scopes in use: `api`, `backend`, `frontend`, `ingestion`, `investor`, `db`,
-`ci`, `dev-ux`, `scorecard`, `repo`, `github`, `todo`.
+Scopes in use: `api`, `backend`, `frontend`, `ingestion`, `pillars`, `scoring`,
+`scorecard`, `investor`, `admin`, `chat`, `audit`, `health`, `db`, `ops`, `ci`,
+`deps`, `dev-ux`, `brand`, `legal`, `repo`, `github`, `tasks`.
+
+`git log --format=%s | sed -n 's/^[a-z]*(\([a-z-]*\)).*/\1/p' | sort -u` is the
+live list; prefer an existing scope over inventing one.
 
 Two rules that matter more than the format:
 
@@ -102,7 +111,7 @@ Two rules that matter more than the format:
 
 ## Pull requests
 
-The template asks which of the five checks you ran and leaves room to say why
+The template asks which of the six checks you ran and leaves room to say why
 one was skipped. "Not run, no Docker on this machine" is a useful review
 signal; a blank checkbox is not.
 
