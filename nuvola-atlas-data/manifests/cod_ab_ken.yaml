@@ -1,0 +1,11 @@
+schema_version: 1
+source_id: cod_ab_ken
+name: Kenya Common Operational Datasets — Administrative Boundaries (admin2)
+url: https://data.humdata.org/dataset/cod-ab-ken
+licence: Open, subject to HDX terms
+attribution: IEBC via OCHA / geoBoundaries
+vintage: "2023"
+retrieval_date: "2026-08-24"
+notes: |
+  Boundary source of truth for the 17 Nairobi sub-counties. sha256 is filled
+  in by pipeline/boundaries.py after the download completes.
