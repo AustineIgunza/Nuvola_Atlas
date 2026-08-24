@@ -296,7 +296,10 @@ export const en = {
   "alerts.loadFailed": "Failed to load alerts",
 
   // ── Vitality methodology page ───────────────────────────────────────────
-  "vitality.title": "The UE Vitality Index",
+  // The methodology page is the definitional moment for the acronym; expand
+  // "UE" (Urban-Environmental) so a first-time reader is not left to guess.
+  // See src/lib/branding.ts for the constant reused by fixtures + exports.
+  "vitality.title": "The Urban-Environmental Vitality Index",
   "vitality.subtitle": "How Navuuna scores every sub-county from 0 to 100 across four pillars.",
   "vitality.pillars.title": "The four pillars",
   "vitality.compose.title": "How the composite is built",

@@ -303,7 +303,10 @@ export const sw: Partial<Record<MessageKey, string>> = {
   "alerts.loadFailed": "Imeshindwa kupakia arifa",
 
   // Vitality methodology page
-  "vitality.title": "Kielelezo cha Uhai cha UE",
+  // Methodology page definitional moment — expand UE (Mazingira ya Mjini)
+  // so the acronym has been introduced before it appears in dense widgets
+  // like the leaderboard or scorecard header.
+  "vitality.title": "Kielelezo cha Uhai cha Mazingira ya Mjini",
   "vitality.subtitle":
     "Jinsi Navuuna inavyopima kila wilaya ndogo kutoka 0 hadi 100 katika nguzo nne.",
   "vitality.pillars.title": "Nguzo nne",

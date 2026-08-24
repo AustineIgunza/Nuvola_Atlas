@@ -96,4 +96,31 @@ class ZoneExportApiTest extends TestCase
         $r = $this->get('/api/v1/zones/westlands/export?format=txt');
         $r->assertHeader('Content-Disposition', 'attachment; filename="westlands-vitality-report.txt"');
     }
+
+    public function test_exports_read_the_index_label_from_the_branding_config(): void
+    {
+        // If someone hardcodes the label back into the exporter, a rename in
+        // config/branding.php stops flowing through and this test goes red.
+        // See NAVUUNA_PROMPTS_ROUND2.md §P7.2.
+        config()->set('branding.index_name_short', 'Test-Marker Index');
+
+        $this->seedZone();
+
+        // DOCX is a ZIP; the header string lives inside word/document.xml,
+        // compressed — grepping the raw bytes hits gzip'd noise. Extract
+        // the XML into a temp file, then assert on the plain text.
+        $bytes = $this->get('/api/v1/zones/westlands/export?format=docx')->getContent();
+        $path = tempnam(sys_get_temp_dir(), 'wldocx');
+        try {
+            file_put_contents($path, $bytes);
+            $zip = new \ZipArchive;
+            $this->assertTrue($zip->open($path) === true, 'DOCX is not a valid zip');
+            $documentXml = $zip->getFromName('word/document.xml');
+            $zip->close();
+            $this->assertIsString($documentXml);
+            $this->assertStringContainsString('Test-Marker Index', $documentXml);
+        } finally {
+            @unlink($path);
+        }
+    }
 }

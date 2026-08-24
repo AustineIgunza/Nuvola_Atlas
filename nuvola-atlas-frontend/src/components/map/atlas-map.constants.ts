@@ -18,6 +18,7 @@ export function defaultStyleForTheme(theme: "light" | "dark"): string {
   return theme === "dark" ? MAP_STYLES.dark : MAP_STYLES.light;
 }
 
+import { INDEX_NAME_SHORT } from "@/lib/branding";
 import { BRAND, NO_SCORE_COLOR_HEX } from "@/lib/scoreColor";
 
 /**
@@ -40,7 +41,7 @@ export const LAYER_META = [
     labelKey: "layer.vitality" as const,
     color: BRAND.gold,
     descriptionKey: "layerDesc.vitality" as const,
-    source: "Navuuna · UE Vitality Index",
+    source: `Navuuna · ${INDEX_NAME_SHORT}`,
     sdg: "SDG 9 & 11",
     features: 17,
     lastSyncMin: 4,

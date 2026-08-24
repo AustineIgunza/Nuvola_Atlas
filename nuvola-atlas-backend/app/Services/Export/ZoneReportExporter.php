@@ -149,6 +149,9 @@ class ZoneReportExporter
         $projects = $data['projects'];
         $alerts = $data['alerts'];
         $g = htmlspecialchars((string) $data['generatedAt']);
+        // One source for the index label so a rebrand lands in every export
+        // format at once — see config/branding.php.
+        $indexName = htmlspecialchars((string) config('branding.index_name_short'));
 
         $pillarRows = '';
         foreach ($this->pillarRows($data) as [$label, $value, $delta]) {
@@ -213,7 +216,7 @@ class ZoneReportExporter
 <body>
   <div class="kicker">Navuuna Atlas · Sub-county Vitality Report</div>
   <h1>{$z->name}</h1>
-  <div class="subtitle">UE Vitality Index — snapshot</div>
+  <div class="subtitle">{$indexName} — snapshot</div>
 
   <div class="score">{$scoreBlock}</div>
 
@@ -247,7 +250,7 @@ HTML;
 
         $section->addText('Navuuna Atlas · Sub-county Vitality Report', ['size' => 8, 'color' => '6B6257']);
         $section->addTitle($z->name, 1);
-        $section->addText('UE Vitality Index — snapshot', ['size' => 10, 'color' => '6B6257']);
+        $section->addText(config('branding.index_name_short').' — snapshot', ['size' => 10, 'color' => '6B6257']);
 
         $section->addTextBreak(1);
         $section->addText(

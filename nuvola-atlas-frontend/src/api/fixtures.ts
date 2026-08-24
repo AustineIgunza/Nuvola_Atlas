@@ -1,3 +1,4 @@
+import { INDEX_NAME_SHORT } from "@/lib/branding";
 import { PILLARS, PILLAR_REGISTRY_VERSION } from "@/lib/pillars.generated";
 import type {
   Zone,
@@ -1112,7 +1113,12 @@ export const REPORTS: Report[] = [
       {
         heading: "Methodology",
         content:
-          "Scores computed using the UE Vitality Index v1.2 framework across four pillars: Social Wellbeing & Human Capital, Safety & Security, Density & Scaling Dynamics, and Infrastructure & Environmental Safeguards. Data sourced from KNBS, KURA, KPLC, KETRACO, and NEMA feeds aggregated between January 1 and March 31, 2026.",
+          // Fixture predates the Aug 2026 refocus (pillar list is v1.2, four
+          // pre-refocus pillars). Kept as a demo of an older report; a fresh
+          // regeneration would reflect the current registry. Only the index
+          // label is threaded through the branding constant so a future
+          // rename lands here without another edit.
+          `Scores computed using the ${INDEX_NAME_SHORT} v1.2 framework across four pillars: Social Wellbeing & Human Capital, Safety & Security, Density & Scaling Dynamics, and Infrastructure & Environmental Safeguards. Data sourced from KNBS, KURA, KPLC, KETRACO, and NEMA feeds aggregated between January 1 and March 31, 2026.`,
       },
       {
         heading: "County-Wide Trends",
