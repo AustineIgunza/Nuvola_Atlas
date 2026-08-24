@@ -207,6 +207,10 @@ const targets = [
     path: join(root, "nuvola-atlas-ingestion", "app", "models", "pillars_generated.py"),
     render: py,
   },
+  {
+    path: join(root, "nuvola-atlas-data", "pipeline", "pillars_generated.py"),
+    render: py,
+  },
 ];
 
 const check = process.argv.includes("--check");
