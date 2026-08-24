@@ -1,0 +1,18 @@
+schema_version: 1
+source_id: wasreb_impact_17
+name: WASREB IMPACT Report Issue #17 (FY2023/24) — reconciled long dataset
+url: https://wasreb.go.ke/impact-reports
+licence: Open, subject to WASREB terms — attribution required
+attribution: Water Services Regulatory Board (WASREB), IMPACT Report Issue 17, 2025
+vintage: FY2023/24
+retrieval_date: "2026-08-24"
+sha256: a868957d888fd1ce799686e8aeb9876c74a606e23cd1445bc2cee461c63a55e1
+notes: |
+  Externally-reconciled long CSV covering three of WASREB's five size
+  categories (Very Large, Large, Medium) — 68 utilities, 641 values.
+  Small (22 utilities) and Private (4) remain outstanding per P10 of
+  NAVUUNA_PROMPTS_ROUND2.md; those will land as additional rows and
+  bump the sha256.
+
+  File lives at repo root as wasreb_impact17_long.csv. Loader reads it
+  via pipeline.wasreb.loader.iter_readings().
