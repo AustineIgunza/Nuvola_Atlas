@@ -58,7 +58,11 @@ class ZoneExportApiTest extends TestCase
         $this->seedZone();
         $body = $this->get('/api/v1/zones/westlands/export?format=txt')->getContent();
 
-        foreach (['Social Wellbeing', 'Safety & Security', 'Project Momentum', 'Freedom Index', 'Smart Grid'] as $retired) {
+        // "Freedom Index" is banned outright — the string is a trademark
+        // liability (Freedom House prior use) purged in P7.1, so this list
+        // both proves retired pillars stay retired AND catches a regression
+        // that would reintroduce the banned label into an export template.
+        foreach (['Social Wellbeing', 'Safety & Security', 'Project Momentum', 'Civic Participation', 'Freedom Index', 'Smart Grid'] as $retired) {
             $this->assertStringNotContainsString($retired, $body);
         }
     }

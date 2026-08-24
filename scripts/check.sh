@@ -51,6 +51,7 @@ backend_tests() {
 }
 
 run "pillar registry"      blocking      node "$ROOT/scripts/gen-pillars.mjs" --check
+run "freedom-index purge"  blocking      bash "$ROOT/scripts/check-freedom-index.sh"
 run "backend — phpunit"    blocking      backend_tests
 run "backend — phpstan"    informational bash -c "cd '$BACKEND' && vendor/bin/phpstan analyse --memory-limit=512M --no-progress"
 run "frontend — typecheck" blocking      bash -c "cd '$FRONTEND' && npm run typecheck"

@@ -53,8 +53,8 @@ return [
         'weight' => 0,
     ],
     [
-        'key' => 'freedom_index',
-        'display_name' => 'Freedom Index',
+        'key' => 'civic_index',
+        'display_name' => 'Civic Participation',
         'status' => 'off',
         'method' => 'gap',
         'granularity' => null,

@@ -66,8 +66,8 @@ const ALL_PILLARS: readonly PillarDef[] = [
     weight: 0,
   },
   {
-    key: "freedom_index",
-    displayName: "Freedom Index",
+    key: "civic_index",
+    displayName: "Civic Participation",
     status: "off",
     method: "gap",
     granularity: null,
@@ -129,7 +129,7 @@ export type PillarKey = "water_sanitation" | "road_density" | "transit_access" |
 export const PILLAR_KEYS: readonly PillarKey[] = PILLARS.map((p) => p.key as PillarKey);
 
 export const RETIRED_PILLAR_KEYS: readonly string[] = [
-  "freedom_index",
+  "civic_index",
   "safety",
   "project_momentum",
   "environment",
