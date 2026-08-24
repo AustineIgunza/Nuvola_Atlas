@@ -49,8 +49,8 @@ def test_normalise_canonicalises_utility_and_indicator():
     assert out.utility_id == "ncwsc"
     assert out.utility_name == "Nairobi City Water and Sewerage Company"
     assert out.county == "Nairobi"
-    assert out.indicator == "wasreb_non_revenue_water"
-    assert out.unit == "pct"
+    assert out.indicator == "non_revenue_water"
+    assert out.unit == "%"
     assert out.report_issue == 17
     assert out.fy == "FY2023/24"
     assert out.extraction_confidence == "high"

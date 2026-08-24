@@ -42,11 +42,25 @@ class RawReading:
 
 @dataclass(frozen=True)
 class NormalisedReading:
-    """A RawReading after canonical-vocabulary + utility resolution."""
+    """A RawReading after canonical-vocabulary + utility resolution.
+
+    ``size_category`` mirrors WASREB's own tiering (Very Large / Large /
+    Medium / Small / Private). Kept as a free-text string so a new tier
+    or a rewording doesn't force a schema migration — the loader carries
+    whatever the source file says.
+
+    ``county`` may be ``None`` for a utility whose county mapping is not
+    yet in ``pipeline.wasreb.utilities``. The reconciled CSV is
+    self-authoritative for utility_name and indicator, so a missing county
+    is a metadata gap to fill later, not a load failure.
+
+    ``page_ref`` is empty for CSV-sourced readings — the audit reference
+    is the source file + row number, tracked separately on the manifest.
+    """
 
     utility_id: str
     utility_name: str
-    county: str
+    county: str | None
     fy: str
     indicator: str                        # canonical key
     value: float | None
@@ -54,6 +68,7 @@ class NormalisedReading:
     report_issue: int
     page_ref: str
     extraction_confidence: ExtractionConfidence
+    size_category: str | None = None
     notes: str | None = None
 
 

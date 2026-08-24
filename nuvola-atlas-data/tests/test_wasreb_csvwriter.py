@@ -9,26 +9,31 @@ from pipeline.wasreb.extract import NormalisedReading
 def _reading(**over):
     d = dict(
         utility_id="ncwsc",
-        utility_name="Nairobi City Water and Sewerage Company",
+        utility_name="Nairobi",
         county="Nairobi",
         fy="FY2023/24",
-        indicator="wasreb_non_revenue_water",
+        indicator="non_revenue_water",
         value=45.0,
-        unit="pct",
+        unit="%",
         report_issue=17,
-        page_ref="p42",
+        page_ref="",
         extraction_confidence="high",
+        size_category="Very Large (>35,000 connections)",
         notes=None,
     )
     d.update(over)
     return NormalisedReading(**d)
 
 
-def test_column_order_is_locked():
-    assert COLUMNS == (
-        "utility_id", "utility_name", "county", "fy", "indicator", "value",
-        "unit", "report_issue", "page_ref", "extraction_confidence", "notes",
+def test_column_order_matches_the_reconciled_dataset():
+    # Order matches wasreb_impact17_long.csv up through 'attribution'; the
+    # trailing four columns are our own audit metadata.
+    assert COLUMNS[:13] == (
+        "utility_name", "size_category", "fy", "indicator", "value", "unit",
+        "granularity", "method", "source_id", "report_issue", "vintage",
+        "extraction_confidence", "attribution",
     )
+    assert COLUMNS[13:] == ("utility_id", "county", "page_ref", "notes")
 
 
 def test_round_trip(tmp_path):
@@ -40,5 +45,9 @@ def test_round_trip(tmp_path):
     assert len(rows) == 2
     assert rows[0]["utility_id"] == "ncwsc"
     assert rows[0]["value"] == "45.0"
-    assert rows[1]["value"] == ""            # null serialises as empty, not "None"
+    assert rows[0]["granularity"] == "utility"      # ride-along constant
+    assert rows[0]["method"] == "measured"
+    assert rows[0]["vintage"] == "FY2023/24"        # mirrors fy for WASREB
+    assert "WASREB" in rows[0]["attribution"]
+    assert rows[1]["value"] == ""                    # null -> empty, not "None"
     assert rows[1]["extraction_confidence"] == "low"

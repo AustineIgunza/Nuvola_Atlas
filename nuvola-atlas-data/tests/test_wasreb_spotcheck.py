@@ -18,9 +18,9 @@ def _readings(n: int) -> list[NormalisedReading]:
             utility_name=f"Utility {i}",
             county="Nairobi",
             fy="FY2023/24",
-            indicator="wasreb_non_revenue_water",
+            indicator="non_revenue_water",
             value=float(i),
-            unit="pct",
+            unit="%",
             report_issue=17,
             page_ref=f"p{i}",
             extraction_confidence="high",
@@ -65,7 +65,7 @@ def test_format_line_shows_null_explicitly():
 def test_verdict_round_trip(tmp_path):
     path = tmp_path / "verdicts.jsonl"
     append_verdict(path, {
-        "utility_id": "ncwsc", "indicator": "wasreb_non_revenue_water",
+        "utility_id": "ncwsc", "indicator": "non_revenue_water",
         "fy": "FY2023/24", "report_issue": 17,
         "value": 45.0, "page_ref": "p42",
         "verdict": "ok", "verifier": "austine",

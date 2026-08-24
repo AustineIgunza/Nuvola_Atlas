@@ -1,10 +1,12 @@
 """Column-header -> canonical indicator resolver + plausible-value ranges.
 
-Every column WASREB reports on a utility line maps into one of the keys
-below. Ranges are used by validate.py to flag physically impossible
-values (a percentage above 100, hours per day above 24) — the ranges are
-generous on purpose; they exist to catch parser errors, not to opine on
-utility performance.
+Canonical keys match wasreb_impact17_long.csv verbatim. The vocabulary
+here is the ONLY place raw report labels get normalised — anything past
+this layer (loader, extract, csvwriter, emit) carries the canonical key.
+
+Ranges are used by validate.py and by extract.normalise_readings to flag
+physically-impossible values. They are generous on purpose: they exist
+to catch parser errors, not to opine on utility performance.
 """
 from __future__ import annotations
 
@@ -25,84 +27,96 @@ class WasrebIndicator:
 
 VOCABULARY: Final[tuple[WasrebIndicator, ...]] = (
     WasrebIndicator(
-        key="wasreb_non_revenue_water",
+        key="non_revenue_water",
         display_name="Non-revenue water",
-        unit="pct",
+        unit="%",
         lo=0.0, hi=100.0,
         aliases=(
-            "Non-Revenue Water",
-            "Non Revenue Water",
-            "NRW",
-            "NRW %",
-            "Non-Revenue Water (%)",
+            "Non-Revenue Water", "Non Revenue Water", "NRW", "NRW %",
+            "Non-Revenue Water (%)", "wasreb_non_revenue_water",
         ),
     ),
     WasrebIndicator(
-        key="wasreb_hours_of_supply",
+        key="hours_of_supply",
         display_name="Hours of supply",
-        unit="hours_per_day",
+        unit="hrs/day",
         lo=0.0, hi=24.0,
         aliases=(
-            "Hours of Supply",
-            "Hours of Supply (hrs/day)",
-            "Average Hours of Supply",
-            "Hrs of Supply",
+            "Hours of Supply", "Hours of Supply (hrs/day)",
+            "Average Hours of Supply", "Hrs of Supply", "hrs/day",
+            "wasreb_hours_of_supply",
         ),
     ),
     WasrebIndicator(
-        key="wasreb_metering_ratio",
+        key="metering_ratio",
         display_name="Metering ratio",
-        unit="pct",
+        unit="%",
         lo=0.0, hi=100.0,
-        aliases=("Metering Ratio", "Metering", "Metered Connections (%)"),
+        aliases=("Metering Ratio", "Metering", "Metered Connections (%)",
+                 "wasreb_metering_ratio"),
     ),
     WasrebIndicator(
-        key="wasreb_revenue_collection",
+        key="revenue_collection_eff",
         display_name="Revenue collection efficiency",
-        unit="pct",
+        unit="%",
         lo=0.0, hi=200.0,   # >100% happens when arrears are settled; still <200
         aliases=(
-            "Revenue Collection",
-            "Revenue Collection Efficiency",
-            "Collection Efficiency",
+            "Revenue Collection", "Revenue Collection Efficiency",
+            "Collection Efficiency", "wasreb_revenue_collection",
         ),
     ),
     WasrebIndicator(
-        key="wasreb_om_cost_coverage",
+        key="om_cost_coverage",
         display_name="O&M cost coverage",
-        unit="pct",
+        unit="%",
         lo=0.0, hi=500.0,
         aliases=(
-            "O&M Cost Coverage",
-            "O and M Cost Coverage",
-            "Operations & Maintenance Cost Coverage",
-            "OM Cost Coverage",
+            "O&M Cost Coverage", "O and M Cost Coverage",
+            "Operations & Maintenance Cost Coverage", "OM Cost Coverage",
+            "wasreb_om_cost_coverage",
         ),
     ),
     WasrebIndicator(
-        key="wasreb_water_quality",
-        display_name="Drinking water quality",
-        unit="pct",
+        key="personnel_exp_share",
+        display_name="Personnel expenditure share",
+        unit="%",
         lo=0.0, hi=100.0,
-        aliases=("Drinking Water Quality", "Water Quality", "Compliance"),
+        aliases=("Personnel Expenditure", "Personnel Expense Share",
+                 "Personnel Expenditure (%)"),
     ),
     WasrebIndicator(
-        key="wasreb_staff_productivity",
-        display_name="Staff productivity",
-        unit="staff_per_1000_conn",
+        key="drinking_water_quality",
+        display_name="Drinking water quality",
+        unit="%",
+        lo=0.0, hi=100.0,
+        aliases=("Drinking Water Quality", "Water Quality", "Compliance",
+                 "wasreb_water_quality"),
+    ),
+    WasrebIndicator(
+        key="staff_per_1000_connections",
+        display_name="Staff per 1,000 connections",
+        unit="staff/1000 conns",
         lo=0.0, hi=50.0,
         aliases=(
-            "Staff Productivity",
-            "Staff per 1,000 Connections",
-            "Staff per 1000 Connections",
+            "Staff Productivity", "Staff per 1,000 Connections",
+            "Staff per 1000 Connections", "staff/1000 conns",
+            "wasreb_staff_productivity",
         ),
     ),
     WasrebIndicator(
-        key="wasreb_water_coverage",
+        key="water_coverage",
         display_name="Water coverage",
-        unit="pct",
+        unit="%",
         lo=0.0, hi=100.0,
-        aliases=("Water Coverage", "Coverage", "Water Service Coverage"),
+        aliases=("Water Coverage", "Coverage", "Water Service Coverage",
+                 "wasreb_water_coverage"),
+    ),
+    WasrebIndicator(
+        key="total_score",
+        display_name="WASREB overall score",
+        unit="points (max 200)",
+        lo=0.0, hi=200.0,
+        aliases=("Overall Score", "Total Score", "WASREB Score", "Score"),
     ),
 )
 

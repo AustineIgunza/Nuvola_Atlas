@@ -7,15 +7,16 @@ from pipeline.wasreb.validate import build_report
 def _r(**over):
     d = dict(
         utility_id="ncwsc",
-        utility_name="Nairobi City Water and Sewerage Company",
+        utility_name="Nairobi",
         county="Nairobi",
         fy="FY2023/24",
-        indicator="wasreb_non_revenue_water",
+        indicator="non_revenue_water",
         value=45.0,
-        unit="pct",
+        unit="%",
         report_issue=17,
-        page_ref="p42",
+        page_ref="",
         extraction_confidence="high",
+        size_category="Very Large (>35,000 connections)",
         notes=None,
     )
     d.update(over)
@@ -25,9 +26,8 @@ def _r(**over):
 def test_counts():
     rs = [
         _r(),
-        _r(indicator="wasreb_hours_of_supply", value=18.0, unit="hours_per_day"),
-        _r(utility_id="ruiru_juja", utility_name="Ruiru-Juja Water and Sewerage Company",
-           county="Kiambu"),
+        _r(indicator="hours_of_supply", value=18.0, unit="hrs/day"),
+        _r(utility_id="ruiru_juja", utility_name="Ruiru-Juja", county="Kiambu"),
         _r(value=None, extraction_confidence="medium"),
     ]
     rep = build_report(rs, issue=17, fy="FY2023/24", failed_pages=("p13",))
@@ -46,7 +46,7 @@ def test_out_of_range_surfaces_impossible_values():
     assert len(rep.out_of_range) == 1
     oor = rep.out_of_range[0]
     assert oor.value == 150.0
-    assert oor.indicator == "wasreb_non_revenue_water"
+    assert oor.indicator == "non_revenue_water"
 
 
 def test_report_serialises_cleanly():

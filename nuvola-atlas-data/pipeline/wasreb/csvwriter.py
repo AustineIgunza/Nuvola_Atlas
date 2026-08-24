@@ -1,7 +1,8 @@
 """Long-CSV writer for ``wasreb_impact_long.csv``.
 
-Schema is fixed here — column order matters for reproducibility and for
-anyone re-loading the file into pandas or R without column headers.
+Schema is fixed here — column order matches wasreb_impact17_long.csv so
+the reconciled dataset round-trips through the pipeline without a rename
+layer. Anyone re-loading the file into pandas or R keeps a stable header.
 """
 from __future__ import annotations
 
@@ -12,17 +13,33 @@ from pathlib import Path
 from pipeline.wasreb.extract import NormalisedReading
 
 COLUMNS: tuple[str, ...] = (
-    "utility_id",
     "utility_name",
-    "county",
+    "size_category",
     "fy",
     "indicator",
     "value",
     "unit",
+    "granularity",
+    "method",
+    "source_id",
     "report_issue",
-    "page_ref",
+    "vintage",
     "extraction_confidence",
+    "attribution",
+    "utility_id",
+    "county",
+    "page_ref",
     "notes",
+)
+
+# WASREB IMPACT rows are all utility-granularity, measured. These constants
+# ride along on every emitted row rather than being duplicated on the
+# NormalisedReading dataclass, which is source-format agnostic.
+_GRANULARITY = "utility"
+_METHOD = "measured"
+_SOURCE_ID = "wasreb_impact_17"
+_ATTRIBUTION = (
+    "Water Services Regulatory Board (WASREB), IMPACT Report Issue 17, 2025"
 )
 
 
@@ -35,16 +52,22 @@ def write_long_csv(readings: Iterable[NormalisedReading], path: str | Path) -> P
         writer.writerow(COLUMNS)
         for r in readings:
             writer.writerow([
-                r.utility_id,
                 r.utility_name,
-                r.county,
+                r.size_category or "",
                 r.fy,
                 r.indicator,
                 "" if r.value is None else r.value,
                 r.unit,
+                _GRANULARITY,
+                _METHOD,
+                _SOURCE_ID,
                 r.report_issue,
-                r.page_ref,
+                r.fy,           # vintage == fy for WASREB rows
                 r.extraction_confidence,
+                _ATTRIBUTION,
+                r.utility_id,
+                r.county or "",
+                r.page_ref,
                 r.notes or "",
             ])
     return p

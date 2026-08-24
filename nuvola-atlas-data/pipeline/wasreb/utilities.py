@@ -33,6 +33,7 @@ UTILITIES: Final[tuple[UtilityDef, ...]] = (
         display_name="Nairobi City Water and Sewerage Company",
         county="Nairobi",
         aliases=(
+            "Nairobi",  # short WASREB IMPACT label
             "Nairobi Water",
             "Nairobi City Water & Sewerage Company",
             "NCWSC",
@@ -45,11 +46,14 @@ UTILITIES: Final[tuple[UtilityDef, ...]] = (
     # that lists them alongside NCWSC does not fail the resolver.
     UtilityDef(utility_id="ruiru_juja", display_name="Ruiru-Juja Water and Sewerage Company",
                county="Kiambu",
-               aliases=("Ruiru-Juja Water", "RUJWASCO", "Ruiru Juja WSSCo")),
+               aliases=("Ruiru-Juja", "Ruiru-Juja Water", "RUJWASCO",
+                        "Ruiru Juja WSSCo")),
     UtilityDef(utility_id="kiambu", display_name="Kiambu Water and Sewerage Company",
-               county="Kiambu", aliases=("Kiambu Water", "KIAWASCO")),
+               county="Kiambu",
+               aliases=("Kiambu", "Kiambu Water", "KIAWASCO")),
     UtilityDef(utility_id="mavoko", display_name="Mavoko Water and Sewerage Company",
-               county="Machakos", aliases=("Mavoko Water", "MAVWASCO")),
+               county="Machakos",
+               aliases=("Mavoko", "Mavoko Water", "MAVWASCO")),
 )
 
 
@@ -90,3 +94,27 @@ def utility(utility_id: str) -> UtilityDef:
         return _UTILITIES_BY_ID[utility_id]
     except KeyError:
         raise KeyError(f"no utility with id {utility_id!r}") from None
+
+
+def resolve_or_passthrough(name: str) -> UtilityDef:
+    """Resolver for the CSV loader path.
+
+    The reconciled long CSV is self-authoritative for utility_name; a
+    label we don't yet have a canonical entry for still needs to load,
+    because the county mapping is a metadata gap that shouldn't block
+    ingesting a WASREB reading.
+
+    Returns the canonical UtilityDef when known. Otherwise synthesises a
+    passthrough entry with ``utility_id`` derived from the label (lower,
+    space-to-underscore) and ``county=""``, so downstream code can tell
+    "county not mapped yet" from an actual known assignment.
+    """
+    try:
+        return resolve_utility(name)
+    except KeyError:
+        return UtilityDef(
+            utility_id=re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_"),
+            display_name=name,
+            county="",
+            aliases=(),
+        )

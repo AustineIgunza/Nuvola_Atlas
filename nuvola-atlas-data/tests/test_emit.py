@@ -65,7 +65,7 @@ def test_r1_construction_of_gap_with_number_raises():
 
 @pytest.mark.parametrize("gran", ["county", "utility", "national"])
 def test_r2_non_subcounty_on_feature_is_rejected(gran):
-    reading = _reading(granularity=gran, indicator="wasreb_non_revenue_water",
+    reading = _reading(granularity=gran, indicator="non_revenue_water",
                         source_id="wasreb_impact_17", vintage="FY2023/24")
     feat = _subcounty(pillars={"water_sanitation": reading})
     with pytest.raises(EmitRuleViolation, match="county_context"):
@@ -75,7 +75,7 @@ def test_r2_non_subcounty_on_feature_is_rejected(gran):
 def test_r2_utility_reading_belongs_in_county_context():
     utility = _reading(
         granularity="utility",
-        indicator="wasreb_non_revenue_water",
+        indicator="non_revenue_water",
         source_id="wasreb_impact_17",
         vintage="FY2023/24",
     )
