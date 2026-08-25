@@ -527,3 +527,74 @@ Runs in parallel. Blocks nothing.
 Off means deleted, not flagged. A feature flag is an invitation to turn it back on at 2am before a demo. If Freedom Index, Safety or Project Momentum returns, it returns through a written decision recorded in this document — with a named data source that actually exists.
 
 The failure mode for this project is not a bad decision. It is a good decision that quietly erodes.
+
+---
+
+## 11. Round-2 status ledger
+
+Written decisions on the round-2 prompt set (P7–P10 in
+`NAVUUNA_PROMPTS_ROUND2.md`). Records what shipped and what was
+deliberately deferred, so a future reader knows the state was chosen,
+not forgotten.
+
+### 2026-08-24 · P7 shipped
+
+Blocking sweep for the marketing plan's Phase 0. Landed across three
+commits: `991f50e` (`freedom_index` → `civic_index` rename + label
+gate), `017001c` (UE = "Urban-Environmental" pinned to
+`nuvola-atlas-frontend/src/lib/branding.ts` +
+`nuvola-atlas-backend/config/branding.php`), `92ed8f1` (fixture gate:
+zones tagged `data_provenance = fixture|mixed` are excluded from every
+export and hidden from the public read API).
+
+### 2026-08-25 · P7 amendment shipped
+
+Second half of the compliance rename, per round-2 amendment: the pillar
+key collapsed onto the display label. `civic_index` → `civic` (display
+name "Civic & Governance"), landed in `d0bcabf`. The retirement
+gravestone in `pillars.json` now carries the full identifier chain
+(`freedom_index` → `civic_index` → `civic`) under
+`retired.renamed_from`.
+
+### 2026-08-25 · P9 shipped
+
+The granularity rule now runs end-to-end. Utility figures like NCWSC's
+48% non-revenue water reach the frontend banner via
+`GET /api/v1/county-context`, and never land on a sub-county bubble.
+
+- **Backend** (`f416902`): `county_context` table with DB-level CHECK
+  constraints for R1 (gap ⇒ null value), the P9 rule (granularity ≠
+  subcounty), and non-gap-needs-source-and-vintage. Read endpoint
+  `/api/v1/county-context`, internal intake
+  `/api/v1/internal/county-context` (`X-Internal-Secret`).
+  `data_feed_status` gains `vintage` + `granularity` columns so a
+  FY-cadence WASREB feed no longer renders as an overdue hourly feed.
+- **Ingestion** (`b558c69`): `POST /api/ingest/wasreb`, WasrebReading
+  pydantic model with plausibility bounds ported from
+  `pipeline.wasreb.vocabulary`, `forward_county_context` shipping
+  batches to the backend intake in one request.
+- **Frontend** (`8f12ed0`): `CountyBanner` component rendered above the
+  map, source + vintage rendered inline as part of the component (not
+  as an optional prop), "Not measured" treatment for gap rows.
+
+### 2026-08-25 · P10 deferred (written decision)
+
+**Decision:** the WASREB extractor pipeline stays unbuilt for now. The
+reconciled `wasreb_impact17_long.csv` at repo root (641 values across
+Very Large / Large / Medium categories) is the authoritative source of
+WASREB data until a future session decides to invest in a repeatable
+extractor.
+
+**Why:** `pipeline/wasreb/extract.py` is protocol-only (no offset
+solver, no LayoutSpec, no run-together splitter — despite what the
+prompt implies), `extractors/` is an empty scaffold, and no PDFs are
+downloaded. Building the extractor is multi-session work that doesn't
+unblock the marketing plan's Phase 0 or the Lacuna Fund evidence — both
+of which the current reconciled CSV already supports. Manually
+reconciling the remaining Small (22 utilities) + Private (4 utilities)
+tables would also be a valid choice; either can happen later without
+this decision blocking anything else.
+
+**When to revisit:** when either (a) IMPACT 18 is published and we need
+a repeatable path for the next issue, or (b) a funder specifically asks
+for the earlier IMPACT time series (15 and 16). Whichever comes first.
