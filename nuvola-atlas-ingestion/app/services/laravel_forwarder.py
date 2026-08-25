@@ -21,8 +21,13 @@ from typing import Any
 import httpx
 
 from app.config import Settings
-from app.models.readings import PillarReading
+from app.models.readings import PillarReading, WasrebReading
 from app.signing import sign
+
+# All WASREB indicators report on water & sanitation — the regulator has
+# no other beat. Hardcoding here means the WASREB route stays simple; if
+# a future regulator ships adjacent indicators, this becomes a mapping.
+WASREB_PILLAR_KEY = "water_sanitation"
 
 # One initial send plus three retries. Backoff is stepped rather than
 # doubled so a Laravel deploy (which takes tens of seconds) still lands
@@ -142,6 +147,64 @@ async def forward_batch(
             await client.aclose()
 
     return results
+
+
+async def forward_county_context(
+    batch_id: str,
+    rows: list[WasrebReading],
+    settings: Settings,
+    *,
+    client: httpx.AsyncClient | None = None,
+    sleep: Any = asyncio.sleep,
+) -> ForwardResult:
+    """POST county/utility readings to the Laravel intake endpoint.
+
+    Unlike ``forward_batch``, this ships the whole batch in one request
+    (the intake upserts by (county, indicator_key, vintage) so idempotency
+    is on the receiver, not on the wire).
+    """
+    if not rows:
+        return ForwardResult(zone_id="", ok=True, status_code=204, body={"written": 0})
+
+    endpoint = f"{settings.laravel_base_url.rstrip('/')}/internal/county-context"
+    payload = {
+        "batch_id": batch_id,
+        "rows": [
+            {
+                "county": r.county,
+                "pillar_key": WASREB_PILLAR_KEY,
+                "indicator_key": r.indicator,
+                "value": r.value,
+                "unit": r.unit,
+                "granularity": r.granularity,
+                "method": r.method,
+                "source_id": r.source_id,
+                "vintage": r.vintage,
+                "retrieved": r.retrieved.isoformat(),
+                "extraction_confidence": r.extraction_confidence,
+                "page_ref": r.page_ref,
+                "notes": r.notes,
+            }
+            for r in rows
+        ],
+    }
+    body = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode()
+
+    close_client = False
+    if client is None:
+        client = httpx.AsyncClient(timeout=15.0)
+        close_client = True
+
+    try:
+        # `zone_id` is used only for logging on the retry helper; a WASREB
+        # batch has no single zone, so a synthetic key identifies the run.
+        return await _post_with_retries(
+            client, endpoint, settings.internal_secret, body,
+            zone_id=f"county-context:{batch_id}", sleep=sleep,
+        )
+    finally:
+        if close_client:
+            await client.aclose()
 
 
 def _safe_json(response: httpx.Response) -> dict[str, Any]:
