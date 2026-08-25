@@ -98,7 +98,7 @@ def test_r2_subcounty_in_county_context_is_rejected():
 
 def test_retired_pillar_on_feature_is_rejected():
     reading = _reading()
-    feat = _subcounty(pillars={"civic_index": reading})
+    feat = _subcounty(pillars={"civic": reading})
     with pytest.raises(EmitRuleViolation, match="retired"):
         build_geojson([feat])
 

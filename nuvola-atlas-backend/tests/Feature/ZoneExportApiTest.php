@@ -62,7 +62,7 @@ class ZoneExportApiTest extends TestCase
         // liability (Freedom House prior use) purged in P7.1, so this list
         // both proves retired pillars stay retired AND catches a regression
         // that would reintroduce the banned label into an export template.
-        foreach (['Social Wellbeing', 'Safety & Security', 'Project Momentum', 'Civic Participation', 'Freedom Index', 'Smart Grid'] as $retired) {
+        foreach (['Social Wellbeing', 'Safety & Security', 'Project Momentum', 'Civic & Governance', 'Freedom Index', 'Smart Grid'] as $retired) {
             $this->assertStringNotContainsString($retired, $body);
         }
     }

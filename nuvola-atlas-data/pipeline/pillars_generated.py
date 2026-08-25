@@ -65,8 +65,8 @@ ALL_PILLARS: Final[tuple[PillarDef, ...]] = (
         weight=0,
     ),
     PillarDef(
-        key="civic_index",
-        display_name="Civic Participation",
+        key="civic",
+        display_name="Civic & Governance",
         status="off",
         method="gap",
         granularity=None,

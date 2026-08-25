@@ -53,8 +53,8 @@ return [
         'weight' => 0,
     ],
     [
-        'key' => 'civic_index',
-        'display_name' => 'Civic Participation',
+        'key' => 'civic',
+        'display_name' => 'Civic & Governance',
         'status' => 'off',
         'method' => 'gap',
         'granularity' => null,

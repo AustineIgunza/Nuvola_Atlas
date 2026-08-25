@@ -141,7 +141,7 @@ class MethodologyWeightsTest extends TestCase
             'road_density' => 0.25,
             'transit_access' => 0.25,
             'safety' => 0.9,
-            'civic_index' => 0.9,
+            'civic' => 0.9,
         ]);
 
         $weights = (new ScoreCalculator)->getWeights();

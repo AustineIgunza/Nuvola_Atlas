@@ -15,8 +15,9 @@
 #     the string to say what to purge, and it is the historical record of
 #     why the purge happened.
 #   - Nothing else. The retirement of the pillar was renamed to
-#     `civic_index`; if you need to reference the old identifier, do so
-#     via `pillars.json`'s `retired.renamed_from` field, not the string.
+#     `civic` (via `civic_index`); if you need to reference the historical
+#     identifier, do so via `pillars.json`'s `retired.renamed_from` field,
+#     not the string.
 
 set -uo pipefail
 
@@ -28,7 +29,7 @@ ALLOWLIST=(
   "NAVUUNA_PROMPTS_ROUND2.md"
   "NAVUUNA_REFOCUS_WORKFLOW.md"
   # The registry's retirement gravestone. renamed_from is the machine link
-  # from civic_index back to the pre-purge identifier; a reader who greps
+  # from civic back to the pre-purge identifier chain; a reader who greps
   # for the old key needs one match to find its successor.
   "pillars.json"
   # Negative-assertion test: it exercises the export path and proves the
@@ -81,6 +82,6 @@ echo "$remaining" | sed 's/^/  /'
 echo
 echo "Why this matters: Freedom House holds prior use of the label and Navuuna"
 echo "cites their Internet Freedom Score as a source. The pillar was renamed"
-echo "to 'civic_index' in P7.1 (see NAVUUNA_PROMPTS_ROUND2.md). If you need"
+echo "to 'civic' (via 'civic_index') in P7.1 (see NAVUUNA_PROMPTS_ROUND2.md). If you need"
 echo "the old identifier, use pillars.json's retired.renamed_from field."
 exit 1

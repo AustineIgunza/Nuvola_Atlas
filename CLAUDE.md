@@ -18,12 +18,13 @@ disagreement gets fixed in the same slice, not logged for later.
 
 ## Switched off — do not reintroduce without a written decision
 
-`civic_index` · `safety` · `project_momentum` · `environment` · `smart_grid` (live)
+`civic` · `safety` · `project_momentum` · `environment` · `smart_grid` (live)
 
-(`civic_index` was renamed on 2026-08-24 for trademark-compliance reasons.
-The retirement record in `pillars.json` carries the prior identifier under
-`retired.renamed_from`; see NAVUUNA_PROMPTS_ROUND2.md §P7.1 for the
-directive.)
+(`civic` was renamed twice for compliance reasons: from the original label to
+`civic_index` on 2026-08-24 (P7.1), then to `civic` on 2026-08-25 to align
+with the round-2 rebuild-plan amendment. The retirement record in
+`pillars.json` carries the full identifier chain under `retired.renamed_from`;
+see NAVUUNA_PROMPTS_ROUND2.md §P7 for the directive.)
 
 Off means **deleted, not flagged**. A feature flag is an invitation to turn it
 back on at 2am before a demo. If one of these returns, it returns through a
