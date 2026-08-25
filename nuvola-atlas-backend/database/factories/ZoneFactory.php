@@ -6,6 +6,7 @@ namespace Database\Factories;
 
 use App\Models\Zone;
 use App\Services\ScoreCalculator;
+use App\Support\DataProvenance;
 use App\Support\Pillars;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +31,26 @@ class ZoneFactory extends Factory
             'name' => fake()->city(),
             'score' => $score,
             'last_sync_min' => fake()->numberBetween(1, 30),
+            // The factory represents a zone as it would exist AFTER ingestion,
+            // so tests exercising the request/response path see it as
+            // measured by default. The production DatabaseSeeder writes
+            // 'fixture' explicitly for its rows (seeded demo data), and
+            // ScoreCalculator/ZoneController then keep them out of public
+            // output. Tests that need to exercise the gate call ->fixture().
+            'data_provenance' => DataProvenance::MEASURED,
         ], $pillars);
+    }
+
+    /** Zone with an explicit demo/fixture flag — exercises the R2 §P7.3 gate. */
+    public function fixture(): static
+    {
+        return $this->state(fn () => ['data_provenance' => DataProvenance::FIXTURE]);
+    }
+
+    /** Zone with a mixed measured+fixture flag — treated the same as fixture for gating. */
+    public function mixed(): static
+    {
+        return $this->state(fn () => ['data_provenance' => DataProvenance::MIXED]);
     }
 
     public function configure(): static

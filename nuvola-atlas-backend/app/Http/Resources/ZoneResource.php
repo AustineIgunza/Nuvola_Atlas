@@ -36,6 +36,11 @@ class ZoneResource extends JsonResource
             'pillarsMeasured' => count($pillars) - count($missing),
             'pillarsTotal' => count($pillars),
             'pillarRegistryVersion' => Pillars::version(),
+            // The fixture gate — R2 §P7.3. Every response carries the flag
+            // so the frontend cannot render a demo number as measurement.
+            // Provenance travels alongside the score, not derived from it,
+            // because a null score is not automatically fixture-free.
+            'dataProvenance' => $calc->dataProvenance($zone),
             'centroid' => [(float) $this->lon, (float) $this->lat],
             'lastSyncMin' => $this->last_sync_min,
             'layers' => $this->when($this->relationLoaded('layers'), function () {

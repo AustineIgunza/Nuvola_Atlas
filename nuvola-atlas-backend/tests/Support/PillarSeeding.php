@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Support\DataProvenance;
 use App\Support\Pillars;
 use InvalidArgumentException;
 
@@ -19,11 +20,11 @@ final class PillarSeeding
 {
     /**
      * @param  array<string, ?int>  $pillars
-     * @return array<string, ?int>
+     * @return array<string, mixed>
      */
-    public static function columns(array $pillars): array
+    public static function columns(array $pillars, string $provenance = DataProvenance::MEASURED): array
     {
-        $out = [];
+        $out = ['data_provenance' => $provenance];
         foreach ($pillars as $key => $value) {
             if (! Pillars::exists($key)) {
                 throw new InvalidArgumentException("'{$key}' is not a live pillar.");

@@ -50,6 +50,16 @@ export interface Zone {
    */
   missingPillars?: PillarKey[];
   /**
+   * Provenance of the composite — R2 §P7.3 fixture gate.
+   * "measured": every contributing pillar traces to real ingested data.
+   * "fixture" or "mixed": at least one pillar is seed/demo data. Anything
+   * non-measured must render with a "Demo data" treatment that cannot be
+   * confused with a measured score, and must never be exported. Optional
+   * because older bundles / the mock API may not include it yet; treat
+   * `undefined` as measured (the mock is the demo experience).
+   */
+  dataProvenance?: "measured" | "fixture" | "mixed";
+  /**
    * Dotted paths of fields the client synthesised because the API returned
    * null — `pillars.water_sanitation`, `centroid`, and so on. Set by
    * `hydrateZone` in remote mode. Anything listed here is an estimate and

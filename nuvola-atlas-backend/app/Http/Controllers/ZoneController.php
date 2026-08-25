@@ -4,30 +4,43 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\Role;
 use App\Http\Resources\ActivityResource;
 use App\Http\Resources\ZoneLayerResource;
 use App\Http\Resources\ZoneResource;
 use App\Models\Activity;
 use App\Models\Zone;
 use App\Services\PillarDeltaCalculator;
+use App\Support\DataProvenance;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ZoneController extends Controller
 {
     public function index()
     {
+        // Cache key is per-role — admin/editor sees fixture zones with the
+        // flag attached; anyone else only sees measured ones. Two caches
+        // avoid a viewer receiving an admin-cached payload with demo data
+        // in it. See DataProvenance for the gate rationale (R2 §P7.3).
+        $canSeeDemoData = $this->canSeeDemoData();
         $page = request()->input('page', 1);
+        $bucket = $canSeeDemoData ? 'privileged' : 'public';
 
-        // Cache the rendered payload rather than the paginator. Any store
-        // that serializes (file, database, redis) fails to rehydrate the
-        // paginator's model graph on read; the array store used in tests
-        // hands the object straight back, so this only breaks off-test.
         return Cache::remember(
-            "zones_page_{$page}",
+            "zones_page_{$bucket}_{$page}",
             60,
-            function () {
-                $zones = Zone::withCentroid()->paginate(15);
+            function () use ($canSeeDemoData) {
+                $query = Zone::withCentroid();
+                if (! $canSeeDemoData) {
+                    // Public listing is publishable-only. A viewer who lands
+                    // on the app during the seeded-data phase sees an empty
+                    // set, which is honest — better than a set full of
+                    // invented scores.
+                    $query->where('data_provenance', DataProvenance::MEASURED);
+                }
+                $zones = $query->paginate(15);
                 $this->attachDeltas($zones->getCollection());
 
                 return ZoneResource::collection($zones)->response()->getData(true);
@@ -41,6 +54,17 @@ class ZoneController extends Controller
             ->withBoundary()
             ->with('layers')
             ->findOrFail($id);
+
+        // The single-zone route respects the same gate. A viewer asking
+        // for a fixture zone by id gets a 404, not a demo score — 403
+        // would confirm the zone exists, and even that leaks the fixture
+        // set to a public caller.
+        if (
+            ! $this->canSeeDemoData()
+            && DataProvenance::isDemo($zone->getAttribute('data_provenance'))
+        ) {
+            throw new NotFoundHttpException;
+        }
 
         $this->attachDeltas(collect([$zone]));
 
@@ -59,6 +83,21 @@ class ZoneController extends Controller
         foreach ($zones as $zone) {
             $zone->pillarDelta = $deltas[$zone->id] ?? null;
         }
+    }
+
+    /**
+     * Admins and editors see the full set (including fixture / mixed
+     * zones) with the flag attached. Everyone else — including
+     * anonymous callers on public routes — sees measured-only.
+     */
+    private function canSeeDemoData(): bool
+    {
+        $user = request()->user();
+        if ($user === null) {
+            return false;
+        }
+
+        return in_array($user->role(), [Role::Admin, Role::Editor], true);
     }
 
     public function activity(string $id)

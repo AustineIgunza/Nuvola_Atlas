@@ -8,6 +8,7 @@ use App\Events\ZoneScoreUpdated;
 use App\Models\MethodologyVersion;
 use App\Models\Zone;
 use App\Models\ZoneScoreSnapshot;
+use App\Support\DataProvenance;
 use App\Support\Pillars;
 use Illuminate\Support\Facades\Cache;
 
@@ -184,6 +185,27 @@ class ScoreCalculator
         }
 
         return $missing;
+    }
+
+    /**
+     * Provenance of the zone's composite score. Reads the flag stored on
+     * the row (backfilled to 'fixture' for all pre-refocus seeded data;
+     * a real ingest path sets 'measured' as it lands readings). Kept in
+     * one place so ZoneResource, ZoneExportController and any listener
+     * cannot disagree about what a value means.
+     *
+     * A zone whose row carries no explicit provenance is treated as
+     * fixture. Silent fallback to 'measured' would be the exact category
+     * of accident this whole feature exists to prevent.
+     */
+    public function dataProvenance(Zone $zone): string
+    {
+        $raw = $zone->getAttribute('data_provenance');
+        if (is_string($raw) && in_array($raw, DataProvenance::ALL, true)) {
+            return $raw;
+        }
+
+        return DataProvenance::FIXTURE;
     }
 
     /**
