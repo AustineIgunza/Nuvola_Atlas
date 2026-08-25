@@ -17,6 +17,7 @@ import type {
   ZoneForecast,
   ChatConversation,
   ChatMessage,
+  CountyContextReading,
 } from "@/types";
 
 type Paged = { data: unknown[]; meta?: { current_page?: number; last_page?: number } };
@@ -225,6 +226,13 @@ export const remoteApi = {
   // the server generates its config from, so asking for them again would only
   // create a second shape that could drift.
   getMethodology: () => get<Methodology>("/vitality/methodology"),
+
+  // County-level indicator readings for the banner above the map. Distinct
+  // from /vitality/county — that endpoint averages sub-county pillars up;
+  // this one serves raw utility/county figures (WASREB IMPACT, etc.) that
+  // never had a sub-county home in the first place.
+  getCountyContext: (county: string = "Nairobi") =>
+    get<CountyContextReading[]>(`/county-context?county=${encodeURIComponent(county)}`),
 
   changePassword: async (currentPassword: string, newPassword: string): Promise<{ ok: true }> => {
     const res = await fetch(`${BASE}/auth/change-password`, {

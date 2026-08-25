@@ -7,6 +7,7 @@ import { useUIStore } from "@/stores/ui";
 import AppShell from "@/components/chrome/AppShell";
 import ScorecardPanel from "@/components/scorecard/ScorecardPanel";
 import ChatPanel from "@/components/chat/ChatPanel";
+import CountyBanner from "@/components/vitality/CountyBanner";
 
 // mapbox-gl is ~1.8 MB; defer it so the Atlas shell paints first.
 const AtlasMap = lazy(() => import("@/components/map/AtlasMap"));
@@ -68,6 +69,12 @@ export default function AtlasPage() {
               </Suspense>
             </div>
           ) : null}
+
+          {/* County-wide readings banner — utility/county figures that
+              would misrepresent the truth if painted on a sub-county bubble
+              (WASREB, KNBS county rollups). Fetches independently of the
+              zone data so a slow banner never gates the map. */}
+          <CountyBanner />
 
           {/* Vitality Scorecard — floating drill-in panel over the map's right edge */}
           <ScorecardPanel zone={selectedZone} />

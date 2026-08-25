@@ -205,3 +205,28 @@ export interface ChatConversation {
   updatedAt: string;
   createdAt: string;
 }
+
+/**
+ * A county- or utility-level indicator reading, served by
+ * GET /api/v1/county-context. These are the rows the county banner
+ * renders above the map — utility-granularity numbers like NCWSC's 48%
+ * non-revenue water that must never appear on a sub-county bubble
+ * (P9 §Task 3). The `granularity` field is deliberately part of the
+ * payload so the UI can render a "County-wide" chip visually distinct
+ * from a sub-county reading.
+ */
+export interface CountyContextReading {
+  county: string;
+  pillarKey: PillarKey;
+  indicatorKey: string;
+  value: number | null;
+  unit: string;
+  granularity: "county" | "utility" | "national";
+  method: "measured" | "imputed" | "proxy" | "gap";
+  sourceId: string | null;
+  vintage: string | null;
+  retrieved: string | null;
+  extractionConfidence: "high" | "medium" | "low" | null;
+  pageRef: string | null;
+  notes: string | null;
+}

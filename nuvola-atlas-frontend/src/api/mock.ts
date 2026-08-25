@@ -24,7 +24,45 @@ import type {
   ZoneForecastPoint,
   ChatConversation,
   ChatMessage,
+  CountyContextReading,
 } from "@/types";
+
+// Illustrative Nairobi county-level readings so mock-mode shows the banner.
+// Values are plausible but seeded — the banner treats them like any other
+// reading, and the fixture-gate on the backend means measured mode uses
+// real WASREB IMPACT rows via /api/v1/county-context.
+const MOCK_COUNTY_CONTEXT: CountyContextReading[] = [
+  {
+    county: "Nairobi",
+    pillarKey: "water_sanitation",
+    indicatorKey: "non_revenue_water",
+    value: 48.0,
+    unit: "%",
+    granularity: "utility",
+    method: "measured",
+    sourceId: "wasreb_impact_17",
+    vintage: "FY2023/24",
+    retrieved: "2026-08-24",
+    extractionConfidence: "high",
+    pageRef: null,
+    notes: null,
+  },
+  {
+    county: "Nairobi",
+    pillarKey: "water_sanitation",
+    indicatorKey: "hours_of_supply",
+    value: 7.0,
+    unit: "hrs/day",
+    granularity: "utility",
+    method: "measured",
+    sourceId: "wasreb_impact_17",
+    vintage: "FY2023/24",
+    retrieved: "2026-08-24",
+    extractionConfidence: "high",
+    pageRef: null,
+    notes: null,
+  },
+];
 
 // Mock state persists to localStorage so a page reload doesn't wipe a
 // freshly-created report or a freshly-read alert — which is confusing for
@@ -198,6 +236,13 @@ export const mockApi = {
   getMethodology: async (): Promise<Methodology> => {
     await delay();
     return structuredClone(METHODOLOGY);
+  },
+
+  getCountyContext: async (county: string = "Nairobi"): Promise<CountyContextReading[]> => {
+    await delay();
+    return structuredClone(
+      MOCK_COUNTY_CONTEXT.filter((r) => r.county === county),
+    );
   },
 
   register: async (
