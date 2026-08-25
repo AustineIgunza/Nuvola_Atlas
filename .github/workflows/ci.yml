@@ -92,7 +92,7 @@ jobs:
           tools: composer:v2
 
       - name: Cache composer deps
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: nuvola-atlas-backend/vendor
           key: composer-${{ runner.os }}-${{ hashFiles('nuvola-atlas-backend/composer.lock') }}
