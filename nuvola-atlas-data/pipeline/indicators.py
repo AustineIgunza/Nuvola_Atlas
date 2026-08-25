@@ -1,8 +1,29 @@
 """Provenance schema and the canonical indicator vocabulary.
 
 Every value the pipeline emits carries the fields on ``ProvenanceValue``.
-That is not decoration — the two invariants enforced in ``__post_init__``
-are what stop the emitter from ever publishing a number without receipts.
+That is not decoration — the invariants enforced in ``__post_init__`` are
+what stop the emitter from ever publishing a number without receipts.
+
+The envelope matches R2 amendment 4:
+
+    value        number or null
+    indicator    canonical key (see INDICATORS below)
+    zone_id      the sub-county the reading applies to, or None when
+                 granularity is not "subcounty" (a utility / county /
+                 national number has no zone)
+    granularity  subcounty | county | utility | national
+    method       measured | imputed | proxy | gap
+    source_id    manifest slug; required unless method == "gap"
+    vintage      e.g. "FY2023/24"; required unless method == "gap"
+    retrieved    YYYY-MM-DD
+    page_ref     PDF page reference for extracted values, else None
+    confidence   integer 0-100, trust rating separate from
+                 extraction_confidence (which is parser quality). 100 by
+                 default for measured values; imputed and proxy readings
+                 should lower it explicitly.
+    imputed_from list of source indicator keys the imputation stood on;
+                 REQUIRED for method == "imputed", forbidden otherwise
+    notes        free-text audit
 """
 from __future__ import annotations
 
@@ -11,12 +32,12 @@ from datetime import date
 from typing import Final, Literal
 
 Granularity = Literal["subcounty", "county", "utility", "national"]
-Method = Literal["measured", "proxy", "gap"]
+Method = Literal["measured", "imputed", "proxy", "gap"]
 
 _GRANULARITIES: Final[frozenset[Granularity]] = frozenset(
     ("subcounty", "county", "utility", "national")
 )
-_METHODS: Final[frozenset[Method]] = frozenset(("measured", "proxy", "gap"))
+_METHODS: Final[frozenset[Method]] = frozenset(("measured", "imputed", "proxy", "gap"))
 
 
 @dataclass(frozen=True)
@@ -28,6 +49,16 @@ class ProvenanceValue:
       hole to plug with zero.
     - ``method != 'gap'`` requires ``source_id`` and ``vintage``. A number
       without either cannot be defended.
+    - ``method == 'imputed'`` requires a non-empty ``imputed_from`` list. An
+      imputed value with no chain back to an observation is indistinguishable
+      from an invented one, which is the case R2 §P7.3 forbids.
+    - ``method != 'imputed'`` forbids ``imputed_from``. A measured or proxy
+      value with a fabricated imputation chain would launder invention as
+      calculation, which is worse than either alone.
+    - ``granularity != 'subcounty'`` forbids ``zone_id``: a utility / county
+      / national number has no single zone. (R1 in emit.py enforces the
+      complementary rule for the feature's properties.)
+    - ``confidence`` is 0-100 inclusive.
     """
 
     value: float | int | None
@@ -38,6 +69,9 @@ class ProvenanceValue:
     source_id: str | None
     vintage: str | None
     retrieved: str
+    zone_id: str | None = None
+    confidence: int = 100
+    imputed_from: tuple[str, ...] | None = None
     page_ref: str | None = None
     notes: str | None = None
 
@@ -53,14 +87,44 @@ class ProvenanceValue:
             )
         if self.method != "gap":
             if not self.source_id:
-                raise ValueError(f"measured/proxy value for {self.indicator!r} needs source_id")
+                raise ValueError(
+                    f"{self.method}/{self.indicator!r} needs source_id"
+                )
             if not self.vintage:
-                raise ValueError(f"measured/proxy value for {self.indicator!r} needs vintage")
+                raise ValueError(
+                    f"{self.method}/{self.indicator!r} needs vintage"
+                )
+        if self.method == "imputed":
+            if not self.imputed_from:
+                raise ValueError(
+                    f"method='imputed' for {self.indicator!r} requires non-empty "
+                    f"imputed_from; an imputation with no chain back to an "
+                    f"observation is indistinguishable from an invented number."
+                )
+        elif self.imputed_from:
+            raise ValueError(
+                f"imputed_from is only valid on method='imputed'; "
+                f"{self.method!r} readings must not carry an imputation chain."
+            )
+        if self.granularity != "subcounty" and self.zone_id is not None:
+            raise ValueError(
+                f"granularity={self.granularity!r} forbids zone_id — a "
+                f"utility/county/national value has no single sub-county. "
+                f"Got zone_id={self.zone_id!r}."
+            )
+        if not (0 <= int(self.confidence) <= 100):
+            raise ValueError(
+                f"confidence must be 0-100, got {self.confidence!r}"
+            )
         # Retrieval is a date, not a timestamp — keep it a plain YYYY-MM-DD string.
         date.fromisoformat(self.retrieved)
 
     def to_dict(self) -> dict:
         out = asdict(self)
+        # imputed_from serialises as a list (JSON has no tuple type) so
+        # readers don't have to know about the internal choice of immutable.
+        if out.get("imputed_from") is not None:
+            out["imputed_from"] = list(out["imputed_from"])
         # Drop keys that are None on the way out; keeps the geojson tidy and
         # lets callers tell "not provided" from "explicit null value".
         return {k: v for k, v in out.items() if v is not None or k == "value"}
