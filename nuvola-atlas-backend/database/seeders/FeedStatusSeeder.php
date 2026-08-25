@@ -19,27 +19,29 @@ use Illuminate\Database\Seeder;
  */
 class FeedStatusSeeder extends Seeder
 {
-    /** (zone_id, pillar_key, feed_name, source, expected_frequency_min, minutes_since_last_delivery) */
+    /** (zone_id, pillar_key, feed_name, source, expected_frequency_min, minutes_since_last_delivery, vintage, granularity) */
     private const ROWS = [
         // Fresh — under SLA.
-        ['westlands', 'road_density', 'hotosm.roads', 'HOT OSM', 43200, 1200],
-        ['westlands', 'transit_access', 'digitalmatatus.gtfs', 'Digital Matatus', 43200, 8000],
-        ['starehe', 'road_density', 'hotosm.roads', 'HOT OSM', 43200, 1200],
-        // Stale — over SLA, under 3× SLA.
-        ['kasarani', 'water_sanitation', 'wasreb.impact', 'WASREB', 525600, 700000],
-        ['embakasi-east', 'transit_access', 'digitalmatatus.gtfs', 'Digital Matatus', 43200, 90000],
+        ['westlands', 'road_density', 'hotosm.roads', 'HOT OSM', 43200, 1200, null, 'subcounty'],
+        ['westlands', 'transit_access', 'digitalmatatus.gtfs', 'Digital Matatus', 43200, 8000, null, 'subcounty'],
+        ['starehe', 'road_density', 'hotosm.roads', 'HOT OSM', 43200, 1200, null, 'subcounty'],
+        // Stale — over SLA, under 3× SLA. WASREB is annual and utility-granularity;
+        // recording vintage + granularity keeps the staleness ledger honest about
+        // what "overdue" means for a FY-cadence feed vs. an hourly one.
+        ['kasarani', 'water_sanitation', 'wasreb.impact', 'WASREB', 525600, 700000, 'FY2023/24', 'utility'],
+        ['embakasi-east', 'transit_access', 'digitalmatatus.gtfs', 'Digital Matatus', 43200, 90000, null, 'subcounty'],
         // Overdue — >3× SLA.
-        ['kibra', 'water_sanitation', 'wasreb.impact', 'WASREB', 525600, 2000000],
-        ['mathare', 'road_density', 'hotosm.roads', 'HOT OSM', 43200, 400000],
+        ['kibra', 'water_sanitation', 'wasreb.impact', 'WASREB', 525600, 2000000, 'FY2023/24', 'utility'],
+        ['mathare', 'road_density', 'hotosm.roads', 'HOT OSM', 43200, 400000, null, 'subcounty'],
         // Missing — no delivery yet.
-        ['kibra', 'electricity_access', 'knbs.census', 'KNBS', 525600, null],
-        ['mathare', 'electricity_access', 'knbs.census', 'KNBS', 525600, null],
-        ['mathare', 'water_sanitation', 'wasreb.impact', 'WASREB', 525600, null],
+        ['kibra', 'electricity_access', 'knbs.census', 'KNBS', 525600, null, '2019', 'subcounty'],
+        ['mathare', 'electricity_access', 'knbs.census', 'KNBS', 525600, null, '2019', 'subcounty'],
+        ['mathare', 'water_sanitation', 'wasreb.impact', 'WASREB', 525600, null, 'FY2023/24', 'utility'],
     ];
 
     public function run(): void
     {
-        foreach (self::ROWS as [$zoneId, $pillarKey, $feedName, $source, $freqMin, $ageMin]) {
+        foreach (self::ROWS as [$zoneId, $pillarKey, $feedName, $source, $freqMin, $ageMin, $vintage, $granularity]) {
             DataFeedStatus::updateOrCreate(
                 ['zone_id' => $zoneId, 'pillar_key' => $pillarKey],
                 [
@@ -48,6 +50,8 @@ class FeedStatusSeeder extends Seeder
                     'expected_frequency_min' => $freqMin,
                     'last_delivered_at' => $ageMin === null ? null : now()->subMinutes($ageMin),
                     'verified_records' => $ageMin === null ? 0 : rand(10, 200),
+                    'vintage' => $vintage,
+                    'granularity' => $granularity,
                 ],
             );
         }

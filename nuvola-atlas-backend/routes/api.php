@@ -16,6 +16,8 @@ use App\Http\Controllers\AlertController;
 use App\Http\Controllers\AssistantAgentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\CountyContextController;
+use App\Http\Controllers\CountyContextIntakeController;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\HistoryController;
@@ -46,6 +48,12 @@ Route::get('health/intake', [HealthController::class, 'intake']);
 // Phase B — FastAPI → Laravel ingestion channel. Guarded by
 // X-Internal-Secret only; never accepts a bearer token.
 Route::middleware('internal.secret')->post('v1/ingest', [IngestController::class, 'store']);
+
+// P9 §Task 2 — internal intake for county-level readings (WASREB, KNBS
+// county rollups, etc.). Same X-Internal-Secret contract as /v1/ingest;
+// FastAPI /ingest/wasreb parses the CSV shape and forwards accepted rows.
+Route::middleware('internal.secret')
+    ->post('v1/internal/county-context', [CountyContextIntakeController::class, 'store']);
 
 // Google OAuth — public endpoints (redirect is JSON-returning so the SPA
 // can window.location.assign() to the Google consent URL; callback runs
@@ -84,6 +92,12 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
     Route::get('history', [HistoryController::class, 'index']);
     Route::get('vitality/methodology', [VitalityController::class, 'methodology']);
     Route::get('vitality/county', [VitalityController::class, 'county']);
+
+    // P9 — county-level indicator readings for the banner above the map.
+    // Distinct from /vitality/county (which averages sub-county pillars up);
+    // this endpoint serves raw utility/county figures that never had a
+    // sub-county home in the first place.
+    Route::get('county-context', [CountyContextController::class, 'index']);
 
     Route::middleware('throttle:auth')->group(function () {
         Route::post('auth/sign-in', [AuthController::class, 'signIn']);
