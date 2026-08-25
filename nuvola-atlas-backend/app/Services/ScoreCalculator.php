@@ -211,6 +211,10 @@ class ScoreCalculator
     /**
      * Persist the current score plus a snapshot row, so the trend chart and
      * the forecast endpoint have a continuous per-pillar history.
+     *
+     * Every snapshot is stamped with the methodology_version_id it was
+     * computed under (P8 §Task 3) — republishing weights must never
+     * silently rewrite the interpretation of historical scores.
      */
     public function recalculate(Zone $zone, bool $broadcast = false): void
     {
@@ -227,6 +231,7 @@ class ScoreCalculator
             'zone_id' => $zone->id,
             'captured_at' => now(),
             'score' => $zone->score,
+            'methodology_version_id' => MethodologyVersion::current()?->id,
         ], $columns));
 
         if ($broadcast) {

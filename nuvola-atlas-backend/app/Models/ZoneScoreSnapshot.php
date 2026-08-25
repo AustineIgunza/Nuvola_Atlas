@@ -19,4 +19,15 @@ class ZoneScoreSnapshot extends Model
     {
         return $this->belongsTo(Zone::class);
     }
+
+    /**
+     * The methodology version this snapshot was computed under. Nullable
+     * for rows written before the P8 binding — those were backfilled
+     * with the current version at migration time, but a genuinely
+     * unversioned row (e.g. an old fixture) still reads null.
+     */
+    public function methodologyVersion(): BelongsTo
+    {
+        return $this->belongsTo(MethodologyVersion::class);
+    }
 }
