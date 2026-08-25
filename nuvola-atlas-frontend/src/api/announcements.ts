@@ -34,7 +34,7 @@ const SEED: Announcement[] = [
   {
     id: "ann-pilot-live",
     title: "Nairobi Pilot: Live",
-    body: "The pilot deployment covers all 17 sub-counties. Vitality Scores are live; Daystar delivery is inbound and the '9 of 13 indicators active' chip tracks per-zone rollout.",
+    body: "The pilot deployment covers all 17 sub-counties. Vitality Scores are live across the three measured pillars (Water & Sanitation, Road Density, Transit Access); Electricity Access is held at weight zero until the 2019 census vintage is labelled at every point of display.",
     severity: "info",
     scope: { kind: "global" },
     startsAt: "2026-07-01T00:00:00Z",
