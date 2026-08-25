@@ -11,8 +11,19 @@ the reasoning). This file is the *change* log — commit-by-commit.
 
 ---
 
+## 2026-08-25 · Round-2: P10 attempt (deferred again)
+
+- **P10 revisit blocked** — an attempted manual reconciliation of the
+  Small + Private categories discovered the WASREB download URLs in
+  `pipeline/wasreb/editions.py` are stale (return an HTML page, not a
+  PDF). No code change; deferral confirmed. Any future P10 attempt
+  needs a URL-repair slice first. See
+  `NAVUUNA_REFOCUS_WORKFLOW.md §11` for the recorded addendum.
+
 ## 2026-08-25 · Round-2: P8 audit + follow-through
 
+- **`8cb8daf`** — `docs`: this file. Commit-by-commit change log to
+  pair with the workflow doc's decision ledger.
 - **`4b8e4fb`** — `feat(frontend)`: source + vintage caption on
   `PillarBar` + attribution footer on `Leaderboard`. CSV export ships a
   second header row with per-pillar source. Closes the

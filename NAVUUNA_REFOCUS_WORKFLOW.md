@@ -598,3 +598,15 @@ this decision blocking anything else.
 **When to revisit:** when either (a) IMPACT 18 is published and we need
 a repeatable path for the next issue, or (b) a funder specifically asks
 for the earlier IMPACT time series (15 and 16). Whichever comes first.
+
+**2026-08-25 addendum — download URL discovered stale.** An attempted
+manual reconciliation this session tried to fetch
+`https://wasreb.go.ke/downloads/Impact_Report_Issue_17.pdf` (the URL
+in `pipeline/wasreb/editions.py`). The response was an 84 KB HTML page,
+not a PDF — WASREB has restructured their downloads path and the URLs
+across all 17 editions in `editions.py` are almost certainly stale
+too. Before any future P10 attempt (extractor OR manual), a URL-repair
+slice must land first: either discover the new path pattern from
+wasreb.go.ke, or place the PDFs manually at
+`nuvola-atlas-data/sources/wasreb/` and adjust the downloader to
+tolerate a pre-populated source directory.
