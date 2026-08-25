@@ -56,10 +56,17 @@ export default function Leaderboard() {
     // which downstream spreadsheets treat as blank instead of a real 0.
     const cell = (v: number | null): string => (v === null ? "" : String(v));
     const header = ["Rank", "Sub-county", "Overall", ...PILLAR_KEYS.map((k) => PILLARS_BY_KEY[k].displayName)].join(",");
+    // A second header row names the source and vintage per pillar
+    // column, so a downstream spreadsheet carries the attribution the UI
+    // shows. Definition-of-done from NAVUUNA_REFOCUS_WORKFLOW.md §9.
+    const sourceHeader = ["", "", "", ...PILLAR_KEYS.map((k) => {
+      const p = PILLARS_BY_KEY[k];
+      return p.vintage ? `${p.sourceId ?? ""} ${p.vintage}`.trim() : "";
+    })].join(",");
     const rows = sorted.map((z, i) =>
       [i + 1, z.name, cell(z.score), ...PILLAR_KEYS.map((k) => cell(z.pillars[k]))].join(","),
     );
-    const blob = new Blob([[header, ...rows].join("\n")], { type: "text/csv" });
+    const blob = new Blob([[header, sourceHeader, ...rows].join("\n")], { type: "text/csv" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "service-performance-leaderboard.csv";
@@ -248,6 +255,27 @@ export default function Leaderboard() {
               ))}
             </motion.tbody>
           </table>
+        </div>
+
+        {/* Attribution footer — every pillar column names its source and
+            vintage. Same discipline as the county banner and the scorecard
+            provenance ledger: a number on screen with no source next to
+            it is a number a regulator cannot check. */}
+        <div className="mt-4 pt-3 border-t border-border text-[10px] text-ink-4 leading-[1.6]">
+          <span className="font-semibold uppercase tracking-[0.06em] text-ink-3">
+            Sources ·
+          </span>
+          {PILLAR_KEYS.map((k, i) => {
+            const p = PILLARS_BY_KEY[k];
+            if (!p.vintage) return null;
+            return (
+              <span key={k}>
+                {i > 0 && " · "}
+                <span className="text-ink-3">{p.displayName}:</span>{" "}
+                {p.sourceId ?? ""} {p.vintage}
+              </span>
+            );
+          })}
         </div>
       </motion.div>
 

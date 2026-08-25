@@ -3,6 +3,7 @@ import { cn } from "@/lib/cn";
 import { PILLAR_COLORS, PILLAR_GLYPHS } from "@/lib/scoreColor";
 import { NO_SCORE_LABEL } from "@/lib/scores";
 import { useT } from "@/lib/i18n/use-t";
+import { PILLARS_BY_KEY } from "@/lib/pillars.generated";
 import EstimatedMark from "@/components/common/EstimatedMark";
 import type { PillarKey } from "@/types";
 
@@ -21,6 +22,7 @@ export default function PillarBar({ pillarKey, score, delta, index, estimated }:
   const color = PILLAR_COLORS[pillarKey];
   const t = useT();
   const unscored = score === null;
+  const pillar = PILLARS_BY_KEY[pillarKey];
 
   return (
     <div className="py-1.5">
@@ -71,6 +73,18 @@ export default function PillarBar({ pillarKey, score, delta, index, estimated }:
           />
         )}
       </div>
+      {/* Source + vintage caption. Definition-of-done from
+          NAVUUNA_REFOCUS_WORKFLOW.md §9: every number on screen shows
+          its source and vintage — a bar without a caption is a number a
+          regulator cannot check. Hidden only when the pillar registry
+          has no vintage recorded (a retired pillar, which should not
+          reach this component anyway). */}
+      {pillar?.vintage && (
+        <div className="mt-0.5 text-[9px] text-ink-4 truncate">
+          {pillar.sourceId ? `${pillar.sourceId} · ` : ""}
+          {pillar.vintage}
+        </div>
+      )}
     </div>
   );
 }

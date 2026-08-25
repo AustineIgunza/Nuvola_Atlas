@@ -54,4 +54,23 @@ describe("PillarBar estimated state", () => {
     expect(track).not.toBeNull();
     expect(track?.children.length).toBe(0);
   });
+
+  it("shows the source and vintage caption from the pillar registry", () => {
+    // Definition-of-done from NAVUUNA_REFOCUS_WORKFLOW.md §9: every
+    // number on screen carries its source and vintage. Water &
+    // Sanitation is sourced from KNBS 2019 census per the registry.
+    render(<PillarBar pillarKey="water_sanitation" score={64} delta={2} index={0} />);
+
+    expect(screen.getByText(/knbs_census_2019/)).toBeInTheDocument();
+    expect(screen.getByText(/2019 census/)).toBeInTheDocument();
+  });
+
+  it("keeps the source and vintage caption on an unmeasured pillar too", () => {
+    // A gap is a declared finding, not a hole to hide — the source
+    // stays visible so a reader knows what to check when the reading
+    // does arrive.
+    render(<PillarBar pillarKey="water_sanitation" score={null} delta={null} index={0} />);
+
+    expect(screen.getByText(/2019 census/)).toBeInTheDocument();
+  });
 });
