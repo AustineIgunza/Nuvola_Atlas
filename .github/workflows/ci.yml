@@ -31,6 +31,7 @@ jobs:
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
       ingestion: ${{ steps.filter.outputs.ingestion }}
+      data: ${{ steps.filter.outputs.data }}
     steps:
       - uses: dorny/paths-filter@v3
         id: filter
@@ -40,6 +41,11 @@ jobs:
             shared: &shared
               - '.github/workflows/**'
               - 'docker-compose*.yml'
+              # The pillar registry and its generator: every service consumes a
+              # binding derived from these, so a change to either must re-run
+              # all of them, not just whichever one happens to be edited too.
+              - 'pillars.json'
+              - 'scripts/gen-pillars.mjs'
             backend:
               - *shared
               - 'nuvola-atlas-backend/**'
@@ -49,6 +55,14 @@ jobs:
             ingestion:
               - *shared
               - 'nuvola-atlas-ingestion/**'
+            data:
+              - *shared
+              - 'nuvola-atlas-data/**'
+              # The reconciled dataset lives at repo root, not inside the
+              # service. tests/test_wasreb_end_to_end.py hashes it against
+              # manifests/wasreb_impact_17_long_csv.yaml, so editing the CSV
+              # without listing it here would skip the check that catches it.
+              - 'wasreb_impact17_long.csv'
 
   # ----------------------------------------------------------------------------
   # Backend — Laravel 11 + PostgreSQL 16 + PostGIS 3.4
@@ -230,3 +244,69 @@ jobs:
 
       - name: Pytest
         run: pytest --no-header -ra
+
+  # ----------------------------------------------------------------------------
+  # Data — offline pipeline: manifests -> sources -> nairobi_vitality.geojson
+  # ----------------------------------------------------------------------------
+  data:
+    name: Data — ruff + pytest
+    runs-on: ubuntu-latest
+    needs: changes
+
+    if: github.event_name == 'push' || needs.changes.outputs.data == 'true'
+
+    defaults:
+      run:
+        working-directory: nuvola-atlas-data
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      # No mypy here: unlike nuvola-atlas-ingestion, this project does not
+      # declare it as a dev dependency and is not typed strictly. Adding it
+      # is a separate decision, not something to smuggle in with CI wiring.
+      - name: Install project + dev deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Ruff lint
+        run: ruff check .
+
+      # The geo extra (geopandas/shapely/pyogrio) is deliberately NOT installed.
+      # pipeline/boundaries.py imports it lazily so the suite runs without it;
+      # installing it here would add minutes to every run for no coverage.
+      - name: Pytest
+        run: pytest --no-header -ra
+
+  # ----------------------------------------------------------------------------
+  # Repo — the cross-cutting tripwires. These live in scripts/ and gate the
+  # whole tree, so they belong to no single service. Until this job existed
+  # they ran only in `make check` locally, which is how HISTORY.md sat in
+  # violation of the freedom-index guard for three days without CI noticing.
+  # ----------------------------------------------------------------------------
+  repo:
+    name: Repo — pillar registry + freedom-index guard
+    runs-on: ubuntu-latest
+
+    steps:
+      # Both scripts read the whole tree (check-freedom-index.sh drives
+      # `git ls-files`), so they need full history, not a shallow clone.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Pillar registry in sync
+        run: node scripts/gen-pillars.mjs --check
+
+      - name: Freedom-index purge holds
+        run: bash scripts/check-freedom-index.sh

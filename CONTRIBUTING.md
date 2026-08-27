@@ -22,26 +22,48 @@ command directly. `make check` is the one worth an alias of your own:
 bash scripts/check.sh
 ```
 
-## The six checks
+## The checks
 
-Run these before you push. `make check` runs all six and keeps going after a
+Run these before you push. `make check` runs them all and keeps going after a
 failure, so one run tells you everything that is broken.
 
 ```bash
 node scripts/gen-pillars.mjs --check
-cd nuvola-atlas-backend  && php vendor/phpunit/phpunit/phpunit --no-coverage
-cd nuvola-atlas-backend  && vendor/bin/phpstan analyse --memory-limit=512M
-cd nuvola-atlas-frontend && npm run typecheck
-cd nuvola-atlas-frontend && npm test
-cd nuvola-atlas-frontend && npm run build
+bash scripts/check-freedom-index.sh
+cd nuvola-atlas-backend   && php vendor/phpunit/phpunit/phpunit --no-coverage
+cd nuvola-atlas-backend   && vendor/bin/phpstan analyse --memory-limit=512M
+cd nuvola-atlas-frontend  && npm run typecheck
+cd nuvola-atlas-frontend  && npm test
+cd nuvola-atlas-frontend  && npm run build
+cd nuvola-atlas-ingestion && ruff check . && pytest --no-header -ra
+cd nuvola-atlas-data      && ruff check . && pytest --no-header -ra
 ```
 
-Three things to know before you read a result:
+Things to know before you read a result:
 
 - **The registry check is drift detection, not a test.** `pillars.json` at the
   root generates the pillar taxonomy into all three packages. If you edited a
   generated file by hand instead of the JSON, this is what catches it. Re-run
   without `--check` to regenerate.
+- **The Python services need their dev extras installed.** `make check` looks for
+  `ruff` and `pytest` in each project's `.venv/bin` first, then on `PATH`, and
+  fails with the install command if it finds neither — it does not skip them:
+
+  ```bash
+  cd nuvola-atlas-data && python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
+  ```
+
+- **Use Node 20 — `.nvmrc` pins it and CI matches.** `package.json` says
+  `>=20.0.0`, which is too loose to protect you. On Node 26, vitest 2.1.9's jsdom
+  environment does not populate `localStorage`, so 14 tests fail with
+  `Cannot read properties of undefined (reading 'getItem')` in
+  `src/api/client.ts` and `src/stores/chrome.ts`. The app code is fine —
+  the same suite is 60/60 green on Node 20. If you see that error, check
+  `node --version` before you debug anything else.
+
+  ```bash
+  nvm use
+  ```
 - **phpunit needs Postgres.** `phpunit.xml` force-pins to `127.0.0.1:5434`, so
   without the container the suite does not fail — it hangs on a TCP timeout.
   `make db` starts it. `make check` checks the port first and tells you.
