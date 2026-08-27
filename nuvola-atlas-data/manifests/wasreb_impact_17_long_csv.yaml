@@ -6,13 +6,24 @@ licence: Open, subject to WASREB terms — attribution required
 attribution: Water Services Regulatory Board (WASREB), IMPACT Report Issue 17, 2025
 vintage: FY2023/24
 retrieval_date: "2026-08-24"
-sha256: a868957d888fd1ce799686e8aeb9876c74a606e23cd1445bc2cee461c63a55e1
+sha256: 5562bd5aa142efb6677a84dc5157b912cd21c6aa451c572ad110c06ae000098e
 notes: |
   Externally-reconciled long CSV covering three of WASREB's five size
   categories (Very Large, Large, Medium) — 68 utilities, 641 values.
   Small (22 utilities) and Private (4) remain outstanding per P10 of
   NAVUUNA_PROMPTS_ROUND2.md; those will land as additional rows and
   bump the sha256.
+
+  sha256 corrected 2026-08-27. The original value
+  (a868957d888fd1ce799686e8aeb9876c74a606e23cd1445bc2cee461c63a55e1)
+  never matched the committed CSV. The CSV has a single commit (446d096)
+  and has not been modified since; this manifest landed afterwards in
+  c99097d with a hash computed from something other than the committed
+  bytes. The committed file is the correct one — it carries exactly the
+  641 values these notes describe, and every content test
+  (spotcheck, validate, loader, bounds-match-ingestion) passes against
+  it. Only the recorded digest was wrong. It went unnoticed because
+  nuvola-atlas-data had no CI job until this change.
 
   File lives at repo root as wasreb_impact17_long.csv. Loader reads it
   via pipeline.wasreb.loader.iter_readings().
