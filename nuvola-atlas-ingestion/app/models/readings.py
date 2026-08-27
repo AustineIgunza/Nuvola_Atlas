@@ -135,7 +135,7 @@ class WasrebReading(BaseModel):
     notes: str | None = None
 
     @model_validator(mode="after")
-    def _check_invariants(self) -> "WasrebReading":
+    def _check_invariants(self) -> WasrebReading:
         if self.method == "gap":
             if self.value is not None:
                 raise ValueError(
