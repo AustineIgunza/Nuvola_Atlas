@@ -15,11 +15,20 @@ class CountyContextIntakeTest extends TestCase
 {
     private const SECRET_HEADER = 'X-Internal-Secret';
 
+    /**
+     * VerifyInternalSecret rejects anything shorter than 48 characters, so a
+     * short fixture is denied with 401 before the route is ever reached. This
+     * suite previously used 'test-secret' (11 chars) and had therefore never
+     * passed — the length rule landed 2026-08-12, thirteen days before this
+     * file. Mirrors IngestContractTest::SECRET, which is the same contract.
+     */
+    private const SECRET = 'test-internal-secret-value-that-is-long-enough-000';
+
     protected function setUp(): void
     {
         parent::setUp();
         // The internal.secret middleware reads from services.ingest.secret.
-        config()->set('services.ingest.secret', 'test-secret');
+        config()->set('services.ingest.secret', self::SECRET);
     }
 
     public function test_rejects_request_without_internal_secret(): void
@@ -32,7 +41,7 @@ class CountyContextIntakeTest extends TestCase
 
     public function test_accepts_and_upserts_a_valid_batch(): void
     {
-        $r = $this->withHeader(self::SECRET_HEADER, 'test-secret')
+        $r = $this->withHeader(self::SECRET_HEADER, self::SECRET)
             ->postJson('/api/v1/internal/county-context', [
                 'batch_id' => 'wasreb-2026-08-25-1',
                 'rows' => [$this->row()],
@@ -52,7 +61,7 @@ class CountyContextIntakeTest extends TestCase
 
     public function test_replaying_the_same_row_updates_in_place(): void
     {
-        $post = fn (float $value) => $this->withHeader(self::SECRET_HEADER, 'test-secret')
+        $post = fn (float $value) => $this->withHeader(self::SECRET_HEADER, self::SECRET)
             ->postJson('/api/v1/internal/county-context', [
                 'batch_id' => 'wasreb-2026-08-25-1',
                 'rows' => [$this->row(['value' => $value])],
@@ -67,7 +76,7 @@ class CountyContextIntakeTest extends TestCase
 
     public function test_rejects_a_row_with_subcounty_granularity(): void
     {
-        $r = $this->withHeader(self::SECRET_HEADER, 'test-secret')
+        $r = $this->withHeader(self::SECRET_HEADER, self::SECRET)
             ->postJson('/api/v1/internal/county-context', [
                 'batch_id' => 'bad-1',
                 'rows' => [$this->row(['granularity' => 'subcounty'])],
@@ -80,7 +89,7 @@ class CountyContextIntakeTest extends TestCase
 
     public function test_skips_a_retired_pillar_row_and_reports_the_count(): void
     {
-        $r = $this->withHeader(self::SECRET_HEADER, 'test-secret')
+        $r = $this->withHeader(self::SECRET_HEADER, self::SECRET)
             ->postJson('/api/v1/internal/county-context', [
                 'batch_id' => 'mixed-1',
                 'rows' => [

@@ -39,7 +39,11 @@ class CountyContextApiTest extends TestCase
 
         $this->assertCount(1, $rows);
         $this->assertSame('Nairobi', $rows[0]['county']);
-        $this->assertSame(48.0, $rows[0]['value']);
+        // json_encode drops the decimal point on a whole float, so 48.0 comes
+        // back over the wire as int 48 and assertSame fails on the type. Cast
+        // rather than loosen the comparison — same pattern as
+        // CountyContextIntakeTest::test_replaying_the_same_row_updates_in_place.
+        $this->assertSame(48.0, (float) $rows[0]['value']);
         $this->assertSame('utility', $rows[0]['granularity']);
         $this->assertSame('wasreb_impact_17', $rows[0]['sourceId']);
         $this->assertSame('FY2023/24', $rows[0]['vintage']);
