@@ -28,6 +28,11 @@ ALLOWLIST=(
   # what was retired and why. Historical.
   "NAVUUNA_PROMPTS_ROUND2.md"
   "NAVUUNA_REFOCUS_WORKFLOW.md"
+  # The commit-by-commit change log. It records the rename that retired the
+  # label, so it must name the old identifier to describe what happened —
+  # same historical-record category as the two directives above. Added after
+  # this allowlist was first written, which is why it went unlisted.
+  "HISTORY.md"
   # The registry's retirement gravestone. renamed_from is the machine link
   # from civic back to the pre-purge identifier chain; a reader who greps
   # for the old key needs one match to find its successor.
@@ -39,6 +44,13 @@ ALLOWLIST=(
   # The runner names this check by what it forbids.
   "scripts/check.sh"
   "scripts/check-freedom-index.sh"
+  # Same reason, one step out: anything that invokes the script by filename
+  # matches the pattern, because the filename contains it. These two list the
+  # command a developer is meant to run, so they cannot avoid naming it.
+  # Note this exempts the whole file, not just the command line — do not put
+  # product copy in either of these and expect the guard to catch it.
+  ".github/workflows/ci.yml"
+  "CONTRIBUTING.md"
 )
 
 # Case-insensitive, matches: "Freedom Index", "FreedomIndex", "freedom_index",
