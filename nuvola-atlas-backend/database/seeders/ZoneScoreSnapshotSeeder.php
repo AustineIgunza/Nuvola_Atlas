@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Domain\Scoring\ScoreCalculator;
 use App\Models\Zone;
-use App\Services\ScoreCalculator;
 use App\Support\Pillars;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;

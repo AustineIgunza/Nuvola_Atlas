@@ -8,8 +8,8 @@ import httpx
 import pytest
 
 from app.config import Settings
+from app.forward import RETRY_BACKOFF_SECONDS, forward_batch
 from app.models.readings import PillarReading
-from app.services.laravel_forwarder import RETRY_BACKOFF_SECONDS, forward_batch
 from app.signing import verify
 
 SECRET = "test-internal-secret-value-that-is-long-enough-000"

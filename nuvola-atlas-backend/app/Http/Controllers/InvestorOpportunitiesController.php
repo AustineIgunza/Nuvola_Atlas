@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Domain\Scoring\ScoreCalculator;
 use App\Models\FirmWatchlist;
 use App\Models\User;
 use App\Models\Zone;
-use App\Services\ScoreCalculator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

@@ -14,13 +14,13 @@ from datetime import UTC, datetime
 from fastapi import APIRouter, Depends, Request
 
 from app.config import get_settings
+from app.forward import forward_batch, forward_county_context
 from app.guards import enforce_payload_size, get_guards
 from app.idempotency import lookup, payload_hash, remember
 from app.models.readings import ReadingBatch, WasrebBatch
+from app.quality.clean import clean_batch
+from app.quality.outliers import Anomaly, detect_anomalies
 from app.security import require_internal_secret
-from app.services.anomaly_detector import Anomaly, detect_anomalies
-from app.services.data_cleaner import clean_batch
-from app.services.laravel_forwarder import forward_batch, forward_county_context
 
 router = APIRouter(prefix="/api/ingest", tags=["ingest"])
 

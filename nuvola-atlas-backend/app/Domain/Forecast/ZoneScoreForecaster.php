@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Forecast;
+namespace App\Domain\Forecast;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;

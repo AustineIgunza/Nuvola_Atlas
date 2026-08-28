@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services\Export;
 
+use App\Domain\Scoring\PillarDeltaCalculator;
+use App\Domain\Scoring\ScoreCalculator;
 use App\Models\Alert;
 use App\Models\Project;
 use App\Models\Zone;
-use App\Services\PillarDeltaCalculator;
-use App\Services\ScoreCalculator;
 use App\Support\Pillars;
 use Dompdf\Dompdf;
 use Dompdf\Options as DompdfOptions;

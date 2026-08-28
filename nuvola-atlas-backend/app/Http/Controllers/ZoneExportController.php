@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Domain\Scoring\ScoreCalculator;
 use App\Models\Zone;
 use App\Services\Export\ZoneReportExporter;
-use App\Services\ScoreCalculator;
 use App\Support\DataProvenance;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;

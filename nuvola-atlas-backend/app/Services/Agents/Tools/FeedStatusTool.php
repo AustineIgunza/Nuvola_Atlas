@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Agents\Tools;
 
+use App\Domain\Feeds\FeedStatusService;
 use App\Services\Agents\BaseAgentTool;
-use App\Services\Feeds\FeedStatusService;
 
 class FeedStatusTool extends BaseAgentTool
 {

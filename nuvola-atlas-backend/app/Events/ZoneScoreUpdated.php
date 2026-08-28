@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Events;
 
+use App\Domain\Scoring\PillarDeltaCalculator;
 use App\Http\Resources\ZoneResource;
 use App\Models\Zone;
-use App\Services\PillarDeltaCalculator;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;

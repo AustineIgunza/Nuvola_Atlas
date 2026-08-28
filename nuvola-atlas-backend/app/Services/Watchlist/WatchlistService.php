@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services\Watchlist;
 
+use App\Domain\Scoring\ScoreCalculator;
 use App\Models\Firm;
 use App\Models\FirmWatchlist;
 use App\Models\Zone;
-use App\Services\ScoreCalculator;
 use Illuminate\Support\Collection;
 
 /**

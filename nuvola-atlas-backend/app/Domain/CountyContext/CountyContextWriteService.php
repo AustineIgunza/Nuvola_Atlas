@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\CountyContext;
+namespace App\Domain\CountyContext;
 
 use App\Models\CountyContext;
 use App\Support\Pillars;
@@ -41,6 +41,7 @@ class CountyContextWriteService
                     // running against a stale registry — skip and let the
                     // receipt say so, don't hard-fail the batch.
                     $skipped++;
+
                     continue;
                 }
 

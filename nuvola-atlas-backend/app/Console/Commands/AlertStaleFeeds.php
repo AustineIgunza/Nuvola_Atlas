@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Domain\Feeds\FeedStatusService;
 use App\Models\Alert;
-use App\Services\Feeds\FeedStatusService;
 use App\Support\Audit;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;

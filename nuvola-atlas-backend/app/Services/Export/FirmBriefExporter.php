@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Export;
 
+use App\Domain\Scoring\ScoreCalculator;
 use App\Models\Firm;
-use App\Services\ScoreCalculator;
 use App\Support\Pillars;
 use Dompdf\Dompdf;
 use Dompdf\Options as DompdfOptions;

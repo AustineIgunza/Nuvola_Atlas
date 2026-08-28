@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Domain\Scoring\ScoreCalculator;
 use App\Models\Zone;
 use App\Models\ZoneLayer;
-use App\Services\ScoreCalculator;
 use App\Support\Pillars;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\PillarSeeding;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Domain\Scoring\ScoreCalculator;
 use App\Models\Zone;
-use App\Services\ScoreCalculator;
 use Illuminate\Console\Command;
 
 class RecalculateScores extends Command

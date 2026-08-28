@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Services\Feeds\FeedStatusService;
+use App\Domain\Feeds\FeedStatusService;
 use Illuminate\Http\JsonResponse;
 
 class AdminFeedsController extends Controller

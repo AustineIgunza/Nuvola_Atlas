@@ -10,8 +10,8 @@ from fastapi.testclient import TestClient
 from app import guards as guards_module
 from app import idempotency
 from app.config import get_settings
+from app.forward import ForwardResult
 from app.main import create_app
-from app.services.laravel_forwarder import ForwardResult
 
 SECRET = "test-internal-secret-value-that-is-long-enough-000"
 URL = "/api/ingest/readings"

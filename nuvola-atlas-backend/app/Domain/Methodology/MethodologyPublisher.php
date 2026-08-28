@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Methodology;
+namespace App\Domain\Methodology;
 
+use App\Domain\Scoring\ScoreCalculator;
 use App\Jobs\RecalculateAllZones;
 use App\Models\MethodologyVersion;
 use App\Models\User;
-use App\Services\ScoreCalculator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;

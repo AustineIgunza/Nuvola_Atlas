@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Domain\Scoring\PillarDeltaCalculator;
+use App\Domain\Scoring\ScoreCalculator;
 use App\Models\Zone;
-use App\Services\PillarDeltaCalculator;
-use App\Services\ScoreCalculator;
 use App\Support\Pillars;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;

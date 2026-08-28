@@ -1,6 +1,6 @@
 from datetime import UTC
 
-from app.services.data_cleaner import clean_batch
+from app.quality.clean import clean_batch
 
 
 def row(**overrides: object) -> dict[str, object]:

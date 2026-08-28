@@ -8,8 +8,8 @@ from typing import Any
 import httpx
 
 from app.config import Settings
+from app.forward import WASREB_PILLAR_KEY, forward_county_context
 from app.models.readings import WasrebReading
-from app.services.laravel_forwarder import WASREB_PILLAR_KEY, forward_county_context
 from app.signing import verify
 
 SECRET = "test-internal-secret-value-that-is-long-enough-000"

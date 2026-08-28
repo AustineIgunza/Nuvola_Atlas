@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Feeds;
+namespace App\Domain\Feeds;
 
 use App\Models\DataFeedStatus;
 
