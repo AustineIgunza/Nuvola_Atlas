@@ -28,6 +28,11 @@ ALLOWLIST=(
   # what was retired and why. Historical.
   "NAVUUNA_PROMPTS_ROUND2.md"
   "NAVUUNA_REFOCUS_WORKFLOW.md"
+  # The ADR that records why a per-pillar frontend folder was rejected. One of
+  # its reasons is that the folder would have carried the retired name, so it
+  # has to quote the name and point at this script to make the argument.
+  # Historical record, same category as the two directives above.
+  "docs/decisions/0004-features-are-surfaces-not-pillars.md"
   # The commit-by-commit change log. It records the rename that retired the
   # label, so it must name the old identifier to describe what happened —
   # same historical-record category as the two directives above. Added after

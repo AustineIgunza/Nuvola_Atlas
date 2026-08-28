@@ -65,7 +65,7 @@ jobs:
               - 'wasreb_impact17_long.csv'
 
   # ----------------------------------------------------------------------------
-  # Backend — Laravel 11 + PostgreSQL 16 + PostGIS 3.4
+  # Backend — Laravel 13 + PostgreSQL 16 + PostGIS 3.4
   # ----------------------------------------------------------------------------
   backend:
     name: Backend — phpunit + smoke checks
