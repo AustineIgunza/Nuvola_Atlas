@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { HistoryRange } from "@/types";
+import type { HistoryRange } from "@/domain/types";
 import ScoreHistoryChart from "./ScoreHistoryChart";
 
 const getZoneHistory = vi.fn();

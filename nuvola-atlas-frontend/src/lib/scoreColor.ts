@@ -1,4 +1,4 @@
-import { PILLARS, type PillarKey } from "@/lib/pillars.generated";
+import { PILLARS, type PillarKey } from "@/domain/pillars.generated";
 
 /** Maps a 0-100 vitality score along the Ground & Harvest ramp:
  *  brick #B23A2E -> terracotta #C0552B -> gold #E0A82E -> #3F9E72 -> teal #1F8A78

@@ -13,7 +13,7 @@ import { LAYER_META, NAIROBI, INITIAL_ZOOM } from "./atlas-map.constants";
 import MapFallback from "./MapFallback";
 import ViewModePill from "./ViewModePill";
 import { useT } from "@/lib/i18n/use-t";
-import type { Zone } from "@/types";
+import type { Zone } from "@/domain/types";
 
 interface Props {
   zones: Zone[];

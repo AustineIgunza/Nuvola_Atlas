@@ -1,6 +1,6 @@
-export type { PillarKey } from "@/lib/pillars.generated";
+export type { PillarKey } from "@/domain/pillars.generated";
 
-import type { PillarKey } from "@/lib/pillars.generated";
+import type { PillarKey } from "@/domain/pillars.generated";
 
 /**
  * Null for a pillar the zone has no reading for. The server has always been

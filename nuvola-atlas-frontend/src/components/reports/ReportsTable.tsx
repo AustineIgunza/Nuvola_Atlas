@@ -14,7 +14,7 @@ import ReportDetail from "./ReportDetail";
 import NewReportModal from "./NewReportModal";
 import { useAuthStore, isInvestor } from "@/stores/auth";
 import { useWatchlistStore } from "@/stores/watchlist";
-import type { Report, ReportStatus } from "@/types";
+import type { Report, ReportStatus } from "@/domain/types";
 
 // Filter labels resolved inside the component via useT so language flips
 // take effect on the next render.

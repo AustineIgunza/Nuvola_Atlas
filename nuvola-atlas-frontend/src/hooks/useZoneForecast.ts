@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/api";
-import type { ZoneForecast } from "@/types";
+import type { ZoneForecast } from "@/domain/types";
 
 /**
  * 14-day (default) score forecast + confidence band. Only fetched when

@@ -4,7 +4,7 @@ import { scoreColor } from "@/lib/scoreColor";
 import { springSettle } from "@/lib/motion";
 import Legend from "./Legend";
 import TimeScrubber from "./TimeScrubber";
-import type { Zone } from "@/types";
+import type { Zone } from "@/domain/types";
 
 const ZONE_POSITIONS: Record<string, { cx: number; cy: number; r: number }> = {
   westlands: { cx: 260, cy: 160, r: 38 },

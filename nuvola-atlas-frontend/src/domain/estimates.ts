@@ -1,4 +1,4 @@
-import type { Zone } from "@/types";
+import type { Zone } from "@/domain/types";
 
 /** True when `hydrateZone` substituted this field for a null from the API. */
 export function isEstimated(zone: Pick<Zone, "_hydrated">, path: string): boolean {

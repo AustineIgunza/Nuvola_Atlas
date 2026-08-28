@@ -3,10 +3,10 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/cn";
 import { api } from "@/api";
 import { scoreColor } from "@/lib/scoreColor";
-import { hasEstimates } from "@/lib/hydrated";
-import { byScoreDesc, formatScore, isScored } from "@/lib/scores";
+import { hasEstimates } from "@/domain/estimates";
+import { byScoreDesc, formatScore, isScored } from "@/domain/scores";
 import { useT } from "@/lib/i18n/use-t";
-import type { Zone } from "@/types";
+import type { Zone } from "@/domain/types";
 
 interface Props {
   currentZone: Zone;

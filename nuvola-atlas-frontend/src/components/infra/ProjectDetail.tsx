@@ -10,7 +10,7 @@ import { useT, type TFunction } from "@/lib/i18n/use-t";
 import type { MessageKey } from "@/lib/i18n/translate";
 import { SEVERITY_COLORS, IMPACT_STYLES } from "@/components/alerts/alerts.constants";
 import Timeline from "./Timeline";
-import type { Project } from "@/types";
+import type { Project } from "@/domain/types";
 
 const TYPE_COLORS: Record<string, string> = {
   road: "#C0552B",

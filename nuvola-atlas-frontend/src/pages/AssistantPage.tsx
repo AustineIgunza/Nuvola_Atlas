@@ -13,7 +13,7 @@ import { useT } from "@/lib/i18n/use-t";
 import { BRAND } from "@/lib/scoreColor";
 import { cn } from "@/lib/cn";
 import { springSettle } from "@/lib/motion";
-import type { ChatConversation, ChatMessage } from "@/types";
+import type { ChatConversation, ChatMessage } from "@/domain/types";
 
 /**
  * A dedicated Assistant surface — mirrors the sidebar/main-area layout used

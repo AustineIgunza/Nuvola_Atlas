@@ -3,7 +3,7 @@ import { cn } from "@/lib/cn";
 import { springSettle } from "@/lib/motion";
 import { useT } from "@/lib/i18n/use-t";
 import type { MessageKey } from "@/lib/i18n/translate";
-import type { Project } from "@/types";
+import type { Project } from "@/domain/types";
 
 const STATUS_KEYS: Record<Project["status"], MessageKey> = {
   active: "infra.status.active",

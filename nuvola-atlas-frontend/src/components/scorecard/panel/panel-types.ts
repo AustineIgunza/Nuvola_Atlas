@@ -1,4 +1,4 @@
-import type { PillarKey } from "@/types";
+import type { PillarKey } from "@/domain/types";
 
 /** Drill-in navigation state for the scorecard side panel. Every clickable
  *  row in the overview pushes one of these; "overview" is the root. */

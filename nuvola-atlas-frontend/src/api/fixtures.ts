@@ -1,5 +1,5 @@
 import { INDEX_NAME_SHORT } from "@/lib/branding";
-import { PILLARS, PILLAR_REGISTRY_VERSION } from "@/lib/pillars.generated";
+import { PILLARS, PILLAR_REGISTRY_VERSION } from "@/domain/pillars.generated";
 import type {
   Zone,
   Project,
@@ -13,7 +13,7 @@ import type {
   HistoryRange,
   PillarKey,
   PillarScores,
-} from "@/types";
+} from "@/domain/types";
 
 /**
  * Mock-mode zones. Every `score` here is the registry-weighted average of the

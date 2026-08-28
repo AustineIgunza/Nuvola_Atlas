@@ -9,7 +9,7 @@ import { formatDate, formatRelative } from "@/lib/format";
 import Timeline from "@/components/infra/Timeline";
 import { Section, Chip, StatCell, SEVERITY_COLOR, STATUS_STYLE, LayerHintButton } from "./bits";
 import type { PanelView } from "./panel-types";
-import type { InfraType } from "@/types";
+import type { InfraType } from "@/domain/types";
 
 const TYPE_LABEL: Record<InfraType, string> = {
   road: "Road works",

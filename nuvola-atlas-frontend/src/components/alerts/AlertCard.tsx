@@ -5,7 +5,7 @@ import { formatRelative } from "@/lib/format";
 import { springSettle, staggerItemScale } from "@/lib/motion";
 import { useT } from "@/lib/i18n/use-t";
 import { SEVERITY_COLORS, IMPACT_STYLES, KIND_LABEL_KEYS } from "./alerts.constants";
-import type { AlertItem } from "@/types";
+import type { AlertItem } from "@/domain/types";
 
 interface Props {
   alert: AlertItem;

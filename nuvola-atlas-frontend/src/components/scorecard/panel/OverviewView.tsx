@@ -5,9 +5,9 @@ import { ChevronRight, Droplets, Info, Download, ChevronDown } from "lucide-reac
 import { BASE, USE_MOCK, authHeaders } from "@/api/client";
 import { api } from "@/api";
 import { BRAND } from "@/lib/scoreColor";
-import { averageDelta } from "@/lib/deltas";
-import { waterProfile } from "@/lib/waterSanitation";
-import { formatScore } from "@/lib/scores";
+import { averageDelta } from "@/domain/deltas";
+import { waterProfile } from "@/domain/water";
+import { formatScore } from "@/domain/scores";
 import { formatRelative } from "@/lib/format";
 import { useT } from "@/lib/i18n/use-t";
 import Ring from "../Ring";
@@ -19,10 +19,10 @@ import PillarCoverageChip from "./PillarCoverageChip";
 import PillarProvenancePanel from "./PillarProvenancePanel";
 import { Section, Chip, StatCell, SEVERITY_COLOR, IMPACT_COLOR, STATUS_STYLE } from "./bits";
 import ZoneNotesCard from "@/components/investor/ZoneNotesCard";
-import { PILLARS } from "@/lib/pillars.generated";
-import { isEstimated } from "@/lib/hydrated";
+import { PILLARS } from "@/domain/pillars.generated";
+import { isEstimated } from "@/domain/estimates";
 import type { PanelView } from "./panel-types";
-import type { Zone, PillarKey } from "@/types";
+import type { Zone, PillarKey } from "@/domain/types";
 
 // Registry order: water first as the flagship, electricity last because it is
 // held. There is no second ordering — a lens that reshuffles the pillars would

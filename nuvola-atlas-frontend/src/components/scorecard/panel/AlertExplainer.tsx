@@ -6,7 +6,7 @@ import { BRAND } from "@/lib/scoreColor";
 import { formatRelative } from "@/lib/format";
 import { Section, Chip, SEVERITY_COLOR, IMPACT_COLOR, STATUS_STYLE, LayerHintButton } from "./bits";
 import type { PanelView } from "./panel-types";
-import type { AlertKind } from "@/types";
+import type { AlertKind } from "@/domain/types";
 
 const KIND_LABEL: Record<AlertKind, string> = {
   infra: "Infrastructure",

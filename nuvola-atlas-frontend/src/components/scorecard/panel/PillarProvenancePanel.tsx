@@ -1,8 +1,8 @@
 import { BadgeCheck, CircleDashed } from "lucide-react";
 import { BRAND, PILLAR_COLORS } from "@/lib/scoreColor";
-import { PILLARS } from "@/lib/pillars.generated";
+import { PILLARS } from "@/domain/pillars.generated";
 import { Section } from "./bits";
-import type { PillarKey, Zone } from "@/types";
+import type { PillarKey, Zone } from "@/domain/types";
 
 interface Props {
   zone: Zone;

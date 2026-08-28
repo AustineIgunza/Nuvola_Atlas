@@ -1,11 +1,11 @@
 import { motion } from "framer-motion";
 import { cn } from "@/lib/cn";
 import { PILLAR_COLORS, PILLAR_GLYPHS } from "@/lib/scoreColor";
-import { NO_SCORE_LABEL } from "@/lib/scores";
+import { NO_SCORE_LABEL } from "@/domain/scores";
 import { useT } from "@/lib/i18n/use-t";
-import { PILLARS_BY_KEY } from "@/lib/pillars.generated";
+import { PILLARS_BY_KEY } from "@/domain/pillars.generated";
 import EstimatedMark from "@/components/common/EstimatedMark";
-import type { PillarKey } from "@/types";
+import type { PillarKey } from "@/domain/types";
 
 interface Props {
   pillarKey: PillarKey;

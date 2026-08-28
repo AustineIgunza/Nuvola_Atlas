@@ -6,8 +6,8 @@ import { cn } from "@/lib/cn";
 import { api } from "@/api";
 import { springSettle, modalBackdrop, modalContent } from "@/lib/motion";
 import { PILLAR_COLORS, PILLAR_LABELS } from "@/lib/scoreColor";
-import { PILLAR_KEYS } from "@/lib/pillars.generated";
-import type { PillarKey } from "@/types";
+import { PILLAR_KEYS } from "@/domain/pillars.generated";
+import type { PillarKey } from "@/domain/types";
 
 interface Props {
   open: boolean;

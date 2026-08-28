@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
 import CountyBanner from "./CountyBanner";
-import type { CountyContextReading } from "@/types";
+import type { CountyContextReading } from "@/domain/types";
 
 vi.mock("@/api", () => ({
   api: { getCountyContext: vi.fn() },

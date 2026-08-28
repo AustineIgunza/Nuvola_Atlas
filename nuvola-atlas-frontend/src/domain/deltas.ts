@@ -1,4 +1,4 @@
-import type { PillarDeltas } from "@/types";
+import type { PillarDeltas } from "@/domain/types";
 
 /**
  * Deltas are null whenever the backend could not measure movement. Summing

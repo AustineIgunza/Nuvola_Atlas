@@ -1,4 +1,4 @@
-import type { Zone } from "@/types";
+import type { Zone } from "@/domain/types";
 
 /**
  * A zone whose pillars have no indicators behind them carries a null score.

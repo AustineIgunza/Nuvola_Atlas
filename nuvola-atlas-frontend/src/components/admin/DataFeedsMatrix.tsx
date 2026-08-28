@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { BadgeCheck, CircleDashed, CircleSlash, Clock, Signal } from "lucide-react";
 import { adminApi, type FeedRow, type FeedState } from "@/api/admin";
-import { PILLARS } from "@/lib/pillars.generated";
+import { PILLARS } from "@/domain/pillars.generated";
 import { BRAND } from "@/lib/scoreColor";
-import type { PillarKey } from "@/types";
+import type { PillarKey } from "@/domain/types";
 
 const STATE_STYLE: Record<
   FeedState,

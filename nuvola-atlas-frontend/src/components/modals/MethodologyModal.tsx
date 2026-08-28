@@ -5,8 +5,8 @@ import { X } from "lucide-react";
 import { useUIStore } from "@/stores/ui";
 import { api } from "@/api";
 import { PILLAR_COLORS, PILLAR_GLYPHS } from "@/lib/scoreColor";
-import { PILLARS } from "@/lib/pillars.generated";
-import type { PillarKey } from "@/types";
+import { PILLARS } from "@/domain/pillars.generated";
+import type { PillarKey } from "@/domain/types";
 import {
   springSettle,
   modalBackdrop,

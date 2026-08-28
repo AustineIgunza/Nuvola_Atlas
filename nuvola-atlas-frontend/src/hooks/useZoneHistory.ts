@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/api";
-import type { HistoryRange, ZoneHistory } from "@/types";
+import type { HistoryRange, ZoneHistory } from "@/domain/types";
 
 /**
  * Per-zone vitality time series. Range switches between hourly (day),

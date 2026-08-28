@@ -6,7 +6,7 @@ import { ArrowUpDown, Download, ChevronRight, X, MapPin } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { api } from "@/api";
 import { scoreColor, PILLAR_COLORS } from "@/lib/scoreColor";
-import { formatScore } from "@/lib/scores";
+import { formatScore } from "@/domain/scores";
 import {
   springSettle,
   staggerContainer,
@@ -16,8 +16,8 @@ import {
 } from "@/lib/motion";
 import { useUIStore } from "@/stores/ui";
 import { useT } from "@/lib/i18n/use-t";
-import { PILLAR_KEYS, PILLARS_BY_KEY } from "@/lib/pillars.generated";
-import type { PillarKey, Zone } from "@/types";
+import { PILLAR_KEYS, PILLARS_BY_KEY } from "@/domain/pillars.generated";
+import type { PillarKey, Zone } from "@/domain/types";
 
 type SortKey = "score" | PillarKey;
 

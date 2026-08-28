@@ -1,4 +1,4 @@
-import type { ReportStatus } from "@/types";
+import type { ReportStatus } from "@/domain/types";
 
 export const STATUS_STYLES: Record<ReportStatus, { bg: string; text: string; glow: string }> = {
   published: {

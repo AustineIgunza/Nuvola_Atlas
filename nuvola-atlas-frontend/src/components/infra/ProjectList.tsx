@@ -7,7 +7,7 @@ import { springSettle } from "@/lib/motion";
 import { useT } from "@/lib/i18n/use-t";
 import type { MessageKey } from "@/lib/i18n/translate";
 import ProjectCard from "./ProjectCard";
-import type { InfraType } from "@/types";
+import type { InfraType } from "@/domain/types";
 
 const FILTERS: { labelKey: MessageKey; value: InfraType | "all" }[] = [
   { labelKey: "infra.filter.all", value: "all" },

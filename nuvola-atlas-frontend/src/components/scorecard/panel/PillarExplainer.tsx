@@ -4,14 +4,14 @@ import { ChevronRight, Droplets } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { api } from "@/api";
 import { BRAND, PILLAR_COLORS } from "@/lib/scoreColor";
-import { PILLARS_BY_KEY } from "@/lib/pillars.generated";
-import { waterProfile } from "@/lib/waterSanitation";
-import { NO_SCORE_LABEL } from "@/lib/scores";
+import { PILLARS_BY_KEY } from "@/domain/pillars.generated";
+import { waterProfile } from "@/domain/water";
+import { NO_SCORE_LABEL } from "@/domain/scores";
 import { formatRelative } from "@/lib/format";
 import ActivityFeed from "../ActivityFeed";
 import { Section, Chip, LayerHintButton, SEVERITY_COLOR, STATUS_STYLE, scoreBand } from "./bits";
 import type { PanelView } from "./panel-types";
-import type { Zone, PillarKey } from "@/types";
+import type { Zone, PillarKey } from "@/domain/types";
 
 /** Which Atlas layer best visualizes each pillar. */
 const PILLAR_LAYER: Record<PillarKey, { layer: "water" | "roads" | "energy"; label: string }> = {

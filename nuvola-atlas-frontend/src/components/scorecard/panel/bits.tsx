@@ -7,7 +7,7 @@ import { BRAND, NO_SCORE_COLOR_HEX } from "@/lib/scoreColor";
 import { translate } from "@/lib/i18n/translate";
 import { usePrefsStore } from "@/stores/prefs";
 import { useT } from "@/lib/i18n/use-t";
-import type { AlertSeverity, ProjectStatus } from "@/types";
+import type { AlertSeverity, ProjectStatus } from "@/domain/types";
 
 /** Shared color coding for the scorecard panel and its explainer views. */
 export const SEVERITY_COLOR: Record<AlertSeverity, string> = {

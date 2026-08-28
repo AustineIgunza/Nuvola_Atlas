@@ -1,6 +1,6 @@
 import { BASE, authHeaders, handleResponse } from "./client";
 import { ZONES as MOCK_ZONES } from "./fixtures";
-import { PILLARS } from "@/lib/pillars.generated";
+import { PILLARS } from "@/domain/pillars.generated";
 import type {
   Zone,
   PillarKey,
@@ -18,7 +18,7 @@ import type {
   ChatConversation,
   ChatMessage,
   CountyContextReading,
-} from "@/types";
+} from "@/domain/types";
 
 type Paged = { data: unknown[]; meta?: { current_page?: number; last_page?: number } };
 

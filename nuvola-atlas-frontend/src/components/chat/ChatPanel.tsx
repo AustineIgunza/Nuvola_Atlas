@@ -9,7 +9,7 @@ import { useChatStream } from "@/hooks/useChatStream";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { BRAND } from "@/lib/scoreColor";
 import { springSettle, modalBackdrop, panelSlideUp } from "@/lib/motion";
-import type { ChatMessage } from "@/types";
+import type { ChatMessage } from "@/domain/types";
 import ResultChart from "./ResultChart";
 
 const STARTER_PROMPTS = [

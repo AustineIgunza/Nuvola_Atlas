@@ -19,10 +19,10 @@ import DealPipelineBoard from "@/components/investor/DealPipelineBoard";
 import { api } from "@/api";
 import { useAuthStore } from "@/stores/auth";
 import { BRAND, PILLAR_COLORS, PILLAR_SHORT, scoreColor } from "@/lib/scoreColor";
-import { totalDelta } from "@/lib/deltas";
+import { totalDelta } from "@/domain/deltas";
 import { springSettle } from "@/lib/motion";
-import { PILLAR_KEYS } from "@/lib/pillars.generated";
-import type { Zone, Project, AlertItem } from "@/types";
+import { PILLAR_KEYS } from "@/domain/pillars.generated";
+import type { Zone, Project, AlertItem } from "@/domain/types";
 
 /**
  * The purpose-built investor landing page. Aggregates the firm's watchlist

@@ -13,7 +13,7 @@ import WaterExplainer from "./panel/WaterExplainer";
 import ProjectExplainer from "./panel/ProjectExplainer";
 import AlertExplainer from "./panel/AlertExplainer";
 import type { PanelView } from "./panel/panel-types";
-import type { Zone } from "@/types";
+import type { Zone } from "@/domain/types";
 
 function headerMeta(view: PanelView, zone: Zone, t: TFunction): { kicker: string; title: string } {
   switch (view.type) {

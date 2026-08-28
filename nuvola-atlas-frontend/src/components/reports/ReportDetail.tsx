@@ -6,7 +6,7 @@ import { formatDate, formatBytes } from "@/lib/format";
 import { springSettle } from "@/lib/motion";
 import { PILLAR_COLORS, PILLAR_LABELS } from "@/lib/scoreColor";
 import { STATUS_STYLES, PRIORITY_STYLES, TYPE_LABELS } from "./reports.constants";
-import type { Report, PillarKey } from "@/types";
+import type { Report, PillarKey } from "@/domain/types";
 
 interface Props {
   report: Report;

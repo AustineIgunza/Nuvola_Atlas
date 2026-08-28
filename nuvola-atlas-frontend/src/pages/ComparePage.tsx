@@ -21,11 +21,11 @@ import { useAuthStore, isInvestor } from "@/stores/auth";
 import { useT } from "@/lib/i18n/use-t";
 import { useZoneHistory } from "@/hooks/useZoneHistory";
 import { useZoneForecast } from "@/hooks/useZoneForecast";
-import { waterProfile } from "@/lib/waterSanitation";
+import { waterProfile } from "@/domain/water";
 import { BRAND, PILLAR_COLORS, PILLAR_SHORT, scoreColor } from "@/lib/scoreColor";
-import { PILLAR_KEYS } from "@/lib/pillars.generated";
-import { averageDelta } from "@/lib/deltas";
-import type { AlertItem, AlertSeverity, HistoryRange, PillarKey, Project, Zone } from "@/types";
+import { PILLAR_KEYS } from "@/domain/pillars.generated";
+import { averageDelta } from "@/domain/deltas";
+import type { AlertItem, AlertSeverity, HistoryRange, PillarKey, Project, Zone } from "@/domain/types";
 
 const MAX_ZONES = 3;
 const RANGES: { key: HistoryRange; label: string }[] = [

@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/api";
 import { springSettle } from "@/lib/motion";
-import type { CountyContextReading } from "@/types";
+import type { CountyContextReading } from "@/domain/types";
 
 /**
  * P9 §Task 3 — county-wide banner rendered above the map.

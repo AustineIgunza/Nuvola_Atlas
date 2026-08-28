@@ -8,7 +8,7 @@ import DetailPopup from "@/components/common/DetailPopup";
 import AlertCard from "./AlertCard";
 import AlertDetail from "./AlertDetail";
 import { useT } from "@/lib/i18n/use-t";
-import type { AlertSeverity } from "@/types";
+import type { AlertSeverity } from "@/domain/types";
 
 const FILTER_VALUES: (AlertSeverity | "all")[] = ["all", "high", "medium", "low"];
 

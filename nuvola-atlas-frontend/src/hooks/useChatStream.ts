@@ -3,13 +3,13 @@ import { BASE, USE_MOCK_CHAT, authHeaders } from "@/api/client";
 import { useChatStore } from "@/stores/chat";
 import { useAtlasStore } from "@/stores/atlas";
 import { ZONES } from "@/api/fixtures";
-import { totalDelta } from "@/lib/deltas";
-import { byScoreDesc, formatScore, isScored } from "@/lib/scores";
+import { totalDelta } from "@/domain/deltas";
+import { byScoreDesc, formatScore, isScored } from "@/domain/scores";
 import { translate } from "@/lib/i18n/translate";
 import type { MessageKey, TVars } from "@/lib/i18n/translate";
 import { usePrefsStore } from "@/stores/prefs";
-import { PILLAR_KEYS } from "@/lib/pillars.generated";
-import type { ChatMessage, PillarKey, Zone } from "@/types";
+import { PILLAR_KEYS } from "@/domain/pillars.generated";
+import type { ChatMessage, PillarKey, Zone } from "@/domain/types";
 
 /** Locale-aware t() at message-build time (never at module load) so language
  *  switches take effect on the very next chat turn. */

@@ -1,10 +1,10 @@
 import { Droplets, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { BRAND, PILLAR_COLORS, PILLAR_LABELS, PILLAR_GLYPHS } from "@/lib/scoreColor";
-import { waterProfile } from "@/lib/waterSanitation";
+import { waterProfile } from "@/domain/water";
 import { Section, Chip, LayerHintButton } from "./bits";
 import type { PanelView } from "./panel-types";
-import type { Zone } from "@/types";
+import type { Zone } from "@/domain/types";
 
 /** The context-specific sanitation toolkit the Atlas recommends where trunk
  *  sewerage is not viable. `terms` match against the zone's solutionTag. */

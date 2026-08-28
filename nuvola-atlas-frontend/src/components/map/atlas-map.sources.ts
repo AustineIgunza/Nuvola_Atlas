@@ -1,8 +1,8 @@
 import type mapboxgl from "mapbox-gl";
-import type { Zone } from "@/types";
+import type { Zone } from "@/domain/types";
 import { BRAND } from "@/lib/scoreColor";
 import { PROJECTS } from "@/api/fixtures";
-import { waterProfile } from "@/lib/waterSanitation";
+import { waterProfile } from "@/domain/water";
 import { voronoiRings } from "@/lib/voronoi";
 
 /** Vitality choropleth — one clipped-Voronoi cell per zone so the map shows a

@@ -1,7 +1,7 @@
 import { Activity } from "lucide-react";
 import { BRAND } from "@/lib/scoreColor";
-import { PILLARS } from "@/lib/pillars.generated";
-import type { PillarKey, Zone } from "@/types";
+import { PILLARS } from "@/domain/pillars.generated";
+import type { PillarKey, Zone } from "@/domain/types";
 
 interface Props {
   zone: Zone;

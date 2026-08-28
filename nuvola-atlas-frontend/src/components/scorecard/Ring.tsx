@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { scoreColor } from "@/lib/scoreColor";
-import { NO_SCORE_LABEL } from "@/lib/scores";
+import { NO_SCORE_LABEL } from "@/domain/scores";
 
 interface Props {
   /** Null for a zone with no indicators behind any pillar. */

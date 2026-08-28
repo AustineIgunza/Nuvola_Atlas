@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { ChatConversation, ChatMessage } from "@/types";
+import type { ChatConversation, ChatMessage } from "@/domain/types";
 
 interface ChatState {
   conversations: ChatConversation[];

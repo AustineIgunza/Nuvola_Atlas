@@ -1,4 +1,4 @@
-import type { Zone } from "@/types";
+import type { Zone } from "@/domain/types";
 
 /** Clean Water & Sanitation (SDG 6) intelligence.
  *

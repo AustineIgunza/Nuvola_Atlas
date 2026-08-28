@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { formatDate } from "@/lib/format";
 import { springSettle } from "@/lib/motion";
-import type { ProjectMilestone } from "@/types";
+import type { ProjectMilestone } from "@/domain/types";
 
 interface Props {
   milestones: ProjectMilestone[];

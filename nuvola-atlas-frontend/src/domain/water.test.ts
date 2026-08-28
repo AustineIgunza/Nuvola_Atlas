@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { ZONES } from "@/api/fixtures";
-import { waterProfile, type WaterProfile } from "./waterSanitation";
+import { waterProfile, type WaterProfile } from "./water";
 
 const byId = (id: string) => {
   const z = ZONES.find((zone) => zone.id === id);

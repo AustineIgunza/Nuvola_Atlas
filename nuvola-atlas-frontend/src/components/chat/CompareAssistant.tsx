@@ -4,7 +4,7 @@ import { api } from "@/api";
 import { useChatStore } from "@/stores/chat";
 import { useChatStream } from "@/hooks/useChatStream";
 import { BRAND } from "@/lib/scoreColor";
-import type { ChatMessage, Zone } from "@/types";
+import type { ChatMessage, Zone } from "@/domain/types";
 import ResultChart from "./ResultChart";
 
 interface Props {

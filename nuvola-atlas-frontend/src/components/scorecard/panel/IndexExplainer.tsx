@@ -5,11 +5,11 @@ import { BRAND, PILLAR_COLORS, PILLAR_GLYPHS } from "@/lib/scoreColor";
 import Ring from "../Ring";
 import PillarProvenancePanel from "./PillarProvenancePanel";
 import { Section, Chip, scoreBand } from "./bits";
-import { PILLARS } from "@/lib/pillars.generated";
-import { byScoreDesc, formatScore, isScored } from "@/lib/scores";
+import { PILLARS } from "@/domain/pillars.generated";
+import { byScoreDesc, formatScore, isScored } from "@/domain/scores";
 import { useT } from "@/lib/i18n/use-t";
 import type { PanelView } from "./panel-types";
-import type { Zone, PillarKey } from "@/types";
+import type { Zone, PillarKey } from "@/domain/types";
 
 interface Props {
   zone: Zone;

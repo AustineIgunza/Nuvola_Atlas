@@ -1,5 +1,5 @@
 import type { MessageKey } from "@/lib/i18n/translate";
-import type { AlertSeverity } from "@/types";
+import type { AlertSeverity } from "@/domain/types";
 
 export const SEVERITY_COLORS: Record<AlertSeverity, string> = {
   high: "#D3402E",
