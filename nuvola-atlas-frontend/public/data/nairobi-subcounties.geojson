@@ -1,5 +1,14 @@
 {
   "type": "FeatureCollection",
+  "_provenance": {
+    "method": "placeholder",
+    "source": null,
+    "status": "unused",
+    "note": "THESE ARE NOT REAL SUB-COUNTY BOUNDARIES. Every one of the 17 polygons is a five-vertex axis-aligned rectangle drawn by hand during early development. They are not derived from IEBC, KNBS, OSM or any other source, and must never be published, cited, or used to compute area, overlap, or area-weighted values.",
+    "usage_note": "Nothing loads this file. The atlas builds its sub-county shapes at runtime in features/atlas/components/atlas-map.sources.ts, from Voronoi cells around the approximate centroids in zones.json — so these rectangles are not what the map draws either.",
+    "replace_with": "Real Nairobi sub-county boundaries. nuvola-atlas-data/pipeline/boundaries.py already carries the downloader and the 17-feature invariant (BoundaryCountError); manifests/cod_ab_ken.yaml names the intended source.",
+    "slugs_checked_by": "scripts/check-zones.mjs, against zones.json"
+  },
   "features": [
     {
       "type": "Feature",

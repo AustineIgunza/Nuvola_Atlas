@@ -106,6 +106,7 @@ if [ -f "$ROOT/.nvmrc" ] && command -v node > /dev/null 2>&1; then
 fi
 
 run "pillar registry"      blocking      node "$ROOT/scripts/gen-pillars.mjs" --check
+run "zone registry"        blocking      node "$ROOT/scripts/check-zones.mjs"
 run "freedom-index purge"  blocking      bash "$ROOT/scripts/check-freedom-index.sh"
 run "backend — phpunit"    blocking      backend_tests
 run "backend — phpstan"    informational bash -c "cd '$BACKEND' && vendor/bin/phpstan analyse --memory-limit=512M --no-progress"

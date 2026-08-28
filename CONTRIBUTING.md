@@ -29,6 +29,7 @@ failure, so one run tells you everything that is broken.
 
 ```bash
 node scripts/gen-pillars.mjs --check
+node scripts/check-zones.mjs
 bash scripts/check-freedom-index.sh
 cd nuvola-atlas-backend   && php vendor/phpunit/phpunit/phpunit --no-coverage
 cd nuvola-atlas-backend   && vendor/bin/phpstan analyse --memory-limit=512M

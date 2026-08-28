@@ -1,0 +1,165 @@
+{
+  "$comment": [
+    "Canonical sub-county registry. This file is the ONLY place a Nairobi",
+    "sub-county is defined — its slug, its display name, its map centroid.",
+    "",
+    "Companion to pillars.json: that file answers 'what do we measure', this",
+    "one answers 'where do we measure it'. Until this existed the 17 zones",
+    "were declared twice with nothing linking them — once in",
+    "nuvola-atlas-backend/database/seeders/ZoneSeeder.php and once in",
+    "nuvola-atlas-frontend/public/data/nairobi-subcounties.geojson — so a slug",
+    "renamed in one could silently disagree with the other.",
+    "",
+    "`node scripts/check-zones.mjs` fails the build if the three ever diverge.",
+    "",
+    "Nothing consumes this at runtime yet. Wiring the seeder and the map to",
+    "read from it is a behaviour change and belongs in its own slice; today",
+    "it is the declaration and the drift guard is what makes it binding."
+  ],
+  "version": "2026-08-27",
+  "county": "Nairobi",
+  "count_rationale": "17 sub-counties, matching the constituencies Nairobi County is divided into. The count is an invariant, not a coincidence: nuvola-atlas-data/pipeline/boundaries.py raises BoundaryCountError on anything other than 17, because a boundary file that silently drops one would drop a sub-county from every score.",
+  "centroid_provenance": {
+    "method": "approximate",
+    "source": "hand-placed during development, carried over from ZoneSeeder.php",
+    "note": "These are label anchors for map markers, NOT surveyed centroids and NOT derived from official boundaries. They are accurate enough to put a marker in the right sub-county and are not accurate enough to publish, cite, or compute area-weighted anything from. Replace them with values derived from real boundaries when those land — see nairobi-subcounties.geojson, whose polygons are placeholders too."
+  },
+  "zones": [
+    {
+      "key": "westlands",
+      "display_name": "Westlands",
+      "centroid": [
+        36.8048,
+        -1.2673
+      ]
+    },
+    {
+      "key": "dagoretti-north",
+      "display_name": "Dagoretti North",
+      "centroid": [
+        36.76,
+        -1.275
+      ]
+    },
+    {
+      "key": "dagoretti-south",
+      "display_name": "Dagoretti South",
+      "centroid": [
+        36.745,
+        -1.305
+      ]
+    },
+    {
+      "key": "langata",
+      "display_name": "Langata",
+      "centroid": [
+        36.735,
+        -1.36
+      ]
+    },
+    {
+      "key": "kibra",
+      "display_name": "Kibra",
+      "centroid": [
+        36.785,
+        -1.315
+      ]
+    },
+    {
+      "key": "roysambu",
+      "display_name": "Roysambu",
+      "centroid": [
+        36.875,
+        -1.22
+      ]
+    },
+    {
+      "key": "kasarani",
+      "display_name": "Kasarani",
+      "centroid": [
+        36.9,
+        -1.235
+      ]
+    },
+    {
+      "key": "ruaraka",
+      "display_name": "Ruaraka",
+      "centroid": [
+        36.88,
+        -1.25
+      ]
+    },
+    {
+      "key": "embakasi-south",
+      "display_name": "Embakasi South",
+      "centroid": [
+        36.91,
+        -1.33
+      ]
+    },
+    {
+      "key": "embakasi-north",
+      "display_name": "Embakasi North",
+      "centroid": [
+        36.905,
+        -1.28
+      ]
+    },
+    {
+      "key": "embakasi-central",
+      "display_name": "Embakasi Central",
+      "centroid": [
+        36.89,
+        -1.31
+      ]
+    },
+    {
+      "key": "embakasi-east",
+      "display_name": "Embakasi East",
+      "centroid": [
+        36.93,
+        -1.29
+      ]
+    },
+    {
+      "key": "embakasi-west",
+      "display_name": "Embakasi West",
+      "centroid": [
+        36.87,
+        -1.32
+      ]
+    },
+    {
+      "key": "makadara",
+      "display_name": "Makadara",
+      "centroid": [
+        36.86,
+        -1.295
+      ]
+    },
+    {
+      "key": "kamukunji",
+      "display_name": "Kamukunji",
+      "centroid": [
+        36.845,
+        -1.28
+      ]
+    },
+    {
+      "key": "starehe",
+      "display_name": "Starehe",
+      "centroid": [
+        36.825,
+        -1.285
+      ]
+    },
+    {
+      "key": "mathare",
+      "display_name": "Mathare",
+      "centroid": [
+        36.858,
+        -1.258
+      ]
+    }
+  ]
+}

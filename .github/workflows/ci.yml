@@ -291,7 +291,7 @@ jobs:
   # violation of the freedom-index guard for three days without CI noticing.
   # ----------------------------------------------------------------------------
   repo:
-    name: Repo — pillar registry + freedom-index guard
+    name: Repo — registries + freedom-index guard
     runs-on: ubuntu-latest
 
     steps:
@@ -307,6 +307,9 @@ jobs:
 
       - name: Pillar registry in sync
         run: node scripts/gen-pillars.mjs --check
+
+      - name: Zone registry in sync
+        run: node scripts/check-zones.mjs
 
       - name: Freedom-index purge holds
         run: bash scripts/check-freedom-index.sh
