@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 
 from app.models.readings import PillarReading
-from app.services.anomaly_detector import detect_anomalies
+from app.quality.outliers import detect_anomalies
 
 HISTORY = {("westlands", "road_density"): [70.0, 71.5, 72.1, 70.8, 71.2]}
 
