@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
 import ErrorBoundary from "@/shared/ui/ErrorBoundary";
 import { initSentry } from "@/shared/lib/sentry";
-import App from "./App";
+import App from "@/app/App";
 import "./index.css";
 
 initSentry();

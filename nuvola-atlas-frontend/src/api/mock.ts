@@ -9,7 +9,7 @@ import {
   METHODOLOGY,
   generateZoneHistory,
 } from "./fixtures";
-import { firmFromEmail, firmSliceFor } from "./firms";
+import { firmFromEmail, firmSliceFor } from "@/features/admin/firms.api";
 import type {
   Zone,
   Project,

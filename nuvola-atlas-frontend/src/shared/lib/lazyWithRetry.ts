@@ -19,7 +19,7 @@ import { lazy } from "react";
  *
  * Drop-in replacement for React's `lazy`:
  *
- *   const AtlasPage = lazyWithRetry(() => import("@/pages/AtlasPage"));
+ *   const AtlasPage = lazyWithRetry(() => import("@/features/atlas/AtlasPage"));
  */
 
 const RELOAD_KEY = "nuvola:chunk-reload-attempted";

@@ -6,7 +6,7 @@ import ProjectQuickView from "./ProjectQuickView";
 import AnnouncementsBanner from "./AnnouncementsBanner";
 import ImpersonationBanner from "./ImpersonationBanner";
 import MethodologyModal from "@/shared/ui/MethodologyModal";
-import ESGLensChip from "@/components/investor/ESGLensChip";
+import ESGLensChip from "@/features/investor/components/ESGLensChip";
 import { useLiveData } from "@/shared/hooks/useLiveData";
 import { useChromeStore } from "@/shared/stores/chrome";
 

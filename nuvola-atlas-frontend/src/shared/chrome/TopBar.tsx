@@ -7,7 +7,10 @@ import { springSettle } from "@/shared/lib/motion";
 import { useUIStore } from "@/shared/stores/ui";
 import { useChromeStore } from "@/shared/stores/chrome";
 import { useThemeStore } from "@/shared/stores/theme";
-import { BASEMAP_STYLES, defaultStyleForTheme } from "@/components/map/atlas-map.constants";
+import {
+  BASEMAP_STYLES,
+  defaultStyleForTheme,
+} from "@/features/atlas/components/atlas-map.constants";
 import { useEffect } from "react";
 import { api } from "@/api";
 import { useT } from "@/shared/lib/i18n/use-t";

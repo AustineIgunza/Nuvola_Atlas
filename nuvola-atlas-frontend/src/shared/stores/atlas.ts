@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { useChromeStore } from "./chrome";
 import { useThemeStore } from "./theme";
-import { defaultStyleForTheme } from "@/components/map/atlas-map.constants";
+import { defaultStyleForTheme } from "@/features/atlas/components/atlas-map.constants";
 
 export type LayerKey = "vitality" | "roads" | "energy" | "water";
 
