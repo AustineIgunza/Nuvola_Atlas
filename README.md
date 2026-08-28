@@ -11,7 +11,7 @@ measure renders grey and carries no number, rather than being filled in with
 a proxy.
 
 The taxonomy lives in [`pillars.json`](pillars.json) and is generated into all
-three packages, so a pillar is retired in one place. Switched off means
+four services, so a pillar is retired in one place. Switched off means
 deleted, not flagged.
 
 The scope was deliberately narrowed in August 2026. It is **not** a general
@@ -29,8 +29,9 @@ for ownership.
 | `nuvola-atlas-frontend/` | React 18 + Vite + TypeScript SPA. Mapbox GL JS, TanStack Query. Deploys to Vercel. | Austine |
 | `nuvola-atlas-backend/` | Laravel 13 headless JSON API. PostgreSQL + PostGIS, Sanctum, Reverb. Deploys to Forge/DigitalOcean. | Khillon |
 | `nuvola-atlas-ingestion/` | FastAPI service (Python 3.13). Cleans and validates incoming pillar readings. Deploys to Vercel Fluid Compute. | Devyan |
+| `nuvola-atlas-data/` | Offline source pipeline (Python 3.13). WASREB/KNBS extraction, manifests, boundary tooling. Not in the serving path. | Shared |
 | `infra/n8n/` | n8n automation glue — turns a Daystar file drop into an ingestion POST. | Devyan |
-| `docs/` | The OpenAPI spec and brand assets. The prose docs were retired in the Aug 2026 refocus — `git log -- docs/` if you need them. | Shared |
+| `docs/` | Onboarding, architecture, ADRs, ops runbooks, the OpenAPI spec and brand assets. Start at [`docs/00-start-here.md`](docs/00-start-here.md). | Shared |
 
 `NuvolaAtlasPrototype.jsx` at the root is the approved design spec for the
 frontend. It is a reference artefact — do not edit it.
@@ -67,28 +68,44 @@ docker compose -f docker-compose.dev.yml up
 Nothing gets pushed until the blocking checks are green.
 
 ```bash
-docker compose -f nuvola-atlas-backend/docker-compose.yml up -d postgres
+make db          # Postgres + PostGIS on :5434 — phpunit hangs without it
 bash scripts/check.sh
 ```
 
-Six checks: pillar-registry drift, phpunit (311 tests), phpstan, frontend
-typecheck, vitest (44 tests), and the Vite build. All but phpstan gate — it
-carries pre-existing level-5 debt and is reported rather than enforced.
+Pillar-registry drift, zone-registry drift, the retired-name tripwire, phpunit
+(344 tests), phpstan, frontend typecheck, vitest (60 tests), the Vite build, and
+ruff + pytest for both Python services (66 and 109 tests). All but phpstan
+gate — it carries pre-existing level-5 debt and is reported rather than
+enforced, because a check that is always red teaches everyone to stop reading it.
+
+Use **Node 20** — `.nvmrc` pins it and CI matches. On newer Node, vitest's jsdom
+environment omits `localStorage` and 14 frontend tests fail against application
+code that is fine.
 
 ## How data moves
 
 ```
-Daystar drop → n8n → FastAPI ingestion → [signed hop] → Laravel → Postgres/PostGIS → Reverb → SPA
+WASREB / KNBS  → nuvola-atlas-data (offline)  → reconciled CSV + manifest
+Daystar drop   → n8n                          ↘
+                                    FastAPI ingestion → [signed hop] → Laravel
+                                                            → Postgres/PostGIS → Reverb → SPA
 ```
 
 The two network hops carry different credentials deliberately: hop 1 crosses
 a third-party boundary and uses a bearer token, hop 2 is ours on both ends and
-is HMAC-signed.
+is HMAC-signed. `nuvola-atlas-data` is not in the serving path at all — it runs
+on a laptop, so a broken parser can never take the API down.
+
+[`docs/architecture.md`](docs/architecture.md) has the full path.
 
 ## Documentation
 
-[`docs/api/openapi.yaml`](docs/api/openapi.yaml) is the API contract. Each
-package has its own README. Everything else lives in the code.
+[`docs/00-start-here.md`](docs/00-start-here.md) is the entry point — written
+for someone who has never seen this repo. [`docs/architecture.md`](docs/architecture.md)
+traces a byte from source document to screen, [`docs/decisions/`](docs/decisions/)
+records why things are built the way they are, and [`docs/ops/`](docs/ops/)
+covers deploying, rolling back and secrets.
+[`docs/api/openapi.yaml`](docs/api/openapi.yaml) is the API contract.
 
 ## Status
 
