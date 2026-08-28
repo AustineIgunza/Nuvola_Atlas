@@ -200,7 +200,7 @@ PILLARS_BY_KEY: Final[dict[str, PillarDef]] = {p.key: p for p in PILLARS}
 const targets = [
   { path: join(root, "nuvola-atlas-backend", "config", "pillars.php"), render: php },
   {
-    path: join(root, "nuvola-atlas-frontend", "src", "lib", "pillars.generated.ts"),
+    path: join(root, "nuvola-atlas-frontend", "src", "domain", "pillars.generated.ts"),
     render: ts,
   },
   {

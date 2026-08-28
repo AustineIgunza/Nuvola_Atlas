@@ -9,7 +9,7 @@ import {
   METHODOLOGY,
   generateZoneHistory,
 } from "./fixtures";
-import { firmFromEmail, firmSliceFor } from "./firms";
+import { firmFromEmail, firmSliceFor } from "@/features/admin/firms.api";
 import type {
   Zone,
   Project,
@@ -25,7 +25,7 @@ import type {
   ChatConversation,
   ChatMessage,
   CountyContextReading,
-} from "@/types";
+} from "@/domain/types";
 
 // Illustrative Nairobi county-level readings so mock-mode shows the banner.
 // Values are plausible but seeded — the banner treats them like any other

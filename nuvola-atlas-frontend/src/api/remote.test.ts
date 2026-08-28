@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { remoteApi } from "./remote";
 import { ZONES as MOCK_ZONES } from "./fixtures";
-import { PILLAR_KEYS } from "@/lib/pillars.generated";
+import { PILLAR_KEYS } from "@/domain/pillars.generated";
 
 const PILLAR_PATHS = PILLAR_KEYS.map((k) => `pillars.${k}`);
 const [FIRST_PILLAR] = PILLAR_KEYS;

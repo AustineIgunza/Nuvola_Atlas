@@ -1,0 +1,232 @@
+export type { PillarKey } from "@/domain/pillars.generated";
+
+import type { PillarKey } from "@/domain/pillars.generated";
+
+/**
+ * Null for a pillar the zone has no reading for. The server has always been
+ * able to send this — `ScoreCalculator::pillarScores` returns `?int` per
+ * pillar — so a non-nullable type here was a lie that pushed a bar to 0% for
+ * something nobody measured.
+ */
+export type PillarScores = Record<PillarKey, number | null>;
+
+/**
+ * A delta is a claim about direction, so it is null whenever the history
+ * cannot support one — fewer than two snapshots in the window, or a pillar
+ * that had no score at either end. Null must render as no movement shown,
+ * never as a zero and never as a flat arrow.
+ */
+export type PillarDeltas = Record<PillarKey, number | null>;
+
+/**
+ * What `/vitality/methodology` adds to what the client already knows. Pillar
+ * definitions are not in here on purpose: they are compiled into the bundle
+ * from the same `pillars.json` the server generates its config from. Weights
+ * are, because an admin can republish them without a deploy.
+ */
+export interface Methodology {
+  version: string;
+  weights: Record<PillarKey, number>;
+}
+
+export interface Zone {
+  id: string;
+  name: string;
+  /**
+   * Null when no pillar has a single indicator behind it. A zone in that
+   * state has not scored badly, it has not scored at all — it must never be
+   * ranked, averaged, or painted at the bottom of the colour ramp.
+   */
+  score: number | null;
+  pillars: PillarScores;
+  deltas: PillarDeltas;
+  /** Real age in days of the baseline the deltas were measured against. */
+  deltaWindowDays: number | null;
+  centroid: [number, number];
+  lastSyncMin: number;
+  /**
+   * Pillars the API measured as absent for this zone. A declared gap is a
+   * finding, not a hole to plug — it stays null all the way to the screen.
+   */
+  missingPillars?: PillarKey[];
+  /**
+   * Provenance of the composite — R2 §P7.3 fixture gate.
+   * "measured": every contributing pillar traces to real ingested data.
+   * "fixture" or "mixed": at least one pillar is seed/demo data. Anything
+   * non-measured must render with a "Demo data" treatment that cannot be
+   * confused with a measured score, and must never be exported. Optional
+   * because older bundles / the mock API may not include it yet; treat
+   * `undefined` as measured (the mock is the demo experience).
+   */
+  dataProvenance?: "measured" | "fixture" | "mixed";
+  /**
+   * Dotted paths of fields the client synthesised because the API returned
+   * null — `pillars.water_sanitation`, `centroid`, and so on. Set by
+   * `hydrateZone` in remote mode. Anything listed here is an estimate and
+   * must not be rendered as though it were measured.
+   */
+  _hydrated?: string[];
+}
+
+export type InfraType = "road" | "energy" | "grid" | "water";
+export type ProjectStatus = "active" | "stalled" | "planned";
+
+export interface ProjectMilestone {
+  date: string;
+  label: string;
+  done: boolean;
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  zoneId: string;
+  agency: string;
+  type: InfraType;
+  status: ProjectStatus;
+  progress: number;
+  budget: string;
+  started: string;
+  eta: string;
+  milestones: ProjectMilestone[];
+  marker: [number, number];
+}
+
+export type AlertSeverity = "high" | "medium" | "low";
+export type AlertKind = "infra" | "vitality" | "esia" | "system" | "partner";
+
+export interface AlertItem {
+  id: string;
+  severity: AlertSeverity;
+  kind: AlertKind;
+  title: string;
+  body: string;
+  zoneId: string | null;
+  createdAt: string;
+  read: boolean;
+  affectedInfra: string[];
+  recommendedActions: string[];
+  impactLevel: "critical" | "major" | "moderate" | "minor";
+  relatedProjectIds: string[];
+}
+
+export type ReportStatus = "published" | "review" | "draft";
+
+export interface ReportSection {
+  heading: string;
+  content: string;
+}
+
+export interface Report {
+  id: string;
+  title: string;
+  zoneId: string | null;
+  date: string;
+  status: ReportStatus;
+  author: string;
+  sizeBytes: number;
+  format: "PDF";
+  sections: ReportSection[];
+  tags: string[];
+  type: "service_performance" | "water_sanitation" | "infrastructure" | "methodology";
+  priority: "critical" | "high" | "medium" | "low";
+  dateRange?: { from: string; to: string };
+  pillarFocus?: PillarKey[];
+  executiveSummary: string;
+}
+
+export interface HistoryPoint {
+  month: string;
+  overallAvg: number;
+}
+
+export type HistoryRange = "day" | "week" | "month";
+
+export interface ZoneHistoryPoint {
+  t: string;
+  /** Null for a bucket whose snapshots were all unscoreable — a gap, not a 0. */
+  score: number | null;
+  pillars: PillarScores;
+}
+
+export interface ZoneHistory {
+  range: HistoryRange;
+  points: ZoneHistoryPoint[];
+}
+
+export interface ZoneForecastPoint {
+  t: string;
+  score: number;
+  lower: number;
+  upper: number;
+}
+
+export interface ZoneForecast {
+  horizon: number;
+  points: ZoneForecastPoint[];
+}
+
+export interface ActivityEntry {
+  id: string;
+  zoneId: string;
+  kind: "road" | "grid" | "esia" | "transit" | "water";
+  text: string;
+  source: string;
+  createdAt: string;
+}
+
+export type ChatRole = "user" | "assistant" | "system";
+export type ChatIntent =
+  | "trend"
+  | "comparison"
+  | "diagnostic"
+  | "summary"
+  | "distribution"
+  | "composition"
+  | "methodology"
+  | "unrelated";
+
+export interface ChatMessage {
+  id: string;
+  role: ChatRole;
+  content: string;
+  intent?: ChatIntent;
+  sql?: string;
+  resultRows?: Array<Record<string, unknown>>;
+  followups?: string[];
+  createdAt: string;
+  streaming?: boolean;
+}
+
+export interface ChatConversation {
+  id: string;
+  title: string | null;
+  zoneId: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+
+/**
+ * A county- or utility-level indicator reading, served by
+ * GET /api/v1/county-context. These are the rows the county banner
+ * renders above the map — utility-granularity numbers like NCWSC's 48%
+ * non-revenue water that must never appear on a sub-county bubble
+ * (P9 §Task 3). The `granularity` field is deliberately part of the
+ * payload so the UI can render a "County-wide" chip visually distinct
+ * from a sub-county reading.
+ */
+export interface CountyContextReading {
+  county: string;
+  pillarKey: PillarKey;
+  indicatorKey: string;
+  value: number | null;
+  unit: string;
+  granularity: "county" | "utility" | "national";
+  method: "measured" | "imputed" | "proxy" | "gap";
+  sourceId: string | null;
+  vintage: string | null;
+  retrieved: string | null;
+  extractionConfidence: "high" | "medium" | "low" | null;
+  pageRef: string | null;
+  notes: string | null;
+}

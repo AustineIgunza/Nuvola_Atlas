@@ -2,9 +2,9 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
-import ErrorBoundary from "./components/ErrorBoundary";
-import { initSentry } from "./lib/sentry";
-import App from "./App";
+import ErrorBoundary from "@/shared/ui/ErrorBoundary";
+import { initSentry } from "@/shared/lib/sentry";
+import App from "@/app/App";
 import "./index.css";
 
 initSentry();
