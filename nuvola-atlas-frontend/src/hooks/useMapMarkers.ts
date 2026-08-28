@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
-import { useUIStore } from "@/stores/ui";
+import { useUIStore } from "@/shared/stores/ui";
 import { markerScoreColor } from "@/components/map/atlas-map.constants";
 import { formatScore } from "@/domain/scores";
 import type { Zone } from "@/domain/types";

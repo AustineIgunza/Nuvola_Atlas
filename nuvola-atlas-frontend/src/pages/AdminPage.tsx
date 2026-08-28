@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Shield } from "lucide-react";
-import AppShell from "@/components/chrome/AppShell";
+import AppShell from "@/shared/chrome/AppShell";
 import AdminTabs, { type AdminTab } from "@/components/admin/AdminTabs";
 import MetricCard from "@/components/admin/MetricCard";
 import AuditTable from "@/components/admin/AuditTable";
@@ -17,7 +17,7 @@ import ContentCms from "@/components/admin/ContentCms";
 import TwoFactorSetup from "@/components/admin/TwoFactorSetup";
 import { adminApi } from "@/api/admin";
 import { api } from "@/api";
-import { springSettle } from "@/lib/motion";
+import { springSettle } from "@/shared/lib/motion";
 
 // Detect the structured 2FA-required body the backend's RequireAdminTwoFactor
 // middleware returns. The fetch wrapper turns that into a thrown Error whose

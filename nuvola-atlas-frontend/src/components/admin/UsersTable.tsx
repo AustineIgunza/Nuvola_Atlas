@@ -3,10 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ChevronDown, Eye, X } from "lucide-react";
 import { adminApi } from "@/api/admin";
-import { useAuthStore, type AuthUser, type AuthRole } from "@/stores/auth";
-import { useImpersonationStore } from "@/stores/impersonation";
-import { cn } from "@/lib/cn";
-import { useT } from "@/lib/i18n/use-t";
+import { useAuthStore, type AuthUser, type AuthRole } from "@/shared/stores/auth";
+import { useImpersonationStore } from "@/shared/stores/impersonation";
+import { cn } from "@/shared/lib/cn";
+import { useT } from "@/shared/lib/i18n/use-t";
 
 const ROLE_TONE: Record<string, string> = {
   admin: "bg-[rgba(192,85,43,0.15)] text-accent",

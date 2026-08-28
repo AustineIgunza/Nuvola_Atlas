@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
 import { Star } from "lucide-react";
-import { useWatchlistStore } from "@/stores/watchlist";
-import { useAuthStore, isInvestor } from "@/stores/auth";
-import { useT } from "@/lib/i18n/use-t";
+import { useWatchlistStore } from "@/shared/stores/watchlist";
+import { useAuthStore, isInvestor } from "@/shared/stores/auth";
+import { useT } from "@/shared/lib/i18n/use-t";
 
 interface Props {
   zoneId: string;

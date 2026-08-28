@@ -2,10 +2,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
-import { cn } from "@/lib/cn";
+import { cn } from "@/shared/lib/cn";
 import { api } from "@/api";
-import { springSettle, modalBackdrop, modalContent } from "@/lib/motion";
-import { PILLAR_COLORS, PILLAR_LABELS } from "@/lib/scoreColor";
+import { springSettle, modalBackdrop, modalContent } from "@/shared/lib/motion";
+import { PILLAR_COLORS, PILLAR_LABELS } from "@/shared/lib/scoreColor";
 import { PILLAR_KEYS } from "@/domain/pillars.generated";
 import type { PillarKey } from "@/domain/types";
 

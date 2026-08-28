@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { NAIROBI, INITIAL_ZOOM } from "@/components/map/atlas-map.constants";
-import { useUIStore } from "@/stores/ui";
+import { useUIStore } from "@/shared/stores/ui";
 
 const TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 if (TOKEN) mapboxgl.accessToken = TOKEN;

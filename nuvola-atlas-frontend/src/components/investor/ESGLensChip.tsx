@@ -1,9 +1,9 @@
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
-import { useChromeStore } from "@/stores/chrome";
-import { useAuthStore, isInvestor } from "@/stores/auth";
-import { useT } from "@/lib/i18n/use-t";
-import { springSettle } from "@/lib/motion";
+import { useChromeStore } from "@/shared/stores/chrome";
+import { useAuthStore, isInvestor } from "@/shared/stores/auth";
+import { useT } from "@/shared/lib/i18n/use-t";
+import { springSettle } from "@/shared/lib/motion";
 
 interface Props {
   className?: string;

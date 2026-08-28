@@ -14,13 +14,13 @@ import {
   Layers,
   Compass,
 } from "lucide-react";
-import AppShell from "@/components/chrome/AppShell";
+import AppShell from "@/shared/chrome/AppShell";
 import DealPipelineBoard from "@/components/investor/DealPipelineBoard";
 import { api } from "@/api";
-import { useAuthStore } from "@/stores/auth";
-import { BRAND, PILLAR_COLORS, PILLAR_SHORT, scoreColor } from "@/lib/scoreColor";
+import { useAuthStore } from "@/shared/stores/auth";
+import { BRAND, PILLAR_COLORS, PILLAR_SHORT, scoreColor } from "@/shared/lib/scoreColor";
 import { totalDelta } from "@/domain/deltas";
-import { springSettle } from "@/lib/motion";
+import { springSettle } from "@/shared/lib/motion";
 import { PILLAR_KEYS } from "@/domain/pillars.generated";
 import type { Zone, Project, AlertItem } from "@/domain/types";
 

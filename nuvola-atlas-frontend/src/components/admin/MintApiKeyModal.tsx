@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Copy, X, Check } from "lucide-react";
 import { adminApi, type AdminUser, type MintApiKeyResponse } from "@/api/admin";
-import { cn } from "@/lib/cn";
+import { cn } from "@/shared/lib/cn";
 
 const ABILITIES = [
   { value: "api:read", label: "Read", hint: "GET /zones, /projects, /alerts, /reports" },

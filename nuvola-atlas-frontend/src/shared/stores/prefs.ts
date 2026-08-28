@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { DEFAULT_LOCALE, getDirection, type LocaleCode } from "@/lib/i18n/locales";
+import { DEFAULT_LOCALE, getDirection, type LocaleCode } from "@/shared/lib/i18n/locales";
 
 /**
  * User preferences — locale, avatar colour, notification toggles, and the

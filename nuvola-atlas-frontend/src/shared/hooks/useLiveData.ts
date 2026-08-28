@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { api } from "@/api";
-import { useChromeStore } from "@/stores/chrome";
-import { subscribe, startMockPulse, type LiveEvent } from "@/lib/realtime";
-import { startReverbSubscription, useReverbEnabled } from "@/lib/reverb";
+import { useChromeStore } from "@/shared/stores/chrome";
+import { subscribe, startMockPulse, type LiveEvent } from "@/shared/lib/realtime";
+import { startReverbSubscription, useReverbEnabled } from "@/shared/lib/reverb";
 
 /**
  * Single source of truth for live data invalidation across the app. Mount

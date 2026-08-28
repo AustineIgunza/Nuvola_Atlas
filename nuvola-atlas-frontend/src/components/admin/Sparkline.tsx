@@ -1,5 +1,5 @@
 import { useId, useMemo } from "react";
-import { cn } from "@/lib/cn";
+import { cn } from "@/shared/lib/cn";
 
 interface Props {
   data: number[];

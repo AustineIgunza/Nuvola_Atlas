@@ -1,8 +1,8 @@
 import { Suspense, useEffect } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useAuthStore, hasRoleAtLeast, isInvestor } from "@/stores/auth";
-import { lazyWithRetry, markAppLoaded } from "@/lib/lazyWithRetry";
+import { useAuthStore, hasRoleAtLeast, isInvestor } from "@/shared/stores/auth";
+import { lazyWithRetry, markAppLoaded } from "@/shared/lib/lazyWithRetry";
 import SignInPage from "@/pages/SignInPage";
 
 // lazyWithRetry survives Vercel deploys that change chunk file hashes —

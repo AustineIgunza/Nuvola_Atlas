@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
-import { useUIStore } from "@/stores/ui";
-import { scoreColor } from "@/lib/scoreColor";
-import { springSettle } from "@/lib/motion";
+import { useUIStore } from "@/shared/stores/ui";
+import { scoreColor } from "@/shared/lib/scoreColor";
+import { springSettle } from "@/shared/lib/motion";
 import Legend from "./Legend";
 import TimeScrubber from "./TimeScrubber";
 import type { Zone } from "@/domain/types";

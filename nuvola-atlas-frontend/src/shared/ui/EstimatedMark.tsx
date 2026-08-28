@@ -1,5 +1,5 @@
-import { cn } from "@/lib/cn";
-import { useT } from "@/lib/i18n/use-t";
+import { cn } from "@/shared/lib/cn";
+import { useT } from "@/shared/lib/i18n/use-t";
 
 interface Props {
   children: React.ReactNode;

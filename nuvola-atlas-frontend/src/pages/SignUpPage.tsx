@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useNavigate, Navigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useAuthStore } from "@/stores/auth";
+import { useAuthStore } from "@/shared/stores/auth";
 import { api } from "@/api";
-import { springSettle } from "@/lib/motion";
-import { Emblem, Wordmark } from "@/components/brand/Brand";
+import { springSettle } from "@/shared/lib/motion";
+import { Emblem, Wordmark } from "@/shared/ui/Brand";
 import { GoogleButton } from "@/components/auth/GoogleButton";
 
 export default function SignUpPage() {

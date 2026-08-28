@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/api";
-import { springSettle } from "@/lib/motion";
+import { springSettle } from "@/shared/lib/motion";
 import type { CountyContextReading } from "@/domain/types";
 
 /**

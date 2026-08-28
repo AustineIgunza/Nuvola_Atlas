@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Download } from "lucide-react";
 import { adminApi, type AuditEntry } from "@/api/admin";
 import { authHeaders, USE_MOCK } from "@/api/client";
-import { cn } from "@/lib/cn";
+import { cn } from "@/shared/lib/cn";
 
 const ACTION_COLOR: Record<string, string> = {
   "auth.sign_in": "text-ink-3",

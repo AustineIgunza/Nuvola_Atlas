@@ -1,9 +1,9 @@
 import type mapboxgl from "mapbox-gl";
 import type { Zone } from "@/domain/types";
-import { BRAND } from "@/lib/scoreColor";
+import { BRAND } from "@/shared/lib/scoreColor";
 import { PROJECTS } from "@/api/fixtures";
 import { waterProfile } from "@/domain/water";
-import { voronoiRings } from "@/lib/voronoi";
+import { voronoiRings } from "@/shared/lib/voronoi";
 
 /** Vitality choropleth — one clipped-Voronoi cell per zone so the map shows a
  *  zone's *area of influence* (not just a pin), tinted along the score ramp. */

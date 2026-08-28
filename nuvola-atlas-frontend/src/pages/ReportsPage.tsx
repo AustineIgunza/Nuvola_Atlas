@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import AppShell from "@/components/chrome/AppShell";
+import AppShell from "@/shared/chrome/AppShell";
 import ReportsTable from "@/components/reports/ReportsTable";
 
 export default function ReportsPage() {

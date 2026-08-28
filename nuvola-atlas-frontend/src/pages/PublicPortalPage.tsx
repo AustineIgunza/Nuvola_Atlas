@@ -4,9 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Eye, ExternalLink } from "lucide-react";
 import { api } from "@/api";
-import { useUIStore } from "@/stores/ui";
-import { BRAND } from "@/lib/scoreColor";
-import { Emblem, Wordmark } from "@/components/brand/Brand";
+import { useUIStore } from "@/shared/stores/ui";
+import { BRAND } from "@/shared/lib/scoreColor";
+import { Emblem, Wordmark } from "@/shared/ui/Brand";
 import ScorecardPanel from "@/components/scorecard/ScorecardPanel";
 
 // Same lazy import the authenticated Atlas uses; keeps the bundle boundary

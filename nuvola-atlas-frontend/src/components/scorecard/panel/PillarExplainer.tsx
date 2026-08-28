@@ -1,13 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { ChevronRight, Droplets } from "lucide-react";
-import { cn } from "@/lib/cn";
+import { cn } from "@/shared/lib/cn";
 import { api } from "@/api";
-import { BRAND, PILLAR_COLORS } from "@/lib/scoreColor";
+import { BRAND, PILLAR_COLORS } from "@/shared/lib/scoreColor";
 import { PILLARS_BY_KEY } from "@/domain/pillars.generated";
 import { waterProfile } from "@/domain/water";
 import { NO_SCORE_LABEL } from "@/domain/scores";
-import { formatRelative } from "@/lib/format";
+import { formatRelative } from "@/shared/lib/format";
 import ActivityFeed from "../ActivityFeed";
 import { Section, Chip, LayerHintButton, SEVERITY_COLOR, STATUS_STYLE, scoreBand } from "./bits";
 import type { PanelView } from "./panel-types";

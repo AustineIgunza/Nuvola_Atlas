@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { cn } from "@/lib/cn";
+import { cn } from "@/shared/lib/cn";
 
 export type AdminTab =
   | "overview"

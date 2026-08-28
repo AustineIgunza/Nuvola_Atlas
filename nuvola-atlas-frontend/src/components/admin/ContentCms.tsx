@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { FileText, History, Save, Check } from "lucide-react";
 import { contentBlocksApi, type ContentBlock, type Revision } from "@/api/contentBlocks";
-import { useAuthStore } from "@/stores/auth";
-import { useT } from "@/lib/i18n/use-t";
-import { BRAND } from "@/lib/scoreColor";
+import { useAuthStore } from "@/shared/stores/auth";
+import { useT } from "@/shared/lib/i18n/use-t";
+import { BRAND } from "@/shared/lib/scoreColor";
 
 /**
  * Content Management surface. Left: block picker. Right: markdown editor

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, ChevronDown, ChevronRight, Wallet } from "lucide-react";
-import { useAuthStore } from "@/stores/auth";
+import { useAuthStore } from "@/shared/stores/auth";
 import {
   DEAL_STAGES,
   loadDeals,
@@ -10,7 +10,7 @@ import {
   type DealStage,
 } from "@/api/dealPipeline";
 import { ZONES } from "@/api/fixtures";
-import { BRAND } from "@/lib/scoreColor";
+import { BRAND } from "@/shared/lib/scoreColor";
 
 /**
  * Deal pipeline board for the investor's firm. Shows stages as columns

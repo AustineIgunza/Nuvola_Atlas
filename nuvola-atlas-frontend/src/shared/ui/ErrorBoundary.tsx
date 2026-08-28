@@ -1,7 +1,7 @@
 import { Component } from "react";
 import type { ReactNode, ErrorInfo } from "react";
-import { captureBoundaryError } from "@/lib/sentry";
-import { Emblem } from "@/components/brand/Brand";
+import { captureBoundaryError } from "@/shared/lib/sentry";
+import { Emblem } from "@/shared/ui/Brand";
 
 interface Props {
   children: ReactNode;

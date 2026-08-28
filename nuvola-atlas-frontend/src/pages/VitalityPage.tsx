@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import AppShell from "@/components/chrome/AppShell";
+import AppShell from "@/shared/chrome/AppShell";
 import Leaderboard from "@/components/vitality/Leaderboard";
 
 export default function VitalityPage() {

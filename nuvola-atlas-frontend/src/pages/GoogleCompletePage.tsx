@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useAuthStore, type AuthRole } from "@/stores/auth";
+import { useAuthStore, type AuthRole } from "@/shared/stores/auth";
 import { BASE, authHeaders } from "@/api/client";
-import { Emblem, Wordmark } from "@/components/brand/Brand";
+import { Emblem, Wordmark } from "@/shared/ui/Brand";
 
 /**
  * Landing route the backend redirects to after Google callback. Reads

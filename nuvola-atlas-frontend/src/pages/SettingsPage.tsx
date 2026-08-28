@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Check, Loader2, Save } from "lucide-react";
-import AppShell from "@/components/chrome/AppShell";
-import { useAuthStore } from "@/stores/auth";
-import { useThemeStore } from "@/stores/theme";
-import { usePrefsStore, AVATAR_COLOR_PRESETS, type NotificationPrefs } from "@/stores/prefs";
-import { LOCALES, type LocaleCode } from "@/lib/i18n/locales";
-import { useT } from "@/lib/i18n/use-t";
+import AppShell from "@/shared/chrome/AppShell";
+import { useAuthStore } from "@/shared/stores/auth";
+import { useThemeStore } from "@/shared/stores/theme";
+import { usePrefsStore, AVATAR_COLOR_PRESETS, type NotificationPrefs } from "@/shared/stores/prefs";
+import { LOCALES, type LocaleCode } from "@/shared/lib/i18n/locales";
+import { useT } from "@/shared/lib/i18n/use-t";
 import { api } from "@/api";
-import { springSettle } from "@/lib/motion";
-import { cn } from "@/lib/cn";
+import { springSettle } from "@/shared/lib/motion";
+import { cn } from "@/shared/lib/cn";
 
 export default function SettingsPage() {
   const t = useT();

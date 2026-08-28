@@ -1,4 +1,4 @@
-import { SCORE_GRADIENT_CSS } from "@/lib/scoreColor";
+import { SCORE_GRADIENT_CSS } from "@/shared/lib/scoreColor";
 
 export default function Legend() {
   return (

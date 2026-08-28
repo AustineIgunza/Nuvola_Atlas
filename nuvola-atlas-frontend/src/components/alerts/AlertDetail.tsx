@@ -1,10 +1,10 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { AlertTriangle, Shield, ExternalLink, Calendar, MapPin } from "lucide-react";
-import { useUIStore } from "@/stores/ui";
-import { formatRelative, formatDate } from "@/lib/format";
-import { springSettle } from "@/lib/motion";
-import { useT } from "@/lib/i18n/use-t";
+import { useUIStore } from "@/shared/stores/ui";
+import { formatRelative, formatDate } from "@/shared/lib/format";
+import { springSettle } from "@/shared/lib/motion";
+import { useT } from "@/shared/lib/i18n/use-t";
 import { SEVERITY_COLORS, IMPACT_STYLES, KIND_LABEL_KEYS } from "./alerts.constants";
 import type { AlertItem } from "@/domain/types";
 

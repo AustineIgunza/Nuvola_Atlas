@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/api";
-import { useUIStore } from "@/stores/ui";
-import DetailPopup from "@/components/common/DetailPopup";
+import { useUIStore } from "@/shared/stores/ui";
+import DetailPopup from "@/shared/ui/DetailPopup";
 import ProjectDetail from "@/components/infra/ProjectDetail";
 
 export default function ProjectQuickView() {

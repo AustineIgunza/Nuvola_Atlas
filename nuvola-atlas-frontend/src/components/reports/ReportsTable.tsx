@@ -3,17 +3,17 @@ import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FileText, Plus, Star } from "lucide-react";
-import { cn } from "@/lib/cn";
+import { cn } from "@/shared/lib/cn";
 import { api } from "@/api";
-import { formatDate, formatBytes } from "@/lib/format";
-import { springSettle, staggerContainer, staggerItem } from "@/lib/motion";
+import { formatDate, formatBytes } from "@/shared/lib/format";
+import { springSettle, staggerContainer, staggerItem } from "@/shared/lib/motion";
 import { STATUS_STYLES } from "./reports.constants";
-import { useT } from "@/lib/i18n/use-t";
-import DetailPopup from "@/components/common/DetailPopup";
+import { useT } from "@/shared/lib/i18n/use-t";
+import DetailPopup from "@/shared/ui/DetailPopup";
 import ReportDetail from "./ReportDetail";
 import NewReportModal from "./NewReportModal";
-import { useAuthStore, isInvestor } from "@/stores/auth";
-import { useWatchlistStore } from "@/stores/watchlist";
+import { useAuthStore, isInvestor } from "@/shared/stores/auth";
+import { useWatchlistStore } from "@/shared/stores/watchlist";
 import type { Report, ReportStatus } from "@/domain/types";
 
 // Filter labels resolved inside the component via useT so language flips

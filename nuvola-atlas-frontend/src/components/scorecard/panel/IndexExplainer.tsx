@@ -1,13 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight } from "lucide-react";
 import { api } from "@/api";
-import { BRAND, PILLAR_COLORS, PILLAR_GLYPHS } from "@/lib/scoreColor";
+import { BRAND, PILLAR_COLORS, PILLAR_GLYPHS } from "@/shared/lib/scoreColor";
 import Ring from "../Ring";
 import PillarProvenancePanel from "./PillarProvenancePanel";
 import { Section, Chip, scoreBand } from "./bits";
 import { PILLARS } from "@/domain/pillars.generated";
 import { byScoreDesc, formatScore, isScored } from "@/domain/scores";
-import { useT } from "@/lib/i18n/use-t";
+import { useT } from "@/shared/lib/i18n/use-t";
 import type { PanelView } from "./panel-types";
 import type { Zone, PillarKey } from "@/domain/types";
 

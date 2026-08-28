@@ -13,7 +13,7 @@ import {
 import { TrendingUp } from "lucide-react";
 import { useZoneHistory } from "@/hooks/useZoneHistory";
 import { useZoneForecast } from "@/hooks/useZoneForecast";
-import { BRAND, PILLAR_COLORS, PILLAR_SHORT } from "@/lib/scoreColor";
+import { BRAND, PILLAR_COLORS, PILLAR_SHORT } from "@/shared/lib/scoreColor";
 import { PILLAR_KEYS } from "@/domain/pillars.generated";
 import type { HistoryRange, PillarKey } from "@/domain/types";
 import { Section } from "./bits";

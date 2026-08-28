@@ -2,11 +2,11 @@ import { useState } from "react";
 import { useNavigate, Navigate, Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail } from "lucide-react";
-import { useAuthStore, type AuthRole } from "@/stores/auth";
+import { useAuthStore, type AuthRole } from "@/shared/stores/auth";
 import { api } from "@/api";
 import { twoFactorApi } from "@/api/twoFactor";
-import { springSettle } from "@/lib/motion";
-import { Emblem, Wordmark } from "@/components/brand/Brand";
+import { springSettle } from "@/shared/lib/motion";
+import { Emblem, Wordmark } from "@/shared/ui/Brand";
 import { GoogleButton } from "@/components/auth/GoogleButton";
 
 type SignInLocationState = {
@@ -61,7 +61,7 @@ export default function SignInPage() {
       const firm = (res.user as { firm?: { watchlist?: string[] } }).firm;
       const firmWatchlist = firm && Array.isArray(firm.watchlist) ? firm.watchlist : [];
       if (firmWatchlist.length > 0) {
-        const { useWatchlistStore } = await import("@/stores/watchlist");
+        const { useWatchlistStore } = await import("@/shared/stores/watchlist");
         useWatchlistStore.getState().hydrate(firmWatchlist);
       }
       // Investors land on their own dashboard; everyone else lands on the atlas.

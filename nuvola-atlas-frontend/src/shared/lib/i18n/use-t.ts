@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { usePrefsStore } from "@/stores/prefs";
+import { usePrefsStore } from "@/shared/stores/prefs";
 import { translate } from "./translate";
 import type { MessageKey, TVars } from "./translate";
 

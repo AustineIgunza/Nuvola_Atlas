@@ -1,9 +1,9 @@
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
-import { cn } from "@/lib/cn";
-import { formatRelative } from "@/lib/format";
-import { springSettle, staggerItemScale } from "@/lib/motion";
-import { useT } from "@/lib/i18n/use-t";
+import { cn } from "@/shared/lib/cn";
+import { formatRelative } from "@/shared/lib/format";
+import { springSettle, staggerItemScale } from "@/shared/lib/motion";
+import { useT } from "@/shared/lib/i18n/use-t";
 import { SEVERITY_COLORS, IMPACT_STYLES, KIND_LABEL_KEYS } from "./alerts.constants";
 import type { AlertItem } from "@/domain/types";
 

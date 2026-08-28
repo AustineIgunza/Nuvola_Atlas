@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, RotateCcw, Save, Scale } from "lucide-react";
 import { api } from "@/api";
-import { BRAND, PILLAR_COLORS, PILLAR_LABELS, PILLAR_SHORT } from "@/lib/scoreColor";
+import { BRAND, PILLAR_COLORS, PILLAR_LABELS, PILLAR_SHORT } from "@/shared/lib/scoreColor";
 import { PILLARS } from "@/domain/pillars.generated";
 import { formatScore } from "@/domain/scores";
 import type { PillarKey, PillarScores, Zone } from "@/domain/types";

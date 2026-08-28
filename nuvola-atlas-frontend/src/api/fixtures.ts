@@ -1,4 +1,4 @@
-import { INDEX_NAME_SHORT } from "@/lib/branding";
+import { INDEX_NAME_SHORT } from "@/shared/lib/branding";
 import { PILLARS, PILLAR_REGISTRY_VERSION } from "@/domain/pillars.generated";
 import type {
   Zone,

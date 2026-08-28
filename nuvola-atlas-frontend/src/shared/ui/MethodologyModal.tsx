@@ -2,9 +2,9 @@ import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
-import { useUIStore } from "@/stores/ui";
+import { useUIStore } from "@/shared/stores/ui";
 import { api } from "@/api";
-import { PILLAR_COLORS, PILLAR_GLYPHS } from "@/lib/scoreColor";
+import { PILLAR_COLORS, PILLAR_GLYPHS } from "@/shared/lib/scoreColor";
 import { PILLARS } from "@/domain/pillars.generated";
 import type { PillarKey } from "@/domain/types";
 import {
@@ -13,7 +13,7 @@ import {
   modalContent,
   staggerContainer,
   staggerItem,
-} from "@/lib/motion";
+} from "@/shared/lib/motion";
 
 export default function MethodologyModal() {
   const open = useUIStore((s) => s.methodOpen);

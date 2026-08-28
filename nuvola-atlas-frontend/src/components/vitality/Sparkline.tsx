@@ -1,4 +1,4 @@
-import { scoreColor } from "@/lib/scoreColor";
+import { scoreColor } from "@/shared/lib/scoreColor";
 
 interface Props {
   points: number[];

@@ -1,6 +1,6 @@
 import { Droplets, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
-import { BRAND, PILLAR_COLORS, PILLAR_LABELS, PILLAR_GLYPHS } from "@/lib/scoreColor";
+import { BRAND, PILLAR_COLORS, PILLAR_LABELS, PILLAR_GLYPHS } from "@/shared/lib/scoreColor";
 import { waterProfile } from "@/domain/water";
 import { Section, Chip, LayerHintButton } from "./bits";
 import type { PanelView } from "./panel-types";

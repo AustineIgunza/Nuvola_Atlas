@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Plus, Minus, Locate, Layers } from "lucide-react";
-import { springSettle } from "@/lib/motion";
+import { springSettle } from "@/shared/lib/motion";
 
 interface Props {
   onZoomIn: () => void;

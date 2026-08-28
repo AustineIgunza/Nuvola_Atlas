@@ -13,7 +13,7 @@
 import Echo from "laravel-echo";
 import Pusher from "pusher-js";
 import { BASE, authHeaders } from "@/api/client";
-import { emit } from "@/lib/realtime";
+import { emit } from "@/shared/lib/realtime";
 
 // Pusher needs to be on window for laravel-echo v2 with the pusher broadcaster.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { X, Maximize2, Minimize2 } from "lucide-react";
-import { cn } from "@/lib/cn";
-import { springSettle, panelSlideUp, modalBackdrop, fadeIn } from "@/lib/motion";
-import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { cn } from "@/shared/lib/cn";
+import { springSettle, panelSlideUp, modalBackdrop, fadeIn } from "@/shared/lib/motion";
+import { useMediaQuery } from "@/shared/hooks/useMediaQuery";
 
 interface Props {
   open: boolean;

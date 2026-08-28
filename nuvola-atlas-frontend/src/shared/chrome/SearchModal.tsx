@@ -3,17 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Search, X, MapPin, HardHat } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/cn";
+import { cn } from "@/shared/lib/cn";
 import {
   springSettle,
   modalBackdrop,
   modalContent,
   staggerContainer,
   staggerItem,
-} from "@/lib/motion";
-import { useUIStore } from "@/stores/ui";
+} from "@/shared/lib/motion";
+import { useUIStore } from "@/shared/stores/ui";
 import { api } from "@/api";
-import { scoreColor } from "@/lib/scoreColor";
+import { scoreColor } from "@/shared/lib/scoreColor";
 
 export default function SearchModal() {
   const open = useUIStore((s) => s.searchOpen);

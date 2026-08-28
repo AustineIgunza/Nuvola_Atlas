@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/api";
-import { formatRelative } from "@/lib/format";
+import { formatRelative } from "@/shared/lib/format";
 
 const KIND_COLORS: Record<string, string> = {
   road: "#C0552B",

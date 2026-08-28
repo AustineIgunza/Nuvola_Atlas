@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertTriangle, Info, ShieldAlert, X } from "lucide-react";
-import { useAuthStore } from "@/stores/auth";
+import { useAuthStore } from "@/shared/stores/auth";
 import { announcementsApi, visibleAnnouncements, type Announcement } from "@/api/announcements";
-import { useT } from "@/lib/i18n/use-t";
+import { useT } from "@/shared/lib/i18n/use-t";
 
 // How long a banner stays on screen before it auto-dismisses. Critical
 // announcements skip auto-dismiss — the user must acknowledge.

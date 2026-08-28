@@ -1,5 +1,5 @@
 import { Activity } from "lucide-react";
-import { BRAND } from "@/lib/scoreColor";
+import { BRAND } from "@/shared/lib/scoreColor";
 import { PILLARS } from "@/domain/pillars.generated";
 import type { PillarKey, Zone } from "@/domain/types";
 

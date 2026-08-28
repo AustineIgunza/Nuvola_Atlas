@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
-import { cn } from "@/lib/cn";
-import { springSettle } from "@/lib/motion";
-import { useT } from "@/lib/i18n/use-t";
-import type { MessageKey } from "@/lib/i18n/translate";
+import { cn } from "@/shared/lib/cn";
+import { springSettle } from "@/shared/lib/motion";
+import { useT } from "@/shared/lib/i18n/use-t";
+import type { MessageKey } from "@/shared/lib/i18n/translate";
 import type { Project } from "@/domain/types";
 
 const STATUS_KEYS: Record<Project["status"], MessageKey> = {

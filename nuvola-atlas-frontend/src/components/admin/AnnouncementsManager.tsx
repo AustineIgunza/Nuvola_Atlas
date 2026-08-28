@@ -7,7 +7,7 @@ import {
   type AnnouncementScope,
 } from "@/api/announcements";
 import { FIRMS } from "@/api/firms";
-import { BRAND } from "@/lib/scoreColor";
+import { BRAND } from "@/shared/lib/scoreColor";
 
 /**
  * Admin-side announcements CRUD. Composes messages that appear as a

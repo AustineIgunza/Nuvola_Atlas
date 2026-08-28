@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useUIStore } from "@/stores/ui";
+import { useUIStore } from "@/shared/stores/ui";
 import { api } from "@/api";
 
 export default function TimeScrubber() {

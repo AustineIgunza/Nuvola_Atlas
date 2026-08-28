@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Send, Sparkles, Trash2 } from "lucide-react";
 import { api } from "@/api";
-import { useChatStore } from "@/stores/chat";
+import { useChatStore } from "@/shared/stores/chat";
 import { useChatStream } from "@/hooks/useChatStream";
-import { BRAND } from "@/lib/scoreColor";
+import { BRAND } from "@/shared/lib/scoreColor";
 import type { ChatMessage, Zone } from "@/domain/types";
 import ResultChart from "./ResultChart";
 

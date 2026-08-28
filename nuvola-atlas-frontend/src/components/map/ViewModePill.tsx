@@ -1,9 +1,9 @@
 import { motion } from "framer-motion";
 import { Layers, Mountain, Satellite, type LucideIcon } from "lucide-react";
-import { cn } from "@/lib/cn";
-import { springSettle } from "@/lib/motion";
-import { useUIStore } from "@/stores/ui";
-import { useThemeStore } from "@/stores/theme";
+import { cn } from "@/shared/lib/cn";
+import { springSettle } from "@/shared/lib/motion";
+import { useUIStore } from "@/shared/stores/ui";
+import { useThemeStore } from "@/shared/stores/theme";
 import { BASEMAP_STYLES, MAP_STYLES, defaultStyleForTheme } from "./atlas-map.constants";
 
 const VIEW_MODES = ["Map", "Satellite", "Terrain"] as const;

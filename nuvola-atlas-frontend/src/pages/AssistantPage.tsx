@@ -2,17 +2,17 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { History, MessageCircle, Plus, Send, Sparkles, Trash2, X } from "lucide-react";
-import AppShell from "@/components/chrome/AppShell";
-import { modalBackdrop, panelSlideLeft } from "@/lib/motion";
+import AppShell from "@/shared/chrome/AppShell";
+import { modalBackdrop, panelSlideLeft } from "@/shared/lib/motion";
 import ResultChart from "@/components/chat/ResultChart";
 import { api } from "@/api";
-import { useChatStore } from "@/stores/chat";
-import { useChromeStore } from "@/stores/chrome";
+import { useChatStore } from "@/shared/stores/chat";
+import { useChromeStore } from "@/shared/stores/chrome";
 import { useChatStream } from "@/hooks/useChatStream";
-import { useT } from "@/lib/i18n/use-t";
-import { BRAND } from "@/lib/scoreColor";
-import { cn } from "@/lib/cn";
-import { springSettle } from "@/lib/motion";
+import { useT } from "@/shared/lib/i18n/use-t";
+import { BRAND } from "@/shared/lib/scoreColor";
+import { cn } from "@/shared/lib/cn";
+import { springSettle } from "@/shared/lib/motion";
 import type { ChatConversation, ChatMessage } from "@/domain/types";
 
 /**

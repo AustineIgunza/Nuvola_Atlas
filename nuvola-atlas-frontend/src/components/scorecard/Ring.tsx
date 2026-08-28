@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { scoreColor } from "@/lib/scoreColor";
+import { scoreColor } from "@/shared/lib/scoreColor";
 import { NO_SCORE_LABEL } from "@/domain/scores";
 
 interface Props {

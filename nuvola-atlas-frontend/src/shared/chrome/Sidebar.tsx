@@ -19,20 +19,20 @@ import {
   Briefcase,
   Building2,
 } from "lucide-react";
-import { cn } from "@/lib/cn";
-import { springSettle, staggerContainer, staggerItem, panelSlideLeft } from "@/lib/motion";
-import { useUIStore } from "@/stores/ui";
-import { useAuthStore, hasRoleAtLeast, isInvestor } from "@/stores/auth";
-import { usePrefsStore } from "@/stores/prefs";
+import { cn } from "@/shared/lib/cn";
+import { springSettle, staggerContainer, staggerItem, panelSlideLeft } from "@/shared/lib/motion";
+import { useUIStore } from "@/shared/stores/ui";
+import { useAuthStore, hasRoleAtLeast, isInvestor } from "@/shared/stores/auth";
+import { usePrefsStore } from "@/shared/stores/prefs";
 import { api } from "@/api";
-import { scoreColor } from "@/lib/scoreColor";
-import { Emblem, Wordmark } from "@/components/brand/Brand";
+import { scoreColor } from "@/shared/lib/scoreColor";
+import { Emblem, Wordmark } from "@/shared/ui/Brand";
 import { LAYER_META } from "@/components/map/atlas-map.constants";
 import WatchlistStar from "@/components/investor/WatchlistStar";
-import { useT } from "@/lib/i18n/use-t";
-import type { MessageKey } from "@/lib/i18n/translate";
+import { useT } from "@/shared/lib/i18n/use-t";
+import type { MessageKey } from "@/shared/lib/i18n/translate";
 import { useState, useEffect } from "react";
-import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { useMediaQuery } from "@/shared/hooks/useMediaQuery";
 
 function formatSyncAge(minutes: number, t: ReturnType<typeof useT>): string {
   if (minutes < 1) return t("sidebar.syncAge.justNow");

@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpDown, Download, ChevronRight, X, MapPin } from "lucide-react";
-import { cn } from "@/lib/cn";
+import { cn } from "@/shared/lib/cn";
 import { api } from "@/api";
-import { scoreColor, PILLAR_COLORS } from "@/lib/scoreColor";
+import { scoreColor, PILLAR_COLORS } from "@/shared/lib/scoreColor";
 import { formatScore } from "@/domain/scores";
 import {
   springSettle,
@@ -13,9 +13,9 @@ import {
   staggerItem,
   modalBackdrop,
   modalContent,
-} from "@/lib/motion";
-import { useUIStore } from "@/stores/ui";
-import { useT } from "@/lib/i18n/use-t";
+} from "@/shared/lib/motion";
+import { useUIStore } from "@/shared/stores/ui";
+import { useT } from "@/shared/lib/i18n/use-t";
 import { PILLAR_KEYS, PILLARS_BY_KEY } from "@/domain/pillars.generated";
 import type { PillarKey, Zone } from "@/domain/types";
 

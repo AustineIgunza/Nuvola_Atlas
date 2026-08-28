@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/cn";
+import { cn } from "@/shared/lib/cn";
 import { api } from "@/api";
-import { springSettle, staggerContainer } from "@/lib/motion";
-import DetailPopup from "@/components/common/DetailPopup";
+import { springSettle, staggerContainer } from "@/shared/lib/motion";
+import DetailPopup from "@/shared/ui/DetailPopup";
 import AlertCard from "./AlertCard";
 import AlertDetail from "./AlertDetail";
-import { useT } from "@/lib/i18n/use-t";
+import { useT } from "@/shared/lib/i18n/use-t";
 import type { AlertSeverity } from "@/domain/types";
 
 const FILTER_VALUES: (AlertSeverity | "all")[] = ["all", "high", "medium", "low"];

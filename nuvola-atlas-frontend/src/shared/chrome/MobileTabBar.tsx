@@ -17,13 +17,13 @@ import {
   Info,
   type LucideIcon,
 } from "lucide-react";
-import { cn } from "@/lib/cn";
-import { springSettle } from "@/lib/motion";
+import { cn } from "@/shared/lib/cn";
+import { springSettle } from "@/shared/lib/motion";
 import { api } from "@/api";
-import { useAuthStore, hasRoleAtLeast, isInvestor } from "@/stores/auth";
-import { useChromeStore } from "@/stores/chrome";
-import { useT } from "@/lib/i18n/use-t";
-import type { MessageKey } from "@/lib/i18n/translate";
+import { useAuthStore, hasRoleAtLeast, isInvestor } from "@/shared/stores/auth";
+import { useChromeStore } from "@/shared/stores/chrome";
+import { useT } from "@/shared/lib/i18n/use-t";
+import type { MessageKey } from "@/shared/lib/i18n/translate";
 
 interface Tab {
   path: string;

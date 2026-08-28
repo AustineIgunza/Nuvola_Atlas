@@ -11,18 +11,18 @@ import {
   YAxis,
 } from "recharts";
 import { AlertTriangle, Droplets, HardHat, RefreshCcw, TrendingUp, X } from "lucide-react";
-import AppShell from "@/components/chrome/AppShell";
+import AppShell from "@/shared/chrome/AppShell";
 import CompareAssistant from "@/components/chat/CompareAssistant";
 import { api } from "@/api";
-import { useAtlasStore } from "@/stores/atlas";
-import { useChatStore } from "@/stores/chat";
-import { useChromeStore } from "@/stores/chrome";
-import { useAuthStore, isInvestor } from "@/stores/auth";
-import { useT } from "@/lib/i18n/use-t";
+import { useAtlasStore } from "@/shared/stores/atlas";
+import { useChatStore } from "@/shared/stores/chat";
+import { useChromeStore } from "@/shared/stores/chrome";
+import { useAuthStore, isInvestor } from "@/shared/stores/auth";
+import { useT } from "@/shared/lib/i18n/use-t";
 import { useZoneHistory } from "@/hooks/useZoneHistory";
 import { useZoneForecast } from "@/hooks/useZoneForecast";
 import { waterProfile } from "@/domain/water";
-import { BRAND, PILLAR_COLORS, PILLAR_SHORT, scoreColor } from "@/lib/scoreColor";
+import { BRAND, PILLAR_COLORS, PILLAR_SHORT, scoreColor } from "@/shared/lib/scoreColor";
 import { PILLAR_KEYS } from "@/domain/pillars.generated";
 import { averageDelta } from "@/domain/deltas";
 import type { AlertItem, AlertSeverity, HistoryRange, PillarKey, Project, Zone } from "@/domain/types";

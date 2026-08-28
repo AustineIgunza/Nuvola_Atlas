@@ -1,10 +1,10 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Calendar, User, Tag, Layers, Download, MapPin } from "lucide-react";
-import { cn } from "@/lib/cn";
-import { formatDate, formatBytes } from "@/lib/format";
-import { springSettle } from "@/lib/motion";
-import { PILLAR_COLORS, PILLAR_LABELS } from "@/lib/scoreColor";
+import { cn } from "@/shared/lib/cn";
+import { formatDate, formatBytes } from "@/shared/lib/format";
+import { springSettle } from "@/shared/lib/motion";
+import { PILLAR_COLORS, PILLAR_LABELS } from "@/shared/lib/scoreColor";
 import { STATUS_STYLES, PRIORITY_STYLES, TYPE_LABELS } from "./reports.constants";
 import type { Report, PillarKey } from "@/domain/types";
 

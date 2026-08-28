@@ -2,15 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Bell, Search, Sparkles } from "lucide-react";
-import { cn } from "@/lib/cn";
-import { springSettle } from "@/lib/motion";
-import { useUIStore } from "@/stores/ui";
-import { useChromeStore } from "@/stores/chrome";
-import { useThemeStore } from "@/stores/theme";
+import { cn } from "@/shared/lib/cn";
+import { springSettle } from "@/shared/lib/motion";
+import { useUIStore } from "@/shared/stores/ui";
+import { useChromeStore } from "@/shared/stores/chrome";
+import { useThemeStore } from "@/shared/stores/theme";
 import { BASEMAP_STYLES, defaultStyleForTheme } from "@/components/map/atlas-map.constants";
 import { useEffect } from "react";
 import { api } from "@/api";
-import { useT } from "@/lib/i18n/use-t";
+import { useT } from "@/shared/lib/i18n/use-t";
 
 export default function TopBar() {
   const t = useT();

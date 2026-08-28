@@ -5,10 +5,10 @@ import MobileTabBar from "./MobileTabBar";
 import ProjectQuickView from "./ProjectQuickView";
 import AnnouncementsBanner from "./AnnouncementsBanner";
 import ImpersonationBanner from "./ImpersonationBanner";
-import MethodologyModal from "@/components/modals/MethodologyModal";
+import MethodologyModal from "@/shared/ui/MethodologyModal";
 import ESGLensChip from "@/components/investor/ESGLensChip";
-import { useLiveData } from "@/hooks/useLiveData";
-import { useChromeStore } from "@/stores/chrome";
+import { useLiveData } from "@/shared/hooks/useLiveData";
+import { useChromeStore } from "@/shared/stores/chrome";
 
 // Investor ESG-lens chip only surfaces on the scorecard-adjacent pages
 // where the reordering actually pays off. On other pages (Reports,

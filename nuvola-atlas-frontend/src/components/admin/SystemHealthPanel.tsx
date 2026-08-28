@@ -13,8 +13,8 @@ import {
   Timer,
 } from "lucide-react";
 import { adminApi, type HealthCheck, type HealthStatus } from "@/api/admin";
-import { BRAND } from "@/lib/scoreColor";
-import { formatRelative } from "@/lib/format";
+import { BRAND } from "@/shared/lib/scoreColor";
+import { formatRelative } from "@/shared/lib/format";
 
 /**
  * Operator telemetry, read from /admin/system-health.

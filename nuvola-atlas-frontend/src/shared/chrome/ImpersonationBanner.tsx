@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, LogOut } from "lucide-react";
-import { useImpersonationStore } from "@/stores/impersonation";
-import { useAuthStore, type AuthRole } from "@/stores/auth";
-import { useT } from "@/lib/i18n/use-t";
+import { useImpersonationStore } from "@/shared/stores/impersonation";
+import { useAuthStore, type AuthRole } from "@/shared/stores/auth";
+import { useT } from "@/shared/lib/i18n/use-t";
 
 /**
  * Persistent strip at the top of the app when the admin is impersonating

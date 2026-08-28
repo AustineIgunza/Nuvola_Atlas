@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Check, Lock, Save } from "lucide-react";
-import { useAuthStore, isInvestor } from "@/stores/auth";
+import { useAuthStore, isInvestor } from "@/shared/stores/auth";
 import { zoneNotesApi } from "@/api/zoneNotes";
-import { useT } from "@/lib/i18n/use-t";
-import { BRAND } from "@/lib/scoreColor";
+import { useT } from "@/shared/lib/i18n/use-t";
+import { BRAND } from "@/shared/lib/scoreColor";
 
 interface Props {
   zoneId: string;

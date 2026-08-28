@@ -1,5 +1,5 @@
 import { BadgeCheck, CircleDashed } from "lucide-react";
-import { BRAND, PILLAR_COLORS } from "@/lib/scoreColor";
+import { BRAND, PILLAR_COLORS } from "@/shared/lib/scoreColor";
 import { PILLARS } from "@/domain/pillars.generated";
 import { Section } from "./bits";
 import type { PillarKey, Zone } from "@/domain/types";

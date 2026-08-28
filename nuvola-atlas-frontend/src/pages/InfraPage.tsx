@@ -3,11 +3,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { api } from "@/api";
-import AppShell from "@/components/chrome/AppShell";
-import DetailPopup from "@/components/common/DetailPopup";
+import AppShell from "@/shared/chrome/AppShell";
+import DetailPopup from "@/shared/ui/DetailPopup";
 import ProjectList from "@/components/infra/ProjectList";
 import ProjectDetail from "@/components/infra/ProjectDetail";
-import { useT } from "@/lib/i18n/use-t";
+import { useT } from "@/shared/lib/i18n/use-t";
 
 export default function InfraPage() {
   const t = useT();

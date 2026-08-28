@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
-import { useUIStore } from "@/stores/ui";
-import { BRAND } from "@/lib/scoreColor";
+import { useUIStore } from "@/shared/stores/ui";
+import { BRAND } from "@/shared/lib/scoreColor";
 
 export function useMapPopups(mapRef: React.RefObject<mapboxgl.Map | null>, loaded: boolean) {
   const attachedRef = useRef(false);

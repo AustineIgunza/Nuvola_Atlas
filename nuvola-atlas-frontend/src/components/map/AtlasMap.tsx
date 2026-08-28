@@ -1,9 +1,9 @@
 import { motion } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
 import { Compass } from "lucide-react";
-import { useUIStore } from "@/stores/ui";
-import { springSettle } from "@/lib/motion";
-import { BRAND, SCORE_GRADIENT_CSS } from "@/lib/scoreColor";
+import { useUIStore } from "@/shared/stores/ui";
+import { springSettle } from "@/shared/lib/motion";
+import { BRAND, SCORE_GRADIENT_CSS } from "@/shared/lib/scoreColor";
 import { useMapInstance, TOKEN } from "@/hooks/useMapInstance";
 import { useMapLayers } from "@/hooks/useMapLayers";
 import { useMapMarkers } from "@/hooks/useMapMarkers";
@@ -12,7 +12,7 @@ import { useMapPopups } from "@/hooks/useMapPopups";
 import { LAYER_META, NAIROBI, INITIAL_ZOOM } from "./atlas-map.constants";
 import MapFallback from "./MapFallback";
 import ViewModePill from "./ViewModePill";
-import { useT } from "@/lib/i18n/use-t";
+import { useT } from "@/shared/lib/i18n/use-t";
 import type { Zone } from "@/domain/types";
 
 interface Props {

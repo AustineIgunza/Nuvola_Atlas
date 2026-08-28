@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
 import { Layers } from "lucide-react";
-import { cn } from "@/lib/cn";
-import { useUIStore } from "@/stores/ui";
-import type { LayerKey } from "@/stores/atlas";
-import { BRAND, NO_SCORE_COLOR_HEX } from "@/lib/scoreColor";
-import { translate } from "@/lib/i18n/translate";
-import { usePrefsStore } from "@/stores/prefs";
-import { useT } from "@/lib/i18n/use-t";
+import { cn } from "@/shared/lib/cn";
+import { useUIStore } from "@/shared/stores/ui";
+import type { LayerKey } from "@/shared/stores/atlas";
+import { BRAND, NO_SCORE_COLOR_HEX } from "@/shared/lib/scoreColor";
+import { translate } from "@/shared/lib/i18n/translate";
+import { usePrefsStore } from "@/shared/stores/prefs";
+import { useT } from "@/shared/lib/i18n/use-t";
 import type { AlertSeverity, ProjectStatus } from "@/domain/types";
 
 /** Shared color coding for the scorecard panel and its explainer views. */

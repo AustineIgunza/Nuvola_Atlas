@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/cn";
+import { cn } from "@/shared/lib/cn";
 import { api } from "@/api";
-import { springSettle } from "@/lib/motion";
-import { useT } from "@/lib/i18n/use-t";
-import type { MessageKey } from "@/lib/i18n/translate";
+import { springSettle } from "@/shared/lib/motion";
+import { useT } from "@/shared/lib/i18n/use-t";
+import type { MessageKey } from "@/shared/lib/i18n/translate";
 import ProjectCard from "./ProjectCard";
 import type { InfraType } from "@/domain/types";
 

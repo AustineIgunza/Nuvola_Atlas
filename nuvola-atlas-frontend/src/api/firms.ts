@@ -1,4 +1,4 @@
-import type { AuthUser } from "@/stores/auth";
+import type { AuthUser } from "@/shared/stores/auth";
 
 /**
  * Investor firms — mock parity with the future firms table on the backend.

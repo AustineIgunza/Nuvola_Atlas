@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import type mapboxgl from "mapbox-gl";
-import { useUIStore } from "@/stores/ui";
+import { useUIStore } from "@/shared/stores/ui";
 import { addSourcesAndLayers } from "@/components/map/atlas-map.sources";
 import type { Zone } from "@/domain/types";
 

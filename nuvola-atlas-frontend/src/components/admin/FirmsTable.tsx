@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Building2, Users, Star } from "lucide-react";
 import { FIRMS } from "@/api/firms";
-import { BRAND } from "@/lib/scoreColor";
+import { BRAND } from "@/shared/lib/scoreColor";
 
 /**
  * Firm-management surface. In mock mode reads from FIRMS fixture; when the
