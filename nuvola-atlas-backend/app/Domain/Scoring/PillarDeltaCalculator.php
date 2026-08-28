@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Domain\Scoring;
 
 use App\Models\Zone;
 use App\Models\ZoneScoreSnapshot;

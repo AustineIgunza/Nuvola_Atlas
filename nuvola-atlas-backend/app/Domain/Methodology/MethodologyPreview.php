@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Methodology;
+namespace App\Domain\Methodology;
 
+use App\Domain\Scoring\ScoreCalculator;
 use App\Models\Zone;
-use App\Services\ScoreCalculator;
 
 /**
  * Weighted-recompute simulation. Runs the calculator's pillar math

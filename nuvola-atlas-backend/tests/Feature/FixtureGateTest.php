@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Domain\Scoring\ScoreCalculator;
 use App\Models\User;
 use App\Models\Zone;
-use App\Services\ScoreCalculator;
 use App\Support\DataProvenance;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;

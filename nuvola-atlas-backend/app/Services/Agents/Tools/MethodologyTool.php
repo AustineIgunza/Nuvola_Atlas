@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\Agents\Tools;
 
+use App\Domain\Scoring\ScoreCalculator;
 use App\Models\MethodologyVersion;
 use App\Services\Agents\BaseAgentTool;
-use App\Services\ScoreCalculator;
 use App\Support\Pillars;
 
 class MethodologyTool extends BaseAgentTool

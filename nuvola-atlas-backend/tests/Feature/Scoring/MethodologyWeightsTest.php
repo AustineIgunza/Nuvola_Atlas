@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Scoring;
 
+use App\Domain\Methodology\MethodologyPublisher;
+use App\Domain\Scoring\ScoreCalculator;
 use App\Models\MethodologyVersion;
 use App\Models\Zone;
-use App\Services\Methodology\MethodologyPublisher;
-use App\Services\ScoreCalculator;
 use App\Support\Pillars;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Queue;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Domain\Forecast\ZoneScoreForecaster;
 use App\Models\Zone;
-use App\Services\Forecast\ZoneScoreForecaster;
 use Illuminate\Http\Request;
 
 class ZoneForecastController extends Controller

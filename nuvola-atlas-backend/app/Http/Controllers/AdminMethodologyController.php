@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Domain\Methodology\MethodologyPublisher;
 use App\Models\MethodologyVersion;
-use App\Services\Methodology\MethodologyPublisher;
 use App\Support\Audit;
 use App\Support\Pillars;
 use Illuminate\Http\JsonResponse;

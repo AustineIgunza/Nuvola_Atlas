@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Domain\Scoring\PillarDeltaCalculator;
 use App\Enums\Role;
 use App\Http\Resources\ActivityResource;
 use App\Http\Resources\ZoneLayerResource;
 use App\Http\Resources\ZoneResource;
 use App\Models\Activity;
 use App\Models\Zone;
-use App\Services\PillarDeltaCalculator;
 use App\Support\DataProvenance;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;

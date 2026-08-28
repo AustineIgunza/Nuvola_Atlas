@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit;
 
+use App\Domain\Scoring\ScoreCalculator;
 use App\Models\Zone;
-use App\Services\ScoreCalculator;
 use App\Support\Pillars;
 use Tests\TestCase;
 

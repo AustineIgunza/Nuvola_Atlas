@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\CountyContext;
+namespace App\Domain\CountyContext;
 
 use App\Models\CountyContext;
 use App\Support\Pillars;
